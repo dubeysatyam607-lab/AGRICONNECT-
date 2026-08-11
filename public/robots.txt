@@ -1,0 +1,87 @@
+# ═══════════════════════════════════════════════════════════
+# AgriConnect — Robots.txt
+# Enterprise-grade crawl directives for Google, Bing & AI crawlers
+# ═══════════════════════════════════════════════════════════
+
+# ── Primary Search Engines ─────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /login
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /profile
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Disallow: /login
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /profile
+Crawl-delay: 2
+
+User-agent: Googlebot-Image
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /*.avif
+Allow: /*.svg
+
+User-agent: Googlebot-Video
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+# ── AI / Answer-Engine Crawlers ────────────────────────────
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# ── Social / Sharing Crawlers ──────────────────────────────
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+# ── Everything else ────────────────────────────────────────
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /profile
+Crawl-delay: 10
+
+# ── Sitemaps ───────────────────────────────────────────────
+Sitemap: https://agriconnect.in/sitemap.xml
+Sitemap: https://agriconnect.in/sitemap-images.xml
+

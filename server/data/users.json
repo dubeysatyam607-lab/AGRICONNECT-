@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "1781377385197",
+    "role": "farmer",
+    "isVerified": true,
+    "name": "satyamdubey",
+    "email": "dubeysatyam607@gmail.com",
+    "password": "$2b$10$6uWkP5deHc.4tXxLswQDsuAGfeF4rknyN.L5m3Y0.PC.Ei/wzwttG",
+    "createdAt": "2026-06-13T19:03:05.197Z",
+    "updatedAt": "2026-06-13T19:03:05.197Z"
+  }
+]

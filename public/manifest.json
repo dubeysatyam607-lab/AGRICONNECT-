@@ -1,0 +1,86 @@
+{
+  "name": "AgriConnect - Smart Farming App for Indian Farmers",
+  "short_name": "AgriConnect",
+  "description": "India's all-in-one smart farming app. Live mandi bhav, AI crop disease detection, weather forecasts, tractor rental, government scheme alerts & kisan advisory in 12 Indian languages. 100% free.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#f8faf8",
+  "theme_color": "#2E7D32",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["agriculture", "business", "productivity", "weather", "finance"],
+  "icons": [
+    {
+      "src": "/agriconnect-icon-64.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/agriconnect-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/agriconnect-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/agriconnect-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/agriconnect-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/agriconnect-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mandi Bhav",
+      "short_name": "Mandi",
+      "description": "Check today's live mandi prices",
+      "url": "/?tab=mandi",
+      "icons": [{ "src": "/agriconnect-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI Crop Doctor",
+      "short_name": "Crop Doctor",
+      "description": "Scan crops with AI for disease detection",
+      "url": "/?tab=crop-doctor",
+      "icons": [{ "src": "/agriconnect-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tractor Rental",
+      "short_name": "Tractors",
+      "description": "Book tractors and harvesters online",
+      "url": "/?tab=tractors",
+      "icons": [{ "src": "/agriconnect-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Government Schemes",
+      "short_name": "Schemes",
+      "description": "Explore farmer schemes and subsidies",
+      "url": "/?tab=schemes",
+      "icons": [{ "src": "/agriconnect-icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}
+
