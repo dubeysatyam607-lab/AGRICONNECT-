@@ -1,0 +1,5 @@
+# SPA fallback — every unmatched route serves the app shell so deep links
+# (/about, /mandi-prices/maharashtra, sitemap URLs, refreshes) resolve via
+# client-side routing instead of 404ing on Netlify. Real files (assets,
+# sitemap.xml, robots.txt, sw.js, icons) take precedence automatically.
+/*  /index.html  200

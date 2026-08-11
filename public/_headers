@@ -1,0 +1,25 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), geolocation=(self), microphone=(self), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self';
+    script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://checkout.razorpay.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' data: https://fonts.gstatic.com;
+    img-src 'self' data: blob: https:;
+    media-src 'self' blob: data:;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.data.gov.in https://api.openweathermap.org https://api.pexels.com https://api.razorpay.com https://*.mapbox.com wss://*.mapbox.com https://www.googletagmanager.com https://www.google-analytics.com;
+    worker-src 'self' blob:;
+    frame-src 'self' https://www.youtube.com https://www.google.com https://api.razorpay.com https://checkout.razorpay.com;
+    upgrade-insecure-requests
+
+# The service worker must never be cached — stale SWs break updates.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Hashed build assets are immutable — safe to cache for a year.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff

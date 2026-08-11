@@ -1,0 +1,682 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid hsl(150 45% 21%);
+    outline-offset: 2px;
+  }
+
+  :root {
+    --background: 43 36% 96%;
+    --foreground: 150 33% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 33% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 33% 11%;
+
+    --primary: 150 45% 21%;
+    --primary-foreground: 43 36% 96%;
+
+    --secondary: 40 92% 50%;
+    --secondary-foreground: 150 33% 11%;
+
+    --muted: 42 25% 90%;
+    --muted-foreground: 148 14% 38%;
+
+    --accent: 40 92% 93%;
+    --accent-foreground: 150 45% 21%;
+
+    --destructive: 6 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 24% 87%;
+    --input: 40 24% 87%;
+    --ring: 150 45% 21%;
+
+    --radius: 1rem;
+
+    /* Named material tokens */
+    --ink: 150 33% 11%;
+    --paper: 43 36% 96%;
+    --forest: 150 45% 21%;
+    --moss: 148 34% 30%;
+    --marigold: 40 92% 50%;
+    --soil: 24 44% 38%;
+    --clay: 20 42% 82%;
+
+    /* Gradient tokens */
+    --gradient-hero: linear-gradient(150deg, hsl(155 55% 16%), hsl(150 45% 9%));
+    --gradient-warm: linear-gradient(150deg, hsl(40 92% 50%), hsl(24 94% 48%));
+    --gradient-sky: linear-gradient(150deg, hsl(199 89% 52%), hsl(213 84% 42%));
+    --gradient-magic: linear-gradient(150deg, hsl(268 78% 56%), hsl(199 89% 52%));
+    --gradient-ai: linear-gradient(140deg, hsl(268 84% 60%), hsl(238 82% 58%));
+    --gradient-weather: linear-gradient(140deg, hsl(199 89% 58%), hsl(199 84% 46%));
+    --gradient-market: linear-gradient(140deg, hsl(160 63% 40%), hsl(158 70% 30%));
+    --gradient-govt: linear-gradient(140deg, hsl(242 84% 62%), hsl(250 78% 48%));
+    --gradient-tractor: linear-gradient(140deg, hsl(24 94% 56%), hsl(18 92% 46%));
+    --gradient-store: linear-gradient(140deg, hsl(174 71% 44%), hsl(170 74% 32%));
+    --gradient-doctor: linear-gradient(140deg, hsl(142 71% 46%), hsl(138 68% 34%));
+    --gradient-loans: linear-gradient(140deg, hsl(45 92% 54%), hsl(38 94% 44%));
+    --gradient-community: linear-gradient(140deg, hsl(10 84% 62%), hsl(356 80% 52%));
+    --gradient-news: linear-gradient(140deg, hsl(350 78% 58%), hsl(345 80% 46%));
+    --gradient-analytics: linear-gradient(140deg, hsl(188 86% 50%), hsl(184 88% 40%));
+    --gradient-ink: linear-gradient(140deg, hsl(155 45% 22%), hsl(152 60% 12%));
+
+    /* Dynamic hero gradients — adapt to time of day & weather */
+    --gradient-hero-dawn: linear-gradient(150deg, hsl(26 84% 46%), hsl(155 45% 16%));
+    --gradient-hero-noon: linear-gradient(150deg, hsl(199 72% 42%), hsl(155 55% 14%));
+    --gradient-hero-dusk: linear-gradient(150deg, hsl(24 86% 48%), hsl(280 52% 22%));
+    --gradient-hero-night: linear-gradient(150deg, hsl(224 48% 20%), hsl(155 45% 8%));
+    --gradient-hero-rain: linear-gradient(150deg, hsl(214 34% 40%), hsl(155 35% 13%));
+    --gradient-hero-storm: linear-gradient(150deg, hsl(232 38% 30%), hsl(240 42% 14%));
+    --gradient-hero-fog: linear-gradient(150deg, hsl(200 16% 52%), hsl(155 20% 18%));
+    --gradient-hero-hot: linear-gradient(150deg, hsl(28 88% 52%), hsl(14 72% 40%));
+
+    --shadow-soft: 0 4px 20px -4px hsl(150 33% 11% / 0.08);
+    --shadow-card: 0 2px 12px -2px hsl(150 33% 11% / 0.05);
+    --shadow-glow: 0 0 30px hsl(40 92% 50% / 0.18);
+    --shadow-colorful: 0 14px 40px -12px hsl(150 45% 21% / 0.28);
+
+    /* Feature colors (one brand hue per feature) */
+    --feature-ai: 268 84% 58%;
+    --feature-weather: 199 89% 52%;
+    --feature-mandi: 160 63% 36%;
+    --feature-tractor: 24 94% 50%;
+    --feature-store: 240 75% 55%;
+    --feature-doctor: 142 71% 37%;
+    --feature-loans: 45 92% 50%;
+    --feature-community: 10 84% 58%;
+    --feature-news: 350 78% 44%;
+    --feature-analytics: 188 86% 46%;
+    --feature-schemes: 38 92% 55%;
+    --feature-transport: 220 70% 50%;
+    --feature-soil: 30 58% 42%;
+    --feature-labor: 205 78% 46%;
+    --feature-cattle: 190 70% 38%;
+  }
+
+  .dark {
+    --background: 150 28% 7%;
+    --foreground: 45 30% 94%;
+
+    --card: 150 24% 10%;
+    --card-foreground: 45 30% 94%;
+
+    --popover: 150 24% 10%;
+    --popover-foreground: 45 30% 94%;
+
+    --primary: 148 40% 52%;
+    --primary-foreground: 150 28% 7%;
+
+    --secondary: 40 92% 55%;
+    --secondary-foreground: 150 28% 7%;
+
+    --muted: 150 20% 16%;
+    --muted-foreground: 45 18% 62%;
+
+    --accent: 150 30% 18%;
+    --accent-foreground: 148 40% 68%;
+
+    --destructive: 6 62% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 20% 19%;
+    --input: 150 20% 19%;
+    --ring: 148 40% 52%;
+
+    --feature-doctor: 142 78% 60%;
+    --feature-news: 350 85% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    @apply min-h-screen w-full;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Safe area for mobile devices */
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+@layer components {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .gradient-sky {
+    background: var(--gradient-sky);
+  }
+
+  .gradient-magic {
+    background: var(--gradient-magic);
+  }
+
+  .gradient-ai { background: var(--gradient-ai); }
+  .gradient-weather { background: var(--gradient-weather); }
+  .gradient-market { background: var(--gradient-market); }
+  .gradient-govt { background: var(--gradient-govt); }
+  .gradient-tractor { background: var(--gradient-tractor); }
+  .gradient-store { background: var(--gradient-store); }
+  .gradient-doctor { background: var(--gradient-doctor); }
+  .gradient-loans { background: var(--gradient-loans); }
+  .gradient-community { background: var(--gradient-community); }
+  .gradient-news { background: var(--gradient-news); }
+  .gradient-analytics { background: var(--gradient-analytics); }
+  .gradient-ink { background: var(--gradient-ink); }
+
+  /* ------------------------------------------------------------
+   * Global responsive container
+   * ------------------------------------------------------------ */
+  .responsive-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1440px;               /* Desktop default */
+    padding-left: 1.5rem;            /* 24px */
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1440px) {
+    .responsive-container { max-width: 1500px; }
+  }
+
+  @media (max-width: 1024px) {   /* Laptop */
+    .responsive-container { padding-left: 1rem; padding-right: 1rem; }
+  }
+
+  @media (max-width: 768px) {    /* Tablet */
+    .responsive-container { padding-left: 0.75rem; padding-right: 0.75rem; }
+  }
+
+  @media (max-width: 480px) {    /* Mobile */
+    .responsive-container { padding-left: 0.75rem; padding-right: 0.75rem; }
+  }
+
+  /* Dynamic hero period/weather backgrounds */
+  .gradient-hero-dawn { background: var(--gradient-hero-dawn); }
+  .gradient-hero-noon { background: var(--gradient-hero-noon); }
+  .gradient-hero-dusk { background: var(--gradient-hero-dusk); }
+  .gradient-hero-night { background: var(--gradient-hero-night); }
+  .gradient-hero-rain { background: var(--gradient-hero-rain); }
+  .gradient-hero-storm { background: var(--gradient-hero-storm); }
+  .gradient-hero-fog { background: var(--gradient-hero-fog); }
+  .gradient-hero-hot { background: var(--gradient-hero-hot); }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-colorful {
+    box-shadow: var(--shadow-colorful);
+  }
+
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  /* Color-coded feature pill chip */
+  .feature-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold backdrop-blur-md;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.3s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-shake {
+    animation: shake 0.4s ease-in-out;
+  }
+
+  .fill-mode-both {
+    animation-fill-mode: both;
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.86); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  @keyframes slide-down {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Premium Agriculture Animations --- */
+  @keyframes cloud-drift {
+    0% { transform: translateX(-10%); opacity: 0.8; }
+    50% { transform: translateX(110%); opacity: 0.95; }
+    100% { transform: translateX(-10%); opacity: 0.8; }
+  }
+  .animate-cloud-slow {
+    animation: cloud-drift 45s linear infinite;
+  }
+  .animate-cloud-fast {
+    animation: cloud-drift 28s linear infinite;
+  }
+
+  @keyframes tractor-drive {
+    0% { transform: translateX(-120%) translateY(0); }
+    25% { transform: translateX(-40%) translateY(-2px); }
+    50% { transform: translateX(40%) translateY(0); }
+    75% { transform: translateX(120%) translateY(-2px); }
+    100% { transform: translateX(220%) translateY(0); }
+  }
+  .animate-tractor-drive {
+    animation: tractor-drive 22s linear infinite;
+  }
+
+  @keyframes wave-wheat {
+    0%, 100% { transform: rotate(0deg) scaleY(1); }
+    30% { transform: rotate(5deg) scaleY(1.03); }
+    70% { transform: rotate(-4deg) scaleY(0.98); }
+  }
+  .animate-wave-wheat {
+    transform-origin: bottom center;
+    animation: wave-wheat 4s ease-in-out infinite;
+  }
+
+  @keyframes bird-fly {
+    0% { transform: translate(-50px, 20px) scale(0.8); opacity: 0; }
+    20% { opacity: 0.8; }
+    50% { transform: translate(180px, -15px) scale(1); }
+    80% { opacity: 0.8; }
+    100% { transform: translate(400px, 10px) scale(0.9); opacity: 0; }
+  }
+  .animate-bird-fly {
+    animation: bird-fly 15s ease-in-out infinite;
+  }
+
+  @keyframes sun-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.6)); }
+    50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 45px rgba(245, 158, 11, 0.85)); }
+  }
+  .animate-sun-pulse {
+    animation: sun-pulse 6s ease-in-out infinite;
+  }
+
+  @keyframes rain-fall {
+    0% { transform: translateY(-10px); opacity: 0; }
+    50% { opacity: 0.7; }
+    100% { transform: translateY(28px); opacity: 0; }
+  }
+  .animate-rain-drop {
+    animation: rain-fall 1.2s linear infinite;
+  }
+
+  /* Night stars — gentle twinkle */
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  .animate-twinkle {
+    animation: twinkle 3s ease-in-out infinite;
+  }
+
+  /* Task completion celebration burst */
+  @keyframes confetti-burst {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--dx, 40px), var(--dy, -90px)) rotate(var(--rot, 540deg)); opacity: 0; }
+  }
+  .animate-confetti {
+    animation: confetti-burst 1.1s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+  }
+
+  @keyframes breathe-glow {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), 0 0 40px rgba(245, 158, 11, 0.2); }
+    50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(16, 185, 129, 0.7), 0 0 65px rgba(245, 158, 11, 0.4); }
+  }
+  .animate-breathe {
+    animation: breathe-glow 3.5s ease-in-out infinite;
+  }
+
+  @keyframes waveform-bar {
+    0%, 100% { height: 6px; }
+    50% { height: 22px; }
+  }
+  .animate-waveform {
+    animation: waveform-bar 0.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+
+  /* Thunderstorm Lightning Flash */
+  @keyframes lightning-flash {
+    0%, 80%, 82%, 84%, 96%, 100% { opacity: 0; }
+    81%, 83% { opacity: 0.65; }
+    85% { opacity: 0.15; }
+    86% { opacity: 0.9; }
+  }
+  .animate-lightning-flash {
+    animation: lightning-flash 6s ease-in-out infinite;
+  }
+
+  /* Turbine Spin for Wind Speed Indicator */
+  @keyframes turbine-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-turbine-spin-slow {
+    animation: turbine-spin 6s linear infinite;
+  }
+  .animate-turbine-spin-normal {
+    animation: turbine-spin 3s linear infinite;
+  }
+  .animate-turbine-spin-fast {
+    animation: turbine-spin 1s linear infinite;
+  }
+
+  /* Mist Drift for Fog / Mist conditions */
+  @keyframes mist-drift {
+    0%, 100% { transform: translateX(-20px); opacity: 0.35; }
+    50% { transform: translateX(20px); opacity: 0.7; }
+  }
+  .animate-mist-slow {
+    animation: mist-drift 14s ease-in-out infinite;
+  }
+  .animate-mist-medium {
+    animation: mist-drift 8s ease-in-out infinite;
+  }
+
+  /* Heat Wave Shimmer for Hot Wind (Loo) */
+  @keyframes heat-wave {
+    0%, 100% { transform: translateY(0) skewX(0deg) scaleY(1); opacity: 0.5; }
+    50% { transform: translateY(-5px) skewX(5deg) scaleY(1.06); opacity: 0.85; }
+  }
+  .animate-heat-wave {
+    animation: heat-wave 4s ease-in-out infinite;
+  }
+
+  /* Wind Line Drift for Loo/Windy conditions */
+  @keyframes wind-line {
+    0% { transform: translateX(-120%); opacity: 0; }
+    20% { opacity: 0.5; }
+    80% { opacity: 0.5; }
+    100% { transform: translateX(120%); opacity: 0; }
+  }
+  .animate-wind-line {
+    animation: wind-line 3s ease-in-out infinite;
+  }
+
+  /* Dust particle drift */
+  @keyframes dust-drift {
+    0% { transform: translate(0, 0); opacity: 0; }
+    15% { opacity: 0.5; }
+    85% { opacity: 0.5; }
+    100% { transform: translate(30px, -50px); opacity: 0; }
+  }
+  .animate-dust-drift {
+    animation: dust-drift 4s ease-in-out infinite;
+  }
+
+
+  /* --- Glassmorphism & Card Utilities --- */
+  .glass-card {
+    @apply backdrop-blur-md bg-card/75 border border-white/50 dark:border-white/10 shadow-card rounded-[24px];
+  }
+
+  .glass-pill {
+    @apply backdrop-blur-lg bg-card/80 border border-white/40 dark:border-white/15 shadow-lg rounded-full;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_12px_35px_rgba(22,60,40,0.16)] active:scale-95 cursor-pointer;
+  }
+
+  /* Smooth page transition container */
+  .page-transition {
+    animation: page-appear 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes page-appear {
+    0% { opacity: 0; transform: translateY(12px) scale(0.98); filter: blur(4px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+  }
+
+  /* Live Mandi: horizontal ticker marquee */
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-ticker {
+    animation: ticker-scroll 38s linear infinite;
+  }
+  .animate-ticker:hover {
+    animation-play-state: paused;
+  }
+
+  /* Live Mandi: staggered fade-up entrance for cards */
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Live Mandi: bottom sheet slide-up */
+  @keyframes sheet-up {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .animate-sheet-up {
+    animation: sheet-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Live Mandi: soft glowing live dot */
+  @keyframes live-ping {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+    100% { box-shadow: 0 0 0 9px rgba(239, 68, 68, 0); }
+  }
+  .animate-live-dot {
+    animation: live-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* Live Mandi: shimmer for skeleton rows */
+  @keyframes shimmer-sweep {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .animate-shimmer {
+    background: linear-gradient(100deg, rgba(120,120,120,0.08) 40%, rgba(120,120,120,0.18) 50%, rgba(120,120,120,0.08) 60%);
+    background-size: 200% 100%;
+    animation: shimmer-sweep 1.6s linear infinite;
+  }
+
+  /* Home reveal: one orchestrated entrance, staggered by delay */
+  @keyframes rise-in {
+    0% { opacity: 0; transform: translateY(18px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    animation: rise-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Ticker: single-speed marquee reused across the app */
+  @keyframes ticker-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Springy pop-in for buttons / chips */
+  @keyframes spring-pop {
+    0% { opacity: 0; transform: scale(0.6); }
+    70% { opacity: 1; transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .animate-spring-pop {
+    animation: spring-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  /* Slow ambient drift for background blobs */
+  @keyframes drift-soft {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(12px, -14px) scale(1.06); }
+    66% { transform: translate(-10px, 10px) scale(0.96); }
+  }
+  .animate-drift-soft {
+    animation: drift-soft 9s ease-in-out infinite;
+  }
+
+  /* Animated gradient background shift */
+  @keyframes gradient-pan {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .animate-gradient-pan {
+    background-size: 200% 200%;
+    animation: gradient-pan 6s ease-in-out infinite;
+  }
+
+  /* Gentle wiggle for playful icon accents */
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  .animate-wiggle {
+    animation: wiggle 2.4s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+
+  /* Tap ripple ring */
+  @keyframes ripple-ring {
+    0% { box-shadow: 0 0 0 0 var(--ripple-color, rgba(16,185,129,0.35)); }
+    100% { box-shadow: 0 0 0 16px rgba(16,185,129,0); }
+  }
+  .animate-ripple {
+    animation: ripple-ring 1.1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* Story ring: rotating conic gradient border */
+  @keyframes spin-ring {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .story-ring {
+    position: relative;
+  }
+  .story-ring::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    padding: 3px;
+    background: conic-gradient(from 0deg, hsl(268 84% 60%), hsl(24 94% 50%), hsl(160 63% 40%), hsl(10 84% 58%), hsl(268 84% 60%));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: spin-ring 5s linear infinite;
+  }
+
+  /* Pulsing live status dot */
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.82); }
+  }
+  .animate-live-pulse {
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

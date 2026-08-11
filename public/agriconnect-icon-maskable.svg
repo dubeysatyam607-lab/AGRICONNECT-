@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- AgriConnect — maskable variant. Mark kept inside the ~80% safe zone so
+       circular maskable cropping never clips the symbol. -->
+  <rect width="512" height="512" rx="112" fill="#2E7D32"/>
+
+  <g id="mark" transform="translate(256,256) scale(0.8) translate(-256,-310)">
+    <path
+      fill="#FFFFFF"
+      fill-rule="evenodd"
+      d="
+        M 228 138
+        C 176 158, 150 214, 150 276
+        C 150 344, 204 388, 256 414
+        C 308 388, 362 344, 362 276
+        C 362 214, 336 158, 284 138
+        C 276 146, 264 153, 256 153
+        C 248 153, 236 146, 228 138
+        Z
+        M 256 214
+        a 38 38 0 1 0 0 76
+        a 38 38 0 1 0 0 -76
+      "
+    />
+    <line x1="256" y1="300" x2="256" y2="408" stroke="#16A34A" stroke-width="8" stroke-linecap="round"/>
+    <path
+      fill="#F59E0B"
+      d="
+        M 256 222
+        Q 262 244, 286 252
+        Q 262 260, 256 284
+        Q 250 260, 226 252
+        Q 250 244, 256 222
+        Z
+      "
+    />
+    <line x1="182" y1="462" x2="330" y2="462" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" opacity="0.92"/>
+    <line x1="202" y1="481" x2="310" y2="481" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" opacity="0.62"/>
+    <line x1="222" y1="498" x2="290" y2="498" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" opacity="0.38"/>
+  </g>
+</svg>

@@ -1,0 +1,381 @@
+import React, { useState } from "react";
+import { AgriCard } from "@/components/ui/agri-card";
+import { AgriButton } from "@/components/ui/agri-button";
+import { Camera, CheckCircle2, ShieldAlert } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import ImageUpload from "./ImageUpload";
+
+const ImageUploadPlaceholder = () => (
+  <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer mb-4">
+    <Camera size={32} className="mb-2 text-primary/50" />
+    <span className="text-sm font-medium">Upload Image</span>
+  </div>
+);
+
+export const CattleAssetForm = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const payload = {
+      seller_id: user?.id || "",
+      type: String(fd.get("type") || "Cow"),
+      breed: String(fd.get("breed") || ""),
+      age: String(fd.get("age") || ""),
+      milk_yield: String(fd.get("milk") || ""),
+      price: Number(fd.get("price")),
+      location: String(fd.get("location") || ""),
+      is_active: true,
+    };
+    try {
+      const { error } = await supabase.from("cattle_listings").insert([payload]);
+      if (error) throw error;
+      toast({ title: "Livestock Listed Successfully!", description: "Your cattle is now visible in Pashu Mela." });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Could not list livestock. Please try again.", variant: "destructive" });
+    }
+  };
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Asset Listed</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Your livestock has been added to the market.</p>
+        <AgriButton onClick={() => setSubmitted(false)}>List Another</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-4">List Livestock</h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <ImageUploadPlaceholder />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Breed</label>
+            <input required name="breed" type="text" placeholder="e.g. Murrah" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Type</label>
+            <select required name="type" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+              <option>Buffalo</option>
+              <option>Cow</option>
+              <option>Goat</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Age/Lactation</label>
+            <input required name="age" type="text" placeholder="e.g. 2nd Lactation" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Milk Capacity</label>
+            <input required name="milk" type="text" placeholder="e.g. 12L/day" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Location (Village/Town)</label>
+            <input required name="location" type="text" placeholder="e.g. Rampura" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Price (₹)</label>
+            <input required name="price" type="number" placeholder="65000" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <AgriButton type="submit" className="w-full">List for Sale</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
+
+export const TransportAssetForm = () => {
+  const { toast } = useToast();
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const model = String(fd.get("model") || "");
+    const payload = {
+      name: model,
+      type: model,
+      capacity: String(fd.get("capacity") || ""),
+      rate: Number(fd.get("price")),
+      location: String(fd.get("location") || ""),
+      status: "Available",
+    };
+    try {
+      const { error } = await supabase.from("transport_vehicles").insert([payload]);
+      if (error) throw error;
+      toast({ title: "Vehicle Listed Successfully!", description: "Your vehicle is now available for transport booking." });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Could not list vehicle. Please try again.", variant: "destructive" });
+    }
+  };
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Vehicle Listed</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Your vehicle has been added to the logistics network.</p>
+        <AgriButton onClick={() => setSubmitted(false)}>List Another</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-4">List Vehicle / Tractor</h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <ImageUploadPlaceholder />
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Vehicle Model</label>
+          <input required name="model" type="text" placeholder="e.g. Tata Ace, Mahindra 575" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Capacity / Power</label>
+            <input required name="capacity" type="text" placeholder="e.g. 1.5 Ton or 45 HP" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Location</label>
+            <input required name="location" type="text" placeholder="e.g. Jaipur" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Pricing (₹)</label>
+          <input required name="price" type="number" placeholder="e.g. 800 per trip/hr" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <AgriButton type="submit" className="w-full">Make Available</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
+
+export const StoreInventoryForm = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [adminChecked, setAdminChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!user) {
+        setAdminChecked(true);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      const admin = !error && data && String(data.role).toLowerCase() === "admin";
+      if (active) {
+        setIsAdmin(Boolean(admin));
+        setAdminChecked(true);
+      }
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const price = Number(fd.get("price"));
+    const mrp = Number(fd.get("mrp")) || price;
+    const payload = {
+      name: String(fd.get("product") || ""),
+      category: String(fd.get("category") || ""),
+      brand: String(fd.get("brand") || ""),
+      batch_no: String(fd.get("batch") || ""),
+      unit: String(fd.get("unit") || ""),
+      price,
+      mrp,
+      stock: Number(fd.get("stock")) || 0,
+      description: String(fd.get("description") || ""),
+      image_url: imageUrl || null,
+      status: "Available",
+      seller_id: user?.id || null,
+    };
+    try {
+      const { error } = await supabase.from("store_inventory").insert([payload]);
+      if (error) throw error;
+      toast({ title: "Product Listed Successfully!", description: "Your product is now live in the Agri-Store." });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Could not list product. Please try again.", variant: "destructive" });
+    }
+  };
+
+  if (!adminChecked) {
+    return (
+      <AgriCard className="text-center py-8">
+        <p className="text-muted-foreground">Checking access…</p>
+      </AgriCard>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <AgriCard className="text-center py-8">
+        <ShieldAlert size={40} className="mx-auto text-destructive mb-3" />
+        <h3 className="text-lg font-bold text-foreground">Admins only</h3>
+        <p className="text-muted-foreground text-sm mt-2 mb-4">
+          Only store administrators can add products to the Agri-Store.
+        </p>
+        <AgriButton variant="outline" onClick={() => setSubmitted(false)}>Got it</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Product Listed</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Your product is now live in the Agri-Store.</p>
+        <AgriButton onClick={() => { setSubmitted(false); setImageUrl(""); }}>Add Another</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-1">Add Store Product</h3>
+      <p className="text-xs text-muted-foreground mb-4">List a new product in the Agri-Store (admin only).</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <ImageUpload value={imageUrl} onChange={setImageUrl} bucket="store-images" />
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Product Name</label>
+          <input required name="product" type="text" placeholder="e.g. Urea Fertilizer" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Brand</label>
+            <input required name="brand" type="text" placeholder="e.g. IFFCO" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Batch No.</label>
+            <input name="batch" type="text" placeholder="e.g. B-2026-01" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
+            <select required name="category" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+              <option value="Fertilizer">Fertilizer</option>
+              <option value="Seeds">Seeds</option>
+              <option value="Pesticide">Pesticide</option>
+              <option value="Tools">Tools</option>
+              <option value="Feed">Feed</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Unit/Weight</label>
+            <input required name="unit" type="text" placeholder="e.g. 45kg Bag" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">MRP (₹)</label>
+            <input required name="mrp" type="number" placeholder="290" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Selling Price (₹)</label>
+            <input required name="price" type="number" placeholder="266" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Stock (units)</label>
+          <input name="stock" type="number" placeholder="e.g. 100" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Description</label>
+          <textarea name="description" rows={3} placeholder="Product details…" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <AgriButton type="submit" className="w-full">Add to Store</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
+
+export const SoilTestLabForm = () => {
+  const { toast } = useToast();
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const payload = {
+      name: String(fd.get("lab") || ""),
+      test_type: String(fd.get("testType") || ""),
+      turnaround: String(fd.get("turnaround") || ""),
+      price: Number(fd.get("price")),
+      status: "Available",
+    };
+    try {
+      const { error } = await supabase.from("soil_test_labs").insert([payload]);
+      if (error) throw error;
+      toast({ title: "Lab Listed Successfully!", description: "Your Soil Testing Lab is now available for bookings." });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Could not list lab. Please try again.", variant: "destructive" });
+    }
+  };
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Lab Listed</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Your testing lab has been added.</p>
+        <AgriButton onClick={() => setSubmitted(false)}>Add Another Service</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-4">List Soil Testing Lab</h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <ImageUploadPlaceholder />
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Lab Name</label>
+          <input required name="lab" type="text" placeholder="e.g. Kisan Krishi Lab" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Test Type</label>
+            <select required name="testType" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+              <option>Basic Soil Health</option>
+              <option>Comprehensive Analysis</option>
+              <option>Micronutrient Test</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Turnaround Time</label>
+            <input required name="turnaround" type="text" placeholder="e.g. 24 Hours" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Price per Test (₹)</label>
+          <input required name="price" type="number" placeholder="250" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <AgriButton type="submit" className="w-full">List Services</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
