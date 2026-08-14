@@ -130,7 +130,7 @@ describe('ForgotPasswordView — Email OTP sign-in flow', () => {
     renderView();
     fireEvent.change(screen.getByPlaceholderText(/farmer@example.com/i), { target: { value: 'farmer@example.com' } });
     fireEvent.submit(screen.getByRole('button', { name: /send verification code/i }));
-    expect(await screen.findByText(/resend code in 60s/i)).toBeTruthy();
+    expect(await screen.findByText(/resend code in 05:00/i)).toBeTruthy();
     expect(screen.queryByRole('button', { name: /resend code/i })).toBeNull();
   });
 });

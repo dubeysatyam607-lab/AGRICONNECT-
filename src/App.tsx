@@ -56,19 +56,66 @@ const queryClient = new QueryClient({
 const BTN_SIZE = 60;
 const BTN_MARGIN = 8;
 const BOTTOM_OFFSET = 80; // clears the bottom nav bar
+const POS_KEY = "agri_whatsapp_pos";
+
+const defaultPos = () => ({
+  x: typeof window === "undefined" ? 0 : window.innerWidth - BTN_SIZE - 16,
+  y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - BOTTOM_OFFSET,
+});
 
 const FloatingWhatsApp = () => {
-  const [pos, setPos] = useState(() => ({
-    x: typeof window === "undefined" ? 0 : window.innerWidth - BTN_SIZE - 16,
-    y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - BOTTOM_OFFSET,
-  }));
+  const [pos, setPos] = useState<{ x: number; y: number }>(() => {
+    if (typeof window === "undefined") return defaultPos();
+    try {
+      const saved = localStorage.getItem(POS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
+          return { x: parsed.x, y: parsed.y };
+        }
+      }
+    } catch {
+      // ignore malformed saved position
+    }
+    return defaultPos();
+  });
   const drag = useRef<{ id: number; startX: number; startY: number; btnX: number; btnY: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
+  const btnRef = useRef<HTMLAnchorElement | null>(null);
 
   const clamp = (x: number, y: number) => ({
     x: Math.max(BTN_MARGIN, Math.min(x, window.innerWidth - BTN_SIZE - BTN_MARGIN)),
     y: Math.max(BTN_MARGIN, Math.min(y, window.innerHeight - BTN_SIZE - BTN_MARGIN)),
   });
+
+  const applyDrag = (clientX: number, clientY: number) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = clientX - d.startX;
+    const dy = clientY - d.startY;
+    if (!d.moved && Math.hypot(dx, dy) < 8) return; // still a tap, not a drag
+    d.moved = true;
+    setPos(clamp(d.btnX + dx, d.btnY + dy));
+  };
+
+  const endDrag = () => {
+    if (drag.current?.moved) suppressClick.current = true; // dragged → don't open WhatsApp
+    drag.current = null;
+  };
+
+  // Persist the dragged position so it stays where the user put it.
+  useEffect(() => {
+    try {
+      localStorage.setItem(POS_KEY, JSON.stringify(pos));
+    } catch {
+      // storage unavailable (private mode) — ignore
+    }
+  }, [pos]);
+
+  // Clamp the restored position on mount (viewport may differ from when saved).
+  useEffect(() => {
+    setPos((p) => clamp(p.x, p.y));
+  }, []);
 
   // Keep the button on-screen if the viewport resizes (rotation, address bar, etc.)
   useEffect(() => {
@@ -77,7 +124,64 @@ const FloatingWhatsApp = () => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Track moves/ups at the window level so the drag keeps working even if the
+  // pointer leaves the small button and element-level pointer capture is
+  // unsupported (older iOS WebViews, etc.).
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const d = drag.current;
+      if (!d || d.id !== e.pointerId) return;
+      applyDrag(e.clientX, e.clientY);
+    };
+    const onUp = (e: PointerEvent) => {
+      const d = drag.current;
+      if (d && d.id === e.pointerId) endDrag();
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("pointercancel", onUp, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Touch-event fallback for browsers/WebViews without PointerEvent support.
+  useEffect(() => {
+    if (typeof window !== "undefined" && "PointerEvent" in window) return;
+    const onTouchStart = (e: TouchEvent) => {
+      const btn = btnRef.current;
+      if (!btn || !e.touches[0]) return;
+      const t = e.touches[0];
+      const rect = btn.getBoundingClientRect();
+      if (t.clientX < rect.left || t.clientX > rect.right || t.clientY < rect.top || t.clientY > rect.bottom) return;
+      drag.current = { id: 1, startX: t.clientX, startY: t.clientY, btnX: pos.x, btnY: pos.y, moved: false };
+      suppressClick.current = false;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!drag.current) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      applyDrag(t.clientX, t.clientY);
+    };
+    const onTouchEnd = () => endDrag();
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onPointerDown = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    if (!e.isPrimary) return;
     drag.current = {
       id: e.pointerId,
       startX: e.clientX,
@@ -87,28 +191,17 @@ const FloatingWhatsApp = () => {
       moved: false,
     };
     suppressClick.current = false;
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e: React.PointerEvent<HTMLAnchorElement>) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
-    const dx = e.clientX - d.startX;
-    const dy = e.clientY - d.startY;
-    if (!d.moved && Math.hypot(dx, dy) < 8) return; // still a tap, not a drag
-    d.moved = true;
-    setPos(clamp(d.btnX + dx, d.btnY + dy));
-  };
-
-  const onPointerUp = () => {
-    const d = drag.current;
-    if (d && d.moved) suppressClick.current = true; // dragged → don't open WhatsApp
-    drag.current = null;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // capture not supported — window-level move/up listeners still track the drag
+    }
   };
 
   const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (suppressClick.current) {
       e.preventDefault();
+      e.stopPropagation();
       suppressClick.current = false;
     }
   };
@@ -116,19 +209,17 @@ const FloatingWhatsApp = () => {
   return (
     <aside aria-label="WhatsApp support" className="contents">
       <a
+        ref={btnRef}
         href={SUPPORT_WHATSAPP_URL}
         target="_blank"
         rel="noreferrer"
         aria-label="Contact Agricultural Helpdesk on WhatsApp (drag to move, tap to chat)"
         onClick={onClick}
         onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
         className="fixed z-50 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none touch-none"
         style={{ left: pos.x, top: pos.y, width: BTN_SIZE, height: BTN_SIZE }}
       >
-        <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" draggable={false}>
+        <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" draggable={false} className="pointer-events-none">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
       </a>

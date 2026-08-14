@@ -82,6 +82,8 @@ const User = {
         isVerified: false,
         mfaEnabled: false,
         mfaSecret: null,
+        otpAttempts: 0,
+        otpVerified: false,
         ...userData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

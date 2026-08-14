@@ -14,9 +14,49 @@ const generateToken = (id) => {
   });
 };
 
-// Generate 6-digit OTP from a cryptographically secure source
-const generateOTP = () => {
-  return crypto.randomInt(100000, 1000000).toString();
+// Generate 6-digit OTP from a cryptographically secure source.
+// Optionally guarantees it differs from a previous OTP (never reuse an old code).
+const generateOTP = (previous) => {
+  let otp;
+  do {
+    otp = crypto.randomInt(100000, 1000000).toString();
+  } while (previous && otp === previous);
+  return otp;
+};
+
+// OTP validity window (5 minutes) — single source of truth on the server.
+const OTP_TTL_MS = 5 * 60 * 1000;
+// Maximum allowed verification attempts per OTP before it is invalidated.
+const MAX_OTP_ATTEMPTS = 5;
+
+// Build a new OTP record (hash only — never plain text) for a user/application.
+// `lastIssuedOtps` keeps the most recent plain code in memory (bounded by TTL)
+// purely to guarantee a freshly generated OTP differs from the previous one.
+// Plain codes are never written to the database or logged.
+const lastIssuedOtps = new Map(); // email -> { plain, expiresAt }
+
+const getLastIssuedOtp = (email) => {
+  const entry = lastIssuedOtps.get(email);
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) {
+    lastIssuedOtps.delete(email);
+    return undefined;
+  }
+  return entry.plain;
+};
+
+const newOtpRecord = async (email) => {
+  const previous = getLastIssuedOtp(email);
+  const otp = generateOTP(previous);
+  lastIssuedOtps.set(email, { plain: otp, expiresAt: Date.now() + OTP_TTL_MS });
+  return {
+    otpCode: await bcrypt.hash(otp, 10),
+    otpCreatedAt: new Date().toISOString(),
+    otpExpiresAt: new Date(Date.now() + OTP_TTL_MS).toISOString(),
+    otpAttempts: 0,
+    otpVerified: false,
+    plain: otp, // transient, returned to caller only to send via email
+  };
 };
 
 // Constant-time OTP comparison to resist timing attacks
@@ -88,32 +128,36 @@ const registerUser = async (req, res) => {
       // For simplicity, we'll update the user data
       userExists.name = name;
       userExists.password = password; // Will be hashed by pre-save hook
-      const otp = generateOTP();
-      const hashedOTP = await bcrypt.hash(otp, 10);
-      userExists.otpCode = hashedOTP;
-      userExists.otpExpiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-      
+      const otp = await newOtpRecord(email);
+      userExists.otpCode = otp.otpCode;
+      userExists.otpCreatedAt = otp.otpCreatedAt;
+      userExists.otpExpiresAt = otp.otpExpiresAt;
+      userExists.otpAttempts = 0;
+      userExists.otpVerified = false;
+
       await userExists.save();
-      await sendOTPEmail(email, otp);
+      await sendOTPEmail(email, otp.plain);
 
       return res.status(200).json({ message: 'OTP sent to your email.' });
     }
 
-    const otp = generateOTP();
-    const otpExpiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+    const otp = await newOtpRecord(email);
 
-    const hashedOTP = await bcrypt.hash(otp, 10);
+    const hashedOTP = otp.otpCode;
     const user = await User.create({
       name,
       email,
       password,
       otpCode: hashedOTP,
-      otpExpiresAt,
+      otpCreatedAt: otp.otpCreatedAt,
+      otpExpiresAt: otp.otpExpiresAt,
+      otpAttempts: 0,
+      otpVerified: false,
       isVerified: false
     });
 
     if (user) {
-      await sendOTPEmail(user.email, otp);
+      await sendOTPEmail(user.email, otp.plain);
       res.status(201).json({ message: 'Registration initiated. OTP sent to your email.' });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -141,18 +185,53 @@ const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: 'User is already verified' });
     }
 
-    if (!user.otpCode || !(await bcrypt.compare(otp, user.otpCode))) {
-      return res.status(400).json({ message: 'Invalid OTP' });
+    if (!user.otpCode) {
+      return res.status(400).json({ message: 'No OTP has been issued for this account yet' });
     }
 
-    if (Date.now() > user.otpExpiresAt) {
-      return res.status(400).json({ message: 'OTP has expired' });
+    // 1) Expiry is enforced from the server/database expires_at — never the client timer.
+    const expiresAt = user.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
+    if (!user.otpExpiresAt || Date.now() > expiresAt) {
+      // Expired: invalidate the OTP so it can never be reused.
+      user.otpCode = undefined;
+      user.otpExpiresAt = undefined;
+      user.otpCreatedAt = undefined;
+      await user.save();
+      return res.status(400).json({ message: 'OTP has expired. Please resend a new OTP.' });
     }
 
-    // Mark as verified and clear OTP
+    // 2) Brute-force protection: maximum verification attempts per OTP.
+    if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+      // Exhausted: invalidate the OTP to force a fresh resend.
+      user.otpCode = undefined;
+      user.otpExpiresAt = undefined;
+      user.otpCreatedAt = undefined;
+      await user.save();
+      return res.status(429).json({ message: 'Too many incorrect attempts. Please resend a new OTP.' });
+    }
+
+    // 3) Wrong code → increment attempts, never reveal the code.
+    if (!(await bcrypt.compare(String(otp || ''), user.otpCode))) {
+      user.otpAttempts = (user.otpAttempts || 0) + 1;
+      if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+        // Exhausted: invalidate immediately so the OTP can never be reused.
+        user.otpCode = undefined;
+        user.otpExpiresAt = undefined;
+        user.otpCreatedAt = undefined;
+        await user.save();
+        return res.status(429).json({ message: 'Too many incorrect attempts. Please resend a new OTP.' });
+      }
+      await user.save();
+      const remaining = MAX_OTP_ATTEMPTS - user.otpAttempts;
+      return res.status(400).json({ message: `Invalid OTP. ${remaining} attempt(s) remaining.` });
+    }
+
+    // 4) Mark as verified and clear OTP
     user.isVerified = true;
+    user.otpVerified = true;
     user.otpCode = undefined;
     user.otpExpiresAt = undefined;
+    user.otpCreatedAt = undefined;
     await user.save();
 
     res.status(200).json({
@@ -213,13 +292,26 @@ const resendOTP = async (req, res) => {
       return res.status(400).json({ message: 'User is already verified' });
     }
 
-    const otp = generateOTP();
-    const hashedOTP = await bcrypt.hash(otp, 10);
-    user.otpCode = hashedOTP;
-    user.otpExpiresAt = Date.now() + 5 * 60 * 1000;
+    // Resend is only allowed AFTER the current OTP has expired. The same OTP
+    // stays valid for the full 5-minute window.
+    const expiresAt = user.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
+    if (user.otpCode && user.otpExpiresAt && Date.now() <= expiresAt) {
+      const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+      return res.status(429).json({
+        message: `The current OTP is still valid. Please wait ${remaining}s before requesting a new one.`,
+      });
+    }
+
+    // Invalidate the previous OTP immediately and generate a completely new code.
+    const otp = await newOtpRecord(email);
+    user.otpCode = otp.otpCode;
+    user.otpCreatedAt = otp.otpCreatedAt;
+    user.otpExpiresAt = otp.otpExpiresAt;
+    user.otpAttempts = 0;
+    user.otpVerified = false;
     await user.save();
-    
-    await sendOTPEmail(email, otp);
+
+    await sendOTPEmail(email, otp.plain);
     res.status(200).json({ message: 'New OTP sent to your email.' });
   } catch (error) {
     console.error(error);

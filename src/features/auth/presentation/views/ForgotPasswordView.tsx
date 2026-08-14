@@ -23,7 +23,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
   const [step, setStep] = useState<'request' | 'verify'>('request');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(5 * 60);
   const [fieldError, setFieldError] = useState<string | null>(null);
 
   const [state, { sendOtp, verifyOtp, clearError }] = useAuthViewModel();
@@ -54,7 +54,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
     const success = await sendOtp(normalized, 'email');
     if (success) {
       setEmail(normalized);
-      setTimer(60);
+      setTimer(5 * 60);
       setStep('verify');
     }
   };
@@ -80,8 +80,11 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
     if (timer > 0 || state.isLoading) return;
     clearError();
     const success = await sendOtp(email, 'email');
-    if (success) setTimer(60);
+    if (success) setTimer(5 * 60);
   };
+
+  const mm = String(Math.floor(timer / 60)).padStart(2, '0');
+  const ss = String(timer % 60).padStart(2, '0');
 
   return (
     <div className="min-h-screen w-full bg-background relative overflow-hidden flex flex-col justify-between">
@@ -189,7 +192,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                 <div className="flex flex-col items-center gap-2.5 pt-1">
                   {timer > 0 ? (
                     <span className="text-xs font-bold text-muted-foreground">
-                      {hi ? `कोड पुनः भेजें (${timer} सेकंड)` : `Resend code in ${timer}s`}
+                      {hi ? `कोड पुनः भेजें (${mm}:${ss})` : `Resend code in ${mm}:${ss}`}
                     </span>
                   ) : (
                     <button
