@@ -188,7 +188,7 @@ export const as: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'ইমেইল',
   'otp.verify': 'যাচাই কৰি আগবাঢ়ক',
-  'otp.resendIn': '{sec} ছেকেণ্ডত OTP পুনৰ পঠাওক',
+
   'otp.resend': '↻ OTP ক\u2019ড পুনৰ পঠাওক',
   'otp.changeNumber': '{target} সলনি কৰক',
   'otp.number': 'নম্বৰ',

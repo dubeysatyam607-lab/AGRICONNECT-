@@ -69,6 +69,11 @@ export function friendlyEdgeError(timedOut: boolean, hasNetwork = false): string
 /**
  * POST JSON directly to an edge function endpoint with a hard timeout.
  * Used by marketplace components that call the function URL directly.
+ *
+ * Attaches the current session's bearer token so functions deployed with
+ * `verify_jwt = true` (the secure default) are called as the authenticated
+ * user instead of anonymously. Without it those functions reject valid
+ * requests, and privileged ones would fail open if misconfigured.
  */
 export async function postEdgeJson<T = Record<string, unknown>>(
   url: string,
@@ -78,9 +83,16 @@ export async function postEdgeJson<T = Record<string, unknown>>(
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
       signal: controller.signal,
     });

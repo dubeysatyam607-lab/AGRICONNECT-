@@ -188,7 +188,7 @@ export const te: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'ఇమెయిల్',
   'otp.verify': 'ధృవీకరించి కొనసాగించు',
-  'otp.resendIn': '{sec} సెకన్లలో OTP మళ్లీ పంపండి',
+
   'otp.resend': '↻ OTP కోడ్ మళ్లీ పంపండి',
   'otp.changeNumber': '{target} మార్చండి',
   'otp.number': 'నంబర్',

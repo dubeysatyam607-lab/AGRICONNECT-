@@ -39,12 +39,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    const cleanAuthHash = () => {
+      if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+        if (window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname + window.location.search;
+          window.history.replaceState(null, '', cleanUrl);
+        }
+      }
+    };
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       persistAuthMeta(session?.user ?? null);
+      if (session) cleanAuthHash();
     });
 
     // Listen for auth changes
@@ -52,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       persistAuthMeta(session?.user ?? null);
+      if (session) cleanAuthHash();
     });
 
     return () => subscription.unsubscribe();
@@ -62,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('agri_auth_meta');
     localStorage.removeItem('agri_token');
     localStorage.removeItem('agri_user');
-    window.location.href = '/login';
+    window.location.href = '/auth/login';
   };
 
   // Verify OTP after registration

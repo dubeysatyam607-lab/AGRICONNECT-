@@ -57,6 +57,7 @@ export const nearbyServicesRequestSchema = z.object({
 export const contactRequestSchema = z.object({
   listingId: z.string().uuid(),
   message: z.string().max(500).optional(),
+  reveal: z.boolean().optional().default(false),
 });
 
 // Validation error response helper

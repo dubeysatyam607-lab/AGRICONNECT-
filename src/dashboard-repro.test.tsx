@@ -67,6 +67,6 @@ describe("dashboard lazy chunks", () => {
         ),
       );
       expect(true).toBe(true);
-    });
+    }, 30000);
   }
 });

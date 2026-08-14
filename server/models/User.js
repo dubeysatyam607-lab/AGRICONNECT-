@@ -25,8 +25,10 @@ const wrapUser = (user) => {
       const users = readData();
       const index = users.findIndex(u => u._id === this._id);
       
-      // If password is changed and not hashed, hash it
-      if (this.password && !this.password.startsWith('$2a$')) {
+      // If password is changed and not already a bcrypt hash, hash it.
+      // Accept $2a$/$2b$/$2y$ + cost so a re-save never double-hashes an existing hash.
+      const isBcrypt = /^\$2[aby]\$\d{2}\$/.test(this.password || '');
+      if (this.password && !isBcrypt) {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
       }
@@ -84,6 +86,7 @@ const User = {
         mfaSecret: null,
         otpAttempts: 0,
         otpVerified: false,
+        resetOtpAttempts: 0,
         ...userData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

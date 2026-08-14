@@ -22,7 +22,7 @@ const createOrder = async (req, res) => {
   }
   const { amount, currency = 'INR', receipt, notes = {} } = req.body || {};
   const paise = Math.round(Number(amount));
-  if (!Number.isFinite(paise) || paise <= 0) {
+  if (!Number.isFinite(paise) || paise <= 0 || paise > 500000) {
     return res.status(400).json({ error: 'Invalid amount' });
   }
   try {
@@ -30,7 +30,7 @@ const createOrder = async (req, res) => {
       amount: paise,
       currency,
       receipt: String(receipt || `agri-${Date.now()}`),
-      notes: { app: 'AgriConnect', ...notes },
+      notes: { app: 'AgriConnect', userId: req.user._id, ...notes },
     });
     return res.json({ id: order.id, amount: order.amount, currency: order.currency });
   } catch (err) {
@@ -52,9 +52,9 @@ const verifyPayment = async (req, res) => {
     return res.status(400).json({ error: 'Missing verification fields' });
   }
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-  const expected = crypto.createHmac('sha256', getKeySecret()).update(body).digest('hex');
-  const valid = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(razorpay_signature));
-  if (!valid) {
+  const expected = crypto.createHmac('sha256', getKeySecret()).update(body).digest();
+  const provided = Buffer.from(String(razorpay_signature), 'hex');
+  if (expected.length !== provided.length || !crypto.timingSafeEqual(expected, provided)) {
     return res.status(400).json({ error: 'Invalid signature' });
   }
   return res.json({ valid: true, razorpay_payment_id });

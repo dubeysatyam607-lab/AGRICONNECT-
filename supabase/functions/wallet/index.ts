@@ -231,9 +231,10 @@ serve(async (req) => {
     }
     const order = await orderRes.json();
     // Bind the order to the authenticated user: a valid (order, payment, sig)
-    // triple for someone else's order must not credit the caller.
+    // triple for someone else's order (or an unbound order) must not credit
+    // the caller.
     const orderUserId = order?.notes?.userId ?? "";
-    if (orderUserId && orderUserId !== userId) {
+    if (orderUserId !== userId) {
       return json({ error: "Order does not belong to user" }, 403, cors);
     }
     const amountInr = Number(order.amount_paid ?? order.amount ?? 0) / 100;

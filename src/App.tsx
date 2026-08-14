@@ -16,6 +16,8 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RequireAdmin } from "@/core/auth/RequireAdmin";
 import MarketingLayout from "./shared/layouts/MarketingLayout";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
+import { LoginPage, RegisterPage, OtpPage, ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/AuthWrappers";
+import { AuthCallback } from "@/pages/auth/AuthCallback";
 
 // SEO / Marketing Pages (code-split for performance)
 const About = lazy(() => import("./pages/About"));
@@ -99,7 +101,12 @@ const FloatingWhatsApp = () => {
   };
 
   const endDrag = () => {
-    if (drag.current?.moved) suppressClick.current = true; // dragged → don't open WhatsApp
+    if (drag.current?.moved) {
+      suppressClick.current = true;
+      setTimeout(() => {
+        suppressClick.current = false;
+      }, 100);
+    }
     drag.current = null;
   };
 
@@ -255,15 +262,29 @@ const App = () => (
                   {/* ── Auth Routes ─────────────────────────── */}
                   {/* Premium WelcomeFlow: Splash → Language → Onboarding →
                       Login/OTP → Farmer Profile Setup → Dashboard */}
-                  <Route path="/login" element={<SafeLazy><Login /></SafeLazy>} />
-                  <Route path="/auth" element={<SafeLazy><Login /></SafeLazy>} />
-                  <Route path="/welcome" element={<SafeLazy><Login /></SafeLazy>} />
-                  <Route path="/onboarding" element={<SafeLazy><Login /></SafeLazy>} />
+                  <Route path="/auth/login" element={<SafeLazy><LoginPage /></SafeLazy>} />
+                <Route path="/auth/register" element={<SafeLazy><RegisterPage /></SafeLazy>} />
+                <Route path="/auth/otp" element={<SafeLazy><OtpPage /></SafeLazy>} />
+                <Route path="/auth/forgot" element={<SafeLazy><ForgotPasswordPage /></SafeLazy>} />
+                <Route path="/auth/reset" element={<SafeLazy><ResetPasswordPage /></SafeLazy>} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
                   {/* ── Core App / Public Landing ───────────── */}
                   {/* Authenticated farmers → app dashboard; anonymous
                       visitors & crawlers → indexable SEO landing. */}
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/market" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/ai" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/services" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/farm" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/crop-scan" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/mandi" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/agri-store" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/machinery" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/schemes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />

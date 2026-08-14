@@ -188,7 +188,7 @@ export const kn: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'ಇಮೇಲ್',
   'otp.verify': 'ಪರಿಶೀಲಿಸಿ ಮುಂದುವರಿಸಿ',
-  'otp.resendIn': '{sec} ಸೆಕೆಂಡ್ ನಲ್ಲಿ OTP ಮತ್ತೆ ಕಳುಹಿಸಿ',
+
   'otp.resend': '↻ OTP ಕೋಡ್ ಮತ್ತೆ ಕಳುಹಿಸಿ',
   'otp.changeNumber': '{target} ಬದಲಾಯಿಸಿ',
   'otp.number': 'ನಂಬರ್',

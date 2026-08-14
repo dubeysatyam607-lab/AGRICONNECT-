@@ -44,7 +44,11 @@ export const personalDetailsSchema = z.object({
   fullName: z.string().trim().min(2, 'Full name must be at least 2 characters long.'),
   mobileNumber: z.string().trim().min(10, 'Enter a valid 10-digit mobile number.'),
   emailAddress: z.string().trim().email('Enter a valid email address.').optional().or(z.literal('')),
-  gender: z.enum(['Male', 'Female', 'Other', 'Prefer not to say']),
+  gender: z.enum(['Male', 'Female', 'Other', 'Prefer not to say'])
+    .or(z.literal(''))
+    .or(z.null())
+    .or(z.undefined())
+    .transform((val): 'Male' | 'Female' | 'Other' | 'Prefer not to say' => (val === '' || !val) ? 'Prefer not to say' : val),
   dateOfBirth: z.string().optional(),
   aadhaarNumber: aadhaarSchema,
   isAadhaarVerified: z.boolean().default(false),

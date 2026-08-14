@@ -80,7 +80,7 @@ export default function AdminDashboard() {
             The Admin Console is a protected executive workspace. Please sign in to your AgriConnect account to continue.
           </p>
           <div className="mt-6 flex flex-col gap-3">
-            <Button size="lg" className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold shadow-lg shadow-emerald-600/25" onClick={() => navigate('/login')}>
+            <Button size="lg" className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold shadow-lg shadow-emerald-600/25" onClick={() => navigate('/auth/login')}>
               <LogIn className="h-5 w-5 mr-2" /> Sign in <ArrowRight className="h-4 w-4 ml-auto" />
             </Button>
           </div>

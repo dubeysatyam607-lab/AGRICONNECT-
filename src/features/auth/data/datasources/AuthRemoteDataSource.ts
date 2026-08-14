@@ -3,6 +3,7 @@ import { IFarmerUser, IAuthSession, IDeviceSession } from '../../domain/models/U
 import { AuthException, ServerException, ValidationException } from '@/core/errors/AppException';
 import { EmailRegex } from '../../domain/models/AuthValidations';
 import { auditLog } from '@/utils/auditLog';
+import { OAUTH_CALLBACK_PATH } from '@/config/oauth';
 
 /**
  * Enterprise Remote Data Source for Complete Authentication Suite.
@@ -31,8 +32,38 @@ const PER_ACTION_LIMITS: Record<string, { maxAttempts: number; windowMs: number;
 
 const attemptLog: Record<string, number[]> = {};
 const cooldowns: Record<string, number> = {};
-// Track last OTP sent timestamp per email to avoid duplicate OTP emails within validity period
-const lastOtpSent: Record<string, number> = {};
+// Track last OTP sent timestamp per email to avoid duplicate OTP emails within
+// the validity period. Persisted to localStorage so a page refresh cannot reset
+// the 5-minute window and mint a brand-new OTP (which would invalidate the
+// previously delivered code).
+const OTP_SENT_STORAGE_KEY = 'agri_otp_sent_at';
+const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
+
+function loadOtpSentMap(): Record<string, number> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(OTP_SENT_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, number>;
+    // Drop stale entries so the map doesn't grow unbounded.
+    const now = Date.now();
+    for (const k of Object.keys(parsed)) {
+      if (now - (parsed[k] || 0) >= OTP_RESEND_COOLDOWN_MS) delete parsed[k];
+    }
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+function persistOtpSentMap(map: Record<string, number>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(OTP_SENT_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // Storage unavailable (private mode / quota) — best-effort only.
+  }
+}
 
 /**
  * Clears all in-memory rate-limit/throttle state. Exposed for test isolation
@@ -42,7 +73,7 @@ const lastOtpSent: Record<string, number> = {};
 export function resetAuthRateLimits(): void {
   for (const key of Object.keys(attemptLog)) delete attemptLog[key];
   for (const key of Object.keys(cooldowns)) delete cooldowns[key];
-  for (const key of Object.keys(lastOtpSent)) delete lastOtpSent[key];
+  persistOtpSentMap({});
   AuthRemoteDataSource.pendingOtpRequests = {};
 }
 
@@ -172,11 +203,9 @@ export class AuthRemoteDataSource {
     // Generic rate limit handling – do not disclose whether the email exists
     assertWithinRateLimit('send-otp', normalized, ip);
     const now = Date.now();
-    if (lastOtpSent[normalized] && now - lastOtpSent[normalized] < 5 * 60 * 1000) {
-      // The previously sent OTP is still valid for 5 minutes — reusing the same
-      // code is correct behaviour, so we don't send a new one and don't error.
-      await auditLog({ action: 'send_otp_reuse', identifier: normalized, ip, outcome: 'success' });
-      return;
+    const otpSentAt = loadOtpSentMap();
+    if (otpSentAt[normalized] && now - otpSentAt[normalized] < OTP_RESEND_COOLDOWN_MS) {
+      throw new ValidationException('Please wait 60 seconds before requesting a new OTP.');
     }
     const requestPromise = (async () => {
       const { error } = await supabase.auth.signInWithOtp({
@@ -199,8 +228,10 @@ export class AuthRemoteDataSource {
     AuthRemoteDataSource.pendingOtpRequests[normalized] = requestPromise;
     try {
       await requestPromise;
-      // Record the timestamp of successful OTP dispatch
-      lastOtpSent[normalized] = Date.now();
+      // Record the timestamp of successful OTP dispatch (persisted so the
+      // 5-minute reuse window survives a page refresh).
+      otpSentAt[normalized] = Date.now();
+      persistOtpSentMap(otpSentAt);
     } finally {
       delete AuthRemoteDataSource.pendingOtpRequests[normalized];
     }
@@ -217,11 +248,30 @@ export class AuthRemoteDataSource {
       throw new ValidationException('Please enter the 6-digit code sent to your email.');
     }
     assertWithinRateLimit('verify-otp', normalized, ip);
-    const { data, error } = await supabase.auth.verifyOtp({
+
+    // Try verifying as 'magiclink' first (for existing users logging in)
+    let response = await supabase.auth.verifyOtp({
       email: normalized,
       token: cleanToken,
-      type: 'email',
-    } as any);
+      type: 'magiclink',
+    });
+
+    // If it fails, try verifying as 'signup' (for new users registering)
+    if (response.error) {
+      console.warn("[AuthRemoteDataSource] verifyOtp magiclink failed, trying signup:", response.error.message);
+      const signupResponse = await supabase.auth.verifyOtp({
+        email: normalized,
+        token: cleanToken,
+        type: 'signup',
+      });
+      
+      // If the signup verification succeeded or has a session, use it
+      if (!signupResponse.error || signupResponse.data?.session) {
+        response = signupResponse;
+      }
+    }
+
+    const { data, error } = response;
 
     if (error) {
       throw new AuthException('Invalid or expired OTP code. Please request a new code.', 401, error);
@@ -237,10 +287,12 @@ export class AuthRemoteDataSource {
   }
 
   public async signInWithOAuth(provider: 'google' | 'apple'): Promise<void> {
+    // Use explicit callback path for Google OAuth to avoid redirect_uri_mismatch.
+    const callbackPath = typeof window !== 'undefined' ? `${window.location.origin}${OAUTH_CALLBACK_PATH}` : undefined;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        redirectTo: callbackPath,
       },
     });
 

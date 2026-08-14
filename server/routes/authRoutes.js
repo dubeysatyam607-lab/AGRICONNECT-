@@ -22,6 +22,6 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/profile', protect, getUserProfile);
 router.post('/enable-mfa', protect, enableMfa);
-router.post('/verify-mfa', protect, verifyMfa);
+router.post('/verify-mfa', verifyMfa);
 
 module.exports = router;

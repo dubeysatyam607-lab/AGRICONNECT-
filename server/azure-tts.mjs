@@ -1,8 +1,30 @@
 import express from "express";
 import fetch from "node-fetch";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 app.use(express.json({ limit: "512kb" }));
+
+// Rate limit to protect the Azure TTS budget from anonymous cost abuse.
+const azureLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  message: { error: "Too many TTS requests. Please slow down." },
+});
+app.use("/api/azure-tts", azureLimiter);
+
+// Restrict origins when ALLOWED_ORIGINS is configured (dev default stays open).
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use("/api/azure-tts", (req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) return next();
+  return res.status(403).json({ error: "Origin not allowed" });
+});
 
 const AZURE_REGION = process.env.AZURE_REGION;
 const AZURE_TTS_KEY = process.env.AZURE_TTS_KEY;
