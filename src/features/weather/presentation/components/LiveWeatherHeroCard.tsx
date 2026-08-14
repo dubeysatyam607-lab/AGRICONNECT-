@@ -373,7 +373,7 @@ export const LiveWeatherHeroCard: React.FC<LiveWeatherHeroCardProps> = ({
           "{live.conditionDescription}"
         </p>
         <div className="flex items-center gap-1 text-white font-extrabold group-hover:translate-x-1 transition-transform shrink-0">
-          <span>Details</span>
+          <span>{t('wth.details')}</span>
           <ChevronRight size={15} />
         </div>
       </div>

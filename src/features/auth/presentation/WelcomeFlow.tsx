@@ -26,7 +26,7 @@ export const WelcomeFlow: React.FC = () => {
   const [state] = useAuthViewModel();
   const [step, setStep] = useState<FlowStep>('splash');
   const [otpTarget, setOtpTarget] = useState('');
-  const [otpType, setOtpType] = useState<'phone' | 'email'>('phone');
+  const [otpType, setOtpType] = useState<'phone' | 'email'>('email');
 
   useEffect(() => {
     if (step === 'done') {
@@ -61,10 +61,6 @@ export const WelcomeFlow: React.FC = () => {
     setStep('otp');
   };
 
-  const handleGuest = () => {
-    setStep('done');
-  };
-
   switch (step) {
     case 'splash':
       return <SplashView onFinish={handleSplashFinish} />;
@@ -95,6 +91,7 @@ export const WelcomeFlow: React.FC = () => {
       return (
         <ForgotPasswordView
           onBackToLogin={() => setStep('login')}
+          onSuccess={handleAuthSuccess}
         />
       );
 
@@ -109,7 +106,6 @@ export const WelcomeFlow: React.FC = () => {
           onSwitchToForgot={() => setStep('forgot')}
           onSwitchToOtp={handleSwitchToOtp}
           onSuccess={handleAuthSuccess}
-          onGuest={handleGuest}
           onBack={() => setStep('onboarding')}
         />
       );

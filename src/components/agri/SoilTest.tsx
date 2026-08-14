@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ClipboardCheck, Info } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -8,6 +9,7 @@ interface SoilTestProps {
 }
 
 const SoilTest: React.FC<SoilTestProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   return (
     <div className="pb-24 pt-4 px-4">
       <div className="mb-6">
@@ -20,7 +22,7 @@ const SoilTest: React.FC<SoilTestProps> = ({ onToast }) => {
       </div>
 
       <AgriCard className="mb-6">
-        <h3 className="font-bold text-foreground mb-4">New Test Request</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('agr180')}</h3>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-muted-foreground block mb-1">
@@ -38,9 +40,9 @@ const SoilTest: React.FC<SoilTestProps> = ({ onToast }) => {
               Sample Type
             </label>
             <select className="w-full p-2.5 border border-border rounded-lg text-sm bg-card text-foreground">
-              <option>Standard Soil Test</option>
-              <option>Micro-nutrient Test</option>
-              <option>Water Test</option>
+              <option>{t('agr181')}</option>
+              <option>{t('agr182')}</option>
+              <option>{t('agr183')}</option>
             </select>
           </div>
           <AgriButton

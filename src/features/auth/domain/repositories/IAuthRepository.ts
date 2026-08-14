@@ -12,8 +12,8 @@ export interface IAuthRepository {
   getCurrentSession(): Promise<IAuthSession | null>;
   getCurrentUser(): Promise<IFarmerUser | null>;
 
-  // Multi-Modal OTP Verification
-  sendOtp(target: string, type: 'phone' | 'email'): Promise<void>;
+  // Multi-Modal OTP Verification (email only at the data layer)
+  sendOtp(target: string, type: 'phone' | 'email', meta?: { full_name?: string; phone?: string }): Promise<void>;
   verifyOtp(target: string, token: string, type: 'phone' | 'email'): Promise<IAuthSession>;
 
   // Social OAuth

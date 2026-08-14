@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '../components/PageHeader';
@@ -50,6 +51,7 @@ const SUB_FIELDS: FormField[] = [
 ];
 
 export function SubscriptionsModule() {
+  const { t } = useLanguage();
   const plans = useAdminCrud({ key: 'subscriptionPlans', label: 'Subscription Plan', idKey: 'id' });
   const subs = useAdminCrud({ key: 'userSubscriptions', label: 'Subscription', idKey: 'id' });
   const [tab, setTab] = useState('plans');
@@ -90,8 +92,8 @@ export function SubscriptionsModule() {
       />
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="plans">Plans</TabsTrigger>
-          <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
+          <TabsTrigger value="plans">{t('adm35')}</TabsTrigger>
+          <TabsTrigger value="subscribers">{t('adm36')}</TabsTrigger>
         </TabsList>
         <TabsContent value="plans" className="mt-4">
           <DataTable

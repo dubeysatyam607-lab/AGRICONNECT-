@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Tractor as TractorIcon, User, Star, MapPin, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Tractor } from "@/lib/mock-data";
@@ -21,6 +22,7 @@ interface TractorCardProps {
 }
 
 const TractorCard: React.FC<TractorCardProps> = ({ tractor, onBook, className }) => {
+  const { t } = useLanguage();
   const [ripple, setRipple] = useState(false);
   const imgSrc = TRACTOR_IMAGES[tractor.name] || DEFAULT_TRACTOR_IMAGE;
 
@@ -96,17 +98,17 @@ const TractorCard: React.FC<TractorCardProps> = ({ tractor, onBook, className })
       <div className="p-4 flex flex-col justify-between flex-1 gap-4">
         <div className="grid grid-cols-3 gap-2 bg-slate-100/80 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 text-center">
           <div className="border-r border-slate-200 dark:border-slate-700 pr-1">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground">Power</p>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground">{t('agr184')}</p>
             <p className="font-extrabold text-xs text-foreground mt-0.5 flex items-center justify-center gap-0.5">
               <Zap size={10} className="text-amber-500" /> {tractor.hp} HP
             </p>
           </div>
           <div className="border-r border-slate-200 dark:border-slate-700 px-1">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground">Implement</p>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground">{t('agr185')}</p>
             <p className="font-bold text-xs text-foreground mt-0.5 truncate">{tractor.implement}</p>
           </div>
           <div className="pl-1">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground">Rate/Acre</p>
+            <p className="text-[10px] uppercase font-bold text-muted-foreground">{t('agr186')}</p>
             <p className="font-bold text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">₹{tractor.ratePerAcre}</p>
           </div>
         </div>
@@ -114,7 +116,7 @@ const TractorCard: React.FC<TractorCardProps> = ({ tractor, onBook, className })
         {/* Price & Book Action */}
         <div className="flex items-center justify-between pt-1">
           <div>
-            <span className="text-[10px] uppercase font-bold text-muted-foreground block">Rental Rate</span>
+            <span className="text-[10px] uppercase font-bold text-muted-foreground block">{t('agr187')}</span>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 ₹{tractor.ratePerHour}

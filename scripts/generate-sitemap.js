@@ -2,8 +2,10 @@
 // Simple sitemap generator for AgriConnect static routes
 // Run with: npm run gen:sitemap
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+// Resolve __dirname in ES module
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Base URL – should match the public site URL
 const BASE_URL = process.env.BASE_URL || 'https://agriconnect.in';

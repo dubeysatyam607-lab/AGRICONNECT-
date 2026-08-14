@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Camera, X, Loader } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { AgriButton } from '@/components/ui/agri-button';
@@ -12,6 +13,7 @@ interface ImageUploadProps {
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, onError, bucket = 'cattle-images' }) => {
+  const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, deleteImage, uploading } = useImageUpload(bucket);
 
@@ -56,7 +58,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, onError, buc
 
   return (
     <div className="space-y-2">
-      <label className="text-sm text-muted-foreground mb-1 block">Photo</label>
+      <label className="text-sm text-muted-foreground mb-1 block">{t('agr98')}</label>
       
       <input
         ref={inputRef}
@@ -94,12 +96,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, onError, buc
           {uploading ? (
             <>
               <Loader className="animate-spin" size={24} />
-              <span className="text-sm">Uploading...</span>
+              <span className="text-sm">{t('agr99')}</span>
             </>
           ) : (
             <>
               <Camera size={24} />
-              <span className="text-sm">Take Photo or Upload</span>
+              <span className="text-sm">{t('agr100')}</span>
             </>
           )}
         </AgriButton>

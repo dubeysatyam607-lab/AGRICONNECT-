@@ -81,8 +81,8 @@ const Contact: React.FC = () => {
             <div className="space-y-4">
               {[
                 { icon: '📞', title: 'Kisan Helpline', lines: ['Toll-free: 1800-XXX-XXXX', 'Mon–Sat, 8 AM – 8 PM IST'] },
-                { icon: '💬', title: 'WhatsApp', lines: ['Chat with our helpdesk: +91 98765 43210'] },
-                { icon: '✉️', title: 'Email', lines: ['support@agriconnect.in', 'partnerships@agriconnect.in'] },
+                { icon: '💬', title: 'WhatsApp', lines: ['Chat with our helpdesk: +91-7067820256'] },
+                { icon: '✉️', title: 'Email', lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
                 { icon: '🏢', title: 'Head Office', lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
               ].map((c) => (
                 <div key={c.title} className="rounded-2xl border border-border bg-card p-5 shadow-card">

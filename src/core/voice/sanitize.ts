@@ -1,20 +1,29 @@
 /**
  * VoiceEngine — Text Preprocessor for Speech Synthesis (TTS).
  *
- * Sanitizes raw AI response text before sending to ElevenLabs:
+ * Sanitizes raw AI response text before sending to ElevenLabs so that NOTHING
+ * is ever read aloud except natural human speech:
  * 1. Strips code blocks, inline code, HTML tags, JSON snippets, raw URLs.
- * 2. Strips all Markdown formatting tags (#, **, *, __, _, ~~, >, ---, |, etc.).
+ * 2. Strips all Markdown formatting (#, **, *, __, _, ~~, >, ---, |, bullets).
  * 3. Removes emojis and un-speakable unicode symbols.
- * 4. Replaces math/unit symbols and abbreviations with natural human speech in Hindi or English.
- * 5. Eliminates raw formatting characters so TTS never reads colons, hashes, asterisks, brackets aloud.
+ * 4. Expands abbreviations and replaces symbols (units, %, ₹, °, &, +, =, /)
+ *    with natural human speech in Hindi or English.
+ * 5. Collapses stray formatting characters so TTS never reads colons, hashes,
+ *    asterisks, brackets, backslashes or danda-separated fragments aloud.
  */
 
 const EMOJI_AND_SYMBOLS_REGEX =
   // eslint-disable-next-line no-misleading-character-class -- intentional: variation selectors U+FE0F attach to emoji glyphs we must strip
   /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2B50}\u{2B55}\u{2934}\u{2935}\u{25AA}\u{25AB}\u{25FE}\u{25FD}\u{25FB}\u{25FC}\u{25B6}\u{25C0}\u{1F200}-\u{1F251}\u{FE00}-\u{FE0F}]/gu;
 
+/** Characters that can survive to TTS. Everything else is spacing / speech. */
+// eslint-disable-next-line no-misleading-character-class -- intentional: Devanagari/Tamil/etc. whitelist includes combining vowel signs (matras)
+const KEEP_REGEX = /[^a-zA-Z\u{0900}-\u{097F}\u{0A00}-\u{0A7F}\u{0980}-\u{09FF}\u{0A80}-\u{0AFF}\u{0B00}-\u{0B7F}\u{0B80}-\u{0BFF}\u{0C00}-\u{0C7F}\u{0C80}-\u{0CFF}\u{0D00}-\u{0D7F}\u{1F00}-\u{1FFF}\u{0E00}-\u{0E7F}\u{0F00}-\u{0FFF}0-9.,!?।…'’-]/gu;
+
 /**
- * Main sanitization function for TTS inputs.
+ * Main sanitization function for TTS inputs. Guarantees the output contains
+ * only speakable characters — no markdown, no HTML, no JSON, no URLs, no
+ * symbols, no emoji — for both Hindi (Devanagari) and English.
  */
 export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string {
   if (!text || typeof text !== "string") return "";
@@ -44,9 +53,11 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
   // 5. Clean Markdown link syntax [link text](url) -> keep link text
   out = out.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
-  // 6. Remove Markdown headers (# Header)
+  // 6. Remove Markdown headers (# Header, ##SUGGESTIONS## etc.)
   out = out.replace(/^#{1,6}\s+/gm, "");
   out = out.replace(/\s+#{1,6}\s+/g, " ");
+  out = out.replace(/^##[^\n]*$/gm, " ");
+  out = out.replace(/\s##[^\n]*$/gm, " ");
 
   // 7. Remove horizontal rules (---, ***, ___)
   out = out.replace(/^[-*_]{3,}\s*$/gm, " ");
@@ -54,8 +65,8 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
   // 8. Remove blockquotes (>)
   out = out.replace(/^\s*>\s*/gm, "");
 
-  // 9. Remove Markdown list bullet markers (- , * , + , 1. , 2. )
-  out = out.replace(/^\s*[-*+]\s+/gm, "");
+  // 9. Remove Markdown list bullet markers (- , * , + , • , 1. , 2. )
+  out = out.replace(/^\s*[-*+•]\s+/gm, "");
   out = out.replace(/^\s*\d+[.)]\s+/gm, "");
 
   // 10. Remove table pipes (|) and formatting separators
@@ -80,6 +91,15 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
     out = out.replace(/\bKVK\b/gi, "कृषि विज्ञान केंद्र");
     out = out.replace(/\bUrea\b/gi, "यूरिया");
     out = out.replace(/\bDAP\b/gi, "डीएपी");
+    out = out.replace(/\bDr\.?\b/gi, "डॉक्टर");
+    out = out.replace(/\betc\.?\b/gi, "वगैरह");
+    out = out.replace(/\be\.?g\.?\b/gi, "उदाहरण के लिए");
+    out = out.replace(/\bi\.?e\.?\b/gi, "यानी");
+    out = out.replace(/\bapprox\.?\b/gi, "लगभग");
+    out = out.replace(/\bvs\.?\b/gi, "बनाम");
+    out = out.replace(/\bmax\.?\b/gi, "अधिकतम");
+    out = out.replace(/\bmin\.?\b/gi, "न्यूनतम");
+    out = out.replace(/\bNo\.\b/gi, "नंबर");
 
     // Units in Hindi
     out = out.replace(/(\d+)\s*°\s*C\b/gi, "$1 डिग्री सेल्सियस");
@@ -96,7 +116,7 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
     out = out.replace(/\bkg\/ha\b/gi, "किलोग्राम प्रति हेक्टेयर");
     out = out.replace(/\bkg\b/gi, "किलोग्राम");
     out = out.replace(/\bqtl\b/gi, "क्विंटल");
-    out = out.replace(/\bquintal\b/gi, "क्विंटal");
+    out = out.replace(/\bquintal\b/gi, "क्विंटल");
     out = out.replace(/\bacre\b/gi, "एकड़");
     out = out.replace(/\bha\b/gi, "हेक्टेयर");
     out = out.replace(/\bmm\b/gi, "मिलीमीटर");
@@ -118,31 +138,46 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
     out = out.replace(/\bkg\/ha\b/gi, "kilogram per hectare");
     out = out.replace(/\bkg\b/gi, "kilogram");
     out = out.replace(/\bqtl\b/gi, "quintal");
+    out = out.replace(/\bDr\.?\b/gi, "Doctor");
+    out = out.replace(/\betc\.?\b/gi, "etcetera");
+    out = out.replace(/\be\.?g\.?\b/gi, "for example");
+    out = out.replace(/\bi\.?e\.?\b/gi, "that is");
+    out = out.replace(/\bapprox\.?\b/gi, "approximately");
+    out = out.replace(/\bvs\.?\b/gi, "versus");
+    out = out.replace(/\bmax\.?\b/gi, "maximum");
+    out = out.replace(/\bmin\.?\b/gi, "minimum");
+    out = out.replace(/\bNo\.\b/gi, "number");
     out = out.replace(/\//g, " per ");
   }
 
-  // 13. Replace common mathematical symbols
+  // 13. Replace common mathematical / relational symbols with words
   out = out.replace(/\s*\+\s*/g, isHindi ? " प्लस " : " plus ");
   out = out.replace(/\s*=\s*/g, isHindi ? " बराबर " : " equals ");
   out = out.replace(/\s*&\s*/g, isHindi ? " और " : " and ");
   out = out.replace(/\s*@\s*/g, " at ");
   out = out.replace(/~/g, isHindi ? " लगभग " : " approximately ");
+  out = out.replace(/>=\s*(\d)/g, isHindi ? " कम से कम $1 " : " at least $1 ");
+  out = out.replace(/<=\s*(\d)/g, isHindi ? " अधिकतम $1 " : " at most $1 ");
+  out = out.replace(/>\s*(\d)/g, isHindi ? " $1 से अधिक " : " above $1 ");
+  out = out.replace(/<\s*(\d)/g, isHindi ? " $1 से कम " : " below $1 ");
 
   // 14. Remove emojis and pictograms
   out = out.replace(EMOJI_AND_SYMBOLS_REGEX, "");
 
-  // 15. Clean up remaining formatting characters (colon, brackets, angle brackets, asterisks, hashes, backslashes, semicolons, etc.)
-  out = out.replace(/[:<>]#/g, " ");
-  out = out.replace(/[:]/g, " ");
-  out = out.replace(/[*#\\~_{}[\]()^;<>]/g, " ");
+  // 15. Kill any remaining stray formatting characters so they are NEVER spoken
+  out = out.replace(/[:<>#[\]{}()^*\\~`|]/g, " ");
+  out = out.replace(/["\u201c\u201d\u2018\u2019]/g, "");
   out = out.replace(/\s-\s/g, ", ");
   out = out.replace(/--+/g, ", ");
 
-  // 16. Normalize whitespace and trailing punctuation
+  // 16. Drop anything that is not a speakable letter/digit/pause character
+  out = out.replace(KEEP_REGEX, " ");
+
+  // 17. Normalize whitespace and trailing punctuation
   out = out.replace(/\s+/g, " ").trim();
 
   // Remove orphan punctuation at start
-  out = out.replace(/^[,.!?।\s]+/, "");
+  out = out.replace(/^[,.!?।…\s]+/, "");
 
   if (out && !/[.!?।…]$/.test(out)) {
     out += isHindi ? "।" : ".";

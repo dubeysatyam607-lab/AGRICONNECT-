@@ -59,10 +59,10 @@ export const FarmOnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onCom
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
-      const userId = session?.user?.id || 'demo-farmer-id';
-      await profileRepositoryImpl.updateProfile(buildFarmerProfile(completed, userId));
-      // Keep the dashboard greeting personal even right after sign-in.
-      if (session) {
+      // Only persist when there is a real authenticated user — no demo account.
+      if (session?.user?.id) {
+        await profileRepositoryImpl.updateProfile(buildFarmerProfile(completed, session.user.id));
+        // Keep the dashboard greeting personal even right after sign-in.
         await supabase.auth.updateUser({
           data: {
             full_name: completed.fullName,

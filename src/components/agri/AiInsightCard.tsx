@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Sparkles, Bot, Droplets, CloudRain, Leaf, TrendingUp, Landmark,
   ChevronRight, ShieldAlert,
@@ -29,6 +30,7 @@ const ICON_MAP: Record<AdviceIconKey, React.ComponentType<{ size?: number | stri
  * and live weather (see farm-advisor.ts), plus critical weather alerts.
  */
 const AiInsightCard: React.FC<AiInsightCardProps> = ({ wl, loading, cropLabel, items, onGo }) => {
+  const { t } = useLanguage();
   if (loading && !wl) {
     return (
       <section className="px-4 mt-4" aria-label="AI insights loading">
@@ -104,7 +106,7 @@ const AiInsightCard: React.FC<AiInsightCardProps> = ({ wl, loading, cropLabel, i
           className="group relative mt-2 flex w-full items-center justify-center gap-2 rounded-2xl gradient-ai text-white px-4 py-3 shadow-colorful hover-lift"
         >
           <Bot size={16} />
-          <span className="text-[13px] font-bold">Ask AI for details</span>
+          <span className="text-[13px] font-bold">{t('agr3')}</span>
           <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>

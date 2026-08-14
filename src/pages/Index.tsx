@@ -471,14 +471,19 @@ const IndexInner: React.FC = () => {
   );
 };
 
+import { AuthProvider } from '@/hooks/useAuth';
+
 const Index: React.FC = () => (
-  <RoleProvider>
-    <LanguageProvider>
-      <FarmProvider>
-        <IndexInner />
-      </FarmProvider>
-    </LanguageProvider>
-  </RoleProvider>
+  <AuthProvider>
+    <RoleProvider>
+      <LanguageProvider>
+        <FarmProvider>
+          <IndexInner />
+        </FarmProvider>
+      </LanguageProvider>
+    </RoleProvider>
+  </AuthProvider>
 );
+
 
 export default Index;

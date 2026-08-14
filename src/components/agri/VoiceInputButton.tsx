@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Mic, MicOff, Volume2 } from 'lucide-react';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   className,
   size = 'md'
 }) => {
+  const { t } = useLanguage();
   const { isListening, transcript, isSupported, toggleListening } = useVoiceInput({
     onResult: onTranscript,
     onError,
@@ -66,7 +68,7 @@ const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
           <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded-full">
             <Volume2 size={12} className="animate-pulse text-destructive" />
-            <span>Listening...</span>
+            <span>{t('agr189')}</span>
           </div>
         </div>
       )}

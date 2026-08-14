@@ -208,17 +208,11 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                   onClick={onBack}
                   className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
                 >
-                  {hi ? 'नंबर बदलें' : 'Change Number'}
+                  {type === 'email' ? (hi ? 'ईमेल बदलें' : 'Change Email') : (hi ? 'नंबर बदलें' : 'Change Number')}
                 </button>
               </div>
             </div>
           </form>
-
-          {import.meta.env.DEV && (
-            <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-[11px] font-bold text-amber-700 dark:text-amber-400">
-              ⚡ Demo OTP Code: <span className="font-black underline">123456</span>
-            </div>
-          )}
         </div>
 
         {/* Footer */}

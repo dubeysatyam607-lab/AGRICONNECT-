@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,14 +29,14 @@ const COLUMNS: DataColumn<AdminRole>[] = [
   { key: 'name', header: 'Role', render: (r) => (
       <div className="flex items-center gap-2">
         <span className="font-medium text-foreground">{r.name}</span>
-        {r.protected && <Badge variant="secondary" className="text-[10px]">Protected</Badge>}
+        {r.protected && <Badge variant="secondary" className="text-[10px]">{t('adm27')}</Badge>}
       </div>
     ) },
   { key: 'description', header: 'Description', className: 'hidden lg:table-cell' },
   { key: 'permissions', header: 'Permissions', render: (r) => (
       <div className="flex max-w-sm flex-wrap gap-1">
         {r.permissions.includes('*')
-          ? <Badge variant="secondary" className="text-[10px]">All access</Badge>
+          ? <Badge variant="secondary" className="text-[10px]">{t('adm28')}</Badge>
           : r.permissions.slice(0, 3).map((p) => <Badge key={p} variant="outline" className="text-[10px] font-mono">{p}</Badge>)
         }
         {r.permissions.length > 3 && !r.permissions.includes('*') && <Badge variant="outline" className="text-[10px]">+{r.permissions.length - 3}</Badge>}
@@ -45,6 +46,7 @@ const COLUMNS: DataColumn<AdminRole>[] = [
 ];
 
 export function RolesModule() {
+  const { t } = useLanguage();
   const { rows, create, update, remove } = useAdminCrud({ key: 'adminRoles', label: 'Admin Role', idKey: 'id' });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<AdminRole | null>(null);
@@ -107,15 +109,15 @@ export function RolesModule() {
             )}
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <Label className="text-xs text-muted-foreground">Role Name</Label>
+                <Label className="text-xs text-muted-foreground">{t('adm29')}</Label>
                 <Input className="mt-1.5" value={form.name} disabled={editing?.protected} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <Label className="text-xs text-muted-foreground">Member Count</Label>
+                <Label className="text-xs text-muted-foreground">{t('adm30')}</Label>
                 <Input className="mt-1.5" type="number" value={form.memberCount} onChange={(e) => setForm((f) => ({ ...f, memberCount: Number(e.target.value) }))} />
               </div>
               <div className="col-span-2">
-                <Label className="text-xs text-muted-foreground">Description</Label>
+                <Label className="text-xs text-muted-foreground">{t('adm31')}</Label>
                 <Input className="mt-1.5" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
               </div>
             </div>
@@ -135,7 +137,7 @@ export function RolesModule() {
                 </div>
               ))}
               {form.permissions.includes('*') && (
-                <p className="text-xs text-muted-foreground">Wildcard access granted — this role bypasses the permission matrix.</p>
+                <p className="text-xs text-muted-foreground">{t('adm32')}</p>
               )}
               <div className="flex flex-wrap gap-1">
                 {ALL_PERMS.map((p) => (
@@ -147,7 +149,7 @@ export function RolesModule() {
             </div>
 
             <div className="mt-5 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t('adm33')}</Button>
               <Button onClick={save} disabled={form.name.trim() === ''}>
                 {editing ? 'Save Changes' : 'Create Role'}
               </Button>

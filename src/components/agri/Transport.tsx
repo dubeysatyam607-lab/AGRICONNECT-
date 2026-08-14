@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Truck, MapPin, ExternalLink, Phone, ClipboardList, BadgeCheck } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -17,44 +18,7 @@ interface TransportVehicle {
   image: string;
 }
 
-const TRANSPORT_VEHICLES: TransportVehicle[] = [
-  { 
-    id: 1, 
-    type: 'Tata Ace (Chota Hathi)', 
-    capacity: '750 kg', 
-    rate: '₹500', 
-    location: '2 km', 
-    status: 'Available',
-    image: 'https://images.unsplash.com/photo-1586191582151-f73972d10737?auto=format&fit=crop&q=80&w=400'
-  },
-  { 
-    id: 2, 
-    type: 'Bolero Pickup', 
-    capacity: '1.5 Ton', 
-    rate: '₹800', 
-    location: '5 km', 
-    status: 'Available',
-    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400'
-  },
-  { 
-    id: 3, 
-    type: 'Tractor Trolley', 
-    capacity: '3 Ton', 
-    rate: '₹1200', 
-    location: '1 km', 
-    status: 'Busy',
-    image: 'https://images.unsplash.com/photo-1592919016382-74f056ec568b?auto=format&fit=crop&q=80&w=400'
-  },
-  { 
-    id: 4, 
-    type: 'Eicher Truck', 
-    capacity: '5 Ton', 
-    rate: '₹2000', 
-    location: '8 km', 
-    status: 'Available',
-    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400'
-  },
-];
+
 
 interface TransportProps {
   onToast: (message: string) => void;
@@ -62,15 +26,14 @@ interface TransportProps {
 
 const Transport: React.FC<TransportProps> = ({ onToast }) => {
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [vehicles, setVehicles] = useState<TransportVehicle[]>(TRANSPORT_VEHICLES);
-  const [usingSample, setUsingSample] = useState(true);
+  const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
 
   useEffect(() => {
     const fetchVehicles = async () => {
       const { data, error } = await supabase.from('transport_vehicles').select('*').returns<TransportVehicle[]>();
       if (data && !error && data.length > 0) {
         setVehicles(data);
-        setUsingSample(false);
+
       }
     };
     fetchVehicles();
@@ -136,11 +99,7 @@ const Transport: React.FC<TransportProps> = ({ onToast }) => {
         </div>
       </div>
 
-      {usingSample && (
-        <div className="mb-4 rounded-xl border border-amber-300/40 bg-amber-50 dark:bg-amber-950/20 px-3.5 py-2.5 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
-          Sample listings — real vehicles appear here once they are added.
-        </div>
-      )}
+
 
       <div className="space-y-4">
         {vehicles.map((vehicle) => (

@@ -18,7 +18,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, localeFor } from "@/i18n/journey";
 import { useRole } from "@/contexts/RoleContext";
 import { CattleAssetForm, TransportAssetForm, StoreInventoryForm, SoilTestLabForm } from "./AssetForms";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useOptionalAuth } from "@/hooks/useAuth";
 import { useWeatherViewModel } from "@/features/weather/presentation/viewmodels/useWeatherViewModel";
 import { useFarm } from "@/contexts/FarmContext";
 import { deriveFarmAdvice } from "@/lib/farm-advisor";
@@ -86,13 +86,14 @@ const NEWS = [
 const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) => {
   const { t, language } = useLanguage();
   const { activeRole } = useRole();
-  const { user } = useAuth();
+  const auth = useOptionalAuth();
+const user = auth?.user;
   const weather = useWeatherViewModel();
   const { profile: farmProfile } = useFarm();
   const advice = useMemo(() => deriveFarmAdvice(farmProfile, weather.data), [farmProfile, weather.data]);
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Rakesh";
-  const village = user?.user_metadata?.village || "Shivpuri";
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || (t('home.guestName'));
+  const village = user?.user_metadata?.village || (t('home.guestVillage'));
   const wl = weather.data;
   const liveCity = wl?.location?.name || village;
   const condEmoji = (cond?: string) => COND_EMOJI[cond || ""] || "🌤️";
@@ -216,7 +217,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-secondary animate-live-pulse" />
           </span>
           <div className="leading-none">
-            <p className="font-display font-black text-[17px] tracking-tight text-foreground">AgriConnect</p>
+            <p className="font-display font-black text-[17px] tracking-tight text-foreground">{t('agr207')}</p>
             <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">{liveCity} · {dateStr.split(",")[0]}</p>
           </div>
         </div>
@@ -242,6 +243,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           farmLabel={interpolate(t("home.farmLabel"), { name: firstName })}
           cropLine={advice.heroLine}
           wl={wl}
+          weatherStatus={weather.loading ? 'loading' : weather.error ? 'error' : 'ready'}
           formatTemp={weather.formatTemp}
           condEmoji={condEmoji}
           onGo={go}

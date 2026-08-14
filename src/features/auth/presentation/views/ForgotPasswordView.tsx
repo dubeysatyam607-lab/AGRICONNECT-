@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Phone, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Mail, RotateCw, ShieldCheck } from 'lucide-react';
 import { AppButton } from '@/shared/widgets/AppButton';
 import { FadeIn } from '@/shared/widgets/AppAnimations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,69 +7,80 @@ import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 
 interface IForgotPasswordViewProps {
   onBackToLogin: () => void;
+  onSuccess: () => void;
 }
 
-export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackToLogin }) => {
+/**
+ * Forgot Password = Sign in with Email OTP.
+ * AgriConnect authenticates via passwordless email OTP, so account recovery
+ * is an email-OTP sign-in: OTP is sent, verified against Supabase, an
+ * authenticated session is created, and the user lands on the Dashboard.
+ */
+export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackToLogin, onSuccess }) => {
   const { t, language } = useLanguage();
   const hi = language === 'hi';
 
-  const [step, setStep] = useState<'request' | 'reset' | 'success'>('request');
-  const [identifier, setIdentifier] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [step, setStep] = useState<'request' | 'verify'>('request');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [timer, setTimer] = useState(60);
   const [fieldError, setFieldError] = useState<string | null>(null);
 
-  const [state, { sendOtp, verifyOtp, changePassword, clearError }] = useAuthViewModel();
+  const [state, { sendOtp, verifyOtp, clearError }] = useAuthViewModel();
 
-  const detectType = (value: string): 'phone' | 'email' =>
-    value.includes('@') ? 'email' : 'phone';
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (step === 'verify' && timer > 0) {
+      interval = setInterval(() => setTimer((t) => t - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, timer]);
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     setFieldError(null);
 
-    if (!identifier.trim()) {
-      setFieldError(hi ? 'कृपया अपना मोबाइल नंबर या ईमेल दर्ज करें' : 'Please enter your mobile number or email');
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      setFieldError(hi ? 'कृपया अपना ईमेल पता दर्ज करें' : 'Please enter your email address');
+      return;
+    }
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(normalized)) {
+      setFieldError(hi ? 'कृपया वैध ईमेल पता दर्ज करें' : 'Please enter a valid email address');
       return;
     }
 
-    const success = await sendOtp(identifier.trim(), detectType(identifier.trim()));
+    const success = await sendOtp(normalized, 'email');
     if (success) {
-      setStep('reset');
+      setEmail(normalized);
+      setTimer(60);
+      setStep('verify');
     }
   };
 
-  const handleResetSubmit = async (e: React.FormEvent) => {
+  const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     setFieldError(null);
 
-    if (!resetCode.trim()) {
-      setFieldError(hi ? 'कृपया रीसेट कोड दर्ज करें' : 'Please enter the reset code');
+    const token = otp.trim();
+    if (token.length !== 6) {
+      setFieldError(hi ? 'कृपया 6 अंकों का कोड दर्ज करें' : 'Please enter the 6-digit code');
       return;
     }
 
-    if (newPassword.length < 6) {
-      setFieldError(hi ? 'नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए' : 'New password must be at least 6 characters');
-      return;
+    const success = await verifyOtp(email, token, 'email');
+    if (success) {
+      onSuccess();
     }
+  };
 
-    if (newPassword !== confirmPassword) {
-      setFieldError(hi ? 'पासवर्ड मेल नहीं खाते' : 'Passwords do not match');
-      return;
-    }
-
-    const type = detectType(identifier.trim());
-    const otpVerified = await verifyOtp(identifier.trim(), resetCode.trim(), type);
-    if (!otpVerified) return;
-
-    const updated = await changePassword('', newPassword, confirmPassword);
-    if (updated) {
-      setStep('success');
-    }
+  const handleResend = async () => {
+    if (timer > 0 || state.isLoading) return;
+    clearError();
+    const success = await sendOtp(email, 'email');
+    if (success) setTimer(60);
   };
 
   return (
@@ -85,27 +96,25 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
               onClick={onBackToLogin}
               className="flex items-center gap-1 text-xs font-extrabold text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft size={16} /> {hi ? 'साइन इन पर लौटें' : 'Back to Sign In'}
+              <ArrowLeft size={16} /> {t('common.back')}
             </button>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-              {hi ? 'पासवर्ड रीसेट' : 'Password Reset'}
+            <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+              <ShieldCheck size={13} /> {hi ? 'ईमेल ओटीपी साइन इन' : 'Email OTP Sign In'}
             </span>
           </div>
 
           {/* Header */}
           <FadeIn className="mt-8 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-md">
-              <KeyRound size={28} />
+              <Mail size={28} />
             </div>
             <h1 className="mt-4 text-2xl font-black tracking-tight text-foreground">
-              {hi ? 'पासवर्ड रीसेट करें' : 'Reset Your Password'}
+              {hi ? 'ईमेल से साइन इन करें' : 'Sign In with Email OTP'}
             </h1>
             <p className="mt-1.5 text-xs font-medium text-muted-foreground">
               {step === 'request'
-                ? (hi ? 'अपना पंजीकृत मोबाइल नंबर या ईमेल दर्ज करें' : 'Enter your registered mobile number or email address')
-                : step === 'reset'
-                ? (hi ? 'रीसेट कोड और नया पासवर्ड दर्ज करें' : 'Enter the reset code and your new password')
-                : (hi ? 'आपका पासवर्ड सफलतापूर्वक रीसेट हो गया है' : 'Your password has been successfully reset')}
+                ? (hi ? 'अपना पंजीकृत ईमेल दर्ज करें। हम आपको एक सत्यापन कोड भेजेंगे।' : 'Enter your registered email. We will send you a verification code.')
+                : (hi ? `${email} पर एक 6 अंकों का कोड भेजा गया है` : `A 6-digit code has been sent to ${email}`)}
             </p>
           </FadeIn>
 
@@ -122,16 +131,17 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
               <form onSubmit={handleRequestSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                    {hi ? 'मोबाइल नंबर या ईमेल' : 'Mobile Number or Email'}
+                    {hi ? 'ईमेल पता' : 'Email Address'}
                   </label>
                   <div className="relative">
-                    <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
-                      type="text"
-                      required
-                      placeholder="98765 43210 or farmer@example.com"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
+                      type="email"
+                      aria-label={hi ? 'ईमेल पता' : 'Email Address'}
+                      autoComplete="email"
+                      placeholder="farmer@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
                       autoFocus
                     />
@@ -139,91 +149,68 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                 </div>
 
                 <AppButton type="submit" variant="primary" size="lg" fullWidth isLoading={state.isLoading}>
-                  {hi ? 'रीसेट कोड भेजें' : 'Send Reset Code'}
+                  {hi ? 'सत्यापन कोड भेजें' : 'Send Verification Code'}
                 </AppButton>
               </form>
             )}
 
-            {step === 'reset' && (
-              <form onSubmit={handleResetSubmit} className="space-y-4">
+            {step === 'verify' && (
+              <form onSubmit={handleVerifySubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                    {hi ? 'रीसेट कोड' : 'Reset Code'}
+                    {hi ? 'सत्यापन कोड' : 'Verification Code'}
                   </label>
                   <input
                     type="text"
-                    required
-                    placeholder="123456"
+                    aria-label={hi ? 'सत्यापन कोड' : 'Verification Code'}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="••••••"
                     maxLength={6}
-                    value={resetCode}
-                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     className="w-full text-center tracking-widest text-lg font-black rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
                     autoFocus
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                    {hi ? 'नया पासवर्ड' : 'New Password'}
-                  </label>
-                  <div className="relative">
-                    <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      type={showNewPassword ? 'text' : 'password'}
-                      required
-                      placeholder="••••••••"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-12 py-3 text-sm font-bold text-foreground outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
-                    />
+                <AppButton
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  isLoading={state.isLoading}
+                  disabled={otp.length !== 6}
+                >
+                  {hi ? 'सत्यापित करें और साइन इन करें' : 'Verify & Sign In'}
+                </AppButton>
+
+                {/* Resend OTP & Change Email */}
+                <div className="flex flex-col items-center gap-2.5 pt-1">
+                  {timer > 0 ? (
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {hi ? `कोड पुनः भेजें (${timer} सेकंड)` : `Resend code in ${timer}s`}
+                    </span>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                      onClick={handleResend}
+                      disabled={state.isLoading}
+                      className="flex items-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-400 hover:underline"
                     >
-                      {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      <RotateCw size={13} /> {hi ? 'कोड पुनः भेजें' : 'Resend Code'}
                     </button>
-                  </div>
-                </div>
+                  )}
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                    {hi ? 'नए पासवर्ड की पुष्टि करें' : 'Confirm New Password'}
-                  </label>
-                  <div className="relative">
-                    <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setStep('request'); setOtp(''); clearError(); setFieldError(null); }}
+                    className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                  >
+                    {hi ? 'ईमेल बदलें' : 'Change Email'}
+                  </button>
                 </div>
-
-                <AppButton type="submit" variant="primary" size="lg" fullWidth isLoading={state.isLoading}>
-                  {hi ? 'पासवर्ड अपडेट करें' : 'Update Password'}
-                </AppButton>
               </form>
-            )}
-
-            {step === 'success' && (
-              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4 animate-scale-up">
-                <CheckCircle2 size={44} className="text-emerald-500 mx-auto" />
-                <div className="space-y-1">
-                  <h3 className="text-base font-black text-foreground">
-                    {hi ? 'पासवर्ड सफलतापूर्वक बदल दिया गया!' : 'Password Successfully Changed!'}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {hi ? 'आप अब अपने नए पासवर्ड से साइन इन कर सकते हैं' : 'You can now sign in with your new password.'}
-                  </p>
-                </div>
-                <AppButton variant="primary" size="lg" fullWidth onClick={onBackToLogin}>
-                  {hi ? 'साइन इन पर जाएं' : 'Proceed to Sign In'}
-                </AppButton>
-              </div>
             )}
           </FadeIn>
         </div>

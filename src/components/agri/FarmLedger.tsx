@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { PlusCircle, MinusCircle, TrendingUp, TrendingDown, Wallet, Calendar } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -36,6 +37,7 @@ const EXPENSE_CATEGORIES = ['Seeds', 'Fertilizer', 'Pesticides', 'Labor', 'Trans
 const INCOME_CATEGORIES = ['Crop Sale', 'Milk Sale', 'Animal Sale', 'Rent Income', 'Government Subsidy', 'Other'];
 
 const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [transactions, setTransactions] = useState<Transaction[]>(loadLedger);
   const [showForm, setShowForm] = useState<'income' | 'expense' | null>(null);
   const [formData, setFormData] = useState({
@@ -127,7 +129,7 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
           </h3>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <Label className="text-xs text-muted-foreground">Amount (₹) *</Label>
+              <Label className="text-xs text-muted-foreground">{t('agr83')}</Label>
               <Input
                 type="number"
                 min="0.01"
@@ -140,20 +142,20 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Category *</Label>
+              <Label className="text-xs text-muted-foreground">{t('agr84')}</Label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full mt-1 p-2 rounded-lg border border-input bg-background text-foreground text-base sm:text-sm"
               >
-                <option value="">Select category</option>
+                <option value="">{t('agr85')}</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Description</Label>
+              <Label className="text-xs text-muted-foreground">{t('agr86')}</Label>
               <Input
                 type="text"
                 placeholder="Optional description"
@@ -163,7 +165,7 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Date</Label>
+              <Label className="text-xs text-muted-foreground">{t('agr87')}</Label>
               <Input
                 type="date"
                 value={formData.date}
@@ -192,17 +194,17 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
       <div className="grid grid-cols-3 gap-2 mb-4">
         <AgriCard className="p-3 text-center bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
           <TrendingUp className="mx-auto text-green-600 dark:text-green-400 mb-1" size={20} />
-          <p className="text-xs text-muted-foreground">Income</p>
+          <p className="text-xs text-muted-foreground">{t('agr88')}</p>
           <p className="font-bold text-green-600 dark:text-green-400">₹{totalIncome.toLocaleString()}</p>
         </AgriCard>
         <AgriCard className="p-3 text-center bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
           <TrendingDown className="mx-auto text-red-500 mb-1" size={20} />
-          <p className="text-xs text-muted-foreground">Expenses</p>
+          <p className="text-xs text-muted-foreground">{t('agr89')}</p>
           <p className="font-bold text-red-500">₹{totalExpense.toLocaleString()}</p>
         </AgriCard>
         <AgriCard className={`p-3 text-center ${netProfit >= 0 ? 'bg-primary/10 border-primary/30' : 'bg-orange-50 dark:bg-orange-950/30 border-orange-200'}`}>
           <Wallet className={`mx-auto mb-1 ${netProfit >= 0 ? 'text-primary' : 'text-orange-500'}`} size={20} />
-          <p className="text-xs text-muted-foreground">Net</p>
+          <p className="text-xs text-muted-foreground">{t('agr90')}</p>
           <p className={`font-bold ${netProfit >= 0 ? 'text-primary' : 'text-orange-500'}`}>
             {netProfit >= 0 ? '+' : ''}₹{netProfit.toLocaleString()}
           </p>
@@ -211,7 +213,7 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
 
       {/* Donut Chart */}
       <AgriCard className="mb-4">
-        <h3 className="font-bold text-foreground mb-2">Financial Overview</h3>
+        <h3 className="font-bold text-foreground mb-2">{t('agr91')}</h3>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -242,7 +244,7 @@ const FarmLedger: React.FC<FarmLedgerProps> = ({ onToast }) => {
 
       {/* Recent Transactions */}
       <AgriCard>
-        <h3 className="font-bold text-foreground mb-3">Recent Transactions</h3>
+        <h3 className="font-bold text-foreground mb-3">{t('agr92')}</h3>
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {transactions.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">

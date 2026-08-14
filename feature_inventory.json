@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-08-11T15:55:59.362Z",
+  "tabs": {
+    "home": {
+      "title": "Farmer Dashboard — Smart Farming App for Indian Farmers',",
+      "path": "/',"
+    },
+    "mandi": {
+      "title": "Live Mandi Bhav Prices Today — India',",
+      "path": "/mandi',"
+    },
+    "tractors": {
+      "title": "Tractor Rental Near Me — Book Online at Affordable Rates',",
+      "path": "/tractors',"
+    },
+    "store": {
+      "title": "Agri Store — Buy Seeds, Fertilizers & Farm Tools Online',",
+      "path": "/store',"
+    },
+    "schemes": {
+      "title": "Government Schemes for Farmers — PM-KISAN, KCC, Fasal Bima',",
+      "path": "/schemes',"
+    },
+    "loans": {
+      "title": "Farm Loan Calculator — Kisan Credit Card & Crop Loan EMI',",
+      "path": "/loans',"
+    },
+    "labor": {
+      "title": "Farm Labor Hiring Near Me — Daily Wage Workers',",
+      "path": "/labor',"
+    },
+    "cattle": {
+      "title": "Cattle Market — Buy & Sell Cows, Buffaloes Online',",
+      "path": "/cattle-market',"
+    },
+    "transport": {
+      "title": "Farm Transport Booking — Tractor Trolley, Pickup, Trucks',",
+      "path": "/transport',"
+    },
+    "news": {
+      "title": "Krishi News — Agriculture News India & Mandi Updates',",
+      "path": "/news',"
+    },
+    "soil": {
+      "title": "Soil Testing & Soil Health Card — Free Soil Test Guide',",
+      "path": "/soil-test',"
+    },
+    "community": {
+      "title": "Farmer Community — Krishi Charcha, Ask Experts & Farmers',",
+      "path": "/community',"
+    },
+    "analytics": {
+      "title": "Farm Ledger — Track Crop Expenses & Farm Income',",
+      "path": "/farm-ledger',"
+    },
+    "insurance": {
+      "title": "PM Fasal Bima Yojana — Crop Insurance for Farmers',",
+      "path": "/crop-insurance',"
+    },
+    "services": {
+      "title": "All Farm Services — 25+ Tools for Indian Farmers',",
+      "path": "/services',"
+    },
+    "profile": {
+      "title": "Farmer Profile & Settings — AgriConnect',",
+      "description": "Manage your AgriConnect farmer profile, language preferences, notifications, and account settings.',",
+      "path": "/profile',",
+      "noindex": "true,"
+    },
+    "settings": {
+      "title": "Settings — AgriConnect',",
+      "description": "Manage language, notifications, and app preferences for your AgriConnect account.',",
+      "path": "/settings',",
+      "noindex": "true,"
+    },
+    "wallet": {
+      "title": "Wallet & Payments — AgriConnect',",
+      "description": "Wallet balance, UPI/card payments, GST invoices, subscriptions, and payment history for AgriConnect.',",
+      "path": "/wallet',",
+      "noindex": "true,"
+    },
+    "notifications": {
+      "title": "Notifications — AgriConnect',",
+      "description": "Personalized alerts for weather, mandi prices, schemes, payments, orders, equipment bookings, and farm reminders.',",
+      "path": "/notifications',",
+      "noindex": "true,"
+    },
+    "advisor": {
+      "title": "AI Farming Advisor — Personalized Daily & Weekly Insights',",
+      "description": "Your dedicated AI farm advisor — daily insights, weekly reports, market opportunities, risk alerts, disease warnings, yield, water, and profit recommendations with confidence and reasoning.',",
+      "path": "/advisor',",
+      "noindex": "true,"
+    },
+    "network": {
+      "title": "Farmer Network — Farmers, Service Providers & Buyers Near You',",
+      "description": "Connect with verified farmers, service providers and buyers in your village. Post requirements, book tractors, labour and cold storage, chat, and read community discussions.',",
+      "path": "/network',",
+      "noindex": "true,"
+    }
+  }
+}

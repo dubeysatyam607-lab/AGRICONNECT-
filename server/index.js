@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -30,8 +32,18 @@ app.use(
       maxAge: 31536000,
       includeSubDomains: true,
     },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 );
+app.set('trust proxy', 1);
+
+// Redirect HTTP to HTTPS in production
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && !req.secure && req.get('x-forwarded-proto') !== 'https') {
+    return res.redirect(`https://${req.get('host')}${req.originalUrl}`);
+  }
+  next();
+});
 
 // CORS: restrict to explicitly allowed origins when ALLOWED_ORIGINS is configured.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
@@ -54,6 +66,13 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(csurf({ cookie: true }));
+
+// Endpoint to get CSRF token for client
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
 // Rate Limiting
 const apiLimiter = rateLimit({

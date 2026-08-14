@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -20,6 +21,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const { t } = useLanguage();
   const imgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
           <div className="absolute inset-0">{fallback}</div>
         ) : (
           <div className={cn('absolute inset-0 flex items-center justify-center', placeholderColor)}>
-            <span className="text-muted-foreground text-sm">Failed to load</span>
+            <span className="text-muted-foreground text-sm">{t('ui.lazyImage.failed')}</span>
           </div>
         )
       )}

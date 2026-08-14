@@ -10,7 +10,7 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({
   onNavigate,
-  userName = "Rakesh",
+  userName,
 }) => {
   const { t } = useLanguage();
   const { activeRole } = useRole();
@@ -218,7 +218,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="animate-fade-in cursor-pointer" onClick={() => handleCardClick(0)}>
               <div className="inline-flex items-center gap-2 bg-black/25 backdrop-blur-md px-3.5 py-1 rounded-xl text-xs font-semibold text-amber-200 mb-2.5 border border-white/15 shadow-sm">
                 <Award size={14} className="text-amber-400" />
-                <span>Welcome to AgriConnect</span>
+                <span>{t('agr208')}</span>
               </div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow-md mb-2 flex items-center gap-2.5 leading-tight">
                 <span>{t("home.welcome") || "Welcome"}, {userName}!</span>
@@ -244,9 +244,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               </h1>
               <div className="max-w-xl">
                 <div className="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20">
-                  <div className="text-[11px] font-bold text-slate-200 uppercase">Mandi Bhav</div>
+                  <div className="text-[11px] font-bold text-slate-200 uppercase">{t('agr209')}</div>
                   <div className="text-sm font-semibold text-white mt-0.5">Tap to see today's live rates for your crops</div>
-                  <div className="text-[11px] text-white/70 mt-1.5">Live rates open in the Mandi Bhav tab</div>
+                  <div className="text-[11px] text-white/70 mt-1.5">{t('agr210')}</div>
                 </div>
               </div>
             </div>
@@ -256,17 +256,17 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="animate-fade-in cursor-pointer" onClick={() => handleCardClick(2, "crop-doctor")}>
               <div className="inline-flex items-center gap-2 bg-purple-500/30 backdrop-blur-md px-3.5 py-1 rounded-xl text-xs font-extrabold text-purple-200 mb-2.5 border border-purple-400/30 shadow-sm">
                 <Scan size={14} className="text-purple-300 animate-spin-slow" />
-                <span>AI Crop Doctor</span>
+                <span>{t('agr211')}</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white drop-shadow-md mb-2 flex items-center gap-2">
-                <span>Scan a Leaf for Diagnosis</span>
-                <span className="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full">FREE</span>
+                <span>{t('agr212')}</span>
+                <span className="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full">{t('agr213')}</span>
               </h1>
               <p className="text-sm md:text-base text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-sm mb-3">
                 Take a photo of a leaf and get an AI diagnosis with remedy suggestions. Check the Schemes tab for available government subsidies.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-slate-950 px-4 py-2 rounded-2xl font-black text-xs hover:bg-slate-100 transition-colors shadow-lg">
-                <span>Launch Scanner Now</span>
+                <span>{t('agr214')}</span>
                 <ArrowUpRight size={14} className="text-emerald-600" />
               </div>
             </div>
@@ -292,7 +292,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
           <div className="text-[11px] font-bold uppercase tracking-wider text-white/80 flex items-center gap-1.5">
             <Zap size={12} className="text-amber-300 animate-pulse" />
-            <span>Free AI Advisory Available</span>
+            <span>{t('agr215')}</span>
           </div>
         </div>
       </div>

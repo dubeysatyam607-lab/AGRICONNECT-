@@ -5,6 +5,7 @@ import { FadeIn } from '@/shared/widgets/AppAnimations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 import { PasswordStrength } from '../components/PasswordStrength';
+import { isPasswordStrong } from '@/utils/passwordPolicy';
 
 /**
  * Enterprise Change Password View / Modal.
@@ -23,10 +24,15 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
 
   const [state, { changePassword, clearError }] = useAuthViewModel();
   const { t } = useLanguage();
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    if (!isPasswordStrong(newPassword)) {
+      setFieldError('Password does not meet strength requirements');
+      return;
+    }
     const success = await changePassword(oldPassword, newPassword, confirmPassword);
     if (success && onSuccess) {
       onSuccess();
@@ -59,6 +65,11 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
         {state.error && (
           <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium animate-shake">
             ⚠️ {state.error}
+          </div>
+        )}
+        {fieldError && (
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-medium animate-shake">
+            ⚠️ {fieldError}
           </div>
         )}
 
@@ -141,7 +152,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
               size="md"
               fullWidth
               isLoading={state.isLoading}
-              disabled={!oldPassword || !newPassword || newPassword !== confirmPassword}
+              disabled={!oldPassword || !newPassword || newPassword !== confirmPassword || !isPasswordStrong(newPassword)}
             >
               {t('chpw.update')}
             </AppButton>

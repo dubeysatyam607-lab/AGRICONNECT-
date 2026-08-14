@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Droplets, Fence, Battery, Signal, AlertTriangle, CheckCircle2, RefreshCw, MapPin, Wifi } from "lucide-react";
 import { getMoistureReadings } from "@/lib/moisture-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,7 @@ const getStatusBadge = (status: string) => {
 };
 
 const HardwareDashboard: React.FC = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [moistureData, setMoistureData] = useState<MoistureReading[]>([]);
   const [fenceNodes, setFenceNodes] = useState<FenceNode[]>(MOCK_FENCE_NODES);
@@ -120,7 +122,7 @@ const HardwareDashboard: React.FC = () => {
         <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <p>
-            <span className="font-black">Simulation mode.</span> No physical sensors are connected to your account yet. Readings shown here are illustrative — connect your AgriConnect IoT kit to see live field data.
+            <span className="font-black">{t('agr93')}</span> No physical sensors are connected to your account yet. Readings shown here are illustrative — connect your AgriConnect IoT kit to see live field data.
           </p>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -137,11 +139,11 @@ const HardwareDashboard: React.FC = () => {
               {criticalMoisture > 0 ? (
                 <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-[10px]">{criticalMoisture} Alert</Badge>
               ) : (
-                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">Healthy</Badge>
+                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">{t('agr94')}</Badge>
               )}
             </div>
             <p className="text-2xl font-bold text-foreground">{moistureData.length}</p>
-            <p className="text-xs text-muted-foreground">Moisture Sensors</p>
+            <p className="text-xs text-muted-foreground">{t('agr95')}</p>
           </CardContent>
         </Card>
         <Card className="border-border shadow-card rounded-2xl">
@@ -151,11 +153,11 @@ const HardwareDashboard: React.FC = () => {
               {offlineNodes > 0 ? (
                 <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-[10px]">{offlineNodes} Offline</Badge>
               ) : (
-                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">Active</Badge>
+                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">{t('agr96')}</Badge>
               )}
             </div>
             <p className="text-2xl font-bold text-foreground">{fenceNodes.length}</p>
-            <p className="text-xs text-muted-foreground">Fence Nodes</p>
+            <p className="text-xs text-muted-foreground">{t('agr97')}</p>
           </CardContent>
         </Card>
       </div>

@@ -38,7 +38,7 @@ export function organizationSchema(): JsonLd {
   };
 }
 
-/** WebSite schema with SearchAction (sitelinks searchbox). */
+/** WebSite schema. SearchAction intentionally omitted — no /search route exists yet. */
 export function websiteSchema(): JsonLd {
   return {
     '@context': 'https://schema.org',
@@ -49,14 +49,6 @@ export function websiteSchema(): JsonLd {
     description: SITE_CONFIG.description,
     publisher: { '@id': `${SITE_CONFIG.baseUrl}/#organization` },
     inLanguage: 'en-IN',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_CONFIG.baseUrl}/search?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 

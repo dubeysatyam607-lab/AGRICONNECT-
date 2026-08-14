@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Droplets, Wind, ChevronDown, ChevronUp, AlertCircle, Calendar, Sparkles } from 'lucide-react';
 import { IDailyForecast } from '../../domain/models/WeatherModels';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SevenDayForecastCardProps {
   daily: IDailyForecast[];
@@ -13,6 +14,7 @@ interface SevenDayForecastCardProps {
  * and contextual smart badges parsed from the ICAR advisory text.
  */
 export const SevenDayForecastCard: React.FC<SevenDayForecastCardProps> = ({ daily, formatTemp }) => {
+  const { t } = useLanguage();
   const [expandedDay, setExpandedDay] = useState<number | null>(0); // Default expand Today (index 0)
 
   if (!daily || daily.length === 0) return null;
@@ -26,22 +28,22 @@ export const SevenDayForecastCard: React.FC<SevenDayForecastCardProps> = ({ dail
   const getAdvisoryTag = (advisory: string) => {
     const adv = (advisory || '').toLowerCase();
     if (adv.includes('critical') || adv.includes('lightning') || adv.includes('shelter')) {
-      return { text: '⚠️ Warning', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' };
+      return { text: t('wth.tagWarning'), color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' };
     }
     if (adv.includes('spray') || adv.includes('pesticide')) {
-      return { text: '🚜 Spray Alert', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+      return { text: t('wth.tagSpray'), color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
     }
     if (adv.includes('irrigation') || adv.includes('irrigate') || adv.includes('water')) {
-      return { text: '💧 Irrigate', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
+      return { text: t('wth.tagIrrigate'), color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
     }
     if (adv.includes('harvest') || adv.includes('drying')) {
-      return { text: '🌾 Harvest', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+      return { text: t('wth.tagHarvest'), color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
     }
     if (adv.includes('weed') || adv.includes('weeding') || adv.includes('intercultur')) {
-      return { text: '🌱 Weeding', color: 'bg-teal-500/20 text-teal-300 border-teal-500/30' };
+      return { text: t('wth.tagWeeding'), color: 'bg-teal-500/20 text-teal-300 border-teal-500/30' };
     }
     if (adv.includes('fertilizer') || adv.includes('nutrient') || adv.includes('feeding')) {
-      return { text: '🧪 Fertilize', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
+      return { text: t('wth.tagFertilize'), color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
     }
     return null;
   };
@@ -53,11 +55,11 @@ export const SevenDayForecastCard: React.FC<SevenDayForecastCardProps> = ({ dail
       <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-2">
           <Calendar size={16} className="text-emerald-400" />
-          <span>7-Day Mandi & Farm Outlook</span>
+          <span>{t('wth.dailyTitle')}</span>
         </h3>
         <span className="text-xs text-slate-400 flex items-center gap-1">
           <Sparkles size={12} className="text-emerald-400 animate-pulse" />
-          Tap day for smart advisory
+          {t('wth.tapDay')}
         </span>
       </div>
 
@@ -145,7 +147,7 @@ export const SevenDayForecastCard: React.FC<SevenDayForecastCardProps> = ({ dail
                     <AlertCircle size={15} className="shrink-0 mt-0.5 text-emerald-400" />
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <strong className="text-white font-black">ICAR Farming Advisory:</strong>
+                        <strong className="text-white font-black">{t('wth.advisoryLabel')}:</strong>
                         {actionTag && (
                           <span className={`md:hidden text-[9px] font-black px-1.5 py-0.5 rounded border uppercase tracking-wider ${actionTag.color}`}>
                             {actionTag.text}
@@ -160,9 +162,9 @@ export const SevenDayForecastCard: React.FC<SevenDayForecastCardProps> = ({ dail
 
                   <div className="flex items-center justify-between pt-2.5 border-t border-emerald-500/20 text-[10px] text-slate-400 font-bold">
                     <span className="flex items-center gap-1">
-                      <Wind size={11} className="text-teal-400" /> Wind speed: <strong className="text-white">{item.windSpeed} km/h</strong>
+                      <Wind size={11} className="text-teal-400" /> {t('wth.windSpeed')}: <strong className="text-white">{item.windSpeed} {t('wth.kmh')}</strong>
                     </span>
-                    <span>Expected Humidity: <strong className="text-white">{item.humidity}%</strong></span>
+                    <span>{t('wth.humidityExpected')}: <strong className="text-white">{item.humidity}%</strong></span>
                   </div>
                 </div>
               )}

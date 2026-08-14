@@ -4,6 +4,7 @@ import { inject } from '@/core/di/inject';
 import { DI_TOKENS } from '@/core/di/Container';
 import { ValidationException } from '@/core/errors/AppException';
 import { SignUpSchema } from '../models/AuthValidations';
+import { isPasswordStrong } from '@/utils/passwordPolicy';
 import { sessionManager } from '@/core/auth/SessionManager';
 
 /**
@@ -24,6 +25,9 @@ export class SignUpUseCase {
         if (e.path[0]) errors[e.path[0].toString()] = e.message;
       });
       throw new ValidationException('Please check your registration details.', errors);
+    }
+    if (!isPasswordStrong(password)) {
+      throw new ValidationException('Password does not meet strength requirements.', { password: 'Password is too weak.' });
     }
 
     // 2. Execute Registration

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, VolumeX, Loader2, Square } from 'lucide-react';
 import { AgriButton } from './agri-button';
 import { useRole } from '@/contexts/RoleContext';
+import { textForSpeech } from '@/core/voice';
 
 interface VoiceAssistantButtonProps {
   text: string;
@@ -42,20 +43,23 @@ export const VoiceAssistantButton: React.FC<VoiceAssistantButtonProps> = ({
 
     try {
       setIsLoading(true);
-      
+
+      // Sanitise so markdown/formatting/symbols are NEVER read aloud.
+      const speakText = textForSpeech(text, languageCode);
+
       let response = await fetch('/api/voice/tts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ text, languageCode })
+        body: JSON.stringify({ text: speakText, languageCode })
       });
 
       if (!response.ok) {
         response = await fetch('/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, languageCode })
+          body: JSON.stringify({ text: speakText, languageCode })
         });
       }
 

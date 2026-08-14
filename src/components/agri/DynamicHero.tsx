@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import {
-  MapPin, Sun, Droplets, Wind, Bot, ChevronRight, Sparkles, Moon,
+  MapPin, Sun, Droplets, Wind, Cloud, Bot, ChevronRight, Sparkles, Moon,
 } from "lucide-react";
 import type { IWeatherModuleData } from "@/features/weather/domain/models/WeatherModels";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -17,6 +17,7 @@ interface DynamicHeroProps {
   farmLabel: string;
   cropLine: string;
   wl: IWeatherModuleData | null;
+  weatherStatus?: 'loading' | 'ready' | 'error';
   formatTemp: (celsius: number) => string;
   condEmoji: (condition?: string) => string;
   onGo: (tab: string) => void;
@@ -29,7 +30,7 @@ interface DynamicHeroProps {
  */
 const DynamicHero: React.FC<DynamicHeroProps> = ({
   greeting, firstName, dateStr, liveCity, farmLabel, cropLine,
-  wl, formatTemp, condEmoji, onGo,
+  wl, weatherStatus = 'loading', formatTemp, condEmoji, onGo,
 }) => {
   const { t } = useLanguage();
   const hour = new Date().getHours();
@@ -201,7 +202,11 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
               </>
             ) : (
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold">
-                <span className="h-3 w-3 rounded-full border-2 border-white/30 border-t-white animate-spin" /> {t("hero.detecting")}
+                {weatherStatus === 'loading' ? (
+                  <span className="h-3 w-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                ) : (
+                  <Cloud size={13} className="text-white/80" />
+                )} {weatherStatus === 'loading' ? t("hero.detecting") : t("hero.weatherUnavailable")}
               </span>
             )}
           </div>

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Droplets, Sun, Wind, Compass, Gauge, Sunrise, Sunset } from 'lucide-react';
 import { ILiveWeather } from '../../domain/models/WeatherModels';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { interpolate } from '@/i18n/journey';
 
 interface WeatherMetricsGridProps {
   live: ILiveWeather;
@@ -13,17 +15,18 @@ interface WeatherMetricsGridProps {
  * Displays 6 detailed agricultural environmental sensors using SVG-based micro-visualizations.
  */
 export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, formatTemp, rainProbability }) => {
+  const { t } = useLanguage();
   const rainProb =
     typeof rainProbability === 'number' && Number.isFinite(rainProbability)
       ? Math.min(100, Math.max(0, Math.round(rainProbability)))
       : null;
 
   const getUvLevel = (uv: number) => {
-    if (uv <= 2) return { label: 'Low', color: 'text-emerald-400', stroke: '#34d399', bg: 'bg-emerald-500/20' };
-    if (uv <= 5) return { label: 'Mod', color: 'text-amber-400', stroke: '#fbbf24', bg: 'bg-amber-500/20' };
-    if (uv <= 7) return { label: 'High', color: 'text-orange-400', stroke: '#fb923c', bg: 'bg-orange-500/20' };
-    if (uv <= 10) return { label: 'V. High', color: 'text-rose-400', stroke: '#f87171', bg: 'bg-rose-500/20' };
-    return { label: 'Extreme', color: 'text-purple-400', stroke: '#c084fc', bg: 'bg-purple-500/20' };
+    if (uv <= 2) return { label: t('wth.uvLow'), color: 'text-emerald-400', stroke: '#34d399', bg: 'bg-emerald-500/20' };
+    if (uv <= 5) return { label: t('wth.uvMod'), color: 'text-amber-400', stroke: '#fbbf24', bg: 'bg-amber-500/20' };
+    if (uv <= 7) return { label: t('wth.uvHigh'), color: 'text-orange-400', stroke: '#fb923c', bg: 'bg-orange-500/20' };
+    if (uv <= 10) return { label: t('wth.uvVHigh'), color: 'text-rose-400', stroke: '#f87171', bg: 'bg-rose-500/20' };
+    return { label: t('wth.uvExtreme'), color: 'text-purple-400', stroke: '#c084fc', bg: 'bg-purple-500/20' };
   };
   const uvVal = typeof live?.uvIndex === 'number' ? live.uvIndex : 0;
   const uvLevel = getUvLevel(uvVal);
@@ -57,7 +60,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
       {/* 1. Rain Chance Beaker Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all group duration-300">
         <div className="flex items-center justify-between text-slate-400 mb-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">Rain Chance</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.rainChance')}</span>
           <Droplets size={16} className="text-blue-400 group-hover:scale-110 transition-transform" />
         </div>
         
@@ -65,7 +68,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
           <div>
             <span className="text-3xl font-black text-white">{rainProb != null ? `${rainProb}%` : '—'}</span>
             <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-              {rainProb == null ? 'Data unavailable' : rainProb >= 50 ? 'Rainfall expected' : 'Precipitation unlikely'}
+              {rainProb == null ? t('wth.dataUnavailable') : rainProb >= 50 ? t('wth.rainfallExpected') : t('wth.precipUnlikely')}
             </p>
           </div>
 
@@ -103,7 +106,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
       {/* 2. UV Index Dashboard Arc Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-500/5 transition-all group duration-300">
         <div className="flex items-center justify-between text-slate-400 mb-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">UV Index</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.uvIndex')}</span>
           <Sun size={16} className="text-amber-400 animate-spin-slow" />
         </div>
         
@@ -112,11 +115,11 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-white">{uvVal > 0 ? uvVal : '—'}</span>
               <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${uvVal > 0 ? uvLevel.bg : 'bg-white/10'} ${uvVal > 0 ? uvLevel.color : 'text-slate-400'}`}>
-                {uvVal > 0 ? uvLevel.label : 'N/A'}
+                {uvVal > 0 ? uvLevel.label : t('wth.uvNa')}
               </span>
             </div>
             <p className="text-[10px] text-slate-400 mt-1 leading-tight">
-              {uvVal > 0 ? (uvVal >= 6 ? 'Sun protection advised' : 'Safe solar exposure') : 'Not measured locally'}
+              {uvVal > 0 ? (uvVal >= 6 ? t('wth.uvProtection') : t('wth.uvSafe')) : t('wth.uvNotMeasured')}
             </p>
           </div>
 
@@ -145,15 +148,15 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
 
         {/* Small range marker */}
         <div className="flex justify-between text-[9px] text-slate-500 font-bold mt-2 border-t border-white/5 pt-1.5">
-          <span>0 (Low)</span>
-          <span>11+ (Ext)</span>
+          <span>0 ({t('wth.uvLow')})</span>
+          <span>11+ ({t('wth.uvExtreme')})</span>
         </div>
       </div>
 
       {/* 3. Wind Turbine & Compass Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-teal-500/40 hover:shadow-lg hover:shadow-teal-500/5 transition-all group duration-300">
         <div className="flex items-center justify-between text-slate-400 mb-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">Wind & Direction</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.windDirection')}</span>
           <Wind size={16} className="text-teal-400" />
         </div>
         
@@ -161,10 +164,10 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
           <div>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-white">{live.windSpeed}</span>
-              <span className="text-[10px] text-slate-400 font-bold">km/h</span>
+              <span className="text-[10px] text-slate-400 font-bold">{t('wth.kmh')}</span>
             </div>
             <p className="text-[10px] text-slate-400 mt-1 leading-tight">
-              Direction: <strong className="text-teal-300">{live.windDirection} ({live.windDegrees}°)</strong>
+              {t('wth.direction')} <strong className="text-teal-300">{live.windDirection} ({live.windDegrees}°)</strong>
             </p>
           </div>
 
@@ -197,14 +200,14 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
 
         {/* Advisory condition for farming */}
         <div className="text-[9px] text-slate-500 font-bold border-t border-white/5 pt-1.5 mt-2">
-          {live.windSpeed <= 15 ? '✓ Good for chemical spray' : '⚠️ Too windy for spraying'}
+          {live.windSpeed <= 15 ? t('wth.goodSpray') : t('wth.tooWindy')}
         </div>
       </div>
 
       {/* 4. Humidity Circular Ring Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-500/5 transition-all group duration-300">
         <div className="flex items-center justify-between text-slate-400 mb-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">Humidity</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.humidity')}</span>
           <Droplets size={16} className="text-cyan-400 animate-pulse" />
         </div>
         
@@ -212,7 +215,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
           <div>
             <span className="text-3xl font-black text-white">{live.humidity}%</span>
             <p className="text-[10px] text-slate-400 mt-1 leading-tight">
-              Dew point: <strong className="text-white">{formatTemp(live.dewPoint)}</strong>
+              {t('wth.dewPointLabel')} <strong className="text-white">{formatTemp(live.dewPoint)}</strong>
             </p>
           </div>
 
@@ -250,7 +253,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
       {/* 5. Barometric Pressure Dial Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-500/5 transition-all group duration-300">
         <div className="flex items-center justify-between text-slate-400 mb-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">Barometer</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.barometer')}</span>
           <Gauge size={16} className="text-purple-400 group-hover:rotate-12 transition-transform" />
         </div>
         
@@ -258,15 +261,15 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
           <div>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-black text-white">{live.pressureHpa}</span>
-              <span className="text-[10px] text-slate-400 font-bold">hPa</span>
+              <span className="text-[10px] text-slate-400 font-bold">{t('wth.hpa')}</span>
             </div>
             <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5 leading-tight">
-              <span>Trend:</span>
+              <span>{t('wth.trend')}</span>
               <strong className={`font-black ${
                 live.pressureTrend === 'Rising' ? 'text-emerald-400' :
                 live.pressureTrend === 'Falling' ? 'text-rose-400' : 'text-amber-400'
               }`}>
-                {live.pressureTrend} {live.pressureTrend === 'Rising' ? '↗' : live.pressureTrend === 'Falling' ? '↘' : '→'}
+                {live.pressureTrend === 'Rising' ? t('wth.rising') : live.pressureTrend === 'Falling' ? t('wth.falling') : t('wth.steady')} {live.pressureTrend === 'Rising' ? '↗' : live.pressureTrend === 'Falling' ? '↘' : '→'}
               </strong>
             </p>
           </div>
@@ -299,7 +302,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
       {/* 6. Sun Trajectory Solar Arc Card */}
       <div className="bg-slate-900/90 dark:bg-slate-950/90 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-500/5 transition-all group duration-300 col-span-2 sm:col-span-1">
         <div className="flex items-center justify-between text-slate-400 mb-1">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider">Sun trajectory</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider">{t('wth.sunTrajectory')}</span>
           <div className="flex items-center gap-1 text-amber-400">
             <Sunrise size={14} />
             <Sunset size={14} className="opacity-70" />
@@ -330,7 +333,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
             </svg>
             
             <span className="text-[9px] text-slate-300 pb-1 font-extrabold uppercase tracking-wide">
-              Daylight {live.daylightProgressPercent}%
+              {interpolate(t('wth.daylight'), { pct: live.daylightProgressPercent })}
             </span>
           </div>
 

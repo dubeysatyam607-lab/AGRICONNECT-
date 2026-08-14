@@ -8,5 +8,31 @@
     "password": "$2b$10$6uWkP5deHc.4tXxLswQDsuAGfeF4rknyN.L5m3Y0.PC.Ei/wzwttG",
     "createdAt": "2026-06-13T19:03:05.197Z",
     "updatedAt": "2026-06-13T19:03:05.197Z"
+  },
+  {
+    "_id": "1786526612774",
+    "role": "farmer",
+    "isVerified": false,
+    "name": "Test Farmer",
+    "email": "test@example.com",
+    "password": "$2a$10$wQHAiTDOFX2Sd3pl0gV6aebOEfvA06adurXrnHvtrhONm1Gnkc1yq",
+    "otpCode": "$2a$10$2ejG1U37qV3GLPxqyx95..GVirZqk3vYRPPcCWRBLShbxdUdEGSoG",
+    "otpExpiresAt": 1786526912565,
+    "createdAt": "2026-08-12T09:23:32.774Z",
+    "updatedAt": "2026-08-12T09:23:32.774Z"
+  },
+  {
+    "_id": "1786615305969",
+    "role": "farmer",
+    "isVerified": false,
+    "mfaEnabled": false,
+    "mfaSecret": null,
+    "name": "Audit Test",
+    "email": "audit.server2@gmail.com",
+    "password": "$2a$10$bxqG61rotRxSPTT6psj05elYqUdl8TQcebFK/Je0GXLDuBnRmlEUK",
+    "otpCode": "$2a$10$edaXsyxZAeTdAPESoJ9UmezndubO/.1eWChxoHQerFLQSunQT5E8C",
+    "otpExpiresAt": 1786615605799,
+    "createdAt": "2026-08-13T10:01:45.969Z",
+    "updatedAt": "2026-08-13T10:01:45.969Z"
   }
 ]

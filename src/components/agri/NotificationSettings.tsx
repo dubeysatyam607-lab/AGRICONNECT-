@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Bell, BellOff, TrendingUp, Cloud, Check } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -27,6 +28,7 @@ const readPrefs = (): { priceAlerts: boolean; weatherAlerts: boolean } => {
 };
 
 const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [priceAlerts, setPriceAlerts] = useState<boolean>(() => readPrefs().priceAlerts);
   const [weatherAlerts, setWeatherAlerts] = useState<boolean>(() => readPrefs().weatherAlerts);
   const { toast } = useToast();
@@ -88,7 +90,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
       <AgriCard className="p-4">
         <div className="text-center text-muted-foreground">
           <BellOff size={32} className="mx-auto mb-2 opacity-50" />
-          <p>Push notifications are not supported in this browser.</p>
+          <p>{t('agr118')}</p>
         </div>
       </AgriCard>
     );
@@ -103,7 +105,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
               {isSubscribed ? <Check size={20} /> : <Bell size={20} />}
             </div>
             <div>
-              <h3 className="font-bold text-foreground">Push Notifications</h3>
+              <h3 className="font-bold text-foreground">{t('agr119')}</h3>
               <p className="text-xs text-muted-foreground">
                 {isSubscribed ? 'Notifications are enabled' : 'Enable to receive alerts'}
               </p>
@@ -128,15 +130,15 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
       {isSubscribed && (
         <>
           <AgriCard className="p-4">
-            <h4 className="font-bold text-foreground mb-3">Alert Types</h4>
+            <h4 className="font-bold text-foreground mb-3">{t('agr120')}</h4>
             
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <TrendingUp size={18} className="text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">Price Alerts</p>
-                    <p className="text-xs text-muted-foreground">Get notified when commodity prices change</p>
+                    <p className="font-medium text-foreground">{t('agr121')}</p>
+                    <p className="text-xs text-muted-foreground">{t('agr122')}</p>
                   </div>
                 </div>
                 <Switch checked={priceAlerts} onCheckedChange={setPriceAlerts} />
@@ -146,8 +148,8 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
                 <div className="flex items-center gap-3">
                   <Cloud size={18} className="text-cyan-500" />
                   <div>
-                    <p className="font-medium text-foreground">Weather Warnings</p>
-                    <p className="text-xs text-muted-foreground">Alerts for rain, storms, and extreme weather</p>
+                    <p className="font-medium text-foreground">{t('agr123')}</p>
+                    <p className="text-xs text-muted-foreground">{t('agr124')}</p>
                   </div>
                 </div>
                 <Switch checked={weatherAlerts} onCheckedChange={setWeatherAlerts} />
@@ -156,7 +158,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
           </AgriCard>
 
           <AgriCard className="p-4">
-            <h4 className="font-bold text-foreground mb-3">Test Notifications</h4>
+            <h4 className="font-bold text-foreground mb-3">{t('agr125')}</h4>
             <div className="flex gap-2">
               <AgriButton size="sm" variant="outline" onClick={testPriceAlert} className="flex-1">
                 <TrendingUp size={14} /> Test Price

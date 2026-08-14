@@ -94,6 +94,14 @@ const ARTICLES = [
     excerpt: 'Real questions farmers ask the Kisan AI assistant — and the verified, crop-aware answers it gives.',
     to: '/features#ai-assistant',
   },
+    {
+      title: 'The Future of Farming Is Connected: How AgriConnect Is Building the Digital Infrastructure for Agriculture',
+      category: 'AgriConnect Insights',
+      readTime: '8 min read',
+      date: '2026-08-11',
+      excerpt: 'Agriculture is entering a new technological era. For decades, farmers have faced weather uncertainty, price fluctuations, crop diseases, and fragmented services. AgriConnect is building a unified digital infrastructure to empower farmers.',
+      to: '/blogs/future-of-farming',
+    },
 ];
 
 const Blog: React.FC = () => {

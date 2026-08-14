@@ -67,12 +67,14 @@ const emit = (): void => listeners.forEach((l) => l());
 
 /* ── Session ──────────────────────────────────────────────────────────── */
 
+// No hardcoded demo administrator. The actor identity is only ever what was
+// stored from a real authenticated session; an empty session means "unknown".
 const defaultSession = (): AdminSession => ({
-  userId: 'admin-1',
-  name: 'Priya Sharma',
-  email: 'priya@agriconnnect.app',
-  roleId: 'role-super',
-  roleName: 'Super Admin',
+  userId: '',
+  name: '',
+  email: '',
+  roleId: '',
+  roleName: '',
 });
 
 export const getAdminSession = (): AdminSession => {

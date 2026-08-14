@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '../components/PageHeader';
@@ -21,7 +22,7 @@ const COLUMNS: DataColumn<SchemeEntity>[] = [
   { key: 'benefit', header: 'Benefit', className: 'hidden lg:table-cell' },
   { key: 'eligibility', header: 'Eligibility', className: 'hidden lg:table-cell' },
   { key: 'state', header: 'Coverage' },
-  { key: 'deadline', header: 'Deadline', render: (r) => (r.deadline ? <span className="text-muted-foreground">{shortDate(r.deadline)}</span> : <span className="text-muted-foreground">Open</span>) },
+  { key: 'deadline', header: 'Deadline', render: (r) => (r.deadline ? <span className="text-muted-foreground">{shortDate(r.deadline)}</span> : <span className="text-muted-foreground">{t('adm34')}</span>) },
   { key: 'status', header: 'Status', render: (r) => <AdminStatusBadge status={r.status} /> },
 ];
 
@@ -40,6 +41,7 @@ const FIELDS: FormField[] = [
 ];
 
 export function SchemesModule() {
+  const { t } = useLanguage();
   const { rows, create, update, remove, removeMany, setStatus } = useAdminCrud({ key: 'schemes', label: 'Scheme', idKey: 'id' });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SchemeEntity | null>(null);

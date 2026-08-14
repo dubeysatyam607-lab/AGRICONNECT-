@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { authRemoteDataSource } from '@/features/auth/data/datasources/AuthRemoteDataSource';
 import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -9,6 +10,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, fullName?: string, phone?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  verifyOtp: (email: string, token: string) => Promise<{ error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +65,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.location.href = '/login';
   };
 
+  // Verify OTP after registration
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await authRemoteDataSource.verifyOtp(email, token);
+    return { error };
+  };
+
   const signUp = async (email: string, password: string, fullName?: string, phone?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -78,15 +86,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const ip = undefined; // TODO: retrieve client IP if needed
+    const { error } = await authRemoteDataSource.signIn(email, password, ip);
     return { error };
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, signUp, signIn }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut, signUp, signIn, verifyOtp }}>
       {children}
     </AuthContext.Provider>
   );

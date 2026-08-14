@@ -46,6 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     const token = authHeader.slice(7);
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!vapidPublicKey || !vapidPrivateKey) {
       throw new Error("VAPID keys not configured");
@@ -60,18 +61,39 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Verify authentication token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
-        { status: 401, headers: { ...headers, 'Content-Type': 'application/json' } }
-      );
+
+    // Trusted internal callers (cron workers like price-alert-worker) present
+    // the service-role key and target an explicit userId instead of a client JWT.
+    const isInternal = serviceRoleKey !== undefined && token === serviceRoleKey;
+
+    const body: PushNotificationRequest = await req.json();
+    const { userId, type, title, body: messageBody, data }: PushNotificationRequest = body;
+
+    // Only the authenticated user's own subscriptions may be targeted. For
+    // internal calls the caller (e.g. price-alert-worker) supplies the userId.
+    let targetUserId: string;
+    if (isInternal) {
+      if (!body.userId) {
+        return new Response(
+          JSON.stringify({ error: 'Internal call requires userId' }),
+          { status: 400, headers: { ...headers, 'Content-Type': 'application/json' } }
+        );
+      }
+      targetUserId = body.userId;
+    } else {
+      // Verify authentication token (client JWT -> real user)
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+          { status: 401, headers: { ...headers, 'Content-Type': 'application/json' } }
+        );
+      }
+      targetUserId = user.id;
     }
     
     // Rate limiting (per user, persisted via rate_limits table)
-    const rateLimit = await checkRateLimit(user.id, "send-push", {
+    const rateLimit = await checkRateLimit(targetUserId, "send-push", {
       maxRequests: 500,
       windowMs: 24 * 60 * 60 * 1000, // 500 notifications per day
     });
@@ -90,11 +112,6 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
-
-    const { userId, type, title, body, data }: PushNotificationRequest = await req.json();
-
-    // Only the authenticated user's own subscriptions may be targeted
-    const targetUserId = user.id;
 
     // Build query to get subscriptions
     let query = supabase
@@ -124,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const payload = JSON.stringify({
       title,
-      body,
+      body: messageBody,
       icon: "/apple-touch-icon.png",
       badge: "/agriconnect-icon-64.png",
       data: { ...data, type },

@@ -94,26 +94,6 @@ const invokeWithTimeout = async (fnName: string, body: Record<string, unknown>, 
   }
 };
 
-const cleanHindiText = (text: string): string => {
-  const replacements: Record<string, string> = {
-    bazaar: "बाज़ार",
-    market: "बाज़ार",
-    urea: "यूरिया",
-    pesticide: "पेस्टिसाइड",
-    fertilizer: "उर्वरक",
-  };
-
-  let cleaned = text;
-  Object.entries(replacements).forEach(([key, value]) => {
-    cleaned = cleaned.replace(new RegExp(`\\b${key}\\b`, "gi"), value);
-  });
-
-  cleaned = cleaned.replace(/\s*,\s*/g, "，");
-  cleaned = cleaned.replace(/\s+/g, " ").trim();
-  cleaned = cleaned.replace(/，/g, ",");
-  return cleaned;
-};
-
 // Language-specific greeting messages
 const GREETINGS: Record<string, string> = {
   "English (India)": "Hello! 🙏 I am Kisan Sahayak — India's smartest farming assistant. Ask me about crop diseases, fertilizers, irrigation, pests, govt schemes, mandi prices, or nearby markets & shops.",
@@ -360,15 +340,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     };
   }, [user, greeting]);
 
-  // Sync speak status
+  // Stop any ongoing ElevenLabs speech when the chat unmounts. The engine's
+  // onStart/onProgress/onEnd callbacks own the isSpeaking state (the Web Audio
+  // engine is NOT tied to window.speechSynthesis).
   useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const checkSpeaking = setInterval(() => {
-      setIsSpeaking(window.speechSynthesis.speaking);
-    }, 150);
     return () => {
-      clearInterval(checkSpeaking);
       stopSpeaking();
+      speakControllerRef.current = null;
     };
   }, []);
 
@@ -627,39 +605,51 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     setSpeakPaused(false);
   };
 
-  const playAzureTts = async (text: string) => {
-    const cleanedText = cleanHindiText(text);
-    const response = await fetch("/api/tts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: cleanedText }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Azure TTS request failed");
-    }
-
-    const audioData = await response.arrayBuffer();
-    const blob = new Blob([audioData], { type: "audio/mpeg" });
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audioRef.current = audio;
-
-    audio.onended = () => {
-      setIsSpeaking(false);
-      audioRef.current = null;
-      URL.revokeObjectURL(url);
-    };
-    audio.onerror = () => {
-      setIsSpeaking(false);
-      audioRef.current = null;
-      URL.revokeObjectURL(url);
-    };
-
+  /**
+   * Speak an assistant reply through the ElevenLabs neural engine with live
+   * sentence subtitles and transport controls. Text is always sanitised inside
+   * the engine so no markdown/symbol is ever read aloud.
+   */
+  const playAssistantVoice = (text: string) => {
+    const langCode = getSpeechLangCode(selectedLanguage);
+    const chunks = chunkForSpeech(textForSpeech(text, langCode));
+    setSpeakActive("engine");
     setIsSpeaking(true);
-    await audio.play();
+    setSpeakPaused(false);
+    setSpeakingSentence(chunks[0] || "");
+    setSpeakTotal(chunks.length);
+    setSpeakIndex(0);
+    const controller = engineSpeakText(text, langCode, {
+      onStart: (total) => {
+        setSpeakTotal(total || chunks.length);
+        setIsSpeaking(true);
+      },
+      onProgress: (p) => {
+        setSpeakingSentence(chunks[p.sentenceIndex] || "");
+        setSpeakTotal(chunks.length);
+        setSpeakIndex(p.sentenceIndex);
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        setSpeakActive(null);
+        setSpeakingSentence("");
+        speakControllerRef.current = null;
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setSpeakActive(null);
+        setSpeakingSentence("");
+        speakControllerRef.current = null;
+        toast({
+          title: isHindi ? "आवाज़ सेवा में समस्या" : "Voice service issue",
+          description: isHindi
+            ? "माफ़ कीजिए, आवाज़ इस समय उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर कोशिश करें।"
+            : "Sorry, voice is unavailable right now. Please try again shortly.",
+          variant: "destructive",
+        });
+      },
+    });
+    speakControllerRef.current = controller;
   };
 
   // Start the word-by-word typing animation for a given text
@@ -911,11 +901,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       startTypingAnimation(assistantResponse);
 
       if (autoSpeak) {
-        try {
-          await playAzureTts(assistantResponse);
-        } catch {
-          engineSpeakText(assistantResponse, getSpeechLangCode(selectedLanguage));
-        }
+        playAssistantVoice(assistantResponse);
       }
 
     } catch (err: any) {
@@ -940,40 +926,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       stopAllSpeaking();
       return;
     }
-    // Interactive "Listen" — engine speaks with live sentence subtitles so the
-    // farmer follows along word by word, plus pause/replay/speed controls.
-    const langCode = getSpeechLangCode(selectedLanguage);
-    const chunks = chunkForSpeech(textForSpeech(text, langCode));
-    setSpeakActive("engine");
-    setIsSpeaking(true);
-    setSpeakPaused(false);
-    setSpeakingSentence(chunks[0] || "");
-    setSpeakTotal(chunks.length);
-    setSpeakIndex(0);
-    const controller = engineSpeakText(text, langCode, {
-      onStart: (total) => {
-        setSpeakTotal(total || chunks.length);
-        setIsSpeaking(true);
-      },
-      onProgress: (p) => {
-        setSpeakingSentence(chunks[p.sentenceIndex] || "");
-        setSpeakTotal(chunks.length);
-        setSpeakIndex(p.sentenceIndex);
-      },
-      onEnd: () => {
-        setIsSpeaking(false);
-        setSpeakActive(null);
-        setSpeakingSentence("");
-        speakControllerRef.current = null;
-      },
-      onError: () => {
-        setIsSpeaking(false);
-        setSpeakActive(null);
-        setSpeakingSentence("");
-        speakControllerRef.current = null;
-      },
-    });
-    speakControllerRef.current = controller;
+    playAssistantVoice(text);
   };
 
   const handleSpeakControls = {
@@ -1224,7 +1177,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             title="Start New Conversation"
           >
             <Plus size={14} />
-            <span className="hidden sm:inline">New</span>
+            <span className="hidden sm:inline">{t('agr216')}</span>
           </button>
 
           <button
@@ -1249,7 +1202,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         {isOffline && (
           <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-600/90 to-rose-700/90 text-center py-1.5 px-3 z-30 flex items-center justify-center gap-2 text-xs font-bold shadow-md border-b border-white/10">
             <WifiOff size={14} className="text-white animate-bounce" />
-            <span>Connection offline. Showing locally cached AI responses.</span>
+            <span>{t('agr217')}</span>
           </div>
         )}
 
@@ -1261,7 +1214,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           )}
         >
           <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Conversations</span>
+            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">{t('agr218')}</span>
             <button
               onClick={() => setShowHistory(false)}
               className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
@@ -1272,7 +1225,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           </div>
           <div className="p-2 space-y-1 overflow-y-auto max-h-[85vh] no-scrollbar">
             {sessions.length === 0 ? (
-              <p className="text-[11px] text-slate-500 italic p-3 text-center">No cached history found.</p>
+              <p className="text-[11px] text-slate-500 italic p-3 text-center">{t('agr219')}</p>
             ) : (
               sessions.map(s => (
                 <div
@@ -1311,7 +1264,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   🌱
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-white">Smart Farming Assistance</h3>
+                  <h3 className="font-extrabold text-sm text-white">{t('agr220')}</h3>
                   <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
                     Ask about crops, upload a leaf photo to diagnose, or find nearby mandis & shops.
                   </p>
@@ -1494,8 +1447,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                     <img src={imagePreview} alt="Attached upload" className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <span className="text-[10px] text-emerald-400 font-extrabold uppercase">Crop Image Attached</span>
-                    <p className="text-[10px] text-slate-400 truncate max-w-[120px]">Ready for AI diagnosis</p>
+                    <span className="text-[10px] text-emerald-400 font-extrabold uppercase">{t('agr221')}</span>
+                    <p className="text-[10px] text-slate-400 truncate max-w-[120px]">{t('agr222')}</p>
                   </div>
                 </div>
                 <button

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Briefcase, MapPin, Phone, ExternalLink, UserPlus } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { LABORERS } from "@/lib/mock-data";
+
 import { LaborHireForm } from "./FormValidation";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,16 +13,17 @@ interface LaborHireProps {
 }
 
 const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [laborersList, setLaborersList] = useState(LABORERS);
-  const [usingSample, setUsingSample] = useState(true);
+  const [laborersList, setLaborersList] = useState([]);
+  
 
   useEffect(() => {
     const fetchLaborers = async () => {
       const { data, error } = await supabase.from('laborers').select('*').returns<typeof LABORERS>();
       if (data && !error && data.length > 0) {
         setLaborersList(data);
-        setUsingSample(false);
+        
       }
     };
     fetchLaborers();
@@ -78,11 +80,7 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
         </AgriButton>
       </div>
 
-      {usingSample && (
-        <div className="mb-4 rounded-xl border border-amber-300/40 bg-amber-50 dark:bg-amber-950/20 px-3.5 py-2.5 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
-          Sample listings — real labor teams appear here once they are added.
-        </div>
-      )}
+
 
       <div className="space-y-4">
         {laborersList.map((labor) => (
@@ -104,11 +102,11 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
 
             <div className="bg-muted p-3 rounded-xl flex justify-between items-center text-sm">
               <div>
-                <p className="text-muted-foreground text-xs">Skill</p>
+                <p className="text-muted-foreground text-xs">{t('agr106')}</p>
                 <p className="font-semibold text-foreground">{labor.skill}</p>
               </div>
               <div className="text-right">
-                <p className="text-muted-foreground text-xs">Daily Rate</p>
+                <p className="text-muted-foreground text-xs">{t('agr107')}</p>
                 <p className="font-bold text-primary">
                   ₹{labor.rate}
                   <span className="text-xs font-normal text-muted-foreground">

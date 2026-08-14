@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run --environment jsdom",
-    "test:staging": "vitest run tests/staging/rls.test.ts --exclude ''"
+    "test:staging": "vitest run tests/staging/rls.test.ts --exclude ''",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -82,14 +83,19 @@
     "three": "^0.184.0",
     "three-stdlib": "^2.36.1",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "csurf": "^1.11.0",
+    "cookie-parser": "^1.4.6",
+    "qrcode": "^1.5.3",
+    "otplib": "^12.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
-    "@types/node": "^22.16.5",
+    "@types/node": "^22.20.1",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
@@ -103,6 +109,7 @@
     "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",

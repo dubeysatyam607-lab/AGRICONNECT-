@@ -217,13 +217,13 @@ const AgriConnectFooter: React.FC = () => {
 
               {/* Contact */}
               <div className="mt-6 space-y-2.5 text-[13px]">
-                <a href="mailto:support@agriconnect.in" className="group inline-flex items-center gap-2.5 font-medium text-muted-foreground hover:text-foreground transition-colors">
+                <a href="mailto:hello.agriconnect@gmail.com" className="group inline-flex items-center gap-2.5 font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary"><Mail className="h-4 w-4" /></span>
-                  <span>support@agriconnect.in</span>
+                  <span>hello.agriconnect@gmail.com</span>
                 </a>
-                <a href="tel:+919876543210" className="group inline-flex items-center gap-2.5 font-medium text-muted-foreground hover:text-foreground transition-colors">
+                <a href="tel:+917067820256" className="group inline-flex items-center gap-2.5 font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary"><Phone className="h-4 w-4" /></span>
-                  <span>+91-9876543210</span>
+                  <span>+91-7067820256</span>
                 </a>
               </div>
             </div>

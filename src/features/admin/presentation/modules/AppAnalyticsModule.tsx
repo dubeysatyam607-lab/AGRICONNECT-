@@ -1,4 +1,5 @@
 import { Users, UserPlus, Activity, TrendingUp } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Line, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend, LineChart, BarChart } from 'recharts';
 import { PageHeader } from '../components/PageHeader';
 import { StatCard } from '../components/StatCard';
@@ -13,6 +14,7 @@ const CONFIG = {
 };
 
 export function AppAnalyticsModule() {
+  const { t } = useLanguage();
   const state = useAdminStore();
   const series = state.appAnalytics;
   const latest = series[series.length - 1];
@@ -34,7 +36,7 @@ export function AppAnalyticsModule() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border bg-card p-4">
-          <p className="mb-3 text-sm font-semibold text-foreground">Active Users — last 14 days</p>
+          <p className="mb-3 text-sm font-semibold text-foreground">{t('adm12')}</p>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="opacity-10" />
@@ -57,7 +59,7 @@ export function AppAnalyticsModule() {
         </div>
 
         <div className="rounded-xl border bg-card p-4">
-          <p className="mb-3 text-sm font-semibold text-foreground">Orders & Signups — last 14 days</p>
+          <p className="mb-3 text-sm font-semibold text-foreground">{t('adm13')}</p>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="opacity-10" />

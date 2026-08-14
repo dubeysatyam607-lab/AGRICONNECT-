@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ChevronsUpDown,
   Globe,
@@ -84,11 +87,35 @@ function NavItems({
 }
 
 export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
+  const { t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [displayRole, setDisplayRole] = useState('');
   const { resolvedTheme, toggleTheme } = useThemeManager();
   const session = getAdminSession();
   const currentModule = getAdminModule(current);
+
+  // Derive the identity shown in the header from the real authenticated
+  // Supabase session — never a stored/hardcoded demo admin.
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const meta = user?.user_metadata ?? {};
+      const name = user?.email ? (meta.full_name || user.email.split('@')[0] || '') : '';
+      const role = (user?.user_metadata?.role as string) || '';
+      if (mounted) {
+        setDisplayName(name);
+        setDisplayRole(role);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const actorName = displayName || session.name;
 
   const navigate = (key: string) => {
     onNavigate(key);
@@ -101,8 +128,8 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
         <Leaf className="h-4.5 w-4.5" />
       </div>
       <div className="leading-tight">
-        <p className="text-sm font-bold text-foreground">AgriConnect</p>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Admin Console</p>
+        <p className="text-sm font-bold text-foreground">{t('adm0')}</p>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{t('adm1')}</p>
       </div>
     </div>
   );
@@ -116,12 +143,12 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
         <div className="border-t p-3">
           <div className="rounded-lg bg-muted/60 px-3 py-2.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">Demo data</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('adm2')}</p>
               <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" title="Reset demo data" onClick={() => setConfirmReset(true)}>
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground/80">Local-first, persists in this browser.</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground/80">{t('adm3')}</p>
           </div>
         </div>
       </aside>
@@ -134,14 +161,14 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0">
-          <SheetTitle className="sr-only">Admin navigation</SheetTitle>
+          <SheetTitle className="sr-only">{t('adm4')}</SheetTitle>
           <div className="flex h-full flex-col">
             <div className="flex h-14 items-center justify-between border-b px-4">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Leaf className="h-4 w-4" />
                 </div>
-                <span className="text-sm font-bold">AgriConnect Admin</span>
+                <span className="text-sm font-bold">{t('adm5')}</span>
               </div>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobileOpen(false)}>
                 <X className="h-4 w-4" />
@@ -177,12 +204,12 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
             <div className="flex items-center gap-2 rounded-lg border px-2 py-1.5">
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                  {initials(session.name)}
+                  {initials(actorName)}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden leading-tight md:block">
-                <p className="text-xs font-semibold text-foreground">{session.name}</p>
-                <p className="text-[10px] text-muted-foreground">{session.roleName}</p>
+                <p className="text-xs font-semibold text-foreground">{actorName}</p>
+                <p className="text-[10px] text-muted-foreground">{displayRole || session.roleName}</p>
               </div>
               <ChevronsUpDown className="hidden h-3.5 w-3.5 text-muted-foreground md:block" />
             </div>
@@ -196,13 +223,13 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
       <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset demo data?</AlertDialogTitle>
+            <AlertDialogTitle>{t('adm6')}</AlertDialogTitle>
             <AlertDialogDescription>
               This restores all modules to their original seed data. Any admin changes made in this browser will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('adm7')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 resetAdminData();

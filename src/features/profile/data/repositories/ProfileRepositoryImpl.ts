@@ -20,6 +20,9 @@ export class ProfileRepositoryImpl implements IProfileRepository {
 
   public async getProfile(userId?: string): Promise<IFarmerProfile> {
     const activeId = userId || (await this.getActiveUserId());
+    if (!activeId) {
+      throw new Error('Profile unavailable — no authenticated user.');
+    }
 
     // 1. Try reading from SecureStorage cache first for instant 60 FPS loading
     try {
@@ -41,10 +44,9 @@ export class ProfileRepositoryImpl implements IProfileRepository {
       return remote;
     }
 
-    // 3. Fallback to production-ready seed demo profile
-    const fallback = ProfileRemoteDataSource.getDefaultProfile(activeId);
-    await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(fallback));
-    return fallback;
+    // 3. No remote row yet — return an empty profile scaffold for the user to complete.
+    const scaffold = ProfileRemoteDataSource.getDefaultProfile(activeId);
+    return scaffold;
   }
 
   public async updateProfile(profile: IFarmerProfile): Promise<IFarmerProfile> {
@@ -125,9 +127,9 @@ export class ProfileRepositoryImpl implements IProfileRepository {
   private async getActiveUserId(): Promise<string> {
     try {
       const { data } = await supabase.auth.getSession();
-      return data.session?.user?.id || 'demo-farmer-id';
+      return data.session?.user?.id || '';
     } catch {
-      return 'demo-farmer-id';
+      return '';
     }
   }
 }

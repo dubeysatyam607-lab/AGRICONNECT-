@@ -1,6 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { IFarmerUser, IAuthSession, IDeviceSession } from '../../domain/models/User';
 import { AuthException, ServerException, ValidationException } from '@/core/errors/AppException';
+import { EmailRegex } from '../../domain/models/AuthValidations';
+import { auditLog } from '@/utils/auditLog';
 
 /**
  * Enterprise Remote Data Source for Complete Authentication Suite.
@@ -19,65 +21,95 @@ const RATE_LIMIT = {
   cooldownMs: 30_000,
 };
 
+// Per‑action limits (can be overridden via environment variables)
+const PER_ACTION_LIMITS: Record<string, { maxAttempts: number; windowMs: number; cooldownMs: number }> = {
+  signin: { maxAttempts: Number(process.env.RATE_LIMIT_SIGNIN_MAX) || 5, windowMs: Number(process.env.RATE_LIMIT_SIGNIN_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_SIGNIN_COOLDOWN) || 30_000 },
+  signup: { maxAttempts: Number(process.env.RATE_LIMIT_SIGNUP_MAX) || 3, windowMs: Number(process.env.RATE_LIMIT_SIGNUP_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_SIGNUP_COOLDOWN) || 60_000 },
+  'send-otp': { maxAttempts: Number(process.env.RATE_LIMIT_SENDOTP_MAX) || 1, windowMs: Number(process.env.RATE_LIMIT_SENDOTP_WINDOW) || 60_000, cooldownMs: Number(process.env.RATE_LIMIT_SENDOTP_COOLDOWN) || 0 },
+  'verify-otp': { maxAttempts: Number(process.env.RATE_LIMIT_VERIFYOTP_MAX) || 5, windowMs: Number(process.env.RATE_LIMIT_VERIFYOTP_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_VERIFYOTP_COOLDOWN) || 0 },
+};
+
 const attemptLog: Record<string, number[]> = {};
 const cooldowns: Record<string, number> = {};
+// Track last OTP sent timestamp per email to avoid duplicate OTP emails within validity period
+const lastOtpSent: Record<string, number> = {};
 
-function rateLimitKey(action: string, identifier: string): string {
-  return `${action}:${identifier.trim().toLowerCase()}`;
+/**
+ * Clears all in-memory rate-limit/throttle state. Exposed for test isolation
+ * so unit tests can exercise the datasource without leaking attempts across
+ * test cases. Not used in production flows.
+ */
+export function resetAuthRateLimits(): void {
+  for (const key of Object.keys(attemptLog)) delete attemptLog[key];
+  for (const key of Object.keys(cooldowns)) delete cooldowns[key];
+  for (const key of Object.keys(lastOtpSent)) delete lastOtpSent[key];
+  AuthRemoteDataSource.pendingOtpRequests = {};
 }
 
-function assertWithinRateLimit(action: string, identifier: string): void {
+function rateLimitKey(action: string, identifier: string, ip?: string): string {
+  const base = `${action}:${identifier.trim().toLowerCase()}`;
+  return ip ? `${base}:ip:${ip}` : base;
+}
+
+function assertWithinRateLimit(action: string, identifier: string, ip?: string): void {
   const now = Date.now();
-  const key = rateLimitKey(action, identifier);
+  const key = rateLimitKey(action, identifier, ip);
+
+  // Use per‑action configuration if available
+  const limits = PER_ACTION_LIMITS[action] || RATE_LIMIT;
 
   const cooldownUntil = cooldowns[key];
   if (cooldownUntil && now < cooldownUntil) {
     const seconds = Math.max(1, Math.ceil((cooldownUntil - now) / 1000));
-    throw new AuthException(
-      `Too many attempts. Please wait ${seconds}s and try again.`,
-      429,
-    );
+    throw new AuthException(`Too many attempts. Please wait ${seconds}s and try again.`, 429);
   }
 
-  const recent = (attemptLog[key] || []).filter((t) => now - t < RATE_LIMIT.windowMs);
-  if (recent.length >= RATE_LIMIT.maxAttempts) {
-    cooldowns[key] = now + RATE_LIMIT.cooldownMs;
+  const recent = (attemptLog[key] || []).filter((t) => now - t < limits.windowMs);
+  if (recent.length >= limits.maxAttempts) {
+    cooldowns[key] = now + limits.cooldownMs;
     delete attemptLog[key];
-    throw new AuthException(
-      'Too many attempts. Please wait 30 seconds before trying again.',
-      429,
-    );
+    throw new AuthException('Too many attempts. Please wait before trying again.', 429);
   }
 
   recent.push(now);
   attemptLog[key] = recent;
 }
 
-function recordAuthSuccess(action: string, identifier: string): void {
-  const key = rateLimitKey(action, identifier);
+function recordAuthSuccess(action: string, identifier: string, ip?: string): void {
+  const key = rateLimitKey(action, identifier, ip);
   delete attemptLog[key];
   delete cooldowns[key];
 }
 
 export class AuthRemoteDataSource {
-  public async signIn(email: string, password: string): Promise<IAuthSession> {
-    assertWithinRateLimit('signin', email);
+  // In-memory lock to prevent duplicate OTP requests per email
+  private static pendingOtpRequests: Record<string, Promise<void>> = {};
+
+  public async signIn(email: string, password: string, ip?: string): Promise<IAuthSession> {
+    // Validate email format early to avoid leaking existence information
+    if (!EmailRegex.test(email.trim())) {
+      throw new ValidationException('Please provide a valid email address.');
+    }
+    assertWithinRateLimit('signin', email, ip);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error.status === 400 || error.message.includes('Invalid login credentials')) {
-        throw new AuthException('Incorrect email or password. Please try again.', 401, error);
-      }
-      throw new ServerException(error.message, error.status || 500, error);
+      // Uniform error message to prevent enumeration
+      throw new AuthException('Invalid credentials. Please try again.', 401, error);
     }
     if (!data.session || !data.user) {
       throw new AuthException('Session creation failed. Please try again.', 401);
     }
-    recordAuthSuccess('signin', email);
+    recordAuthSuccess('signin', email, ip);
+    await auditLog({ action: 'signin_success', identifier: email, ip, outcome: 'success' });
     return this.mapSession(data.session, data.user, 'password');
   }
 
-  public async signUp(email: string, password: string, fullName: string, phone?: string): Promise<IAuthSession> {
-    assertWithinRateLimit('signup', email);
+  public async signUp(email: string, password: string, fullName: string, phone?: string, ip?: string): Promise<IAuthSession> {
+    // Validate email early
+    if (!EmailRegex.test(email.trim())) {
+      throw new ValidationException('Please provide a valid email address.');
+    }
+    assertWithinRateLimit('signup', email, ip);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -91,15 +123,13 @@ export class AuthRemoteDataSource {
     });
 
     if (error) {
-      if (error.message.includes('already registered') || error.status === 422 || error.status === 400) {
-        throw new ValidationException('An account with this email already exists.', { email: 'Already registered' }, error);
-      }
-      throw new ServerException(error.message, error.status || 500, error);
+      // Generic response to avoid revealing existence
+      throw new ValidationException('Unable to register at this time. Please try again later.', {}, error);
     }
 
     if (!data.session || !data.user) {
-      throw new ServerException('Please confirm your email address to finish registering, then sign in.', 401);
-    }
+        throw new ServerException('Registration succeeded. Please verify your email before signing in.', 401);
+      }
 
     const session: IAuthSession = {
       user: {
@@ -117,46 +147,91 @@ export class AuthRemoteDataSource {
       authMethod: 'password',
     };
 
+    await auditLog({ action: 'signup_success', identifier: email, ip, outcome: 'success' });
     return session;
   }
 
-  public async sendOtp(target: string, type: 'phone' | 'email'): Promise<void> {
-    assertWithinRateLimit('send-otp', target);
-    if (type === 'phone') {
-      const { error } = await supabase.auth.signInWithOtp({ phone: target });
-      if (error) {
-        throw new ServerException(error.message, error.status || 500, error);
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithOtp({ email: target });
-      if (error) {
-        throw new ServerException(error.message, error.status || 500, error);
-      }
+  /**
+   * Send an email OTP to the given address.
+   * Only email OTP is supported — phone OTP is rejected at the data layer.
+   * When signing up (meta supplied) the user is created on successful
+   * verification via `shouldCreateUser`.
+   */
+  public async sendOtp(email: string, type: 'phone' | 'email' = 'email', meta?: { full_name?: string; phone?: string }, ip?: string): Promise<void> {
+    if (type !== 'email') {
+      throw new AuthException('Mobile OTP is not supported. Please use your email address instead.', 400);
     }
+    const normalized = email.trim().toLowerCase();
+    if (!EmailRegex.test(normalized)) {
+      throw new ValidationException('Please enter a valid email address to receive the OTP.');
+    }
+    // If a request is already in progress for this email, return the existing promise
+    if (AuthRemoteDataSource.pendingOtpRequests[normalized]) {
+      return AuthRemoteDataSource.pendingOtpRequests[normalized];
+    }
+    // Generic rate limit handling – do not disclose whether the email exists
+    assertWithinRateLimit('send-otp', normalized, ip);
+    const now = Date.now();
+    if (lastOtpSent[normalized] && now - lastOtpSent[normalized] < 5 * 60 * 1000) {
+      // Generic throttling response
+      throw new AuthException('Too many OTP requests. Please try again later.', 429);
+    }
+    const requestPromise = (async () => {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalized,
+        options: meta
+          ? {
+              shouldCreateUser: true,
+              data: {
+                full_name: meta.full_name ?? '',
+                phone: meta.phone ?? '',
+                role: 'farmer',
+              },
+            }
+          : undefined,
+      });
+      if (error) {
+        throw new ServerException(error.message, error.status || 500, error);
+      }
+    })();
+    AuthRemoteDataSource.pendingOtpRequests[normalized] = requestPromise;
+    try {
+      await requestPromise;
+      // Record the timestamp of successful OTP dispatch
+      lastOtpSent[normalized] = Date.now();
+    } finally {
+      delete AuthRemoteDataSource.pendingOtpRequests[normalized];
+    }
+    await auditLog({ action: 'send_otp_success', identifier: normalized, ip, outcome: 'success' });
   }
 
-  public async verifyOtp(target: string, token: string, type: 'phone' | 'email'): Promise<IAuthSession> {
-    assertWithinRateLimit('verify-otp', target);
+  public async verifyOtp(email: string, token: string, type: 'phone' | 'email' = 'email', ip?: string): Promise<IAuthSession> {
+    if (type !== 'email') {
+      throw new AuthException('Mobile OTP is not supported. Please use your email address instead.', 400);
+    }
+    const normalized = email.trim().toLowerCase();
+    const cleanToken = token.trim();
+    if (!/^\d{6}$/.test(cleanToken)) {
+      throw new ValidationException('Please enter the 6-digit code sent to your email.');
+    }
+    assertWithinRateLimit('verify-otp', normalized, ip);
     const { data, error } = await supabase.auth.verifyOtp({
-      [type === 'phone' ? 'phone' : 'email']: target,
-      token,
-      type: type === 'phone' ? 'sms' : 'magiclink',
+      email: normalized,
+      token: cleanToken,
+      type: 'email',
     } as any);
 
     if (error) {
-      throw new AuthException(
-        'Invalid or expired OTP code. Please request a new code.',
-        401,
-        error,
-      );
+      throw new AuthException('Invalid or expired OTP code. Please request a new code.', 401, error);
     }
 
     if (!data.session || !data.user) {
       throw new AuthException('OTP verified but session creation failed.', 401);
     }
 
-    recordAuthSuccess('verify-otp', target);
-    return this.mapSession(data.session, data.user, type === 'phone' ? 'otp_phone' : 'otp_email');
+    recordAuthSuccess('verify-otp', email, ip);
+    await auditLog({ action: 'verify_otp_success', identifier: normalized, ip, outcome: 'success' });
+    return this.mapSession(data.session, data.user, 'otp_email');
   }
 
   public async signInWithOAuth(provider: 'google' | 'apple'): Promise<void> {

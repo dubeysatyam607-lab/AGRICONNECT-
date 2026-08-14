@@ -129,6 +129,25 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     }
   }, [location, fetchWeatherForCoords]);
 
+  // Resolve the loading state if location never becomes available (GPS prompt
+  // denied/ignored, geolocation unsupported). Never leave an infinite spinner.
+  useEffect(() => {
+    if (state.loading && (location.status === 'idle' || location.status === 'loading')) {
+      const t = setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          data: prev.data || readStaleCache<IWeatherModuleData>(CACHE_KEY),
+          loading: false,
+          refreshing: false,
+          error: prev.data || readStaleCache<IWeatherModuleData>(CACHE_KEY)
+            ? null
+            : 'Location unavailable. Please allow location access or choose your location manually.',
+        }));
+      }, 12000);
+      return () => clearTimeout(t);
+    }
+  }, [state.loading, location.status]);
+
   return {
     ...state,
     refreshLocation,
