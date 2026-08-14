@@ -190,9 +190,11 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Current Supabase send_email hook payload:
+    //   { user: {...}, email_data: { token, token_hash, redirect_to,
+    //     email_action_type, site_url, token_new, token_hash_new } }
     const user = hookPayload.user;
-    const template = hookPayload.template || {};
-    const token = hookPayload.token || {};
+    const emailData = hookPayload.email_data || {};
 
     const to = user?.email;
     if (!to) {
@@ -200,9 +202,18 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ error: "Missing recipient" }), { status: 400 });
     }
 
-    const templateType: string = template.template || template.template_type || "signup";
-    const otp: string = token.token_hash || "";
-    const linkUrl: string = template.url || token.redirect_to || APP_URL;
+    // The 6-digit one-time code generated per user (each person gets their own).
+    const otp: string = (emailData.token || "").trim();
+    const tokenHash: string = emailData.token_hash || "";
+    const emailActionType: string = emailData.email_action_type || "signup";
+    const redirectTo: string = emailData.redirect_to || APP_URL;
+
+    // Build a working verification URL from the token hash (NOT the plain token).
+    const verifyBase = `https://${Deno.env.get("SUPABASE_URL")?.replace(/^https?:\/\//, "") || "yrebxnpilkfeaofykvhq.supabase.co"}/auth/v1/verify`;
+    const linkUrl = tokenHash
+      ? `${verifyBase}?token=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(emailActionType)}&redirect_to=${encodeURIComponent(redirectTo)}`
+      : redirectTo;
+
     const firstName = (user?.user_metadata?.name || user?.user_metadata?.full_name || "").toString().split(" ")[0] || "";
 
     let subject: string;
@@ -210,42 +221,36 @@ const handler = async (req: Request): Promise<Response> => {
     let text: string;
     let sendWelcome = false;
 
-    switch (templateType) {
-      case "magic-link":
-        subject = "🔐 Your AgriConnect verification code";
-        html = otp ? otpEmail(otp) : linkEmail("Sign in to AgriConnect", "Sign in", linkUrl);
-        text = otp
-          ? `Your AgriConnect verification code is ${otp}. It is valid for 10 minutes.`
-          : `Sign in to AgriConnect: ${linkUrl}`;
-        sendWelcome = true; // OTP sign-in also creates/opens the account → welcome follows
-        break;
-      case "signup":
-        subject = "🎉 Welcome to AgriConnect!";
-        html = linkEmail("Confirm your email", "Confirm email", linkUrl);
-        text = `Confirm your email and join AgriConnect: ${linkUrl}`;
-        sendWelcome = true;
-        break;
-      case "recovery":
-        subject = "🔑 Reset your AgriConnect password";
-        html = linkEmail("Reset your password", "Reset password", linkUrl);
-        text = `Reset your AgriConnect password: ${linkUrl}`;
-        break;
-      case "invite":
-        subject = "📨 You're invited to AgriConnect";
-        html = linkEmail("You've been invited", "Accept invitation", linkUrl);
-        text = `Accept your invitation to AgriConnect: ${linkUrl}`;
-        break;
-      case "email_change":
-        subject = "✉️ Confirm your new email";
-        html = linkEmail("Confirm your new email", "Confirm email", linkUrl);
-        text = `Confirm your new email on AgriConnect: ${linkUrl}`;
-        break;
-      default:
-        subject = template.subject || "AgriConnect";
-        html = typeof template.body === "string" && template.body.length > 0
-          ? emailShell(template.subject || "AgriConnect", template.body)
-          : linkEmail("AgriConnect", "Continue", linkUrl);
-        text = `${subject} — ${linkUrl}`;
+    // The app uses email OTP for sign-in, signup and password recovery. Always
+    // send the code itself (valid 5 minutes) — never a confirmation link.
+    if (otp) {
+      subject = "🔐 Your AgriConnect verification code";
+      html = otpEmail(otp, 5);
+      text = `Your AgriConnect verification code is ${otp}. It is valid for 5 minutes.`;
+      sendWelcome = emailActionType === "signup" || emailActionType === "magiclink";
+    } else {
+      // Fallback (no code in payload — e.g. email_change): send a link.
+      switch (emailActionType) {
+        case "recovery":
+          subject = "🔑 Reset your AgriConnect password";
+          html = linkEmail("Reset your password", "Reset password", linkUrl);
+          text = `Reset your AgriConnect password: ${linkUrl}`;
+          break;
+        case "email_change":
+          subject = "✉️ Confirm your new email";
+          html = linkEmail("Confirm your new email", "Confirm email", linkUrl);
+          text = `Confirm your new email on AgriConnect: ${linkUrl}`;
+          break;
+        case "invite":
+          subject = "📨 You're invited to AgriConnect";
+          html = linkEmail("You've been invited", "Accept invitation", linkUrl);
+          text = `Accept your invitation to AgriConnect: ${linkUrl}`;
+          break;
+        default:
+          subject = "🔐 Your AgriConnect verification code";
+          html = linkEmail("Continue to AgriConnect", "Continue", linkUrl);
+          text = `Continue to AgriConnect: ${linkUrl}`;
+      }
     }
 
     await sendEmail({ to, subject, html, text });

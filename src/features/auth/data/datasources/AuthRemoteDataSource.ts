@@ -173,8 +173,10 @@ export class AuthRemoteDataSource {
     assertWithinRateLimit('send-otp', normalized, ip);
     const now = Date.now();
     if (lastOtpSent[normalized] && now - lastOtpSent[normalized] < 5 * 60 * 1000) {
-      // Generic throttling response
-      throw new AuthException('Too many OTP requests. Please try again later.', 429);
+      // The previously sent OTP is still valid for 5 minutes — reusing the same
+      // code is correct behaviour, so we don't send a new one and don't error.
+      await auditLog({ action: 'send_otp_reuse', identifier: normalized, ip, outcome: 'success' });
+      return;
     }
     const requestPromise = (async () => {
       const { error } = await supabase.auth.signInWithOtp({

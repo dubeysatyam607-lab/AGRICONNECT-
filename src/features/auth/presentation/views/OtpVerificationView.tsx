@@ -36,7 +36,8 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
   const hi = language === 'hi';
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(5 * 60);
+  const [verified, setVerified] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [state, { verifyOtp, sendOtp, clearError }] = useAuthViewModel();
@@ -92,7 +93,8 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         navigator.vibrate([50, 50, 50]);
       }
-      onSuccess();
+      setVerified(true);
+      setTimeout(onSuccess, 1200);
     }
   };
 
@@ -100,16 +102,35 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
     if (timer > 0 || state.isLoading) return;
     clearError();
     const success = await sendOtp(target, type);
-    if (success) setTimer(60);
+    if (success) setTimer(5 * 60);
   };
 
   const filled = otp.join('').length;
+  const mm = String(Math.floor(timer / 60)).padStart(2, '0');
+  const ss = String(timer % 60).padStart(2, '0');
+  const expired = timer <= 0;
 
   return (
     <div className="min-h-screen w-full bg-background relative overflow-hidden flex flex-col justify-between">
       {/* Background wash */}
       <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[28rem] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[110px]" />
 
+      {verified && (
+        <div className="relative flex flex-1 items-center justify-center px-6">
+          <div className="mx-auto w-full max-w-md text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            <h2 className="mt-5 text-2xl font-black tracking-tight text-foreground">
+              {hi ? 'ईमेल सफलतापूर्वक सत्यापित हो गया' : 'Email verified successfully.'}
+            </h2>
+          </div>
+        </div>
+      )}
+
+      {!verified && (
       <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col justify-between px-6 py-8">
         <div>
           {/* Top Bar */}
@@ -135,10 +156,10 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               </svg>
             </div>
             <h1 className="mt-5 text-2xl font-black tracking-tight text-foreground">
-              {hi ? 'ओटीपी कोड दर्ज करें' : 'Enter Verification Code'}
+              {hi ? 'अपने ईमेल पर भेजा गया 6 अंकों का ओटीपी दर्ज करें' : 'Enter the 6-digit OTP sent to your email'}
             </h1>
             <p className="mx-auto mt-2 max-w-xs text-xs font-medium text-muted-foreground">
-              {hi ? 'कोड इस नंबर पर भेजा गया:' : 'A 6-digit code has been sent to'}{' '}
+              {hi ? 'कोड इस पते पर भेजा गया:' : 'A 6-digit code has been sent to'}{' '}
               <span className="font-extrabold text-foreground">{maskTarget(target, type)}</span>
             </p>
           </FadeIn>
@@ -190,17 +211,22 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               <div className="flex flex-col items-center gap-2.5 pt-1">
                 {timer > 0 ? (
                   <span className="text-xs font-bold text-muted-foreground">
-                    {hi ? `पुनः ओटीपी भेजें (${timer} सेकंड)` : `Resend code in ${timer}s`}
+                    {hi ? `ओटीपी समाप्त होता है ${mm}:${ss}` : `OTP expires in ${mm}:${ss}`}
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={state.isLoading}
-                    className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline"
-                  >
-                    <RotateCw size={13} /> {hi ? 'पुनः ओटीपी भेजें' : 'Resend OTP Code'}
-                  </button>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                      {hi ? 'ओटीपी समाप्त हो गया है' : 'OTP expired.'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={state.isLoading}
+                      className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline"
+                    >
+                      <RotateCw size={13} /> {hi ? 'पुनः ओटीपी भेजें' : 'Resend OTP'}
+                    </button>
+                  </div>
                 )}
 
                 <button
@@ -220,6 +246,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
           🔒 {hi ? 'सुरक्षित 256-बिट एन्क्रिप्शन द्वारा रक्षित' : 'Protected by enterprise 256-bit encryption'}
         </p>
       </div>
+      )}
     </div>
   );
 };

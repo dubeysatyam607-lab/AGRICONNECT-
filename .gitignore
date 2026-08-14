@@ -13,6 +13,14 @@ dist-ssr
 *.local
 .env
 .env.local
+.env.*
+!.env.example
+!server/.env.example
+
+# Playwright / test artifacts (can capture session & trace data)
+playwright-report
+test-results
+playwright/.cache
 
 # Editor directories and files
 .vscode/*

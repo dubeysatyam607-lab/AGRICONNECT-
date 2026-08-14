@@ -1,7 +1,9 @@
 import React, { Component, lazy, Suspense, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { LayoutDashboard, Sprout, Wrench, CalendarCheck2, Activity, ListTodo, BarChart3, Bell, Settings, ArrowLeft, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Sprout, Wrench, CalendarCheck2, Activity, ListTodo, BarChart3, Bell, Settings, ArrowLeft, RefreshCw, LogOut } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useOptionalAuth } from '@/hooks/useAuth';
+import { snackbarService } from '@/core/services/SnackbarService';
 import { useDigitalProfile } from './hooks/useDigitalProfile';
 import { ProfileHero } from './components/ProfileHero';
 import { EditFarmerProfileView } from '@/features/profile/presentation/views/EditFarmerProfileView';
@@ -114,6 +116,23 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
     [onNavigate],
   );
 
+  const auth = useOptionalAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = useCallback(async () => {
+    if (loggingOut || !auth?.signOut) return;
+    setLoggingOut(true);
+    try {
+      await auth.signOut();
+      snackbarService.success('You have been signed out.');
+    } catch (e) {
+      console.error('Logout failed safely:', e);
+      snackbarService.error('Could not sign out. Please try again.');
+    } finally {
+      setLoggingOut(false);
+    }
+  }, [auth, loggingOut]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (window.scrollY <= 0) {
       touchStartY.current = e.touches[0].clientY;
@@ -188,12 +207,22 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
 
       <div className="w-full mx-auto lg:max-w-4xl xl:max-w-6xl px-4">
         <div className="pt-3 flex items-center justify-between">
-          <button
-            onClick={() => onNavigate('home')}
-            className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-muted-foreground shadow-card hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={13} /> {t('prof.backHome')}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigate('home')}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-muted-foreground shadow-card hover:text-foreground transition-colors"
+            >
+              <ArrowLeft size={13} /> {t('prof.backHome')}
+            </button>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              aria-label={t('settings.logout')}
+              className="inline-flex items-center gap-1 rounded-full border border-destructive/25 bg-destructive/10 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 shadow-card hover:bg-destructive/20 disabled:opacity-60 transition-colors"
+            >
+              <LogOut size={13} className={loggingOut ? 'animate-spin' : ''} /> {t('settings.logout')}
+            </button>
+          </div>
           <span className="text-[11px] font-bold text-muted-foreground">{t('prof.digitalProfile')}</span>
         </div>
 
