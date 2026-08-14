@@ -207,7 +207,7 @@ export const en: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'email',
   'otp.verify': 'Verify & Continue',
-  'otp.resendIn': 'Resend OTP in {sec}s',
+
   'otp.resend': '↻ Resend OTP Code',
   'otp.changeNumber': 'Change {target}',
   'otp.number': 'number',

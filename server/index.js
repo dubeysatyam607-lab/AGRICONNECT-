@@ -67,6 +67,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+// The WhatsApp webhook is a server-to-server call (Twilio) that cannot obtain a
+// CSRF cookie. It is authenticated by its own bearer/verify token, so register
+// it BEFORE global csurf to exempt it.
+app.post('/api/whatsapp/webhook', whatsappController.whatsappWebhook);
 app.use(csurf({ cookie: true }));
 
 // Endpoint to get CSRF token for client
@@ -91,6 +95,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/verify-otp', authLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/resend-otp', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -98,7 +104,6 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', protect, adminRoutes);
 app.post('/api/chat', protect, chatController.kisanChat);
 app.post('/api/voice/tts', protect, voiceController.textToSpeech);
-app.post('/api/whatsapp/webhook', whatsappController.whatsappWebhook);
 
 // Root route
 app.get('/', (req, res) => {
@@ -115,8 +120,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// 404 handler for unknown API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'Not found' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // CSRF failures should surface as 403, not a generic 500
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ message: 'Invalid CSRF token' });
+  }
+  // Body-parser / JSON parse errors
+  if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {
+    return res.status(400).json({ message: 'Malformed request body' });
+  }
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong on the server' });
 });

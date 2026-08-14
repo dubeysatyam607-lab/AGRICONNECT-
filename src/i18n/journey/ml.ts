@@ -188,7 +188,7 @@ export const ml: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'ഇമെയിൽ',
   'otp.verify': 'പരിശോധിച്ച് തുടരുക',
-  'otp.resendIn': '{sec} സെക്കൻഡിൽ OTP വീണ്ടും അയയ്ക്കാം',
+
   'otp.resend': '↻ OTP കോഡ് വീണ്ടും അയയ്ക്കുക',
   'otp.changeNumber': '{target} മാറ്റുക',
   'otp.number': 'നമ്പർ',

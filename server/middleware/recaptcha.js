@@ -14,8 +14,13 @@ const verifyRecaptcha = async (req, res, next) => {
 
     const secret = process.env.RECAPTCHA_SECRET;
     if (!secret) {
-      console.warn('reCAPTCHA secret not configured; skipping verification');
-      return next(); // In dev environments allow without verification.
+      // Fail closed in production so a missing secret can never disable bot protection.
+      if (process.env.NODE_ENV === 'production') {
+        console.error('reCAPTCHA secret not configured in production; blocking request');
+        return res.status(503).json({ message: 'reCAPTCHA is not configured' });
+      }
+      console.warn('reCAPTCHA secret not configured; skipping verification (dev only)');
+      return next();
     }
 
     const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`;

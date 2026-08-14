@@ -188,7 +188,7 @@ export const gu: JourneyDict = {
   'otp.sms': 'SMS',
   'otp.email': 'ઈમેલ',
   'otp.verify': 'ચકાસીને આગળ વધો',
-  'otp.resendIn': '{sec} સેકન્ડમાં OTP ફરી મોકલો',
+
   'otp.resend': '↻ OTP કોડ ફરી મોકલો',
   'otp.changeNumber': '{target} બદલો',
   'otp.number': 'નંબર',

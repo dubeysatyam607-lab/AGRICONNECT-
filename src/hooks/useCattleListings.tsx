@@ -71,7 +71,9 @@ export const useCattleListings = () => {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ listingId }),
+        // reveal: true — the user's deliberate tap on "Contact" is the explicit
+        // confirmation that releases the seller's full phone number.
+        body: JSON.stringify({ listingId, reveal: true }),
       }
     );
 

@@ -51,3 +51,11 @@ verify_jwt = true
 
 [functions.send-auth-email]
 verify_jwt = true
+
+[auth.email.templates.confirm_signup]
+subject = "🔐 Your AgriConnect verification code"
+content_path = "./supabase/templates/confirm_signup.html"
+
+[auth.email.templates.magic_link]
+subject = "🔐 Your AgriConnect verification code"
+content_path = "./supabase/templates/magic_link.html"

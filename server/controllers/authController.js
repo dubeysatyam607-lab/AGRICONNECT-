@@ -8,10 +8,8 @@ const { JWT_SECRET } = require('../config/security');
 const bcrypt = require('bcryptjs');
 
 // Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, JWT_SECRET, {
-    expiresIn: '30d',
-  });
+const generateToken = (id, expiresIn = '30d', extra = {}) => {
+  return jwt.sign({ id, ...extra }, JWT_SECRET, { expiresIn });
 };
 
 // Generate 6-digit OTP from a cryptographically secure source.
@@ -122,7 +120,8 @@ const registerUser = async (req, res) => {
 
     if (userExists) {
       if (userExists.isVerified) {
-        return res.status(400).json({ message: 'User already exists and is verified. Please log in.' });
+        // Keep registration response uniform — do not reveal account existence.
+        return res.status(200).json({ message: 'Registration initiated. OTP sent to your email.' });
       }
       // If user exists but not verified, we can just resend OTP or update password
       // For simplicity, we'll update the user data
@@ -178,7 +177,7 @@ const verifyOTP = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(400).json({ message: 'Invalid verification attempt' });
     }
 
     if (user.isVerified) {
@@ -258,7 +257,22 @@ const authUser = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       if (!user.isVerified) {
-        return res.status(401).json({ message: 'Please verify your email first. Use the register or resend OTP flow.' });
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // If MFA is enabled, do NOT issue a full-access token. Instead issue a
+      // short-lived "pending MFA" token that only verifyMfa can upgrade.
+      if (user.mfaEnabled && user.mfaSecret) {
+        const pendingToken = generateToken(user._id, '5m', { mfaPending: true });
+        return res.status(200).json({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          mfaRequired: true,
+          mfaToken: pendingToken,
+          mfaEnabled: true,
+        });
       }
 
       res.json({
@@ -267,7 +281,7 @@ const authUser = async (req, res) => {
         email: user.email,
         role: user.role,
         token: generateToken(user._id),
-        mfaEnabled: !!user.mfaEnabled,
+        mfaEnabled: false,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -285,11 +299,9 @@ const resendOTP = async (req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'User is already verified' });
+    if (!user || user.isVerified) {
+      // Uniform response: don't reveal whether the account exists.
+      return res.status(400).json({ message: 'Cannot resend OTP for this email' });
     }
 
     // Resend is only allowed AFTER the current OTP has expired. The same OTP
@@ -350,19 +362,16 @@ const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      // Don't reveal if user exists or not for security
+    if (!user || !user.isVerified) {
+      // Uniform response — never reveal whether the account exists or its state.
       return res.status(200).json({ message: 'If the email exists, a password reset OTP has been sent.' });
-    }
-
-    if (!user.isVerified) {
-      return res.status(400).json({ message: 'Please verify your email first before resetting password.' });
     }
 
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
     user.resetOtpCode = hashedOTP;
     user.resetOtpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes for password reset
+    user.resetOtpAttempts = 0;
     await user.save();
 
     await sendPasswordResetEmail(email, otp);
@@ -411,11 +420,29 @@ const resetPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!user || !user.resetOtpCode) {
+      return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    if (!user.resetOtpCode || !(await bcrypt.compare(otp, user.resetOtpCode))) {
+    // Brute-force protection for reset OTP (same 5-attempt cap as verify-otp)
+    if (user.resetOtpAttempts >= MAX_OTP_ATTEMPTS) {
+      user.resetOtpCode = undefined;
+      user.resetOtpExpiresAt = undefined;
+      user.resetOtpAttempts = 0;
+      await user.save();
+      return res.status(429).json({ message: 'Too many incorrect attempts. Please request a new OTP.' });
+    }
+
+    if (!(await bcrypt.compare(String(otp || ''), user.resetOtpCode))) {
+      user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1;
+      if (user.resetOtpAttempts >= MAX_OTP_ATTEMPTS) {
+        user.resetOtpCode = undefined;
+        user.resetOtpExpiresAt = undefined;
+        user.resetOtpAttempts = 0;
+        await user.save();
+        return res.status(429).json({ message: 'Too many incorrect attempts. Please request a new OTP.' });
+      }
+      await user.save();
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
@@ -427,6 +454,7 @@ const resetPassword = async (req, res) => {
     user.password = newPassword; // Will be hashed by pre-save hook
     user.resetOtpCode = undefined;
     user.resetOtpExpiresAt = undefined;
+    user.resetOtpAttempts = 0;
     await user.save();
 
     res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
@@ -467,9 +495,20 @@ const enableMfa = async (req, res) => {
 // @route POST /api/auth/verify-mfa
 // @access Private
 const verifyMfa = async (req, res) => {
-  const { token } = req.body;
+  const { token, mfaToken } = req.body;
   try {
-    const user = await User.findById(req.user._id);
+    // The mfaToken (from login) is required to prove the password step completed.
+    let pending;
+    try {
+      pending = jwt.verify(String(mfaToken || token || ''), JWT_SECRET, { algorithms: ['HS256', 'HS384', 'HS512'] });
+    } catch {
+      return res.status(401).json({ message: 'MFA challenge expired. Please log in again.' });
+    }
+    if (!pending.mfaPending) {
+      return res.status(401).json({ message: 'Invalid MFA challenge.' });
+    }
+
+    const user = await User.findById(pending.id);
     if (!user || !user.mfaEnabled || !user.mfaSecret) {
       return res.status(400).json({ message: 'MFA not set up' });
     }

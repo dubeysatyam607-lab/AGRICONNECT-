@@ -75,7 +75,7 @@ export function setupTokenRefreshInterceptor(axiosInstance: AxiosInstance): void
           snackbarService.error('Your session has expired. Please sign in again.');
           
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            window.location.href = '/auth/login';
           }
           return Promise.reject(refreshErr);
         } finally {

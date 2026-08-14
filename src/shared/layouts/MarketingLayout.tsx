@@ -35,10 +35,13 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/60">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5" aria-label="AgriConnect Home">
-            <Logo size={36} />
-            <span className="font-display font-black text-lg tracking-tight text-foreground">
-              Agri<span className="text-emerald-700 dark:text-emerald-400">Connect</span>
-            </span>
+            <Logo size={140} variant="full" className="hidden md:block h-8 w-auto" />
+            <div className="flex md:hidden items-center gap-2">
+              <Logo size={32} variant="icon" />
+              <span className="font-display font-black text-lg tracking-tight text-foreground">
+                Agri<span className="text-emerald-700 dark:text-emerald-400">Connect</span>
+              </span>
+            </div>
           </Link>
 
           <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-0.5">

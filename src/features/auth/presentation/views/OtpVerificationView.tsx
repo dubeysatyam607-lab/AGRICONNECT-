@@ -36,7 +36,8 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
   const hi = language === 'hi';
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [timer, setTimer] = useState(5 * 60);
+  const [validityTimer, setValidityTimer] = useState(5 * 60);
+  const [resendTimer, setResendTimer] = useState(60);
   const [verified, setVerified] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -47,14 +48,23 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
     inputRefs.current[0]?.focus();
   }, []);
 
-  // Countdown timer for Resend OTP
+  // Countdown timer for OTP validity
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer((t) => t - 1), 1000);
+    if (validityTimer > 0) {
+      interval = setInterval(() => setValidityTimer((t) => t - 1), 1000);
     }
     return () => clearInterval(interval);
-  }, [timer]);
+  }, [validityTimer]);
+
+  // Countdown timer for Resend cooldown
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleInputChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -99,16 +109,19 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
   };
 
   const handleResend = async () => {
-    if (timer > 0 || state.isLoading) return;
+    if (resendTimer > 0 || state.isLoading) return;
     clearError();
     const success = await sendOtp(target, type);
-    if (success) setTimer(5 * 60);
+    if (success) {
+      setValidityTimer(5 * 60);
+      setResendTimer(60);
+    }
   };
 
   const filled = otp.join('').length;
-  const mm = String(Math.floor(timer / 60)).padStart(2, '0');
-  const ss = String(timer % 60).padStart(2, '0');
-  const expired = timer <= 0;
+  const mm = String(Math.floor(validityTimer / 60)).padStart(2, '0');
+  const ss = String(validityTimer % 60).padStart(2, '0');
+  const expired = validityTimer <= 0;
 
   return (
     <div className="min-h-screen w-full bg-background relative overflow-hidden flex flex-col justify-between">
@@ -209,25 +222,32 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
 
               {/* Resend OTP & Change Number */}
               <div className="flex flex-col items-center gap-2.5 pt-1">
-                {timer > 0 ? (
+                {validityTimer > 0 ? (
                   <span className="text-xs font-bold text-muted-foreground">
                     {hi ? `ओटीपी समाप्त होता है ${mm}:${ss}` : `OTP expires in ${mm}:${ss}`}
                   </span>
                 ) : (
-                  <div className="flex flex-col items-center gap-1.5">
-                    <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                      {hi ? 'ओटीपी समाप्त हो गया है' : 'OTP expired.'}
+                  <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                    {hi ? 'ओटीपी समाप्त हो गया है' : 'OTP expired.'}
+                  </span>
+                )}
+
+                <div className="flex items-center justify-center">
+                  {resendTimer > 0 ? (
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {hi ? `ओटीपी पुनः भेजें (${resendTimer}s)` : `Resend OTP in ${resendTimer}s`}
                     </span>
+                  ) : (
                     <button
                       type="button"
                       onClick={handleResend}
                       disabled={state.isLoading}
-                      className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline"
+                      className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
                     >
-                      <RotateCw size={13} /> {hi ? 'पुनः ओटीपी भेजें' : 'Resend OTP'}
+                      <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {hi ? 'ओटीपी पुनः भेजें' : 'Resend OTP'}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <button
                   type="button"

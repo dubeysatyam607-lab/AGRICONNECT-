@@ -66,6 +66,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import Index from './src/pages/Index';
 import { AuthProvider } from './src/hooks/useAuth';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('Index Render Test', () => {
   beforeEach(() => {
@@ -74,9 +75,11 @@ describe('Index Render Test', () => {
 
   it('should render Index without throwing any error', () => {
     render(
-      <AuthProvider>
-        <Index />
-      </AuthProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <Index />
+        </AuthProvider>
+      </MemoryRouter>
     );
   });
 });

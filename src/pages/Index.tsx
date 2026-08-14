@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "@/components/agri/BottomNav";
 import { ChunkErrorBoundary } from "@/components/ui/ChunkErrorBoundary";
 import ToastNotification from "@/components/agri/ToastNotification";
@@ -254,7 +255,28 @@ const DEFAULT_TAB_META = TAB_SEO_META.home;
 
 // Inner component that can access LanguageContext
 const IndexInner: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("home");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getTabFromPath = (path: string) => {
+    switch (path) {
+      case "/dashboard": return "home";
+      case "/market": return "store";
+      case "/ai": return "ai-chat";
+      case "/services": return "services";
+      case "/wallet": return "wallet";
+      case "/profile": return "profile";
+      case "/farm": return "farm-os";
+      case "/crop-scan": return "crop-doctor";
+      case "/mandi": return "mandi";
+      case "/agri-store": return "store";
+      case "/machinery": return "tractors";
+      case "/schemes": return "schemes";
+      default: return "home";
+    }
+  };
+
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
   const [userRole, setUserRole] = useState<"farmer" | "owner">("farmer");
   const { toastMessage, showToast } = useToastNotification();
   const { language, setLanguage, languageName } = useLanguage();
@@ -271,6 +293,35 @@ const IndexInner: React.FC = () => {
   const handleBookTractor = (_tractor: Tractor) => {
     setActiveTab("tractors");
   };
+
+  // Keep activeTab in sync if the URL changes directly (e.g. back button)
+  useEffect(() => {
+    const tab = getTabFromPath(location.pathname);
+    if (tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [location.pathname]);
+
+  // Keep URL in sync when activeTab is changed from tabs/nav click
+  useEffect(() => {
+    const tabPaths: Record<string, string> = {
+      "home": "/",
+      "store": "/market",
+      "ai-chat": "/ai",
+      "services": "/services",
+      "wallet": "/wallet",
+      "profile": "/profile",
+      "farm-os": "/farm",
+      "crop-doctor": "/crop-scan",
+      "mandi": "/mandi",
+      "tractors": "/machinery",
+      "schemes": "/schemes"
+    };
+    const path = tabPaths[activeTab];
+    if (path && location.pathname !== path && (location.pathname === "/" || Object.values(tabPaths).includes(location.pathname))) {
+      navigate(path, { replace: true });
+    }
+  }, [activeTab, navigate, location.pathname]);
 
   // Every tab switch must open from the top — tabs share the document scroll
   // and would otherwise carry over the previous screen's scroll offset.

@@ -7,7 +7,19 @@ const { adminProtect } = require('../middleware/authMiddleware');
 
 // Example admin health check
 router.get('/dashboard', adminProtect, (req, res) => {
-  res.json({ message: 'Admin dashboard access verified', user: req.user });
+  const u = req.user || {};
+  res.json({
+    message: 'Admin dashboard access verified',
+    user: {
+      _id: u._id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      isVerified: u.isVerified,
+      mfaEnabled: !!u.mfaEnabled,
+      createdAt: u.createdAt,
+    },
+  });
 });
 
 // Add more admin endpoints here as needed (e.g., user management, KPI stats)

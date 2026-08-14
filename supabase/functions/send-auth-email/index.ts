@@ -102,21 +102,22 @@ function emailShell(title: string, inner: string): string {
     </html>`;
 }
 
-function otpEmail(code: string, minutes = 10): string {
+function otpEmail(code: string, minutes = 5): string {
   return emailShell(
     "Your verification code",
     `
       <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">Hi there,</h2>
       <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 20px;">
-        Use the one-time code below to sign in to your AgriConnect account. It is valid for
-        <b>${minutes} minutes</b> and can only be used once.
+        Your AgriConnect verification code is: <strong>${code}</strong>
       </p>
-      <div style="background:#f0fdf4;border:2px dashed #16a34a;border-radius:12px;padding:20px;text-align:center;">
+      <div style="background:#f0fdf4;border:2px dashed #16a34a;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;">
         <p style="font-size:36px;font-weight:800;letter-spacing:8px;color:#15803d;margin:0;">${code}</p>
       </div>
-      <p style="color:#9ca3af;font-size:12px;margin:20px 0 0;text-align:center;">
-        Never share this code with anyone. AgriConnect will never ask for it.
-      </p>
+      <ul style="color:#4b5563;font-size:13px;line-height:1.6;margin:0 0 20px;padding-left:20px;">
+        <li>This verification code is valid for exactly <strong>${minutes} minutes</strong>.</li>
+        <li>It is single-use and can only be verified once.</li>
+        <li><strong>Do not share this code with anyone.</strong> AgriConnect employees or systems will never ask you for this code.</li>
+      </ul>
     `,
   );
 }
@@ -226,8 +227,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (otp) {
       subject = "🔐 Your AgriConnect verification code";
       html = otpEmail(otp, 5);
-      text = `Your AgriConnect verification code is ${otp}. It is valid for 5 minutes.`;
-      sendWelcome = emailActionType === "signup" || emailActionType === "magiclink";
+      text = `Your AgriConnect verification code is: ${otp}. It is valid for 5 minutes.`;
+      sendWelcome = false;
     } else {
       // Fallback (no code in payload — e.g. email_change): send a link.
       switch (emailActionType) {
@@ -270,7 +271,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log("[send-auth-email] sent:", templateType, "to", to);
+    console.log("[send-auth-email] sent:", emailActionType, "to", to);
 
     // GoTrue expects a 200 with an empty JSON object on success.
     return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });

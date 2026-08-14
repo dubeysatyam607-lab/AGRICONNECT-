@@ -32,3 +32,8 @@ playwright/.cache
 *.njsproj
 *.sln
 *.sw?
+
+# Local JSON mock database contains real user PII + password hashes.
+# It must never be committed. Remove from history if previously tracked.
+server/data/users.json
+server/data/

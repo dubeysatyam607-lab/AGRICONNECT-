@@ -71,7 +71,7 @@ serve(async (req) => {
     return parseResult.response;
   }
 
-  const { listingId, message } = parseResult.data;
+  const { listingId, message, reveal } = parseResult.data;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -128,14 +128,16 @@ serve(async (req) => {
     // Log the contact request (for audit purposes)
     console.log(`Contact request: User ${authResult.userId} requesting contact for listing ${listingId}`);
 
-    // Return masked phone number (show only last 4 digits initially, full on confirmation)
+    // Return masked phone by default. The full number is only released on an
+    // explicit user confirmation (`reveal: true`) — raising the cost of
+    // automated bulk-harvesting while keeping the one-tap contact feature.
     const maskedPhone = sellerPhone.slice(-4).padStart(sellerPhone.length, '*');
 
     return new Response(
       JSON.stringify({
         success: true,
         sellerName,
-        phone: sellerPhone, // Full phone for authenticated user
+        phone: reveal ? sellerPhone : maskedPhone,
         maskedPhone,
         listing: {
           id: listing.id,
