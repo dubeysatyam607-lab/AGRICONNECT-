@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader2, RefreshCw, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import type { AdminWalletRow } from '@/features/wallet/domain/walletTypes';
 const fmt = (n: number) => '₹' + (Number(n) || 0).toLocaleString('en-IN');
 
 export function WalletModule() {
+  const { t } = useLanguage();
   const [rows, setRows] = useState<AdminWalletRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,12 +82,12 @@ export function WalletModule() {
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-border text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3 text-right">Balance</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Last Updated</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3">{t('adm37')}</th>
+              <th className="px-4 py-3">{t('adm38')}</th>
+              <th className="px-4 py-3 text-right">{t('adm39')}</th>
+              <th className="px-4 py-3">{t('adm40')}</th>
+              <th className="px-4 py-3">{t('adm41')}</th>
+              <th className="px-4 py-3 text-right">{t('adm42')}</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +132,7 @@ export function WalletModule() {
       <Dialog open={!!adjusting} onOpenChange={(v) => { if (!v) setAdjusting(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base">Manual Wallet Adjustment</DialogTitle>
+            <DialogTitle className="text-base">{t('adm43')}</DialogTitle>
           </DialogHeader>
           {adjusting && (
             <div className="space-y-3">
@@ -139,15 +141,15 @@ export function WalletModule() {
               </p>
               {error && <p className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-[11px] font-extrabold text-red-700">{error}</p>}
               <div className="flex gap-2">
-                <Button variant={direction === 'in' ? 'default' : 'outline'} className="flex-1" onClick={() => setDirection('in')}>Credit (+)</Button>
-                <Button variant={direction === 'out' ? 'destructive' : 'outline'} className="flex-1" onClick={() => setDirection('out')}>Debit (−)</Button>
+                <Button variant={direction === 'in' ? 'default' : 'outline'} className="flex-1" onClick={() => setDirection('in')}>{t('adm44')}</Button>
+                <Button variant={direction === 'out' ? 'destructive' : 'outline'} className="flex-1" onClick={() => setDirection('out')}>{t('adm45')}</Button>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-muted-foreground">Amount (₹)</label>
+                <label className="text-xs font-extrabold text-muted-foreground">{t('adm46')}</label>
                 <Input type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm font-black" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-muted-foreground">Reason (required, audited)</label>
+                <label className="text-xs font-extrabold text-muted-foreground">{t('adm47')}</label>
                 <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Refund approved by support" className="text-sm" />
               </div>
               <Button className="w-full" disabled={saving} onClick={handleAdjust}>

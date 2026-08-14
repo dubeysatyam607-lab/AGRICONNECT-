@@ -14,11 +14,11 @@ export class VerifyOtpUseCase {
     return inject<IAuthRepository>(DI_TOKENS.AuthRepository);
   }
 
-  public async sendOtp(target: string, type: 'phone' | 'email'): Promise<void> {
+  public async sendOtp(target: string, type: 'phone' | 'email', meta?: { full_name?: string; phone?: string }): Promise<void> {
     if (!target || target.trim().length < 3) {
       throw new ValidationException('Please provide a valid mobile number or email address.');
     }
-    await this.repository.sendOtp(target, type);
+    await this.repository.sendOtp(target, type, meta);
   }
 
   public async execute(target: string, token: string, type: 'phone' | 'email'): Promise<IAuthSession> {

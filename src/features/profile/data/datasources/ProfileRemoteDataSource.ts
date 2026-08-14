@@ -3,63 +3,49 @@ import { IFarmerProfile, IGpsCoordinates } from '../../domain/models/FarmerProfi
 
 /**
  * Enterprise Profile Remote Data Source.
- * Synchronizes with Supabase profiles table and provides default fallback seed profile for Indian farmers.
+ * Synchronizes with Supabase profiles table. No hardcoded demo/sample data.
  */
 export class ProfileRemoteDataSource {
   /**
-   * Default production-ready seed profile for Indian farmers.
+   * Empty profile scaffold for a new user. All fields are blank — there is
+   * deliberately no seeded demo identity; the user populates their own data.
    */
-  public static getDefaultProfile(userId: string = 'demo-farmer-id'): IFarmerProfile {
+  public static getDefaultProfile(userId: string): IFarmerProfile {
     return {
       id: userId,
       personal: {
-        fullName: 'Rajesh Kumar Singh',
-        mobileNumber: '+91 9876543210',
-        emailAddress: 'rajesh.singh@bharatkrishi.in',
-        gender: 'Male',
-        dateOfBirth: '1982-05-14',
-        aadhaarNumber: 'XXXX-XXXX-8942', // Stored masked / optional
-        isAadhaarVerified: true,
+        fullName: '',
+        mobileNumber: '',
+        emailAddress: '',
+        gender: '',
+        dateOfBirth: '',
+        aadhaarNumber: '',
+        isAadhaarVerified: false,
       },
       location: {
-        villageOrTehsil: 'Pimpri-Chinchwad / Tehsil Haveli',
-        district: 'Pune',
-        state: 'Maharashtra',
-        pinCode: '411033',
-        isLocationPermissionGranted: true,
-        farmCentroidAddress: 'Survey No. 42, Green Belt Road, Pune District',
-        gpsCoordinates: {
-          latitude: 18.6298,
-          longitude: 73.7997,
-          accuracyMeters: 12.5,
-          timestamp: new Date().toISOString(),
-        },
+        villageOrTehsil: '',
+        district: '',
+        state: '',
+        pinCode: '',
+        isLocationPermissionGranted: false,
+        farmCentroidAddress: '',
+        gpsCoordinates: null,
       },
       farmSpecs: {
-        totalArea: 14.5,
+        totalArea: 0,
         landUnit: 'Acres',
-        soilType: 'Black Cotton',
-        irrigationType: 'Drip Irrigation',
-        primaryWaterSource: 'Solar Powered Submersible Tube Well',
+        soilType: '',
+        irrigationType: '',
+        primaryWaterSource: '',
       },
-      crops: [
-        'Wheat (Gehun)',
-        'Sugarcane (Ganna)',
-        'Soyabean',
-        'Onion (Pyaaz)',
-      ],
-      machineryOwned: [
-        'Tractor (4WD/2WD)',
-        'Rotavator',
-        'Submersible Pump Set',
-        'Boom / Knapsack Sprayer',
-      ],
+      crops: [],
+      machineryOwned: [],
       livestock: {
-        cows: 4,
-        buffaloes: 2,
-        bullocks: 2,
-        goatsOrSheep: 8,
-        poultry: 25,
+        cows: 0,
+        buffaloes: 0,
+        bullocks: 0,
+        goatsOrSheep: 0,
+        poultry: 0,
       },
       preferredLanguage: 'en',
       profilePictureUrl: '',

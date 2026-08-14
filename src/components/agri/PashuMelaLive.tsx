@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Milk, MapPin, Filter, Search, Plus, LogIn, Trash2 } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriCard } from "@/components/ui/agri-card";
@@ -53,6 +54,7 @@ interface PashuMelaLiveProps {
 }
 
 const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('All');
   const [filterBreed, setFilterBreed] = useState<string>('All Breeds');
@@ -209,7 +211,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Milk className="text-primary" /> पशु मेला
           </h2>
-          <p className="text-muted-foreground text-sm">Live Livestock Marketplace</p>
+          <p className="text-muted-foreground text-sm">{t('agr133')}</p>
         </div>
         {user ? (
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -220,26 +222,26 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
             </DialogTrigger>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add Livestock Listing</DialogTitle>
+                <DialogTitle>{t('agr134')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Animal Type</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t('agr135')}</label>
                   <Select value={newListing.type} onValueChange={(v) => setNewListing(p => ({ ...p, type: v as any, breed: '' }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Cow">Cow</SelectItem>
-                      <SelectItem value="Buffalo">Buffalo</SelectItem>
-                      <SelectItem value="Goat">Goat</SelectItem>
-                      <SelectItem value="Poultry">Poultry</SelectItem>
+                      <SelectItem value="Cow">{t('agr136')}</SelectItem>
+                      <SelectItem value="Buffalo">{t('agr137')}</SelectItem>
+                      <SelectItem value="Goat">{t('agr138')}</SelectItem>
+                      <SelectItem value="Poultry">{t('agr139')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Breed</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t('agr140')}</label>
                   <Select value={newListing.breed} onValueChange={(v) => setNewListing(p => ({ ...p, breed: v }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select breed" />
@@ -254,7 +256,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Price (₹)</label>
+                    <label className="text-sm text-muted-foreground mb-1 block">{t('agr141')}</label>
                     <Input
                       type="number"
                       placeholder="50000"
@@ -263,7 +265,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Age</label>
+                    <label className="text-sm text-muted-foreground mb-1 block">{t('agr142')}</label>
                     <Input
                       placeholder="2 years"
                       value={newListing.age}
@@ -274,7 +276,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
 
                 {newListing.type !== 'Poultry' && (
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Milk Yield (L/day)</label>
+                    <label className="text-sm text-muted-foreground mb-1 block">{t('agr143')}</label>
                     <Input
                       type="number"
                       inputMode="decimal"
@@ -286,7 +288,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                 )}
 
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Location</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t('agr144')}</label>
                   <Input
                     placeholder="Village, District"
                     value={newListing.location}
@@ -301,7 +303,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                 />
 
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Description (Optional)</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t('agr145')}</label>
                   <Textarea
                     placeholder="Additional details about the animal..."
                     value={newListing.description}
@@ -392,7 +394,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
       {showFilters && (
         <AgriCard className="p-3 mb-4 space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Breed</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{t('agr140')}</label>
             <div className="flex gap-2 flex-wrap">
               {availableBreeds.map((breed) => (
                 <AgriButton
@@ -410,7 +412,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
           
           {filterType !== 'Poultry' && filterType !== 'All' && (
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Min Milk Yield (L/day)</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('agr147')}</label>
               <div className="flex gap-2">
                 {['', '5', '10', '12', '15'].map((val) => (
                   <AgriButton
@@ -527,7 +529,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
       {!loading && filteredListings.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <Milk size={48} className="mx-auto mb-2 opacity-50" />
-          <p>No animals found</p>
+          <p>{t('agr148')}</p>
           <p className="text-sm">
             {showMyListings ? "You haven't listed any animals yet." : 'Try adjusting your filters'}
           </p>

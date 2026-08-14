@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { AppButton } from '@/shared/widgets/AppButton';
 import { FadeIn, SlideUp } from '@/shared/widgets/AppAnimations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
+
 import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 
 interface ILoginViewProps {
@@ -12,26 +13,20 @@ interface ILoginViewProps {
   onSwitchToForgot: () => void;
   onSwitchToOtp: (target: string, type: 'phone' | 'email') => void;
   onSuccess: () => void;
-  onGuest?: () => void;
   onBack?: () => void;
 }
-
-type AuthTab = 'phone' | 'email';
 
 export const LoginView: React.FC<ILoginViewProps> = ({
   onSwitchToSignUp,
   onSwitchToForgot,
   onSwitchToOtp,
   onSuccess,
-  onGuest,
   onBack,
 }) => {
-  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const hi = language === 'hi';
 
-  const [authTab, setAuthTab] = useState<AuthTab>('phone');
-  const [phone, setPhone] = useState('');
+  const [usePassword, setUsePassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,21 +35,19 @@ export const LoginView: React.FC<ILoginViewProps> = ({
 
   const [state, { signIn, sendOtp, clearError }] = useAuthViewModel();
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     setFieldError(null);
 
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length !== 10) {
-      setFieldError(hi ? 'कृपया 10-अंकों का वैध मोबाइल नंबर दर्ज करें' : 'Please enter a valid 10-digit mobile number');
+    if (!email || !email.includes('@')) {
+      setFieldError(hi ? 'कृपया वैध ईमेल पता दर्ज करें' : 'Please enter a valid email address');
       return;
     }
 
-    const target = `+91${digits}`;
-    const success = await sendOtp(target, 'phone');
+    const success = await sendOtp(email.trim(), 'email');
     if (success) {
-      onSwitchToOtp(target, 'phone');
+      onSwitchToOtp(email.trim(), 'email');
     }
   };
 
@@ -78,13 +71,9 @@ export const LoginView: React.FC<ILoginViewProps> = ({
     }
   };
 
-  const handleGuest = () => {
-    if (onGuest) onGuest();
-    else navigate('/', { replace: true });
-  };
-
   return (
     <div className="min-h-screen w-full bg-background relative overflow-hidden flex flex-col justify-between">
+        <LanguageSelector />
       {/* Background ambient lighting */}
       <div className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-emerald-500/10 blur-[100px]" />
       <div className="pointer-events-none absolute -left-24 bottom-1/4 h-80 w-80 rounded-full bg-teal-500/10 blur-[100px]" />
@@ -121,32 +110,32 @@ export const LoginView: React.FC<ILoginViewProps> = ({
             </p>
           </FadeIn>
 
-          {/* Clean Segmented Tab Control (Mobile OTP vs Email/Password) */}
+          {/* Clean Segmented Tab Control (Email OTP vs Email/Password) */}
           <FadeIn delayMs={80} className="mt-6">
             <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
               <button
                 type="button"
-                onClick={() => { setAuthTab('phone'); setFieldError(null); clearError(); }}
+                onClick={() => { setUsePassword(false); setFieldError(null); clearError(); }}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-                  authTab === 'phone'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Phone size={14} />
-                {hi ? 'मोबाइल + ओटीपी' : 'Mobile + OTP'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setAuthTab('email'); setFieldError(null); clearError(); }}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-                  authTab === 'email'
+                  !usePassword
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Mail size={14} />
-                {hi ? 'ईमेल पासवर्ड' : 'Email & Password'}
+                {hi ? 'ईमेल + ओटीपी' : 'Email + OTP'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setUsePassword(true); setFieldError(null); clearError(); }}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                  usePassword
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Lock size={14} />
+                {hi ? 'पासवर्ड' : 'Password'}
               </button>
             </div>
           </FadeIn>
@@ -164,27 +153,24 @@ export const LoginView: React.FC<ILoginViewProps> = ({
               </div>
             )}
 
-            {authTab === 'phone' ? (
-              /* Mobile Number + OTP Form */
-              <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            {!usePassword ? (
+              /* Email + OTP Login Form */
+              <form onSubmit={handleOtpSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                    {hi ? 'मोबाइल नंबर' : 'Mobile Number'}
+                    {hi ? 'ईमेल पता' : 'Email Address'}
                   </label>
-                  <div className="flex items-stretch overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15 transition-all">
-                    <span className="flex items-center gap-1 border-r border-border bg-slate-50 dark:bg-slate-800/50 px-4 text-sm font-black text-foreground">
-                      🇮🇳 +91
-                    </span>
+                  <div className="relative">
+                    <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
-                      type="tel"
-                      aria-label={hi ? 'मोबाइल नंबर' : 'Mobile Number'}
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      maxLength={10}
-                      placeholder="98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                      className="w-full bg-transparent px-4 py-3.5 text-base font-bold text-foreground outline-none placeholder:text-muted-foreground/60"
+                      type="email"
+                      aria-label={hi ? 'ईमेल पता' : 'Email Address'}
+                      required
+                      autoComplete="email"
+                      placeholder="farmer@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
                       autoFocus
                     />
                   </div>
@@ -198,7 +184,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   isLoading={state.isLoading}
                   rightIcon={<ArrowRight size={16} />}
                 >
-                  {hi ? 'ओटीपी प्राप्त करें' : 'Get OTP Code'}
+                  {hi ? 'ईमेल ओटीपी भेजें' : 'Send Email OTP'}
                 </AppButton>
               </form>
             ) : (
@@ -288,17 +274,8 @@ export const LoginView: React.FC<ILoginViewProps> = ({
           </FadeIn>
         </div>
 
-        {/* Footer Navigation & Guest Access */}
+        {/* Footer Navigation */}
         <SlideUp delayMs={200} className="mt-8 space-y-4 text-center">
-          {onGuest && (
-            <button
-              onClick={handleGuest}
-              className="mx-auto flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-5 py-2.5 text-xs font-extrabold text-foreground transition-all hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 shadow-sm"
-            >
-              👋 {hi ? 'अतिथि मोड में जारी रखें' : 'Explore as Guest'}
-            </button>
-          )}
-
           <p className="text-xs font-medium text-muted-foreground">
             {hi ? 'क्या आपका खाता नहीं है?' : 'New to AgriConnect?'}{' '}
             <button onClick={onSwitchToSignUp} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">

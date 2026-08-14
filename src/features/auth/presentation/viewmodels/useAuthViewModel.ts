@@ -33,7 +33,7 @@ export interface IAuthViewModelState {
 export interface IAuthViewModelActions {
   signIn: (email: string, pass: string, rememberMe?: boolean) => Promise<boolean>;
   signUp: (email: string, pass: string, fullName: string, phone?: string) => Promise<boolean>;
-  sendOtp: (target: string, type: 'phone' | 'email') => Promise<boolean>;
+  sendOtp: (target: string, type: 'phone' | 'email', meta?: { full_name?: string; phone?: string }) => Promise<boolean>;
   verifyOtp: (target: string, token: string, type: 'phone' | 'email') => Promise<boolean>;
   forgotPassword: (identifier: string) => Promise<boolean>;
   changePassword: (oldPass: string, newPass: string, confirmPass: string) => Promise<boolean>;
@@ -56,7 +56,6 @@ export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions]
 
   const authRepository = inject<IAuthRepository>(DI_TOKENS.AuthRepository);
   const signInUseCase = inject<SignInUseCase>(DI_TOKENS.SignInUseCase);
-  const signUpUseCase = inject<SignUpUseCase>(DI_TOKENS.SignUpUseCase);
   const logoutUseCase = inject<LogoutUseCase>(DI_TOKENS.LogoutUseCase);
   const verifyOtpUseCase = inject<VerifyOtpUseCase>(DI_TOKENS.VerifyOtpUseCase);
   const forgotPasswordUseCase = inject<ForgotPasswordUseCase>(DI_TOKENS.ForgotPasswordUseCase);
@@ -139,14 +138,9 @@ export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions]
   const signUp = useCallback(async (email: string, pass: string, fullName: string, phone?: string): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const session = await signUpUseCase.execute(email, pass, fullName, phone);
-      setState(prev => ({
-        ...prev,
-        user: session.user,
-        isAuthenticated: true,
-        isLoading: false,
-      }));
-      snackbarService.success('Registration successful! Welcome to AgriConnect.');
+      await verifyOtpUseCase.sendOtp(phone || email, phone ? 'phone' : 'email', { full_name: fullName, phone });
+      setState(prev => ({ ...prev, isLoading: false }));
+      snackbarService.success('Verification OTP sent. Please verify to complete registration.');
       return true;
     } catch (e: any) {
       const appEx = ErrorHandler.handle(e);
@@ -154,12 +148,12 @@ export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions]
       snackbarService.error(appEx.toUserFriendlyMessage(), 'Registration Failed');
       return false;
     }
-  }, [signUpUseCase]);
+  }, [verifyOtpUseCase]);
 
-  const sendOtp = useCallback(async (target: string, type: 'phone' | 'email'): Promise<boolean> => {
+  const sendOtp = useCallback(async (target: string, type: 'phone' | 'email', meta?: { full_name?: string; phone?: string }): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      await verifyOtpUseCase.sendOtp(target, type);
+      await verifyOtpUseCase.sendOtp(target, type, meta);
       setState(prev => ({ ...prev, isLoading: false }));
       snackbarService.success(`Verification OTP sent to your ${type === 'phone' ? 'mobile number' : 'email'}.`);
       return true;

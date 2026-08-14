@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { ReactNode } from 'react';
 import {
   ArrowDown,
@@ -121,6 +122,7 @@ export function DataTable<T extends Record<string, any>>({
   initialSortDir = 'asc',
   onExport,
 }: DataTableProps<T>) {
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [sort, setSort] = useState<{ key?: string; dir: 'asc' | 'desc' }>({
@@ -367,7 +369,7 @@ export function DataTable<T extends Record<string, any>>({
                   </TableHead>
                 );
               })}
-              {(onEdit || onDelete || onView) && <TableHead className="w-20 text-right">Actions</TableHead>}
+              {(onEdit || onDelete || onView) && <TableHead className="w-20 text-right">{t('adm8')}</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -487,13 +489,13 @@ export function DataTable<T extends Record<string, any>>({
       <AlertDialog open={confirmDelete !== null} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this record?</AlertDialogTitle>
+            <AlertDialogTitle>{t('adm9')}</AlertDialogTitle>
             <AlertDialogDescription>
               This action is permanent and will be recorded in the audit log.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('adm10')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               onClick={() => {
@@ -515,7 +517,7 @@ export function DataTable<T extends Record<string, any>>({
             <AlertDialogDescription>{confirmBulk?.action.confirm}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('adm10')}</AlertDialogCancel>
             <AlertDialogAction
               className={confirmBulk?.action.variant === 'destructive' ? 'bg-red-600 hover:bg-red-700' : undefined}
               onClick={() => {

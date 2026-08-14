@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Activity,
   AlertTriangle,
@@ -45,6 +46,7 @@ function SkeletonCard() {
 }
 
 export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => void }) {
+  const { t } = useLanguage();
   const { status, data, error, isRefreshing, refresh } = useAdminKpis();
   const [lastRefreshed, setLastRefreshed] = useState<Date>(() => data ? new Date(data.generatedAt) : new Date());
 
@@ -74,7 +76,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-red-200 bg-red-50 dark:bg-red-500/10 dark:border-red-500/30 px-6 py-16 text-center">
           <AlertTriangle className="h-10 w-10 text-red-500" />
           <div>
-            <p className="text-lg font-black text-foreground">Could not load live metrics</p>
+            <p className="text-lg font-black text-foreground">{t('adm14')}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {error === 'ADMIN_ROLE_REQUIRED'
                 ? 'Your account does not have the admin role. Contact a platform admin.'
@@ -133,7 +135,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-800 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
           <Activity className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            <span className="font-black">Streaming real production data.</span> The platform has no activity yet — metrics will populate live as farmers sign up, book tractors, and submit requests. Unmeasured channels (AI, payments, ratings) show 0 until tracking is connected.
+            <span className="font-black">{t('adm15')}</span> The platform has no activity yet — metrics will populate live as farmers sign up, book tractors, and submit requests. Unmeasured channels (AI, payments, ratings) show 0 until tracking is connected.
           </p>
         </div>
       )}
@@ -174,8 +176,8 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-foreground">User Growth & Daily Signups</p>
-              <p className="text-[11px] text-muted-foreground">Cumulative users (area) · new signups (line) — last 14 days</p>
+              <p className="text-sm font-bold text-foreground">{t('adm16')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('adm17')}</p>
             </div>
             <button onClick={() => onNavigate('appAnalytics')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Analytics <ArrowRight className="h-3 w-3" />
@@ -209,8 +211,8 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-foreground">Form Requests per Day</p>
-              <p className="text-[11px] text-muted-foreground">Contact + transport + labour submissions — last 14 days</p>
+              <p className="text-sm font-bold text-foreground">{t('adm18')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('adm19')}</p>
             </div>
             <button onClick={() => onNavigate('reports')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Reports <ArrowRight className="h-3 w-3" />
@@ -238,8 +240,8 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-foreground">Tractor Rentals & Cattle Listings</p>
-              <p className="text-[11px] text-muted-foreground">Daily bookings & new marketplace listings — last 14 days</p>
+              <p className="text-sm font-bold text-foreground">{t('adm20')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('adm21')}</p>
             </div>
             <button onClick={() => onNavigate('tractorRentals')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Rentals <ArrowRight className="h-3 w-3" />
@@ -260,8 +262,8 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-foreground">Daily New Signups</p>
-              <p className="text-[11px] text-muted-foreground">New registered users per day — last 14 days</p>
+              <p className="text-sm font-bold text-foreground">{t('adm22')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('adm23')}</p>
             </div>
             <button onClick={() => onNavigate('farmers')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Farmers <ArrowRight className="h-3 w-3" />
@@ -283,7 +285,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border bg-card p-4 lg:col-span-2 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-bold text-foreground">Live Platform Signals</p>
+            <p className="text-sm font-bold text-foreground">{t('adm24')}</p>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="grid gap-2.5 sm:grid-cols-2">
@@ -308,13 +310,13 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
 
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-bold text-foreground">Live Audit Trail</p>
+            <p className="text-sm font-bold text-foreground">{t('adm25')}</p>
             <button onClick={() => onNavigate('auditLogs')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Audit log <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           {snapshot.recentAudit.length === 0 ? (
-            <p className="py-8 text-center text-xs text-muted-foreground">No database activity yet — audit entries appear as records change.</p>
+            <p className="py-8 text-center text-xs text-muted-foreground">{t('adm26')}</p>
           ) : (
             <div className="space-y-3">
               {snapshot.recentAudit.map((log) => (

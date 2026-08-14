@@ -447,7 +447,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
   if (currentView === 'farm-details') {
     const meta = user?.user_metadata || {};
     const statCards = [
-      { icon: MapPin, label: 'Village', value: meta?.village || "Shivpuri" },
+      { icon: MapPin, label: 'Village', value: meta?.village || (t ? t('home.guestVillage') : '—') },
       { icon: Ruler, label: 'Farm Area', value: `${farm.farmArea} acres` },
       { icon: Sprout, label: 'Active Crop', value: farm.crop },
       { icon: Leaf, label: 'Crop Stage', value: farm.stage },
@@ -661,13 +661,13 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-foreground truncate">
-                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Rajesh Kumar Singh"}
+                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Not available"}
                   </h2>
                   <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/20 shrink-0">
                     Verified ID
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{user?.phone || user?.email || "+91 9876543210"}</p>
+                <p className="text-sm text-muted-foreground truncate">{user?.phone || user?.email || "Not available"}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="inline-block bg-accent text-accent-foreground text-xs font-medium px-2 py-0.5 rounded-full capitalize">
                     {userRole}
@@ -688,7 +688,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
 
             <div className="relative mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-border/70 bg-background/50 p-2.5">
               {[
-                { label: "Village", value: user?.user_metadata?.village || "Shivpuri" },
+                { label: "Village", value: user?.user_metadata?.village || (t ? t('home.guestVillage') : '—') },
                 { label: "Farm", value: `${farm.farmArea} acres` },
                 { label: "Crop", value: farm.crop },
               ].map((s, i) => (

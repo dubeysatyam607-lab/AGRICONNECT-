@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
 import { Camera, CheckCircle2, ShieldAlert } from "lucide-react";
@@ -10,11 +11,12 @@ import ImageUpload from "./ImageUpload";
 const ImageUploadPlaceholder = () => (
   <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer mb-4">
     <Camera size={32} className="mb-2 text-primary/50" />
-    <span className="text-sm font-medium">Upload Image</span>
+    <span className="text-sm font-medium">{t('agr4')}</span>
   </div>
 );
 
 export const CattleAssetForm = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
@@ -46,51 +48,51 @@ export const CattleAssetForm = () => {
     return (
       <AgriCard className="text-center py-8">
         <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
-        <h3 className="text-xl font-bold text-foreground">Asset Listed</h3>
-        <p className="text-muted-foreground mt-2 mb-6">Your livestock has been added to the market.</p>
-        <AgriButton onClick={() => setSubmitted(false)}>List Another</AgriButton>
+        <h3 className="text-xl font-bold text-foreground">{t('agr5')}</h3>
+        <p className="text-muted-foreground mt-2 mb-6">{t('agr6')}</p>
+        <AgriButton onClick={() => setSubmitted(false)}>{t('agr7')}</AgriButton>
       </AgriCard>
     );
   }
 
   return (
     <AgriCard>
-      <h3 className="font-bold text-lg mb-4">List Livestock</h3>
+      <h3 className="font-bold text-lg mb-4">{t('agr8')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <ImageUploadPlaceholder />
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Breed</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr9')}</label>
             <input required name="breed" type="text" placeholder="e.g. Murrah" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Type</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr10')}</label>
             <select required name="type" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
-              <option>Buffalo</option>
-              <option>Cow</option>
-              <option>Goat</option>
+              <option>{t('agr11')}</option>
+              <option>{t('agr12')}</option>
+              <option>{t('agr13')}</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Age/Lactation</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr14')}</label>
             <input required name="age" type="text" placeholder="e.g. 2nd Lactation" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Milk Capacity</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr15')}</label>
             <input required name="milk" type="text" placeholder="e.g. 12L/day" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Location (Village/Town)</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr16')}</label>
             <input required name="location" type="text" placeholder="e.g. Rampura" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Price (₹)</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr17')}</label>
             <input required name="price" type="number" placeholder="65000" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
-        <AgriButton type="submit" className="w-full">List for Sale</AgriButton>
+        <AgriButton type="submit" className="w-full">{t('agr18')}</AgriButton>
       </form>
     </AgriCard>
   );
@@ -126,37 +128,37 @@ export const TransportAssetForm = () => {
     return (
       <AgriCard className="text-center py-8">
         <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
-        <h3 className="text-xl font-bold text-foreground">Vehicle Listed</h3>
-        <p className="text-muted-foreground mt-2 mb-6">Your vehicle has been added to the logistics network.</p>
-        <AgriButton onClick={() => setSubmitted(false)}>List Another</AgriButton>
+        <h3 className="text-xl font-bold text-foreground">{t('agr19')}</h3>
+        <p className="text-muted-foreground mt-2 mb-6">{t('agr20')}</p>
+        <AgriButton onClick={() => setSubmitted(false)}>{t('agr7')}</AgriButton>
       </AgriCard>
     );
   }
 
   return (
     <AgriCard>
-      <h3 className="font-bold text-lg mb-4">List Vehicle / Tractor</h3>
+      <h3 className="font-bold text-lg mb-4">{t('agr22')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <ImageUploadPlaceholder />
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Vehicle Model</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr23')}</label>
           <input required name="model" type="text" placeholder="e.g. Tata Ace, Mahindra 575" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Capacity / Power</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr24')}</label>
             <input required name="capacity" type="text" placeholder="e.g. 1.5 Ton or 45 HP" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Location</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr25')}</label>
             <input required name="location" type="text" placeholder="e.g. Jaipur" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Pricing (₹)</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr26')}</label>
           <input required name="price" type="number" placeholder="e.g. 800 per trip/hr" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
-        <AgriButton type="submit" className="w-full">Make Available</AgriButton>
+        <AgriButton type="submit" className="w-full">{t('agr27')}</AgriButton>
       </form>
     </AgriCard>
   );
@@ -223,7 +225,7 @@ export const StoreInventoryForm = () => {
   if (!adminChecked) {
     return (
       <AgriCard className="text-center py-8">
-        <p className="text-muted-foreground">Checking access…</p>
+        <p className="text-muted-foreground">{t('agr28')}</p>
       </AgriCard>
     );
   }
@@ -232,11 +234,11 @@ export const StoreInventoryForm = () => {
     return (
       <AgriCard className="text-center py-8">
         <ShieldAlert size={40} className="mx-auto text-destructive mb-3" />
-        <h3 className="text-lg font-bold text-foreground">Admins only</h3>
+        <h3 className="text-lg font-bold text-foreground">{t('agr29')}</h3>
         <p className="text-muted-foreground text-sm mt-2 mb-4">
           Only store administrators can add products to the Agri-Store.
         </p>
-        <AgriButton variant="outline" onClick={() => setSubmitted(false)}>Got it</AgriButton>
+        <AgriButton variant="outline" onClick={() => setSubmitted(false)}>{t('agr30')}</AgriButton>
       </AgriCard>
     );
   }
@@ -245,68 +247,68 @@ export const StoreInventoryForm = () => {
     return (
       <AgriCard className="text-center py-8">
         <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
-        <h3 className="text-xl font-bold text-foreground">Product Listed</h3>
-        <p className="text-muted-foreground mt-2 mb-6">Your product is now live in the Agri-Store.</p>
-        <AgriButton onClick={() => { setSubmitted(false); setImageUrl(""); }}>Add Another</AgriButton>
+        <h3 className="text-xl font-bold text-foreground">{t('agr31')}</h3>
+        <p className="text-muted-foreground mt-2 mb-6">{t('agr32')}</p>
+        <AgriButton onClick={() => { setSubmitted(false); setImageUrl(""); }}>{t('agr33')}</AgriButton>
       </AgriCard>
     );
   }
 
   return (
     <AgriCard>
-      <h3 className="font-bold text-lg mb-1">Add Store Product</h3>
-      <p className="text-xs text-muted-foreground mb-4">List a new product in the Agri-Store (admin only).</p>
+      <h3 className="font-bold text-lg mb-1">{t('agr34')}</h3>
+      <p className="text-xs text-muted-foreground mb-4">{t('agr35')}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <ImageUpload value={imageUrl} onChange={setImageUrl} bucket="store-images" />
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Product Name</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr36')}</label>
           <input required name="product" type="text" placeholder="e.g. Urea Fertilizer" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Brand</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr37')}</label>
             <input required name="brand" type="text" placeholder="e.g. IFFCO" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Batch No.</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr38')}</label>
             <input name="batch" type="text" placeholder="e.g. B-2026-01" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr39')}</label>
             <select required name="category" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
-              <option value="Fertilizer">Fertilizer</option>
-              <option value="Seeds">Seeds</option>
-              <option value="Pesticide">Pesticide</option>
-              <option value="Tools">Tools</option>
-              <option value="Feed">Feed</option>
+              <option value="Fertilizer">{t('agr40')}</option>
+              <option value="Seeds">{t('agr41')}</option>
+              <option value="Pesticide">{t('agr42')}</option>
+              <option value="Tools">{t('agr43')}</option>
+              <option value="Feed">{t('agr44')}</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Unit/Weight</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr45')}</label>
             <input required name="unit" type="text" placeholder="e.g. 45kg Bag" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">MRP (₹)</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr46')}</label>
             <input required name="mrp" type="number" placeholder="290" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Selling Price (₹)</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr47')}</label>
             <input required name="price" type="number" placeholder="266" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Stock (units)</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr48')}</label>
           <input name="stock" type="number" placeholder="e.g. 100" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Description</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr49')}</label>
           <textarea name="description" rows={3} placeholder="Product details…" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
-        <AgriButton type="submit" className="w-full">Add to Store</AgriButton>
+        <AgriButton type="submit" className="w-full">{t('agr50')}</AgriButton>
       </form>
     </AgriCard>
   );
@@ -340,41 +342,41 @@ export const SoilTestLabForm = () => {
     return (
       <AgriCard className="text-center py-8">
         <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
-        <h3 className="text-xl font-bold text-foreground">Lab Listed</h3>
-        <p className="text-muted-foreground mt-2 mb-6">Your testing lab has been added.</p>
-        <AgriButton onClick={() => setSubmitted(false)}>Add Another Service</AgriButton>
+        <h3 className="text-xl font-bold text-foreground">{t('agr51')}</h3>
+        <p className="text-muted-foreground mt-2 mb-6">{t('agr52')}</p>
+        <AgriButton onClick={() => setSubmitted(false)}>{t('agr53')}</AgriButton>
       </AgriCard>
     );
   }
 
   return (
     <AgriCard>
-      <h3 className="font-bold text-lg mb-4">List Soil Testing Lab</h3>
+      <h3 className="font-bold text-lg mb-4">{t('agr54')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <ImageUploadPlaceholder />
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Lab Name</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr55')}</label>
           <input required name="lab" type="text" placeholder="e.g. Kisan Krishi Lab" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Test Type</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr56')}</label>
             <select required name="testType" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
-              <option>Basic Soil Health</option>
-              <option>Comprehensive Analysis</option>
-              <option>Micronutrient Test</option>
+              <option>{t('agr57')}</option>
+              <option>{t('agr58')}</option>
+              <option>{t('agr59')}</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Turnaround Time</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr60')}</label>
             <input required name="turnaround" type="text" placeholder="e.g. 24 Hours" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
           </div>
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Price per Test (₹)</label>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr61')}</label>
           <input required name="price" type="number" placeholder="250" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
-        <AgriButton type="submit" className="w-full">List Services</AgriButton>
+        <AgriButton type="submit" className="w-full">{t('agr62')}</AgriButton>
       </form>
     </AgriCard>
   );

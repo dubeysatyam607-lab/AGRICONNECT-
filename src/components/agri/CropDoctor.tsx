@@ -248,7 +248,7 @@ const CropDoctor: React.FC = () => {
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="text-feature-ai" size={20} />
-            <h3 className="font-bold text-foreground">Crop Scan Result</h3>
+            <h3 className="font-bold text-foreground">{t('agr194')}</h3>
           </div>
           <div className="flex gap-2">
             <button
@@ -271,18 +271,18 @@ const CropDoctor: React.FC = () => {
         {clarityWarning && (
           <div className="flex items-start gap-2 mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-            <p>This photo is not clear enough for a confident diagnosis. Please upload a clearer close-up of the affected leaf.</p>
+            <p>{t('agr195')}</p>
           </div>
         )}
 
         {/* Crop + plant part */}
         <div className="grid grid-cols-2 gap-2 mb-4">
           <div className="bg-muted rounded-xl p-3">
-            <p className="text-[10px] uppercase text-muted-foreground">Crop</p>
+            <p className="text-[10px] uppercase text-muted-foreground">{t('agr196')}</p>
             <p className="font-bold text-foreground text-sm">{result.crop || "—"}</p>
           </div>
           <div className="bg-muted rounded-xl p-3">
-            <p className="text-[10px] uppercase text-muted-foreground">Plant Part</p>
+            <p className="text-[10px] uppercase text-muted-foreground">{t('agr197')}</p>
             <p className="font-bold text-foreground text-sm">{result.plant_part || "—"}</p>
           </div>
         </div>
@@ -305,7 +305,7 @@ const CropDoctor: React.FC = () => {
 
         {!!result.symptoms?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">Visible symptoms</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr198')}</h4>
             <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
               {result.symptoms.map((s, i) => <li key={i}>{s}</li>)}
             </ul>
@@ -314,7 +314,7 @@ const CropDoctor: React.FC = () => {
 
         {!!result.recommendations?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">Recommended next steps</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr199')}</h4>
             <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
               {result.recommendations.map((r, i) => <li key={i}>{r}</li>)}
             </ul>
@@ -323,7 +323,7 @@ const CropDoctor: React.FC = () => {
 
         {!!result.next_steps_for_farmer?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">What to do next</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr200')}</h4>
             <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
               {result.next_steps_for_farmer.map((s, i) => <li key={i}>{s}</li>)}
             </ul>
@@ -384,11 +384,11 @@ const CropDoctor: React.FC = () => {
             <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground p-1"><X size={16} /></button>
           </div>
           {!user ? (
-            <p className="text-xs text-muted-foreground">Sign in to save and view your scan history.</p>
+            <p className="text-xs text-muted-foreground">{t('agr202')}</p>
           ) : historyLoading ? (
             <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader className="animate-spin" size={14} /> Loading scans...</p>
           ) : history.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No scans yet. Run a scan and it will be saved here.</p>
+            <p className="text-xs text-muted-foreground">{t('agr203')}</p>
           ) : (
             <div className="space-y-2">
               {history.map((scan) => (
@@ -453,8 +453,8 @@ const CropDoctor: React.FC = () => {
                 className="w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
               >
                 <Upload size={24} />
-                <span className="text-sm">Upload crop photo</span>
-                <span className="text-xs opacity-60">JPG, PNG or WEBP · max 8MB</span>
+                <span className="text-sm">{t('agr204')}</span>
+                <span className="text-xs opacity-60">{t('agr205')}</span>
               </button>
             )}
           </div>
@@ -510,7 +510,7 @@ const CropDoctor: React.FC = () => {
       <div className="bg-feature-community/10 p-4 rounded-xl flex items-start gap-3 border border-feature-community/20">
         <Info className="text-feature-community shrink-0 mt-0.5" size={20} />
         <div>
-          <h4 className="font-bold text-feature-community text-sm">Tips for better diagnosis</h4>
+          <h4 className="font-bold text-feature-community text-sm">{t('agr206')}</h4>
           <ul className="text-xs text-foreground mt-1 space-y-1">
             <li>• Upload a clear, close-up photo of affected area</li>
             <li>• Mention crop name and growth stage</li>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Search, MapPin, TrendingUp, RefreshCw, Filter, ShieldCheck, WifiOff } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -6,6 +7,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { fetchMandiPrices, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
 
 const MandiPrices: React.FC = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<MandiPrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ const MandiPrices: React.FC = () => {
           <span className="flex items-center gap-2">
             <WifiOff size={15} /> Showing cached prices from {cachedAtText} (Offline Mode)
           </span>
-          <button onClick={fetchMandiData} className="underline font-extrabold ml-2">Retry Sync</button>
+          <button onClick={fetchMandiData} className="underline font-extrabold ml-2">{t('agr111')}</button>
         </div>
       )}
 
@@ -84,7 +86,7 @@ const MandiPrices: React.FC = () => {
           <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
             <TrendingUp className="text-emerald-600" /> Real-Time Mandi Prices
           </h2>
-          <p className="text-muted-foreground text-sm">Verified APMC market rates from data.gov.in</p>
+          <p className="text-muted-foreground text-sm">{t('agr112')}</p>
         </div>
         <AgriButton variant="outline" size="sm" onClick={fetchMandiData} disabled={loading}>
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -109,7 +111,7 @@ const MandiPrices: React.FC = () => {
             onChange={(e) => setSelectedState(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium appearance-none"
           >
-            <option value="">All States</option>
+            <option value="">{t('agr113')}</option>
             {states.map((state) => (
               <option key={state} value={state}>{state}</option>
             ))}
@@ -127,7 +129,7 @@ const MandiPrices: React.FC = () => {
         <ErrorState message={error} onRetry={fetchMandiData} />
       ) : filteredData.length === 0 ? (
         <div className="text-center py-12 bg-card rounded-2xl border border-border">
-          <p className="text-muted-foreground font-medium">No verified mandi records found.</p>
+          <p className="text-muted-foreground font-medium">{t('agr114')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -151,15 +153,15 @@ const MandiPrices: React.FC = () => {
 
                 <div className="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-2.5 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">Min</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr115')}</p>
                     <p className="font-semibold text-xs text-foreground">₹{record.minPrice}</p>
                   </div>
                   <div className="border-x border-border">
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">Modal</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr116')}</p>
                     <p className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">₹{record.price}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">Max</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr117')}</p>
                     <p className="font-semibold text-xs text-foreground">₹{record.maxPrice}</p>
                   </div>
                 </div>

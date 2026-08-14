@@ -50,8 +50,8 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
   const [composerText, setComposerText] = useState("");
   const [composerCrop, setComposerCrop] = useState<string>(profile.crop);
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Rakesh";
-  const village = user?.user_metadata?.village || "Shivpuri";
+  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || (t('home.guestName'));
+  const village = user?.user_metadata?.village || (t('home.guestVillage'));
   const firstName = userName.split(" ")[0];
 
   const experts = useMemo(
@@ -264,7 +264,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
           <h3 className="font-display font-semibold text-[17px] tracking-tight text-foreground flex items-center gap-1.5">
             <Flame size={16} className="text-feature-tractor" /> {t("community.trending")}
           </h3>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">Sample</span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">{t('agr190')}</span>
         </div>
         <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-1">
           {COMMUNITY_TOPICS.map((topic) => (
@@ -348,8 +348,8 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
         {filteredPosts.length === 0 ? (
           <div className="mx-4 flex flex-col items-center gap-2 rounded-[24px] border border-dashed border-border bg-card/60 px-6 py-12 text-center">
             <HelpCircle size={30} className="text-muted-foreground/50" />
-            <p className="text-[14px] font-bold text-foreground">No discussions found</p>
-            <p className="text-[12px] text-muted-foreground">Try a different filter or clear the search.</p>
+            <p className="text-[14px] font-bold text-foreground">{t('agr191')}</p>
+            <p className="text-[12px] text-muted-foreground">{t('agr192')}</p>
             <button
               onClick={() => { setSearch(""); setFilter("forYou"); setCropFilter(null); }}
               className="mt-1 rounded-full bg-feature-community px-4 py-2 text-[12px] font-bold text-white shadow-colorful hover-lift active:scale-95"
@@ -497,7 +497,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
             <Users size={16} className="text-feature-community" /> {t("community.groups")}
           </h3>
           <div className="flex items-center gap-1.5">
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">Sample</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">{t('agr190')}</span>
             <button
               onClick={() => onToast("All groups coming to the hub soon")}
               className="flex shrink-0 items-center gap-1 text-[12px] font-bold text-forest dark:text-emerald-400"

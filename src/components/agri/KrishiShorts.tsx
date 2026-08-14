@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Heart, Share2, Phone, ChevronUp, ChevronDown, Leaf, User, Eye, Play, X, ExternalLink } from "lucide-react";
 
 interface VideoShort {
@@ -138,6 +139,7 @@ interface KrishiShortsProps {
 }
 
 const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedVideos, setLikedVideos] = useState<Set<number>>(new Set());
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
@@ -218,7 +220,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
         <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-4 py-1.5 rounded-full">
           <Leaf size={14} className="text-primary" />
-          <span className="text-white text-sm font-bold">Krishi Shorts</span>
+          <span className="text-white text-sm font-bold">{t('agr101')}</span>
         </div>
       </div>
 
@@ -301,21 +303,21 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                 <Share2 size={22} className="text-white" />
               </div>
-              <span className="text-white text-xs mt-1">Share</span>
+              <span className="text-white text-xs mt-1">{t('agr102')}</span>
             </button>
 
             <button onClick={handleCallExpert} aria-label="Call Kisan expert helpline" className="flex flex-col items-center">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                 <Phone size={22} className="text-white" />
               </div>
-              <span className="text-white text-xs mt-1">Expert</span>
+              <span className="text-white text-xs mt-1">{t('agr103')}</span>
             </button>
 
             <button onClick={handleWatchOnYouTube} aria-label="Watch video on YouTube" className="flex flex-col items-center">
               <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
                 <ExternalLink size={22} className="text-white" />
               </div>
-              <span className="text-white text-xs mt-1">YouTube</span>
+              <span className="text-white text-xs mt-1">{t('agr104')}</span>
             </button>
           </div>
         )}
@@ -348,7 +350,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
                 className="inline-flex items-center gap-1 bg-red-600/90 px-3 py-1 rounded-full"
               >
                 <Play size={12} className="text-white" fill="white" />
-                <span className="text-white text-xs font-medium">Watch Now</span>
+                <span className="text-white text-xs font-medium">{t('agr105')}</span>
               </button>
             </div>
           </div>

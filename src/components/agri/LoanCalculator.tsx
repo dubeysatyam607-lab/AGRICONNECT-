@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { CreditCard, Calculator, ExternalLink, ImageOff } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -43,6 +44,7 @@ const LOAN_SCHEMES: LoanScheme[] = [
 ];
 
 const LoanSchemeCard = ({ scheme }: { scheme: LoanScheme }) => {
+  const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
   return (
     <div className="bg-card rounded-2xl border border-border shadow-card hover:shadow-soft transition-shadow overflow-hidden flex">
@@ -81,6 +83,7 @@ const LoanSchemeCard = ({ scheme }: { scheme: LoanScheme }) => {
 };
 
 const LoanCalculator: React.FC = () => {
+  const { t } = useLanguage();
   const [loanAmount, setLoanAmount] = useState(100000);
   const [loanTenure, setLoanTenure] = useState(12);
 
@@ -109,7 +112,7 @@ const LoanCalculator: React.FC = () => {
         <div className="space-y-5 mb-6">
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Loan Amount</span>
+              <span className="text-muted-foreground">{t('agr108')}</span>
               <span className="font-bold text-foreground">
                 ₹{loanAmount.toLocaleString()}
               </span>
@@ -128,7 +131,7 @@ const LoanCalculator: React.FC = () => {
 
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Tenure (Months)</span>
+              <span className="text-muted-foreground">{t('agr109')}</span>
               <span className="font-bold text-foreground">
                 {loanTenure} Months
               </span>
@@ -159,7 +162,7 @@ const LoanCalculator: React.FC = () => {
         </div>
       </AgriCard>
 
-      <h3 className="font-bold text-foreground mb-3">Available Loan Schemes</h3>
+      <h3 className="font-bold text-foreground mb-3">{t('agr110')}</h3>
       <div className="space-y-3">
         {LOAN_SCHEMES.map((s) => (
           <LoanSchemeCard key={s.id} scheme={s} />

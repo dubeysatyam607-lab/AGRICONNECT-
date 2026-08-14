@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   phone TEXT,
   location TEXT,
   avatar_url TEXT,
+  role TEXT DEFAULT 'farmer',
+  app_language TEXT NOT NULL DEFAULT 'en',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -68,9 +70,10 @@ ALTER TABLE public.cattle_listings ENABLE ROW LEVEL SECURITY;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.cattle_listings;
 
 -- Cattle listings policies
+DROP POLICY IF EXISTS "Active listings are viewable by everyone" ON public.cattle_listings;
 CREATE POLICY "Active listings are viewable by everyone" 
 ON public.cattle_listings FOR SELECT 
-USING (is_active = true);
+USING (is_active = true OR auth.uid() = seller_id);
 
 CREATE POLICY "Authenticated users can create listings" 
 ON public.cattle_listings FOR INSERT 

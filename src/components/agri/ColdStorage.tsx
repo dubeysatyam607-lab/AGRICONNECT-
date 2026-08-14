@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Warehouse, MapPin, ThermometerSnowflake, IndianRupee, Phone, Navigation, Star } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -112,6 +113,7 @@ interface ColdStorageProps {
 }
 
 const ColdStorage: React.FC<ColdStorageProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [facilities, setFacilities] = useState<StorageFacility[]>(STORAGE_FACILITIES);
@@ -307,8 +309,8 @@ const ColdStorage: React.FC<ColdStorageProps> = ({ onToast }) => {
         {filteredFacilities.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
             <Warehouse size={48} className="mx-auto mb-2 opacity-50" />
-            <p>No storage facilities found</p>
-            <p className="text-sm">Try adjusting your search or filters</p>
+            <p>{t('agr81')}</p>
+            <p className="text-sm">{t('agr82')}</p>
           </div>
         )}
       </div>

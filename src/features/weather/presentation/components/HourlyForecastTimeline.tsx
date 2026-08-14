@@ -156,7 +156,7 @@ export const HourlyForecastTimeline: React.FC<HourlyForecastTimelineProps> = ({ 
                   {/* Wind Speed info at the bottom */}
                   <div className="mt-1 flex items-center gap-1 text-[9px] text-slate-400 font-medium justify-center border-t border-white/5 pt-1.5 w-full">
                     <Wind size={9} className="text-teal-400" />
-                    <span>{item.windSpeed} km/h</span>
+                    <span>{item.windSpeed} {t('wth.kmh')}</span>
                   </div>
                 </div>
               );

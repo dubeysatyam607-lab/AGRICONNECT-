@@ -49,9 +49,9 @@ export class AuthRepositoryImpl implements IAuthRepository {
     return session;
   }
 
-  public async sendOtp(target: string, type: 'phone' | 'email'): Promise<void> {
+  public async sendOtp(target: string, type: 'phone' | 'email', meta?: { full_name?: string; phone?: string }): Promise<void> {
     crashLoggingService.addBreadcrumb('AuthRepositoryImpl.sendOtp', { target, type });
-    await this.dataSource.sendOtp(target, type);
+    await this.dataSource.sendOtp(target, type, meta);
     analyticsService.track('OTP_Requested', { target_type: type });
   }
 

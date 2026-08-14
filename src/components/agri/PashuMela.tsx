@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Milk, ExternalLink, MapPin, Filter, Search } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriCard } from "@/components/ui/agri-card";
@@ -140,6 +141,7 @@ interface PashuMelaProps {
 }
 
 const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('All');
   const [filterBreed, setFilterBreed] = useState<string>('All Breeds');
@@ -208,7 +210,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Milk className="text-primary" /> पशु मेला
           </h2>
-          <p className="text-muted-foreground text-sm">Livestock Marketplace</p>
+          <p className="text-muted-foreground text-sm">{t('agr128')}</p>
         </div>
         <AgriButton size="sm" onClick={handleViewDetails}>
           <ExternalLink size={14} /> e-Pashuhaat
@@ -259,7 +261,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
       {showFilters && (
         <AgriCard className="p-3 mb-4 space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Breed</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{t('agr129')}</label>
             <div className="flex gap-2 flex-wrap">
               {availableBreeds.map((breed) => (
                 <AgriButton
@@ -277,7 +279,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
           
           {filterType !== 'Poultry' && (
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Min Milk Yield (L/day)</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('agr130')}</label>
               <div className="flex gap-2">
                 {['', '5', '10', '12', '15'].map((val) => (
                   <AgriButton
@@ -359,8 +361,8 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
       {filteredLivestock.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <Milk size={48} className="mx-auto mb-2 opacity-50" />
-          <p>No animals found</p>
-          <p className="text-sm">Try adjusting your filters</p>
+          <p>{t('agr131')}</p>
+          <p className="text-sm">{t('agr132')}</p>
         </div>
       )}
     </div>

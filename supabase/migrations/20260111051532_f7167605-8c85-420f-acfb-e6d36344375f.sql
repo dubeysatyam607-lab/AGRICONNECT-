@@ -21,6 +21,13 @@ ON public.audit_logs
 FOR SELECT
 USING (auth.uid() = user_id);
 
+-- Users can write their own audit entries (insert-only; rows are immutable).
+DROP POLICY IF EXISTS "Users can insert their own audit logs" ON public.audit_logs;
+CREATE POLICY "Users can insert their own audit logs"
+ON public.audit_logs
+FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
 -- Create index for faster queries
 CREATE INDEX idx_audit_logs_user_id ON public.audit_logs(user_id);
 CREATE INDEX idx_audit_logs_action ON public.audit_logs(action);

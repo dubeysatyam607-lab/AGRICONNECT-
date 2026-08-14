@@ -31,6 +31,13 @@ vi.mock('@/hooks/useAuth', () => ({
       },
     },
   })),
+  useOptionalAuth: vi.fn(() => ({
+    user: {
+      id: 'test-user-id',
+      email: 'test@bharatkrishi.in',
+      user_metadata: { full_name: 'Test Farmer' },
+    },
+  })),
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

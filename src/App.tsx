@@ -8,10 +8,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import { RoleProvider } from "@/contexts/RoleContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { RequireAdmin } from "@/core/auth/RequireAdmin";
 import MarketingLayout from "./shared/layouts/MarketingLayout";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
 
@@ -26,6 +28,7 @@ const StateLanding = lazy(() => import("./pages/StateLanding"));
 const Features = lazy(() => import("./pages/Features"));
 const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
 const Blog = lazy(() => import("./pages/Blog"));
+const FutureFarming = lazy(() => import("./pages/FutureFarming"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 
 // Admin Console (code-split — only reachable by role-gated /admin route)
@@ -181,6 +184,7 @@ const App = () => (
                   <Route path="/features" element={<SafeLazy><MarketingLayout><Features /></MarketingLayout></SafeLazy>} />
                   <Route path="/knowledge-hub" element={<SafeLazy><MarketingLayout><KnowledgeHub /></MarketingLayout></SafeLazy>} />
                   <Route path="/blogs" element={<SafeLazy><MarketingLayout><Blog /></MarketingLayout></SafeLazy>} />
+<Route path="/blogs/future-of-farming" element={<SafeLazy><MarketingLayout><FutureFarming /></MarketingLayout></SafeLazy>} />
                   <Route path="/help-center" element={<SafeLazy><MarketingLayout><HelpCenter /></MarketingLayout></SafeLazy>} />
 
                   {/* ── Local SEO Landing Pages ─────────────── */}
@@ -192,8 +196,8 @@ const App = () => (
                   <Route path="/tractor-rental/:slug" element={<SafeLazy><MarketingLayout><StateLanding /></MarketingLayout></SafeLazy>} />
 
                   {/* ── Admin Console (role-gated) ─────────────── */}
-                  <Route path="/admin" element={<SafeLazy><AdminDashboard /></SafeLazy>} />
-                  <Route path="/admin/*" element={<SafeLazy><AdminDashboard /></SafeLazy>} />
+                  <Route path="/admin" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
+<Route path="/admin/*" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
 
                   {/* ── 404 ─────────────────────────────────── */}
                   <Route path="*" element={<NotFound />} />

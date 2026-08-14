@@ -3,6 +3,7 @@ import { inject } from '@/core/di/inject';
 import { DI_TOKENS } from '@/core/di/Container';
 import { ValidationException } from '@/core/errors/AppException';
 import { ChangePasswordSchema } from '../models/AuthValidations';
+import { isPasswordStrong } from '@/utils/passwordPolicy';
 
 /**
  * Enterprise Use Case: Secure Password Update.
@@ -20,6 +21,9 @@ export class ChangePasswordUseCase {
         if (e.path[0]) errors[e.path[0].toString()] = e.message;
       });
       throw new ValidationException('Please verify your password details.', errors);
+    if (!isPasswordStrong(newPassword)) {
+      throw new ValidationException('New password does not meet strength requirements.', { newPassword: 'Password is too weak.' });
+    }
     }
 
     if (oldPassword === newPassword) {

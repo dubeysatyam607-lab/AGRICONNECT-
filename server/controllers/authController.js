@@ -1,4 +1,6 @@
 const crypto = require('crypto');
+const { authenticator } = require('otplib');
+const QRCode = require('qrcode');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -186,6 +188,7 @@ const authUser = async (req, res) => {
         email: user.email,
         role: user.role,
         token: generateToken(user._id),
+        mfaEnabled: !!user.mfaEnabled,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -242,10 +245,162 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Forgot password - send reset OTP
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.status(200).json({ message: 'If the email exists, a password reset OTP has been sent.' });
+    }
+
+    if (!user.isVerified) {
+      return res.status(400).json({ message: 'Please verify your email first before resetting password.' });
+    }
+
+    const otp = generateOTP();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+    user.resetOtpCode = hashedOTP;
+    user.resetOtpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes for password reset
+    await user.save();
+
+    await sendPasswordResetEmail(email, otp);
+
+    res.status(200).json({ message: 'If the email exists, a password reset OTP has been sent.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error during password reset request' });
+  }
+};
+
+// Send Password Reset Email
+const sendPasswordResetEmail = async (email, otp) => {
+  if (!process.env.EMAIL_USER) {
+    console.log(`[Mock Email] Password reset OTP email to ${email} skipped (EMAIL_USER not configured)`);
+    return;
+  }
+
+  const mailOptions = {
+    from: `"Agri-Connect" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Your Agri-Connect Password Reset OTP',
+    text: `Your OTP for Agri-Connect password reset is: ${otp}. It will expire in 10 minutes.`,
+    html: `<h3>Password Reset Request</h3>
+           <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+           <p>It will expire in 10 minutes.</p>
+           <p>If you didn't request this, please ignore this email.</p>`
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: 'Please provide email, OTP, and new password' });
+    }
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.resetOtpCode || !(await bcrypt.compare(otp, user.resetOtpCode))) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (Date.now() > user.resetOtpExpiresAt) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    // Update password and clear reset OTP
+    user.password = newPassword; // Will be hashed by pre-save hook
+    user.resetOtpCode = undefined;
+    user.resetOtpExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error during password reset' });
+  }
+};
+
+// @desc Enable MFA for user
+// @route POST /api/auth/enable-mfa
+// @access Private
+const enableMfa = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const secret = authenticator.generateSecret();
+    user.mfaSecret = secret;
+    user.mfaEnabled = true;
+    await user.save();
+
+    const otpauth = authenticator.keyuri(user.email, 'Agri-Connect', secret);
+    QRCode.toDataURL(otpauth, (err, dataUrl) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Failed to generate QR code' });
+      }
+      res.json({ message: 'MFA enabled', qrCode: dataUrl, secret });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error enabling MFA' });
+  }
+};
+
+// @desc Verify MFA token
+// @route POST /api/auth/verify-mfa
+// @access Private
+const verifyMfa = async (req, res) => {
+  const { token } = req.body;
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user || !user.mfaEnabled || !user.mfaSecret) {
+      return res.status(400).json({ message: 'MFA not set up' });
+    }
+    const isValid = authenticator.check(token, user.mfaSecret);
+    if (!isValid) {
+      return res.status(400).json({ message: 'Invalid MFA token' });
+    }
+    const jwtToken = generateToken(user._id);
+    res.json({ message: 'MFA verified', token: jwtToken });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error verifying MFA' });
+  }
+};
+
 module.exports = {
+  enableMfa,
+  verifyMfa,
   registerUser,
   verifyOTP,
   authUser,
   resendOTP,
-  getUserProfile
+  getUserProfile,
+  forgotPassword,
+  resetPassword
 };

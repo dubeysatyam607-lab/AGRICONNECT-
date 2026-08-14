@@ -57,6 +57,7 @@ $$;
 
 -- ── C-03: profiles SELECT = self only (admins via separate policy) ─────────
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 CREATE POLICY "Users can view their own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { WifiOff, RefreshCw, X } from "lucide-react";
 
 interface OfflineBannerProps {
@@ -13,6 +14,7 @@ const getInitialOnlineState = () => {
 };
 
 const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
+  const { t } = useLanguage();
   const [isOnline, setIsOnline] = useState(getInitialOnlineState);
   const [visible, setVisible] = useState(!getInitialOnlineState);
   const [dismissed, setDismissed] = useState(false);
@@ -45,8 +47,8 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
         <div className="flex items-center gap-2">
           <WifiOff size={16} className="flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold">Network Error. Please try again.</p>
-            <p className="text-xs opacity-80">Viewing saved data from cache</p>
+            <p className="text-sm font-semibold">{t('agr126')}</p>
+            <p className="text-xs opacity-80">{t('agr127')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

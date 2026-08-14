@@ -7,6 +7,24 @@ import type { AdminAuditAction, AdminCollectionKey, AdminState } from '../../dom
 import { uid } from '../../domain/adminSeed';
 import { useAdminStore } from '../hooks/useAdminStore';
 
+const ACTOR_FALLBACK = 'Unknown Admin';
+
+const actorName = (): string => {
+  const stored = getAdminSession().name;
+  if (stored) return stored;
+  try {
+    // Sync fallback — latest user metadata is freshest at call time.
+    const raw = localStorage.getItem('agri_auth_meta');
+    if (raw) {
+      const meta = JSON.parse(raw) as { full_name?: string };
+      if (meta.full_name) return meta.full_name;
+    }
+  } catch {
+    /* ignore */
+  }
+  return ACTOR_FALLBACK;
+};
+
 export interface CrudConfig<K extends AdminCollectionKey> {
   key: K;
   label: string;
@@ -78,14 +96,13 @@ export function useAdminCrud<K extends AdminCollectionKey>(config: CrudConfig<K>
   return { rows, create, update, remove, removeMany, setStatus };
 }
 
-export const adminActorName = (): string => getAdminSession().name;
+export const adminActorName = (): string => actorName();
 
 export function logAdminExport(label: string, count: number) {
-  const session = getAdminSession();
   mutateCollection('auditLogs', (logs) => [
     {
       id: uid(),
-      actor: session.name,
+      actor: actorName(),
       action: 'EXPORT',
       entity: label,
       entityId: '-',
@@ -97,11 +114,10 @@ export function logAdminExport(label: string, count: number) {
 }
 
 function logUpdate(label: string, id: string, values: Record<string, any>) {
-  const session = getAdminSession();
   mutateCollection('auditLogs', (logs) => [
     {
       id: uid(),
-      actor: session.name,
+      actor: actorName(),
       action: 'UPDATE',
       entity: label,
       entityId: id,

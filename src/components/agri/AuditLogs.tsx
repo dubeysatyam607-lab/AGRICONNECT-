@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Shield, Clock, User, Database, ChevronDown, ChevronUp, RefreshCw, Filter, X, Calendar } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -56,6 +57,7 @@ const DATE_PRESETS = [
 ];
 
 const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) => {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -201,9 +203,9 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
     return (
       <AgriCard className="p-6 text-center">
         <Shield className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-        <h3 className="font-bold text-foreground mb-2">Login Required</h3>
-        <p className="text-sm text-muted-foreground mb-4">Please login to view your audit logs</p>
-        <AgriButton onClick={() => onNavigate?.('auth')}>Login</AgriButton>
+        <h3 className="font-bold text-foreground mb-2">{t('agr63')}</h3>
+        <p className="text-sm text-muted-foreground mb-4">{t('agr64')}</p>
+        <AgriButton onClick={() => onNavigate?.('auth')}>{t('agr65')}</AgriButton>
       </AgriCard>
     );
   }
@@ -217,8 +219,8 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
             <Shield className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="font-bold text-lg text-foreground">Audit Logs</h2>
-            <p className="text-xs text-muted-foreground">Track all your sensitive operations</p>
+            <h2 className="font-bold text-lg text-foreground">{t('agr66')}</h2>
+            <p className="text-xs text-muted-foreground">{t('agr67')}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -240,7 +242,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
       {showFilters && (
         <AgriCard className="p-4 animate-fade-in">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium text-foreground text-sm">Filters</h4>
+            <h4 className="font-medium text-foreground text-sm">{t('agr68')}</h4>
             {hasActiveFilters && (
               <button 
                 onClick={clearFilters}
@@ -252,7 +254,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Action Type</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('agr69')}</label>
               <Select value={actionFilter} onValueChange={setActionFilter}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
@@ -265,7 +267,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Table</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('agr70')}</label>
               <Select value={tableFilter} onValueChange={setTableFilter}>
                 <SelectTrigger className="h-9">
                   <SelectValue />
@@ -300,7 +302,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
             {datePreset === 'custom' && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">From</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t('agr71')}</label>
                   <Input 
                     type="date" 
                     value={startDate}
@@ -328,19 +330,19 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
         <div className="grid grid-cols-3 gap-3">
           <AgriCard className="p-3 text-center">
             <p className="text-2xl font-bold text-primary">{logs.length}</p>
-            <p className="text-xs text-muted-foreground">Total Actions</p>
+            <p className="text-xs text-muted-foreground">{t('agr72')}</p>
           </AgriCard>
           <AgriCard className="p-3 text-center">
             <p className="text-2xl font-bold text-green-600">
               {logs.filter(l => l.action.toUpperCase() === 'INSERT').length}
             </p>
-            <p className="text-xs text-muted-foreground">Creates</p>
+            <p className="text-xs text-muted-foreground">{t('agr73')}</p>
           </AgriCard>
           <AgriCard className="p-3 text-center">
             <p className="text-2xl font-bold text-blue-600">
               {logs.filter(l => l.action.toUpperCase() === 'UPDATE').length}
             </p>
-            <p className="text-xs text-muted-foreground">Updates</p>
+            <p className="text-xs text-muted-foreground">{t('agr74')}</p>
           </AgriCard>
         </div>
       )}
@@ -362,7 +364,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
         ) : loadError ? (
           <div className="p-8 text-center">
             <Database className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-            <h3 className="font-medium text-foreground mb-1">Could not load activity</h3>
+            <h3 className="font-medium text-foreground mb-1">{t('agr75')}</h3>
             <p className="text-sm text-muted-foreground mb-3">{loadError}</p>
             <AgriButton size="sm" variant="outline" onClick={fetchLogs} className="mt-3">
               Retry
@@ -425,7 +427,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
                 <div className="mt-3 pt-3 border-t border-border space-y-3 animate-fade-in">
                   {log.old_data && (
                     <div>
-                      <p className="text-xs font-medium text-red-600 mb-1">Previous Data:</p>
+                      <p className="text-xs font-medium text-red-600 mb-1">{t('agr76')}</p>
                       <pre className="text-xs bg-red-50 dark:bg-red-900/20 p-2 rounded overflow-x-auto">
                         {JSON.stringify(log.old_data, null, 2)}
                       </pre>
@@ -433,7 +435,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
                   )}
                   {log.new_data && (
                     <div>
-                      <p className="text-xs font-medium text-green-600 mb-1">New Data:</p>
+                      <p className="text-xs font-medium text-green-600 mb-1">{t('agr77')}</p>
                       <pre className="text-xs bg-green-50 dark:bg-green-900/20 p-2 rounded overflow-x-auto">
                         {JSON.stringify(log.new_data, null, 2)}
                       </pre>

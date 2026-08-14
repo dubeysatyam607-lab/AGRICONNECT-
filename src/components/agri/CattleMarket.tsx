@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Milk, MapPin, Clock, Phone, ExternalLink, BadgeCheck } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,76 +21,16 @@ interface CattleItem {
   sellerPhone: string;
 }
 
-const CATTLE: CattleItem[] = [
-  {
-    id: 1,
-    type: 'Buffalo',
-    breed: 'Murrah',
-    milk: '12L/day',
-    price: 65000,
-    age: '2 Lactation',
-    location: 'Rampura, Rajasthan',
-    image: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=800',
-    sellerName: 'Ramesh Kumar',
-    sellerPhone: '+91 XXXXX XXXXX'
-  },
-  {
-    id: 2,
-    type: 'Cow',
-    breed: 'Gir',
-    milk: '14L/day',
-    price: 55000,
-    age: '1 Lactation',
-    location: 'Sanganer, Jaipur',
-    image: 'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?auto=format&fit=crop&q=80&w=800',
-    sellerName: 'Suresh Patel',
-    sellerPhone: '+91 XXXXX XXXXX'
-  },
-  {
-    id: 3,
-    type: 'Cow',
-    breed: 'Jersey',
-    milk: '18L/day',
-    price: 45000,
-    age: '3 Lactation',
-    location: 'Chomu, Jaipur',
-    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
-    sellerName: 'Mahesh Singh',
-    sellerPhone: '+91 XXXXX XXXXX'
-  },
-  {
-    id: 4,
-    type: 'Buffalo',
-    breed: 'Jaffarabadi',
-    milk: '15L/day',
-    price: 75000,
-    age: '1 Lactation',
-    location: 'Dudu, Jaipur',
-    image: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&q=80&w=800',
-    sellerName: 'Dinesh Yadav',
-    sellerPhone: '+91 XXXXX XXXXX'
-  },
-  {
-    id: 5,
-    type: 'Goat',
-    breed: 'Beetal',
-    milk: '3L/day',
-    price: 15000,
-    age: 'Young',
-    location: 'Jaipur, Rajasthan',
-    image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&q=80&w=800',
-    sellerName: 'Vikram Sharma',
-    sellerPhone: '+91 XXXXX XXXXX'
-  },
-];
+
 
 const CattleMarket: React.FC = () => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedAnimal, setSelectedAnimal] = useState<CattleItem | null>(null);
   const [showContact, setShowContact] = useState(false);
-  const [cattleList, setCattleList] = useState<CattleItem[]>(CATTLE);
-  const [usingSample, setUsingSample] = useState(true);
+  const [cattleList, setCattleList] = useState<CattleItem[]>([]);
+  
 
 // Address the "missing thing": Fetch live data using the imported Supabase client
   useEffect(() => {
@@ -115,7 +56,7 @@ const CattleMarket: React.FC = () => {
           sellerPhone: 'Contact for details',
         }));
         setCattleList(mapped);
-        setUsingSample(false);
+        
       }
     };
 
@@ -181,7 +122,7 @@ const CattleMarket: React.FC = () => {
             <h2 className="text-2xl font-bold text-primary-foreground flex items-center gap-2">
               <Milk size={22} /> Pashu Mela
             </h2>
-            <p className="text-primary-foreground/80 text-sm mt-1">Buy & Sell Quality Livestock</p>
+            <p className="text-primary-foreground/80 text-sm mt-1">{t('agr78')}</p>
             <p className="text-primary-foreground/60 text-xs mt-0.5">{cattleList.length} animals listed nearby</p>
           </div>
           <AgriButton
@@ -194,11 +135,7 @@ const CattleMarket: React.FC = () => {
         </div>
       </div>
 
-      {usingSample && (
-        <div className="mb-4 rounded-xl border border-amber-300/40 bg-amber-50 dark:bg-amber-950/20 px-3.5 py-2.5 text-[12px] font-semibold text-amber-800 dark:text-amber-300">
-          Sample listings — real animals appear here once sellers add them.
-        </div>
-      )}
+      
 
       {/* Cards */}
       <div className="space-y-4">
@@ -265,7 +202,7 @@ const CattleMarket: React.FC = () => {
       <Dialog open={showContact} onOpenChange={setShowContact}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Contact Seller</DialogTitle>
+            <DialogTitle>{t('agr79')}</DialogTitle>
           </DialogHeader>
           {selectedAnimal && (
             <div className="space-y-4 pt-2">
@@ -284,7 +221,7 @@ const CattleMarket: React.FC = () => {
               </div>
 
               <div className="p-3 border border-border rounded-xl">
-                <p className="text-xs text-muted-foreground mb-1">Seller</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('agr80')}</p>
                 <p className="font-semibold text-foreground">{selectedAnimal.sellerName}</p>
                 {isDemoListing(selectedAnimal.sellerPhone) ? (
                   <p className="text-sm text-muted-foreground mt-0.5">

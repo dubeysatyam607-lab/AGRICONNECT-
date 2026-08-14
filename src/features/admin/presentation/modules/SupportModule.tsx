@@ -5,7 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { DataTable } from '../components/DataTable';
 import type { BulkAction, DataColumn, DataFilter } from '../components/DataTable';
 import { AdminStatusBadge } from '../components/StatusBadge';
-import { useAdminCrud, logAdminExport } from '../hooks/useAdminCrud';
+import { useAdminCrud, logAdminExport, adminActorName } from '../hooks/useAdminCrud';
 import { timeAgo } from '../../domain/adminStore';
 import type { SupportTicket } from '../../domain/adminTypes';
 
@@ -49,7 +49,7 @@ export function SupportModule() {
         title="Support Tickets"
         subtitle={`${rows.length} tickets · ${open} open`}
         actions={open > 0 ? (
-          <Button variant="outline" onClick={() => rows.filter((r) => r.status === 'Open').forEach((r) => update(r, { agent: 'Priya Sharma', status: 'In Progress' }))}>
+          <Button variant="outline" onClick={() => rows.filter((r) => r.status === 'Open').forEach((r) => update(r, { agent: adminActorName(), status: 'In Progress' }))}>
             <UserCheck className="h-4 w-4" /> Claim All Open
           </Button>
         ) : undefined}

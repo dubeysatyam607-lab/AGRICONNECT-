@@ -98,6 +98,29 @@ Netlify (or any static host) — SPA routing, caching and the PWA are already co
 3. Set the Supabase + edge-function env vars above in your host's environment.
 4. Deploy the edge functions and run the DB migrations (`supabase/migrations/`).
 
+### Email OTP hook (required for auth sign-in)
+
+Supabase Auth is configured to call the `send-auth-email` edge function as its SMTP custom
+hook (`SEND_EMAIL_HOOK`). If this function is not deployed/reachable, `POST /auth/v1/otp`
+fails with `422 hook_timeout` and **no one can sign in with an email OTP**.
+
+```sh
+npx supabase functions deploy --project-ref <PROJECT_ID> send-auth-email
+npx supabase secrets set --project-ref <PROJECT_ID> SEND_EMAIL_HOOK_SECRETS='{"api_key":"..."}'
+```
+
+The hook reads an `api_key` (and optionally SMTP/Resend config) from
+`SEND_EMAIL_HOOK_SECRETS`. See `supabase/functions/send-auth-email/index.ts`. Also confirm
+`auth.email.enable_signup` and the hook toggle under **Auth → Hooks** in the dashboard.
+
+### Edge-function JWT enforcement
+
+All edge functions declare `verify_jwt = true` in `supabase/config.toml`. Until a fresh
+`supabase functions deploy` is pushed, previously deployed copies keep their old config and
+may still accept any project anon key without a user token. After deploying, verify that
+unauthenticated requests to mutating functions return `401` (see
+`supabase/functions/_shared/auth-validator.ts`).
+
 ## Offline behavior
 
 `public/sw.js` is build-hash versioned (`static-<hash>` / `dynamic-<hash>`). It precaches the built assets, serves navigations with `navigationFirst`, and falls back to `/index.html` so the full app — including deep links — works offline. A 80-entry LRU bound keeps the dynamic cache from growing unbounded.

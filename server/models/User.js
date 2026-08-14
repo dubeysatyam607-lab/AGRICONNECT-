@@ -76,14 +76,16 @@ const User = {
   },
   create: async (userData) => {
     const users = readData();
-    const newUser = {
-      _id: Date.now().toString(),
-      role: 'farmer',
-      isVerified: false,
-      ...userData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      const newUser = {
+        _id: Date.now().toString(),
+        role: 'farmer',
+        isVerified: false,
+        mfaEnabled: false,
+        mfaSecret: null,
+        ...userData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     
     // Hash password
     if (newUser.password) {

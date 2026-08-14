@@ -37,6 +37,57 @@ const DEFAULT_SUGGESTIONS = [
   "फसल रोग की जांच (फोटो भेजें)",
 ];
 
+/**
+ * Strip the literal "##SUGGESTIONS##" trailer the model is instructed to emit
+ * and return { body, suggestions }. Bullet/heading markers are also collapsed
+ * to plain conversational lines so nothing is ever read aloud as a symbol.
+ */
+function parseSuggestions(
+  raw: string,
+): { body: string; suggestions: string[] } {
+  if (!raw) return { body: "", suggestions: DEFAULT_SUGGESTIONS };
+
+  // Split at the suggestions marker (handles trailing whitespace/lines).
+  const markerIndex = raw.indexOf("##SUGGESTIONS##");
+  const bodyPart =
+    markerIndex >= 0 ? raw.slice(0, markerIndex) : raw;
+
+  // The segment after the marker holds the 3 follow-up questions.
+  let suggestions: string[] = [];
+  if (markerIndex >= 0) {
+    suggestions = raw
+      .slice(markerIndex + "##SUGGESTIONS##".length)
+      .split(/\n+/)
+      .map((line) =>
+        line
+          .replace(/^[-*•*#*]+\s*/, "")
+          .replace(/^\d+[.)]\s*/, "")
+          .trim()
+      )
+      .filter((line) => line.length > 0 && line.length <= 90)
+      .slice(0, 3);
+  }
+
+  const body = bodyPart
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/^#{1,6}\s*/, "")
+        .replace(/^\s*[-*+•]\s+/, "")
+        .replace(/^\s*\d+[.)]\s+/, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/`([^`]+)`/g, "$1")
+        .trim()
+    )
+    .filter((line) => line.length > 0 && !/^[-=*]{3,}$/.test(line))
+    .join("\n")
+    .trim();
+
+  if (suggestions.length === 0) suggestions = DEFAULT_SUGGESTIONS;
+  return { body, suggestions };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Server-side language detection (spec §1: reply in the user's own language).
 // Uses Unicode script ranges of the latest user message — no third-party NLP.
@@ -254,7 +305,7 @@ const SYSTEM_PROMPT = `You are "Kisan Sahayak" (किसान सहायक)
 BEHAVE LIKE A KNOWLEDGEABLE HUMAN ADVISOR:
 - Warm, practical, respectful. Address the farmer naturally in their language ("किसान भाई", "Kisan Ji", "भाऊ", etc.).
 - Do NOT introduce yourself with "Namaste! I am an AI-powered assistant". Never repeat the same intro twice. Just answer the question directly.
-- Short, clear answers (3-5 short paragraphs). Use bullets/headings only when they genuinely help. Avoid emoji spam.
+- Short, clear answers in plain conversational prose (3-5 short sentences). No bullets, no headings, no emoji, no formatting symbols — the reply is spoken aloud.
 
 LANGUAGE RULE (STRICT):
 - The user's language is: "{language}" (auto-detected from what they actually wrote).
@@ -289,7 +340,12 @@ SKILLS — MATCH THE QUESTION TO THE RIGHT SKILL:
 6. Weather: anything in WEATHER_TOOL_RESULT + crop-planning advice.
 7. Soil, sowing, harvesting, farm economics, machinery, IoT data, crop scan results.
 
-OUTPUT:
+OUTPUT (READS ALOUD BY VOICE ASSISTANT — STRICT):
+- Write PLAIN conversational prose, like one farmer advising another.
+- NEVER use markdown formatting: no **bold**, no *italics*, no #, no \`, no >, no |, no ---, no ~~, no [ ] ( ), no raw URLs, no JSON, no bullet dashes "-" or asterisks, no "##", no emoji.
+- Never spell out symbols. Write "and", "percent", "degrees", "rupees", "kilogram", "quintal" as words instead of "&", "%", "°", "₹", "kg", "qtl".
+- Numbers, dates, prices and amounts must be written naturally in words where it helps speech (e.g. "twenty-eight degrees" or "अट्ठाईस डिग्री").
+- Keep sentences short (under 15 words where possible) with natural pauses. 3-5 short sentences is ideal for a voice reply.
 - At the VERY END, on a NEW LINE, write the literal marker "##SUGGESTIONS##" followed by exactly 3 short follow-up questions (under 70 chars each) the farmer is most likely to ask next, in the same language.`;
 
 serve(async (req) => {

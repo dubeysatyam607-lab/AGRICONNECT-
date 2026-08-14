@@ -68,7 +68,7 @@ interface LiveMandiProps {
 const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices", "Oilseeds", "Commercial"];
 
 const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const hi = language === "hi";
 
   const L = {
@@ -112,10 +112,17 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOption, setSortOption] = useState<SortOption>("highest");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const pageSize = 20; // number of cards per page
 
   const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedCrop, setSelectedCrop] = useState<MandiPrice | null>(null);
   const [harvestQuantity, setHarvestQuantity] = useState<number>(50);
+  // Reset pagination when filters/search change
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedState, selectedDistrict, selectedCategory, favoritesOnly, sortOption]);
 
   // Real crop photos (Pexels) keyed by normalized crop name
   const [cropImages, setCropImages] = useState<Record<string, string>>({});
@@ -307,6 +314,9 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     return list;
   }, [data, searchTerm, selectedState, selectedDistrict, selectedCategory, favoritesOnly, sortOption, isFav]);
 
+  // Paginated slice of filtered results
+  const paginated = useMemo(() => filtered.slice(0, page * pageSize), [filtered, page, pageSize]);
+
   const changeBadge = (c: MandiPrice) => {
     const ch = parseChange(c.change);
     return (
@@ -392,7 +402,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <div className="p-3.5 space-y-3">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Modal Price</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">{t('agr223')}</span>
                 <p className="font-black text-2xl text-emerald-700 dark:text-emerald-400 leading-tight">
                   {formatINR(c.price)} <span className="text-xs font-semibold text-muted-foreground">{L.perQuintal}</span>
                 </p>
@@ -466,7 +476,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <Bot size={20} />
           </div>
           <div>
-            <h3 className="font-extrabold text-base text-foreground">AI किसान बिक्री सलाहकार (Krishi Selling Intelligence)</h3>
+            <h3 className="font-extrabold text-base text-foreground">{t('agr224')}</h3>
             <p className="text-xs text-muted-foreground">लाइव APMC मंडी भाव, MSP और बाजार रुझान का AI विश्लेषण</p>
           </div>
         </div>
@@ -476,8 +486,15 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((c, i) => renderCard(c, i))}
+        {paginated.map((c, i) => renderCard(c, i))}
       </div>
+      {paginated.length < filtered.length && (
+        <div className="flex justify-center mt-4">
+          <AgriButton variant="outline" onClick={() => setPage(p => p + 1)} className="px-6">
+            Load More
+          </AgriButton>
+        </div>
+      )}
     </div>
   );
 
@@ -652,6 +669,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
+              setPage(1);
               setShowSearchSuggestions(true);
             }}
             onFocus={() => setShowSearchSuggestions(true)}
@@ -665,6 +683,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                   key={s}
                   onClick={() => {
                     setSearchTerm(s);
+                    setPage(1);
                     setShowSearchSuggestions(false);
                   }}
                   className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
@@ -682,7 +701,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           {CATEGORIES.map(cat => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => { setSelectedCategory(cat); setPage(1); }}
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors",
                 selectedCategory === cat
@@ -700,7 +719,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <select
             aria-label="Filter State"
             value={selectedState}
-            onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); }}
+            onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
             <option value="">{L.allStates}</option>
@@ -710,7 +729,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <select
             aria-label="Filter District"
             value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
+            onChange={(e) => { setSelectedDistrict(e.target.value); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
             <option value="">{L.allDistricts}</option>
@@ -720,17 +739,17 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <select
             aria-label="Sort Prices"
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            onChange={(e) => { setSortOption(e.target.value as SortOption); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
-            <option value="highest">Price: High to Low</option>
-            <option value="lowest">Price: Low to High</option>
-            <option value="latest">Latest Arrival</option>
-            <option value="alphabetical">Crop Name A-Z</option>
+            <option value="highest">{t('agr225')}</option>
+            <option value="lowest">{t('agr226')}</option>
+            <option value="latest">{t('agr227')}</option>
+            <option value="alphabetical">{t('agr228')}</option>
           </select>
 
           <button
-            onClick={() => setFavoritesOnly(f => !f)}
+            onClick={() => { setFavoritesOnly(f => !f); setPage(1); }}
             className={cn(
               "flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all",
               favoritesOnly
@@ -749,7 +768,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         {TAB_ITEMS.map(item => (
           <button
             key={item.id}
-            onClick={() => setTab(item.id)}
+            onClick={() => { setTab(item.id); setPage(1); }}
             className={cn(
               "flex items-center gap-1.5 shrink-0 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-300 active:scale-95",
               tab === item.id
@@ -776,7 +795,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         renderAdvisorTab()
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c, i) => renderCard(c, i))}
+          {paginated.map((c, i) => renderCard(c, i))}
+          {paginated.length < filtered.length && (
+            <div className="flex items-center justify-center col-span-full mt-4">
+              <AgriButton onClick={() => setPage(p => p + 1)}>{L.loadMore || "Load More"}</AgriButton>
+            </div>
+          )}
         </div>
       )}
 

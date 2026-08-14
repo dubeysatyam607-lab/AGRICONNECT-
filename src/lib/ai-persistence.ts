@@ -74,9 +74,11 @@ export async function deleteConversation(conversationId: string): Promise<boolea
 
 /** Create a new conversation shell. Returns null when signed out or on error. */
 export async function createConversation(title: string, language: string): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
   const { data, error } = await supabase
     .from("ai_conversations")
-    .insert({ title, language })
+    .insert({ user_id: user.id, title, language })
     .select("id")
     .single();
   if (error || !data) return null;

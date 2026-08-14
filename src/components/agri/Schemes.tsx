@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Landmark, Sparkles, Search, Filter, Bookmark, BookmarkCheck, Bell, BellRing,
   ExternalLink, ChevronRight, CalendarClock, ShieldCheck, CheckCircle2, XCircle,
@@ -78,6 +79,7 @@ const SchemeCard = ({
   onApply: () => void;
   onShare: () => void;
 }) => {
+  const { t } = useLanguage();
   const d = daysLabel(scheme);
   return (
     <AgriCard className="p-4 overflow-hidden relative group hover:border-primary/40 transition-all shadow-sm">
@@ -151,7 +153,7 @@ const SchemeCard = ({
             {matchResult.status === 'ELIGIBLE' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
             AI Match: {matchResult.score}% Qualification
           </span>
-          <span className="text-[10px] font-semibold underline cursor-pointer" onClick={onOpen}>Why?</span>
+          <span className="text-[10px] font-semibold underline cursor-pointer" onClick={onOpen}>{t('agr160')}</span>
         </div>
       )}
 
@@ -203,6 +205,7 @@ const DetailSheet = ({
   onReminder: () => void;
   onShare: () => void;
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'overview' | 'eligibility' | 'docs' | 'steps' | 'faqs'>('overview');
 
   if (!scheme) return null;
@@ -268,7 +271,7 @@ const DetailSheet = ({
         <div className="mt-4 rounded-2xl border border-border p-4 shadow-sm" style={{ background: `${scheme.color}0d` }}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Financial Benefit / Subsidy</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('agr161')}</p>
               <p className="text-2xl font-black mt-0.5" style={{ color: scheme.color }}>{scheme.benefitAmount}</p>
               <p className="text-xs font-medium text-foreground mt-1 leading-relaxed">{scheme.benefit}</p>
             </div>
@@ -330,17 +333,17 @@ const DetailSheet = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="rounded-xl border border-border p-3 bg-card text-center">
-                <p className="text-[10px] text-muted-foreground font-bold uppercase">Open To</p>
+                <p className="text-[10px] text-muted-foreground font-bold uppercase">{t('agr162')}</p>
                 <p className="text-xs font-extrabold text-foreground mt-1 line-clamp-2">{scheme.openTo}</p>
               </div>
               <div className="rounded-xl border border-border p-3 bg-card text-center">
-                <p className="text-[10px] text-muted-foreground font-bold uppercase">Application Status</p>
+                <p className="text-[10px] text-muted-foreground font-bold uppercase">{t('agr163')}</p>
                 <span className={cn("inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase", d.style)}>
                   {d.text}
                 </span>
               </div>
               <div className="rounded-xl border border-border p-3 bg-card text-center col-span-2 sm:col-span-1">
-                <p className="text-[10px] text-muted-foreground font-bold uppercase">Helpline Support</p>
+                <p className="text-[10px] text-muted-foreground font-bold uppercase">{t('agr164')}</p>
                 <a href={`tel:${scheme.contactHelpline.split(' ')[0]}`} className="text-xs font-extrabold text-primary hover:underline mt-1 block">
                   {scheme.contactHelpline}
                 </a>
@@ -520,6 +523,7 @@ const EligibilitySheet = ({
   onToast: (m: string) => void;
   onOpenScheme: (id: string) => void;
 }) => {
+  const { t } = useLanguage();
   const [age, setAge] = useState("35");
   const [landAcres, setLandAcres] = useState("3");
   const [category, setCategory] = useState<"general" | "sc" | "st" | "obc">("general");
@@ -563,7 +567,7 @@ const EligibilitySheet = ({
               <Sparkles size={15} className="text-primary" /> AI Eligibility Report
             </h2>
           </div>
-          <AgriButton variant="ghost" size="sm" onClick={onClose}>Close</AgriButton>
+          <AgriButton variant="ghost" size="sm" onClick={onClose}>{t('agr165')}</AgriButton>
         </div>
 
         <div className="p-4 pb-12 max-w-2xl mx-auto space-y-4">
@@ -643,7 +647,7 @@ const EligibilitySheet = ({
             <h2 className="font-bold text-sm flex items-center gap-1.5 text-foreground">
               <Sparkles size={16} className="text-primary" /> AI Scheme Qualification Engine
             </h2>
-            <p className="text-[11px] text-muted-foreground">Verify your exact eligibility against 2026 guidelines</p>
+            <p className="text-[11px] text-muted-foreground">{t('agr166')}</p>
           </div>
         </div>
       </div>
@@ -651,36 +655,36 @@ const EligibilitySheet = ({
       <div className="p-4 pb-12 max-w-xl mx-auto space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase">Farmer Age (Years)</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase">{t('agr167')}</label>
             <input type="number" value={age} onChange={e => setAge(e.target.value)} className={cn(fieldCls, "mt-1")} placeholder="35" />
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase">Land Holding (Acres)</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase">{t('agr168')}</label>
             <input type="number" value={landAcres} onChange={e => setLandAcres(e.target.value)} className={cn(fieldCls, "mt-1")} placeholder="3" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase">Social Category</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase">{t('agr169')}</label>
             <select value={category} onChange={e => setCategory(e.target.value as typeof category)} className={cn(fieldCls, "mt-1")}>
-              <option value="general">General</option>
-              <option value="obc">OBC</option>
-              <option value="sc">SC (Scheduled Caste)</option>
-              <option value="st">ST (Scheduled Tribe)</option>
+              <option value="general">{t('agr170')}</option>
+              <option value="obc">{t('agr171')}</option>
+              <option value="sc">{t('agr172')}</option>
+              <option value="st">{t('agr173')}</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase">Gender</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase">{t('agr174')}</label>
             <select value={gender} onChange={e => setGender(e.target.value as typeof gender)} className={cn(fieldCls, "mt-1")}>
-              <option value="male">Male</option>
-              <option value="female">Female Farmer</option>
+              <option value="male">{t('agr175')}</option>
+              <option value="female">{t('agr176')}</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase">Annual Family Income (₹)</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">{t('agr177')}</label>
           <input type="number" value={annualIncome} onChange={e => setAnnualIncome(e.target.value)} className={cn(fieldCls, "mt-1")} placeholder="150000" />
         </div>
 
@@ -727,6 +731,7 @@ interface SchemesProps {
 }
 
 const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
+  const { t } = useLanguage();
   const [schemes, setSchemes] = useState<OfficialScheme[]>(VERIFIED_GOVERNMENT_SCHEMES);
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
   const [loading, setLoading] = useState(false);
@@ -965,7 +970,7 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
             {filteredSchemes.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
                 <Search className="text-muted-foreground/40 mb-3" size={44} />
-                <p className="text-base font-bold text-foreground">No matching verified schemes found</p>
+                <p className="text-base font-bold text-foreground">{t('agr178')}</p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-xs">
                   Try adjusting your search filters or clearing category selection.
                 </p>
@@ -1000,7 +1005,7 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
           {bookmarkedSchemes.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
               <Bookmark className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">No bookmarked schemes</p>
+              <p className="text-base font-bold text-foreground">{t('agr179')}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Tap the bookmark icon on any scheme card to save it for quick offline reference.
               </p>

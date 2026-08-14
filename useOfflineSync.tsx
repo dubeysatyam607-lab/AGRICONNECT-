@@ -77,6 +77,10 @@ export const useOfflineSync = () => {
   }, [toast]);
 
   useEffect(() => {
+    // Sync immediately if already online (e.g., page load after reconnect)
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      syncQueue();
+    }
     window.addEventListener('online', syncQueue);
     return () => window.removeEventListener('online', syncQueue);
   }, [syncQueue]);

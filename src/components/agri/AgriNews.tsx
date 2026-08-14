@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck } from "lucide-react";
 import { fetchLiveAgriNews, LiveAgriNewsArticle } from "@/lib/news-api";
 import { trackAgriEvent } from "@/lib/google-analytics";
@@ -62,6 +63,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
 };
 
 const AgriNews: React.FC = () => {
+  const { t } = useLanguage();
   const [articles, setArticles] = useState<LiveAgriNewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,7 +174,7 @@ const AgriNews: React.FC = () => {
           {filteredArticles.length === 0 && error && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">Could not load the news feed</p>
+              <p className="text-base font-bold text-foreground">{t('agr0')}</p>
               <p className="text-xs text-muted-foreground mt-1">{error}</p>
               <button
                 onClick={loadNews}
@@ -186,8 +188,8 @@ const AgriNews: React.FC = () => {
           {filteredArticles.length === 0 && !error && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">No agriculture news found</p>
-              <p className="text-xs text-muted-foreground mt-1">Try clearing your search query or selecting 'All' category.</p>
+              <p className="text-base font-bold text-foreground">{t('agr1')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('agr2')}</p>
             </div>
           )}
         </div>

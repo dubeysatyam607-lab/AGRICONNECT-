@@ -15,6 +15,6 @@ export default defineConfig({
     // Setup file to run before all tests
     setupFiles: './vitest.setup.ts',
     // Exclude end-to-end or irrelevant tests if needed
-    exclude: ['**/node_modules/**', '**/dist/**', 'tests/staging/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/staging/**', 'tests/e2e/**'],
   },
 });

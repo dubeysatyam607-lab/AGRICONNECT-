@@ -14,7 +14,7 @@ type AuthStep = 'login' | 'signup' | 'otp' | 'forgot';
 export const AuthPage: React.FC<AuthPageProps> = ({ onBack, onSuccess }) => {
   const [step, setStep] = useState<AuthStep>('login');
   const [otpTarget, setOtpTarget] = useState('');
-  const [otpType, setOtpType] = useState<'phone' | 'email'>('phone');
+  const [otpType, setOtpType] = useState<'phone' | 'email'>('email');
 
   const handleSwitchToOtp = (target: string, type: 'phone' | 'email') => {
     setOtpTarget(target);
@@ -57,7 +57,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onBack, onSuccess }) => {
           onSwitchToForgot={() => setStep('forgot')}
           onSwitchToOtp={handleSwitchToOtp}
           onSuccess={onSuccess}
-          onGuest={onSuccess}
           onBack={onBack}
         />
       );

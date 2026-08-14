@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Bell, Plus, Trash2, TrendingUp, TrendingDown, Zap, PauseCircle, PlayCircle } from 'lucide-react';
 import { AgriCard } from '@/components/ui/agri-card';
 import { AgriButton } from '@/components/ui/agri-button';
@@ -35,6 +36,7 @@ interface PriceAlertsProps {
 }
 
 const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialCommodity, currentPrice }) => {
+  const { t } = useLanguage();
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -144,8 +146,8 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
       <AgriCard className="p-4">
         <div className="text-center py-6">
           <Bell className="mx-auto text-muted-foreground mb-2" size={32} />
-          <p className="text-muted-foreground mb-3">Login to set price alerts</p>
-          <AgriButton onClick={onNavigateToAuth}>Login</AgriButton>
+          <p className="text-muted-foreground mb-3">{t('agr149')}</p>
+          <AgriButton onClick={onNavigateToAuth}>{t('agr150')}</AgriButton>
         </div>
       </AgriCard>
     );
@@ -158,7 +160,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
           <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Bell className="text-primary" /> Price Alerts
           </h3>
-          <p className="text-sm text-muted-foreground">Get notified when prices hit your target</p>
+          <p className="text-sm text-muted-foreground">{t('agr151')}</p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
@@ -168,7 +170,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Price Alert</DialogTitle>
+              <DialogTitle>{t('agr152')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               {showCurrentPrice && (
@@ -182,7 +184,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
               )}
 
               <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Commodity</label>
+                <label className="text-sm text-muted-foreground mb-1 block">{t('agr153')}</label>
                 <Select value={newAlert.commodity} onValueChange={(v) => setNewAlert(p => ({ ...p, commodity: v }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select commodity" />
@@ -196,7 +198,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
               </div>
 
               <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Alert Type</label>
+                <label className="text-sm text-muted-foreground mb-1 block">{t('agr154')}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -227,7 +229,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
 
               {suggestions.length > 0 && (
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Quick target</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t('agr155')}</label>
                   <div className="flex flex-wrap gap-2">
                     {suggestions.map(s => (
                       <button
@@ -249,7 +251,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
               )}
 
               <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Target Price (₹/quintal)</label>
+                <label className="text-sm text-muted-foreground mb-1 block">{t('agr156')}</label>
                 <Input
                   type="number"
                   placeholder="2500"
@@ -267,12 +269,12 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">Loading alerts...</div>
+        <div className="text-center py-8 text-muted-foreground">{t('agr157')}</div>
       ) : alerts.length === 0 ? (
         <AgriCard className="p-6 text-center">
           <Bell className="mx-auto text-muted-foreground mb-2" size={40} />
-          <p className="text-muted-foreground">No alerts set</p>
-          <p className="text-sm text-muted-foreground">Create your first price alert above</p>
+          <p className="text-muted-foreground">{t('agr158')}</p>
+          <p className="text-sm text-muted-foreground">{t('agr159')}</p>
         </AgriCard>
       ) : (
         <div className="space-y-3">
