@@ -5,20 +5,45 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+const SUPABASE_MISCONFIG_MSG =
+  'Supabase is not configured. Rebuild with VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY set.';
+
+// When the build had no Supabase config, createClient() throws synchronously at
+// module scope, killing the whole module graph before React mounts → blank/black
+// screen. Instead return a lazy stub that only rejects when a real call is made,
+// so a misconfigured build renders the app + friendly errors, never a black screen.
+function buildUnconfiguredStub(): SupabaseClient<Database> {
+  const reject = (..._args: unknown[]) => Promise.reject(new Error(SUPABASE_MISCONFIG_MSG));
+  return new Proxy(reject, {
+    get: (_target, prop) => (prop === 'then' ? undefined : buildUnconfiguredStub()),
+    apply: () => Promise.reject(new Error(SUPABASE_MISCONFIG_MSG)),
+    construct: () => {
+      throw new Error(SUPABASE_MISCONFIG_MSG);
+    },
+  }) as unknown as SupabaseClient<Database>;
+}
+
+const configured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+if (!configured) {
+  console.error(`[Supabase] ${SUPABASE_MISCONFIG_MSG}`);
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    flowType: 'pkce',
-    persistSession: true,
-    autoRefreshToken: true,
-    // The dedicated /auth/callback page owns the PKCE code exchange
-    // (AuthCallback.tsx → exchangeCodeForSession). Leaving this at its default
-    // `true` lets a concurrent getSession() consume the one-time code first and
-    // the callback then fails with "code already used". Disabled so the exchange
-    // happens exactly once, deterministically, on the callback route.
-    detectSessionInUrl: false,
-    storage: localStorage,
-  }
-});
+export const supabase: SupabaseClient<Database> = configured
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        flowType: 'pkce',
+        persistSession: true,
+        autoRefreshToken: true,
+        // The dedicated /auth/callback page owns the PKCE code exchange
+        // (AuthCallback.tsx → exchangeCodeForSession). Leaving this at its default
+        // `true` lets a concurrent getSession() consume the one-time code first and
+        // the callback then fails with "code already used". Disabled so the exchange
+        // happens exactly once, deterministically, on the callback route.
+        detectSessionInUrl: false,
+        storage: localStorage,
+      }
+    })
+  : buildUnconfiguredStub();
