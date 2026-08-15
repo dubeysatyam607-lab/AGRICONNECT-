@@ -38,6 +38,7 @@ import NotificationSettings from "./NotificationSettings";
 import { FarmerProfileView } from "@/features/profile/presentation/views/FarmerProfileView";
 import { EditFarmerProfileView } from "@/features/profile/presentation/views/EditFarmerProfileView";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
+import { submitWeb3Form } from "@/config/web3forms";
 
 interface ProfileSettingsProps {
   selectedLanguage?: string;
@@ -274,7 +275,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
     }
   };
 
-  const submitSupportQuery = (e: React.FormEvent) => {
+  const submitSupportQuery = async (e: React.FormEvent) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
     const phone = String(fd.get('callbackPhone') || '').replace(/\D/g, '');
@@ -282,10 +283,17 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
       showToastMsg("Invalid Number", "Please enter a valid 10-digit mobile number.");
       return;
     }
-    if (!navigator.onLine) {
-      showToastMsg("Offline", "Your question is saved. We will send it automatically when you are back online.");
-    } else {
-      showToastMsg("Support Query Submitted", "We will get back to you shortly.");
+    try {
+      await submitWeb3Form({
+        subject: "Request a Callback from AgriConnect app",
+        from_name: user?.user_metadata?.full_name || user?.email || "AgriConnect user",
+        phone,
+        request_source: "Help & Support → Request a Callback",
+      });
+      showToastMsg("Support Query Submitted", "Our agronomist will call you back within 4 hours.");
+    } catch (error) {
+      console.error("[Support] callback request failed:", error);
+      showToastMsg("Could Not Send", "Please check your connection and try again.");
     }
     setCurrentView('main');
   };

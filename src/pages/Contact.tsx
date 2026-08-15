@@ -5,6 +5,7 @@ import { canonical, ogImage, SITE_CONFIG } from '@/lib/seo-config';
 import { organizationSchema } from '@/lib/structured-data';
 import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
 import { supabase } from '@/integrations/supabase/client';
+import { submitWeb3Form } from '@/config/web3forms';
 import { useToast } from '@/hooks/use-toast';
 
 const Contact: React.FC = () => {
@@ -28,21 +29,35 @@ const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    try {
-      const { error } = await supabase.from('contact_messages').insert({
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim() || null,
-        message: form.message.trim(),
-      });
-      if (error) throw error;
+    const name = form.name.trim();
+    const phone = form.phone.trim();
+    const email = form.email.trim() || undefined;
+    const message = form.message.trim();
+
+    const [emailResult] = await Promise.allSettled([
+      submitWeb3Form({
+        subject: `Contact form: ${name}`,
+        from_name: name,
+        name,
+        phone,
+        email,
+        message,
+      }),
+      supabase.from('contact_messages').insert({
+        name,
+        phone,
+        email: email ?? null,
+        message,
+      }),
+    ]);
+
+    if (emailResult.status === 'fulfilled') {
       setSubmitted(true);
-    } catch (error) {
-      console.error('[Contact] submission failed:', error);
+    } else {
+      console.error('[Contact] submission failed:', emailResult.reason);
       toast({ title: 'Message not sent', description: 'Please try again or contact us through WhatsApp.', variant: 'destructive' });
-    } finally {
-      setSubmitting(false);
     }
+    setSubmitting(false);
   };
 
   return (
@@ -149,7 +164,7 @@ const Contact: React.FC = () => {
                     id="phone"
                     type="tel"
                     required
-                    pattern="[0-9+ -]{10,15}"
+                    pattern="[0-9 +()-]{10,15}"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     placeholder="e.g., 98765 43210"

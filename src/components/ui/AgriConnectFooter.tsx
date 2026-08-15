@@ -7,6 +7,7 @@ import {
 import { Logo } from '@/components/ui/Logo';
 import { useThemeManager } from '@/core/theme/ThemeManager';
 import { useLanguage, LANGUAGE_NAMES } from '@/contexts/LanguageContext';
+import { submitWeb3Form } from '@/config/web3forms';
 
 const APP_VERSION = '1.2.0';
 const LAST_UPDATED = 'August 2026';
@@ -81,8 +82,9 @@ const AgriConnectFooter: React.FC = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
 
-  const submitNewsletter = (e: React.FormEvent) => {
+  const submitNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
@@ -91,14 +93,27 @@ const AgriConnectFooter: React.FC = () => {
       return;
     }
     setError(null);
-    setSubscribed(true);
+    setSubscribing(true);
     try {
-      localStorage.setItem('agri_newsletter', trimmed);
-    } catch {
-      // storage unavailable — ignore
+      await submitWeb3Form({
+        subject: 'Newsletter subscription from AgriConnect website',
+        from_name: trimmed,
+        email: trimmed,
+      });
+      try {
+        localStorage.setItem('agri_newsletter', trimmed);
+      } catch {
+        // storage unavailable — ignore
+      }
+      setSubscribed(true);
+      setEmail('');
+      window.setTimeout(() => setSubscribed(false), 6000);
+    } catch (err) {
+      console.error('[Newsletter] subscription failed:', err);
+      setError('Subscription failed. Please check your connection and try again.');
+    } finally {
+      setSubscribing(false);
     }
-    setEmail('');
-    window.setTimeout(() => setSubscribed(false), 6000);
   };
 
   return (
@@ -162,9 +177,10 @@ const AgriConnectFooter: React.FC = () => {
                         />
                         <button
                           type="submit"
-                          className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white text-emerald-900 px-6 text-sm font-bold shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95"
+                          disabled={subscribing}
+                          className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white text-emerald-900 px-6 text-sm font-bold shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          Subscribe
+                          {subscribing ? 'Subscribing…' : 'Subscribe'}
                           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </button>
                       </div>
