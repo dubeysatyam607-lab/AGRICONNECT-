@@ -6,6 +6,16 @@ import { auditLog } from '@/utils/auditLog';
 import { OAUTH_CALLBACK_PATH } from '@/config/oauth';
 
 /**
+ * Canonical origin used for OAuth / password-reset redirects.
+ * In production this is pinned via VITE_SITE_URL so Google logins always return
+ * to the deployed domain — never to a localhost or preview tab. When unset (local
+ * development) the current tab's origin is used.
+ */
+function getAuthRedirectBase(): string | undefined {
+  return import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : undefined);
+}
+
+/**
  * Enterprise Remote Data Source for Complete Authentication Suite.
  * Communicates with Supabase Identity Engine & handles OTP, OAuth, and device session control.
  */
@@ -366,7 +376,8 @@ export class AuthRemoteDataSource {
 
   public async signInWithOAuth(provider: 'google' | 'apple'): Promise<void> {
     // Use explicit callback path for Google OAuth to avoid redirect_uri_mismatch.
-    const callbackPath = typeof window !== 'undefined' ? `${window.location.origin}${OAUTH_CALLBACK_PATH}` : undefined;
+    const base = getAuthRedirectBase();
+    const callbackPath = base ? `${base}${OAUTH_CALLBACK_PATH}` : undefined;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -383,8 +394,9 @@ export class AuthRemoteDataSource {
   }
 
   public async forgotPassword(identifier: string): Promise<void> {
+    const base = getAuthRedirectBase();
     const { error } = await supabase.auth.resetPasswordForEmail(identifier, {
-      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined,
+      redirectTo: base ? `${base}/reset-password` : undefined,
     });
     // Keep 'not found' silent for privacy (don't reveal whether an account exists),
     // but surface real failures so users are never told instructions were sent
