@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/ui/Logo';
 import { ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { syncOAuthProfileFromIdentity } from '@/features/auth/data/datasources/AuthRemoteDataSource';
 
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -32,27 +33,33 @@ export const AuthCallback: React.FC = () => {
           window.history.replaceState(null, '', cleanUrl);
         }
 
+        let user: { id: string } | null = null;
+
         if (code) {
           // Exchange authorization code for a session
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             throw exchangeError;
           }
-
+          user = data.user ?? data.session?.user ?? null;
           if (data.session) {
-            if (mounted) {
-              navigate('/', { replace: true });
-            }
-            return;
+            // Enrich the AgriConnect profile from the Google identity (best-effort;
+            // fills only empty name/avatar fields — never farm/location/weather).
+            await syncOAuthProfileFromIdentity(data.session.user);
           }
         }
 
         // If no code, check if we already have an active session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          if (mounted) {
-            navigate('/', { replace: true });
+        if (!user) {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData.session) {
+            user = sessionData.session.user;
+            await syncOAuthProfileFromIdentity(sessionData.session.user);
           }
+        }
+
+        if (user && mounted) {
+          navigate('/', { replace: true });
           return;
         }
 
@@ -60,12 +67,13 @@ export const AuthCallback: React.FC = () => {
         throw new Error(hi ? 'कोई वैध प्रमाणीकरण कोड नहीं मिला।' : 'No valid authentication code found.');
 
       } catch (err: any) {
-        console.error('OAuth Callback Error:', err);
+        console.error('OAuth Callback Error:', err?.message || err);
         if (mounted) {
-          setErrorMsg(err.message || (hi ? 'प्रमाणीकरण विफल रहा' : 'Authentication failed'));
-          setTimeout(() => {
-            navigate('/auth/login', { replace: true });
-          }, 3000);
+          // Never surface stack traces, tokens or secrets — only a safe, friendly message.
+          const safeMessage = hi
+            ? 'प्रमाणीकरण पूरा नहीं हो सका। कृपया पुनः प्रयास करें।'
+            : 'Sign-in could not be completed. Please try again.';
+          setErrorMsg(safeMessage);
         }
       }
     };
@@ -86,8 +94,17 @@ export const AuthCallback: React.FC = () => {
         </div>
         
         {errorMsg ? (
-          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold animate-shake">
-            ⚠️ {errorMsg}
+          <div className="w-full space-y-4">
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold animate-shake">
+              ⚠️ {errorMsg}
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/auth/login', { replace: true })}
+              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-extrabold py-3 px-4 shadow-lg shadow-emerald-900/40 transition-colors"
+            >
+              {hi ? 'साइन इन पर वापस जाएं' : 'Back to Sign In'}
+            </button>
           </div>
         ) : (
           <>

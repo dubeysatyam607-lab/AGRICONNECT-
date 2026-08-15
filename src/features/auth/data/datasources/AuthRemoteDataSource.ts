@@ -112,6 +112,84 @@ function recordAuthSuccess(action: string, identifier: string, ip?: string): voi
   delete cooldowns[key];
 }
 
+export interface IOAuthProfileSyncResult {
+  profileExisted: boolean;
+  updatedFields: string[];
+}
+
+/**
+ * Safely enriches the AgriConnect profile from an OAuth (Google) identity.
+ *
+ * Security & data-integrity rules:
+ * - Only identity fields Google actually provides (full name + avatar) are used.
+ *   Farm/location/weather data is NEVER derived from the Google account.
+ * - Existing profile fields are NEVER overwritten — a manually entered name or
+ *   avatar stays untouched; only empty fields are filled in.
+ * - If the trigger-created profile row is missing, a minimal row is inserted.
+ * - Best-effort only: any failure is logged and swallowed so an OAuth success
+ *   is never turned into a login error by a secondary profile write.
+ */
+export async function syncOAuthProfileFromIdentity(user: {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown> | null;
+  app_metadata?: Record<string, unknown> | null;
+}): Promise<IOAuthProfileSyncResult> {
+  const meta = user.user_metadata || {};
+  const provider = user.app_metadata?.provider || meta?.provider || null;
+  if (provider && provider !== 'google') {
+    return { profileExisted: true, updatedFields: [] };
+  }
+
+  const fullName = String(meta.full_name || meta.name || '').trim();
+  const avatarUrl = String(meta.avatar_url || meta.picture || '').trim();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('profiles')
+    .select('id, full_name, avatar_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.warn('[AuthRemoteDataSource] Profile sync read failed (best-effort skip):', fetchError.message);
+    return { profileExisted: false, updatedFields: [] };
+  }
+
+  if (!existing) {
+    const { error: insertError } = await supabase.from('profiles').insert({
+      id: user.id,
+      full_name: fullName || null,
+      avatar_url: avatarUrl || null,
+      role: 'farmer',
+    });
+    if (insertError) {
+      console.warn('[AuthRemoteDataSource] Profile sync insert failed (best-effort skip):', insertError.message);
+      return { profileExisted: false, updatedFields: [] };
+    }
+    return { profileExisted: false, updatedFields: ['full_name', 'avatar_url'] };
+  }
+
+  // Fill in only the fields that are empty — never overwrite user-entered data.
+  const patch: Record<string, string> = {};
+  const updatedFields: string[] = [];
+  if (!existing.full_name && fullName) {
+    patch.full_name = fullName;
+    updatedFields.push('full_name');
+  }
+  if (!existing.avatar_url && avatarUrl) {
+    patch.avatar_url = avatarUrl;
+    updatedFields.push('avatar_url');
+  }
+  if (updatedFields.length) {
+    const { error: updateError } = await supabase.from('profiles').update(patch).eq('id', user.id);
+    if (updateError) {
+      console.warn('[AuthRemoteDataSource] Profile sync update failed (best-effort skip):', updateError.message);
+      return { profileExisted: true, updatedFields: [] };
+    }
+  }
+  return { profileExisted: true, updatedFields };
+}
+
 export class AuthRemoteDataSource {
   // In-memory lock to prevent duplicate OTP requests per email
   private static pendingOtpRequests: Record<string, Promise<void>> = {};

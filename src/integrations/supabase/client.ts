@@ -13,7 +13,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    // The dedicated /auth/callback page owns the PKCE code exchange
+    // (AuthCallback.tsx → exchangeCodeForSession). Leaving this at its default
+    // `true` lets a concurrent getSession() consume the one-time code first and
+    // the callback then fails with "code already used". Disabled so the exchange
+    // happens exactly once, deterministically, on the callback route.
+    detectSessionInUrl: false,
     storage: localStorage,
   }
 });
