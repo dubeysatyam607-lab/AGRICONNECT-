@@ -10,7 +10,7 @@
     font-src 'self' data: https://fonts.gstatic.com;
     img-src 'self' data: blob: https:;
     media-src 'self' blob: data:;
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.data.gov.in https://api.openweathermap.org https://api.pexels.com https://api.razorpay.com https://*.mapbox.com wss://*.mapbox.com https://www.googletagmanager.com https://www.google-analytics.com;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.data.gov.in https://api.openweathermap.org https://api.pexels.com https://api.razorpay.com https://*.mapbox.com wss://*.mapbox.com https://www.googletagmanager.com https://www.google-analytics.com https://api.web3forms.com;
     worker-src 'self' blob:;
     frame-src 'self' https://www.youtube.com https://www.google.com https://api.razorpay.com https://checkout.razorpay.com;
     upgrade-insecure-requests
