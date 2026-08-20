@@ -28,7 +28,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
   const { t, language } = useLanguage();
   const hi = language === 'hi';
 
-  const [usePassword, setUsePassword] = useState(false);
+  const [usePassword, setUsePassword] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
