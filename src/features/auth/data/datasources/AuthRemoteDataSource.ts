@@ -36,7 +36,7 @@ const RATE_LIMIT = {
 const PER_ACTION_LIMITS: Record<string, { maxAttempts: number; windowMs: number; cooldownMs: number }> = {
   signin: { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_MAX) || 5, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_COOLDOWN) || 30_000 },
   signup: { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_MAX) || 3, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_COOLDOWN) || 60_000 },
-  'send-otp': { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_MAX) || 1, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_WINDOW) || 60_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_COOLDOWN) || 0 },
+  'send-otp': { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_MAX) || 3, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_WINDOW) || 60_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_COOLDOWN) || 30_000 },
   'verify-otp': { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_MAX) || 5, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_COOLDOWN) || 0 },
 };
 
