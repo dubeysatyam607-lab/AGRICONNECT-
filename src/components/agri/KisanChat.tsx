@@ -79,27 +79,27 @@ const stopSpeaking = () => {
 
 // Language-specific greeting messages
 const GREETINGS: Record<string, string> = {
-  "English (India)": "Hello! 🙏 I am Kisan Sahayak — India's smartest farming assistant. Ask me about crop diseases, fertilizers, irrigation, pests, govt schemes, mandi prices, or nearby markets & shops.",
-  "Hindi (हिंदी)": "नमस्ते! 🙏 मैं किसान सहायक हूं — भारत का सबसे स्मार्ट कृषि सहायक। फसल रोग, खाद, सिंचाई, कीट, योजनाएं, मंडी भाव या नजदीकी बाज़ार के बारे में पूछें।",
-  "Punjabi (ਪੰਜਾਬੀ)": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! 🙏 ਮੈਂ ਕਿਸਾਨ ਸਹਾਇਕ ਹਾਂ — ਭਾਰਤ ਦਾ ਸਭ ਤੋਂ ਸਮਾਰਟ ਖੇਤੀ ਸਹਾਇਕ। ਫ਼ਸਲ ਰੋਗ, ਖਾਦ, ਸਿੰਚਾਈ, ਕੀੜੇ, ਸਕੀਮਾਂ, ਮੰਡੀ ਭਾਅ ਜਾਂ ਨਜ਼ਦੀਕੀ ਬਾਜ਼ਾਰਾਂ ਬਾਰੇ ਪੁੱਛੋ।",
-  "Marathi (मराठी)": "नमस्कार! 🙏 मी किसान सहायक आहे — भारतातील सर्वात स्मार्ट शेती सहाय्यक. पीक रोग, खते, सिंचन, कीड, योजना, बाजारभाव किंवा जवळची बाजारे याबद्दल विचारा.",
-  "Gujarati (ગુજરાતી)": "નમસ્ते! 🙏 હું કિસાન સહાયક છું — ભારતનો સૌથી સ્માર્ટ ખેતી સહાયક. પાક રોગ, ખાતર, સિંચાઈ, જીવાત, યોજનાઓ, મંડી ભાવ કે નજીકની મંડીઓ વિશે પૂછો.",
-  "Tamil (தமிழ்)": "வணக்கம்! 🙏 நான் கிசான் சஹாயக் — இந்தியாவின் ஸ்மார்ட் விவசாய உதவியாளர். பயிர் நோய்கள், உரங்கள், பாசனம், பூச்சிகள், திட்டங்கள், சந்தை விலைகள் அல்லது அருகிலுள்ள சந்தைகள் பற்றி கேளுங்கள்.",
-  "Telugu (తెలుగు)": "నమస్కారం! 🙏 నేను కిసాన్ సహాయక్ — భారతదేశపు స్మార్ట్ వ్యవసాయ సహాయకుడు. పంట వ్యాధులు, ఎరువులు, నీటిపారుదల, తెగుళ్లు, పథకాలు, మార్కెట్ ధరలు లేదా సమీప మార్కెట్ల గురించి అడగండి.",
-  "Kannada (ಕನ್ನಡ)": "ನಮಸ್ಕಾರ! 🙏 ನಾನು ಕಿಸಾನ್ ಸಹಾಯಕ — ಭಾರತದ ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಸಹಾಯಕ. ಬೆಳೆ ರೋಗಗಳು, ಗೊಬ್ಬರ, ನೀರಾವರಿ, ಕೀಟಗಳು, ಯೋಜನೆಗಳು, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
-  "Malayalam (മലയാളം)": "നമസ്കാരം! 🙏 ഞാൻ കിസാൻ സഹായക് — ഇന്ത്യയിലെ സ്മാർട്ട് കൃഷി സഹായി. വിള രോഗങ്ങൾ, വളങ്ങൾ, ജലസേചനം, കീടങ്ങൾ, പദ്ധതികൾ, മാർക്കറ്റ് വില അല്ലെങ്കിൽ സമീപ മാർക്കറ്റുകൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കൂ.",
-  "Bengali (বাংলা)": "নমস্কার! 🙏 আমি কিসান সহায়ক — ভারতের স্মার্ট কৃষি সহায়ক। ফসলের রোগ, সার, সেচ, কীটপতঙ্গ, প্রকল্প, বাজার দর বা কাছের বাজার সম্পর্কে জিজ্ঞাসা করুন।",
-  "Odia (ଓଡ଼ିଆ)": "ନମସ୍କାର! 🙏 ମୁଁ କିସାନ ସହାୟକ — ଭାରତର ସ୍ମାର୍ଟ ଚାଷ ସହାୟକ। ଫସଲ ରୋଗ, ଖତ, ଜଳସେଚନ, କୀଟ, ଯୋଜନା, ବଜାର ଦର କିମ୍ବା ନିକଟସ୍ଥ ବଜାର ବିଷୟରେ ପଚାରନ୍ତୁ।",
-  "Assamese (অসমীয়া)": "নমস্কাৰ! 🙏 মই কিসান সহায়ক — ভাৰতৰ স্মাৰ্ট কৃষি সহায়ক। শস্যৰ ৰোগ, সাৰ, জলসিঞ্চন, পোক, আঁচনি, বজাৰ দৰ বা ওচৰৰ বজাৰ সম্পৰ্কে সোধক।",
+  "English (India)": "Hello! 🙏 I am Kisan AI — your farming assistant. Ask me about crop health, fertilizer dosage, irrigation timing, mandi prices, weather forecasts, or government schemes.",
+  "Hindi (हिंदी)": "नमस्ते! 🙏 मैं किसान एआई हूं — आपका कृषि सहायक। फसल स्वास्थ्य, खाद की मात्रा, सिंचाई का समय, मंडी भाव, मौसम या सरकारी योजनाओं के बारे में पूछें।",
+  "Punjabi (ਪੰਜਾਬੀ)": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! 🙏 ਮੈਂ ਕਿਸਾਨ ਏਆਈ ਹਾਂ — ਤੁਹਾਡਾ ਖੇਤੀ ਸਹਾਇਕ। ਫ਼ਸਲ ਸਿਹਤ, ਖਾਦ, ਸਿੰਚਾਈ ਸਮਾਂ, ਮੰਡੀ ਭਾਅ ਜਾਂ ਸਰਕਾਰੀ ਸਕੀਮਾਂ ਬਾਰੇ ਪੁੱਛੋ।",
+  "Marathi (मराठी)": "नमस्कार! 🙏 मी किसान एआय आहे — आपला शेती सहाय्यक. पीक आरोग्य, खत मात्रा, सिंचन वेळ, बाजारभाव किंवा सरकारी योजनांबद्दल विचारा.",
+  "Gujarati (ગુજરાતી)": "નમસ્તે! 🙏 હું કિસાન એઆઈ છું — આપનો કૃષિ સહાયક. પાક સ્વાસ્થ્ય, ખાતરની માત્રા, સિંચાઈ સમય, મંડી ભાવ કે સરકારી યોજનાઓ વિશે પૂછો.",
+  "Tamil (தமிழ்)": "வணக்கம்! 🙏 நான் கிசான் ஏஐ — உங்கள் விவசாய உதவியாளர். பயிர் ஆரோக்கியம், உர அளவு, பாசன நேரம், சந்தை விலை அல்லது அரசு திட்டங்கள் பற்றி கேளுங்கள்.",
+  "Telugu (తెలుగు)": "నమస్కారం! 🙏 నేను కిసాన్ ఏఐ — మీ వ్యవసాయ సహాయకుడు. పంట ఆరోగ్యం, ఎరువుల మోతాదు, నీటిపారుదల సమయం, మార్కెట్ ధరలు లేదా ప్రభుత్వ పథకాల గురించి అడగండి.",
+  "Kannada (ಕನ್ನಡ)": "ನಮಸ್ಕಾರ! 🙏 ನಾನು ಕಿಸಾನ್ ಎಐ — ನಿಮ್ಮ ಕೃಷಿ ಸಹಾಯಕ. ಬೆಳೆ ಆರೋಗ್ಯ, ಗೊಬ್ಬರದ ಪ್ರಮಾಣ, ನೀರಾವರಿ ಸಮಯ, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
+  "Malayalam (മലയാളം)": "നമസ്കാരം! 🙏 ഞാൻ കിസാൻ എഐ — നിങ്ങളുടെ കൃഷി സഹായി. വിള ആരോഗ്യം, വളപ്രയോഗം, ജലസേചന സമയം, വിപണി വില അല്ലെങ്കിൽ സർക്കാർ പദ്ധതികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കൂ.",
+  "Bengali (বাংলা)": "নমস্কার! 🙏 আমি কিসান এআই — আপনার কৃষি সহায়ক। ফসলের স্বাস্থ্য, সারের মাত্রা, সেচের সময়, বাজার দর বা সরকারি প্রকল্প সম্পর্কে জিজ্ঞাসা করুন।",
+  "Odia (ଓଡ଼ିଆ)": "ନମସ୍କାର! 🙏 ମୁଁ କିସାନ ଏଆଇ — ଆପଣଙ୍କ ଚାଷ ସହାୟକ। ଫସଲ ସ୍ୱାସ୍ଥ୍ୟ, ଖତ ପ୍ରୟୋଗ, ଜଳସେଚନ ସମୟ, ବଜାର ଦର କିମ୍ବା ସରକାରୀ ଯୋଜନା ବିଷୟରେ ପଚାରନ୍ତୁ।",
+  "Assamese (অসমীয়া)": "নমস্কাৰ! 🙏 মই কিষাণ এআই — আপোনাৰ কৃষি সহায়ক। শস্যৰ স্বাস্থ্য, সাৰ প্ৰয়োগ, জলসিঞ্চনৰ সময়, বজাৰ দৰ বা চৰকাৰী আঁচনি সম্পৰ্কে সোধক।",
 };
 
-// Premium Prompt Chips
+// Practical Farmer Quick Prompt Chips
 const PROMPT_CHIPS = [
-  { id: "disease", label: "🍂 Diagnose Disease", prompt: "Identify crop leaf spot or disease." },
-  { id: "fertilizer", label: "🧪 Fertilizer Dose", prompt: "Suggest optimal fertilizer dosage for Wheat and Rice crops." },
-  { id: "irrigation", label: "💧 Irrigation Plan", prompt: "Give crop irrigation scheduling advice." },
-  { id: "pest", label: "🪲 Pest Control", prompt: "Organic and chemical remedies for crop pests." },
-  { id: "scheme", label: "📜 Govt Schemes", prompt: "Show latest PM-Kisan subsidy schemes." },
+  { id: "yellow_leaves", label: "🌾 My crop has yellow leaves", prompt: "My crop leaves are turning yellow. What could be the cause and how can I fix it?" },
+  { id: "irrigation", label: "💧 When should I irrigate?", prompt: "When is the optimal time to irrigate my crop and how to manage water efficiently?" },
+  { id: "pest", label: "🐛 Help identify this pest", prompt: "Help me identify and treat common pests damaging my crop." },
+  { id: "mandi", label: "📈 What is today's mandi price?", prompt: "What are today's prevailing mandi rates for major crops near my district?" },
+  { id: "weather", label: "🌦️ Weather near my farm", prompt: "What is the weather outlook and spraying advisory for my farm this week?" },
 ];
 
 // Quick action toolbar items
@@ -1188,11 +1188,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             </div>
             <div>
               <h2 className="font-black text-sm tracking-tight flex items-center gap-1.5 text-white">
-                Kisan Sahayak AI <Sparkles size={13} className="text-emerald-400 animate-pulse" />
+                Ask Kisan AI <Sparkles size={13} className="text-emerald-400 animate-pulse" />
               </h2>
               <p className="text-[10px] text-slate-400 flex items-center gap-1">
                 <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isOffline ? "bg-amber-500" : "bg-emerald-500")} />
-                {isOffline ? "Offline Mode" : "Online • Smart Advisor"}
+                {isOffline ? "Offline Mode" : "Online • Practical Farm Advisor"}
               </p>
             </div>
           </div>

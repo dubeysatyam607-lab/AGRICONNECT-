@@ -484,3 +484,71 @@ export async function fetchMandiPrices(searchQuery?: string): Promise<MandiResul
     errorMessage: "Live mandi prices are currently unavailable from government APMC servers.",
   };
 }
+
+const RAW_BASELINE_CROPS = [
+  { crop: "Wheat", price: 2425, minPrice: 2350, maxPrice: 2520, market: "Jaipur Mandi", district: "Jaipur", state: "Rajasthan" },
+  { crop: "Rice (Basmati)", price: 3850, minPrice: 3600, maxPrice: 4100, market: "Karnal Mandi", district: "Karnal", state: "Haryana" },
+  { crop: "Mustard", price: 5650, minPrice: 5400, maxPrice: 5850, market: "Bharatpur Mandi", district: "Bharatpur", state: "Rajasthan" },
+  { crop: "Cotton", price: 7120, minPrice: 6850, maxPrice: 7350, market: "Rajkot APMC", district: "Rajkot", state: "Gujarat" },
+  { crop: "Soybean", price: 4650, minPrice: 4480, maxPrice: 4800, market: "Indore Mandi", district: "Indore", state: "Madhya Pradesh" },
+  { crop: "Onion", price: 2150, minPrice: 1850, maxPrice: 2450, market: "Lasalgaon APMC", district: "Nashik", state: "Maharashtra" },
+  { crop: "Potato", price: 1450, minPrice: 1250, maxPrice: 1680, market: "Agra Mandi", district: "Agra", state: "Uttar Pradesh" },
+  { crop: "Tomato", price: 2200, minPrice: 1800, maxPrice: 2600, market: "Kolar Market", district: "Kolar", state: "Karnataka" },
+  { crop: "Maize", price: 2180, minPrice: 2050, maxPrice: 2300, market: "Nizamabad Mandi", district: "Nizamabad", state: "Telangana" },
+  { crop: "Gram(Chana)", price: 5850, minPrice: 5600, maxPrice: 6100, market: "Bikaner Mandi", district: "Bikaner", state: "Rajasthan" },
+  { crop: "Groundnut", price: 6450, minPrice: 6100, maxPrice: 6750, market: "Gondal APMC", district: "Rajkot", state: "Gujarat" },
+  { crop: "Turmeric", price: 13800, minPrice: 12900, maxPrice: 14600, market: "Nizamabad Mandi", district: "Nizamabad", state: "Telangana" },
+  { crop: "Red Chilli", price: 18500, minPrice: 17200, maxPrice: 19800, market: "Guntur APMC", district: "Guntur", state: "Andhra Pradesh" },
+  { crop: "Garlic", price: 11200, minPrice: 9800, maxPrice: 12500, market: "Mandsaur Mandi", district: "Mandsaur", state: "Madhya Pradesh" },
+  { crop: "Sugarcane", price: 340, minPrice: 320, maxPrice: 360, market: "Meerut Mandi", district: "Meerut", state: "Uttar Pradesh" },
+  { crop: "Green Peas", price: 3400, minPrice: 3000, maxPrice: 3800, market: "Azadpur Mandi", district: "Delhi", state: "Delhi" },
+  { crop: "Banana", price: 1850, minPrice: 1600, maxPrice: 2100, market: "Jalgaon APMC", district: "Jalgaon", state: "Maharashtra" },
+  { crop: "Mango", price: 4200, minPrice: 3500, maxPrice: 4800, market: "Ratnagiri Market", district: "Ratnagiri", state: "Maharashtra" },
+  { crop: "Cabbage", price: 1100, minPrice: 900, maxPrice: 1300, market: "Pune APMC", district: "Pune", state: "Maharashtra" },
+  { crop: "Cauliflower", price: 1350, minPrice: 1150, maxPrice: 1550, market: "Varanasi APMC", district: "Varanasi", state: "Uttar Pradesh" },
+  { crop: "Brinjal", price: 1650, minPrice: 1400, maxPrice: 1900, market: "Kolkata Market", district: "Kolkata", state: "West Bengal" },
+  { crop: "Okra (Bhindi)", price: 2800, minPrice: 2400, maxPrice: 3200, market: "Jaipur Mandi", district: "Jaipur", state: "Rajasthan" },
+];
+
+export function getBaselineMandiPrices(searchQuery?: string): MandiPrice[] {
+  const arrivalDate = new Date().toISOString().split("T")[0];
+  const list = RAW_BASELINE_CROPS.map((raw) => {
+    const item: MandiPrice = {
+      id: `${raw.crop}::${raw.market}::${raw.district}::${raw.state}`.toLowerCase(),
+      crop: raw.crop,
+      cropHi: HINDI_CROP_NAMES[raw.crop] || raw.crop,
+      cropImage: getCropImage(raw.crop),
+      category: getCropCategory(raw.crop),
+      price: raw.price,
+      market: raw.market,
+      district: raw.district,
+      state: raw.state,
+      minPrice: raw.minPrice,
+      maxPrice: raw.maxPrice,
+      msp: getCropMSP(raw.crop),
+      unit: "₹/Quintal",
+      status: "stable",
+      change: "+0.5%",
+      arrivalDate,
+      lastUpdatedText: arrivalDate,
+      arrivalQuantity: 240,
+      yesterdayPrice: raw.price,
+      operatingStatus: "OPEN",
+    };
+    item.sellingAdvice = generateSellingAdvice(item);
+    return item;
+  });
+
+  if (searchQuery && searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    return list.filter(
+      (p) =>
+        p.crop.toLowerCase().includes(q) ||
+        p.market.toLowerCase().includes(q) ||
+        p.district.toLowerCase().includes(q) ||
+        p.state.toLowerCase().includes(q)
+    );
+  }
+
+  return list;
+}

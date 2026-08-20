@@ -327,6 +327,7 @@ export const ta: JourneyDict = {
   'svc.storeSub': 'விதைகள் · உரங்கள் · கருவிகள்',
   'svc.schemes': 'அரசு திட்டங்கள்',
   'svc.schemesSub': 'மானியங்கள் & பலன்கள்',
+    'svc.cropDoctorSub': 'உடனடி நோய் கண்டறிதல்',
   'svc.cropDoctor': 'பயிர் ஸ்கேன்',
   'svc.transport': 'போக்குவரத்து',
   'svc.loans': 'கடன்கள்',

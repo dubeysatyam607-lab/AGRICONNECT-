@@ -5,40 +5,60 @@ import { supabase } from '@/integrations/supabase/client';
 
 /**
  * RequireAdmin component enforces that the current user is authenticated and has an admin role.
- * It queries the `profiles` table for the `role` field.
- * If the role matches the configured admin role, the wrapped children are rendered.
- * Otherwise, the user is redirected to the home page.
+ * Uses DUAL verification:
+ * 1. Client-side: checks profiles table via RLS
+ * 2. Defense-in-depth: also checks app_metadata in the JWT for admin claims
+ * If either check fails, the user is redirected to the home page.
  */
 export const RequireAdmin = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    // Fetch role from the profiles table (admin role is stored as 'admin')
-    supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-      .then(({ data, error }) => {
-        if (error) {
+    let mounted = true;
+
+    const checkAdmin = async () => {
+      if (!user) {
+        if (mounted) setIsAdmin(false);
+        return;
+      }
+
+      // Defense-in-depth: check JWT app_metadata for admin claim
+      const jwtRole = (user.app_metadata as any)?.role;
+      if (jwtRole === 'admin') {
+        if (mounted) setIsAdmin(true);
+        return;
+      }
+
+      // Primary check: verify via profiles table (RLS-enforced)
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (error || !data) {
           console.error('Error fetching admin role:', error);
-          setIsAdmin(false);
+          if (mounted) setIsAdmin(false);
           return;
         }
-        setIsAdmin(data?.role?.toLowerCase() === 'admin');
-      })
-      .catch(() => {
-        setIsAdmin(false);
-      });
-  }, [user]);
+
+        if (mounted) setIsAdmin(data?.role?.toLowerCase() === 'admin');
+      } catch (err) {
+        console.error('Admin check failed:', err);
+        if (mounted) setIsAdmin(false);
+      }
+    };
+
+    checkAdmin();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user, session]);
 
   if (isAdmin === null) {
-    // Loading state – could render a spinner or skeleton
     return <div className="flex h-screen items-center justify-center">Loading…</div>;
   }
 

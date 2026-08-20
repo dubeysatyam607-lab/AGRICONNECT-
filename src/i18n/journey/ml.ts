@@ -327,6 +327,7 @@ export const ml: JourneyDict = {
   'svc.storeSub': 'വിത്ത് · വളം · ഉപകരണങ്ങൾ',
   'svc.schemes': 'സർക്കാർ പദ്ധതികൾ',
   'svc.schemesSub': 'സബ്സിഡികളും ആനുകൂല്യങ്ങളും',
+    'svc.cropDoctorSub': 'തൽക്ഷണ രോഗനിർണയം',
   'svc.cropDoctor': 'വിള സ്കാൻ',
   'svc.transport': 'ഗതാഗതം',
   'svc.loans': 'വായ്പകൾ',

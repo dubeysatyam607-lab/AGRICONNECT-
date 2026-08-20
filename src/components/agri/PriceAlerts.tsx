@@ -110,10 +110,12 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
   };
 
   const deleteAlert = async (id: string) => {
+    // Defense-in-depth: filter by user_id even though RLS enforces it
     const { error } = await supabase
       .from('price_alerts')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user?.id ?? '');
 
     if (!error) {
       toast({ title: 'Deleted', description: 'Alert removed' });
@@ -122,10 +124,12 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
   };
 
   const toggleAlert = async (id: string, isActive: boolean) => {
+    // Defense-in-depth: filter by user_id even though RLS enforces it
     const { error } = await supabase
       .from('price_alerts')
       .update({ is_active: !isActive })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user?.id ?? '');
 
     if (!error) {
       fetchAlerts();

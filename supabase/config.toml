@@ -52,6 +52,12 @@ verify_jwt = true
 [functions.send-auth-email]
 verify_jwt = true
 
+[functions.contact-seller]
+verify_jwt = true
+
+[functions.price-alert-worker]
+verify_jwt = false
+
 [auth.email.templates.confirm_signup]
 subject = "🔐 Your AgriConnect verification code"
 content_path = "./supabase/templates/confirm_signup.html"

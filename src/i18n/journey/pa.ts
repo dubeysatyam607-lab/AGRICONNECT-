@@ -327,6 +327,7 @@ export const pa: JourneyDict = {
   'svc.storeSub': 'ਬੀਜ · ਖਾਦ · ਸੰਦ',
   'svc.schemes': 'ਸਰਕਾਰੀ ਸਕੀਮਾਂ',
   'svc.schemesSub': 'ਸਬਸਿਡੀ ਅਤੇ ਲਾਭ',
+    'svc.cropDoctorSub': 'ਤੁਰੰਤ ਬਿਮਾਰੀ ਦੀ ਜਾਂਚ',
   'svc.cropDoctor': 'ਫ਼ਸਲ ਸਕੈਨ',
   'svc.transport': 'ਢੋਆ-ਢੁਆਈ',
   'svc.loans': 'ਕਰਜ਼ੇ',

@@ -337,6 +337,15 @@ const CropDoctor: React.FC = () => {
           </div>
         )}
 
+        
+        {/* Trust & Transparency Disclaimer */}
+        <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed flex items-start gap-2">
+          <Info size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+          <p>
+            <strong>AI-generated result:</strong> This is a preliminary crop analysis. For confirmed chemical treatments or severe infestations, consult your local Krishi Vigyan Kendra (KVK) or block agriculture officer.
+          </p>
+        </div>
+
         <div className="mt-4 pt-4 border-t border-border">
           <AgriButton variant="outline" onClick={handleReset} className="w-full">
             <Scan size={16} /> Analyze Another Crop
