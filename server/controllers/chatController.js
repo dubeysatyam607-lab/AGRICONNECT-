@@ -8,6 +8,10 @@ exports.kisanChat = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
+    if (message.length > 4000) {
+      return res.status(400).json({ error: 'Message too long (max 4000 characters)' });
+    }
+
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {
       return res.status(500).json({ error: 'OpenAI API key is missing' });
@@ -21,12 +25,14 @@ exports.kisanChat = async (req, res) => {
 - If you do not have enough specific data to provide a highly accurate answer for a disease, say: 'I need more information or a clear photo of the leaf to diagnose this with 100% certainty. Please consult a local Krishi Vigyan Kendra if symptoms persist.'`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o', // or gpt-3.5-turbo
-      temperature: 0.1, // Hyper-Accuracy
+      model: 'gpt-4o',
+      temperature: 0.1,
+      max_tokens: 2000,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ]
+        { role: 'user', content: message.slice(0, 4000) }
+      ],
+      signal: AbortSignal.timeout(30000),
     });
 
     const reply = response.choices[0]?.message?.content;

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const NEWS_API_KEY = Deno.env.get("NEWS_API_KEY");
-const NEWSDATA_API_KEY = Deno.env.get("NEWSDATA_API_KEY") || "pub_020d6f7c748249bd80e4f70f09e8d1fd";
+const NEWSDATA_API_KEY = Deno.env.get("NEWSDATA_API_KEY") || "";
 const FREE_NEWS_BASE = "https://saurav.tech/NewsAPI";
 const NEWS_CACHE_MINUTES = 10;
 

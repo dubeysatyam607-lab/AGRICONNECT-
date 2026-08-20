@@ -31,6 +31,9 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
           return;
         }
         setIsAdmin(data?.role?.toLowerCase() === 'admin');
+      })
+      .catch(() => {
+        setIsAdmin(false);
       });
   }, [user]);
 

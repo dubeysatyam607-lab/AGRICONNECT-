@@ -212,7 +212,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     })();
 
     return () => { cancelled = true; };
-  }, [data, cropImages]);
+  }, [data]);
 
   const fetchNearby = useCallback(async () => {
     setNearbyLoading(true);

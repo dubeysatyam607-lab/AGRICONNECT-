@@ -184,6 +184,8 @@ const debitWallet = (amount: number, note: string, refId?: string): boolean => {
       ].slice(0, 100),
     },
   };
+  persist(state);
+  emit();
   return true;
 };
 
@@ -200,6 +202,8 @@ const creditWallet = (amount: number, note: string, refId?: string): void => {
       ].slice(0, 100),
     },
   };
+  persist(state);
+  emit();
 };
 
 /* ── Notifications ────────────────────────────────────────────────────── */
