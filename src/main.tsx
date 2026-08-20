@@ -11,8 +11,16 @@ import { crashLoggingService } from "./core/services/CrashLoggingService";
 initializeDIContainer();
 
 // 1b. Bootstrap analytics (GA4 / GTM)
+// initGoogleAnalytics() removed — it duplicates initAnalytics() and overwrites gtag.
+// Configure VITE_GA4_ID=G-548945014 in .env to enable GA4 via initAnalytics().
 initAnalytics();
-initGoogleAnalytics();
+
+// 1c. Check edge function deployment (logs warnings for missing functions)
+import("./lib/check-edge-functions").then(({ checkEdgeFunctions }) => {
+  checkEdgeFunctions();
+}).catch(() => {
+  // Best-effort — never block app startup
+});
 
 // 2. Register Service Worker for offline support in production only
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

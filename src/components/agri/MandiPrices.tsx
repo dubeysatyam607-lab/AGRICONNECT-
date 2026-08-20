@@ -136,7 +136,7 @@ const MandiPrices: React.FC = () => {
           {filteredData.slice(0, 100).map((record) => (
             <AgriCard key={record.id} className="p-0 flex flex-col justify-between overflow-hidden border border-border/80 rounded-2xl">
               <div className="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <img src={record.cropImage} alt={record.crop} className="w-full h-full object-cover" loading="lazy" />
+                <img src={record.cropImage} alt={record.crop} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=400'; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-2 left-3 text-white">
                   <h3 className="font-extrabold text-base leading-none drop-shadow">

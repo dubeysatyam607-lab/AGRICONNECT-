@@ -5,7 +5,7 @@ import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 
 const ALLOWED_ORIGINS = (
   Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:8000,https://agriconnect.in"
+  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
 ).split(",").map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -488,6 +488,10 @@ serve(async (req) => {
       }
 
       case "book": {
+        const authResult = await validateAuth(req);
+        if (!authResult.authenticated) {
+          return authErrorResponse("Authentication required to book a tractor", headers);
+        }
         const listing = (await getCatalog()).find(c => c.id === body.tractorId);
         if (!listing) return bad("Tractor not found", 404);
         if (listing.status !== "available") {
@@ -539,8 +543,42 @@ serve(async (req) => {
       case "history": {
         const authResult = await validateAuth(req);
         if (!authResult.authenticated) return authErrorResponse("Authentication required", headers);
-        const all = Array.from(BOOKINGS.values());
-        const mine = all.filter(b => b.userId === authResult.userId);
+        let mine = Array.from(BOOKINGS.values()).filter(b => b.userId === authResult.userId);
+        if (mine.length === 0) {
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL");
+            const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            if (supabaseUrl && supabaseKey) {
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data } = await supabase.from("tractor_bookings").select("*").eq("user_id", authResult.userId).order("created_at", { ascending: false });
+              if (data && data.length > 0) {
+                mine = data.map((r: Record<string, unknown>) => ({
+                  id: r.id,
+                  tractorId: r.tractor_id,
+                  tractorName: r.tractor_name,
+                  category: r.category,
+                  ownerId: r.owner_id,
+                  ownerName: r.owner_name,
+                  userName: r.user_name,
+                  hours: r.hours,
+                  acres: r.acres,
+                  address: r.address,
+                  paymentMethod: r.payment_method,
+                  withDriver: r.with_driver,
+                  baseFare: r.base_fare,
+                  fuelSurcharge: r.fuel_surcharge,
+                  driverCharge: r.driver_charge,
+                  deposit: r.deposit,
+                  total: r.total,
+                  status: r.status,
+                  userId: r.user_id,
+                }));
+              }
+            }
+          } catch {
+            // fall back to in-memory only
+          }
+        }
         return new Response(JSON.stringify({ bookings: mine.slice().reverse() }), { headers });
       }
 
@@ -553,6 +591,10 @@ serve(async (req) => {
       }
 
       case "review": {
+        const authResult = await validateAuth(req);
+        if (!authResult.authenticated) {
+          return authErrorResponse("Authentication required to post a review", headers);
+        }
         const listing = (await getCatalog()).find(c => c.id === body.tractorId);
         if (!listing) return bad("Tractor not found", 404);
         const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) || 5)));
@@ -564,9 +606,10 @@ serve(async (req) => {
           createdAt: new Date().toISOString(),
         };
         REVIEWS.push(record);
-        const newCount = listing.reviews + 1;
+        const oldCount = listing.reviews;
+        const newCount = oldCount + 1;
         listing.reviews = newCount;
-        listing.rating = Math.round(((listing.rating * listing.reviews + rating) / (listing.reviews + 1)) * 10) / 10;
+        listing.rating = Math.round(((listing.rating * oldCount + rating) / newCount) * 10) / 10;
         return new Response(JSON.stringify({ success: true, rating: listing.rating, reviews: listing.reviews }), { headers });
       }
 

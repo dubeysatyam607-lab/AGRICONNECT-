@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { SeoHead } from '@/components/seo/SeoHead';
 
 export const EmailOtpVerification = () => {
   const location = useLocation();
@@ -32,6 +33,7 @@ export const EmailOtpVerification = () => {
 
   return (
     <div className="max-w-md mx-auto mt-12 p-6 bg-white rounded-lg shadow-md">
+      <SeoHead title="Verify OTP — AgriConnect" description="Verify your email address with the OTP sent to your inbox." noindex />
       <h2 className="text-2xl font-bold mb-4 text-center">Verify Email OTP</h2>
       <p className="mb-2 text-center">Enter the 6‑digit code sent to <strong>{email}</strong></p>
       <form onSubmit={handleSubmit} className="space-y-4">

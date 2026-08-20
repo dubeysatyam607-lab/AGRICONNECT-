@@ -41,7 +41,12 @@ function isFav(id: string): boolean {
   }
 }
 function toggleFav(id: string): boolean {
-  const list = JSON.parse(localStorage.getItem("tractor_favs") || "[]") as string[];
+  let list: string[];
+  try {
+    list = JSON.parse(localStorage.getItem("tractor_favs") || "[]") as string[];
+  } catch {
+    list = [];
+  }
   const next = list.includes(id) ? list.filter(x => x !== id) : [...list, id];
   localStorage.setItem("tractor_favs", JSON.stringify(next));
   return next.includes(id);

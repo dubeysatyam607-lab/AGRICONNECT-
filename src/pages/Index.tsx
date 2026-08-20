@@ -4,18 +4,16 @@ import BottomNav from "@/components/agri/BottomNav";
 import { ChunkErrorBoundary } from "@/components/ui/ChunkErrorBoundary";
 import ToastNotification from "@/components/agri/ToastNotification";
 import { useToastNotification } from "@/hooks/use-toast-notification";
-import { LanguageProvider, useLanguage, LANGUAGE_NAMES, type Language } from "@/contexts/LanguageContext";
-import { RoleProvider } from "@/contexts/RoleContext";
+import { useLanguage, LANGUAGE_NAMES, type Language } from "@/contexts/LanguageContext";
 import { FarmProvider } from "@/contexts/FarmContext";
-import type { Tractor } from "@/lib/mock-data";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import InstallPWAButton from "@/components/agri/InstallPWAButton";
-import { useOfflineSync } from "../../useOfflineSync";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { SeoHead } from "@/components/seo/SeoHead";
 import { homepageStructuredData } from "@/lib/structured-data";
 
-const AgriConnectFooter = lazy(() => import("@/components/ui/AgriConnectFooter"));
+import AgriConnectFooter from "@/components/ui/AgriConnectFooter";
 
 const FarmerHome = lazy(() => import("@/components/agri/FarmerHome"));
 
@@ -295,6 +293,7 @@ const IndexInner: React.FC = () => {
   };
 
   // Keep activeTab in sync if the URL changes directly (e.g. back button)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const tab = getTabFromPath(location.pathname);
     if (tab !== activeTab) {
@@ -498,16 +497,16 @@ const IndexInner: React.FC = () => {
       {/* Full-width responsive container */}
       <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-screen-2xl px-6 md:px-8"}>
         <h1 className="sr-only">AgriConnect Dashboard</h1>
-        <ChunkErrorBoundary label="Dashboard">
-          <Suspense fallback={
-            <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
-              <span className="h-10 w-10 rounded-full border-3 border-emerald-600 border-t-transparent animate-spin mb-3" />
-              <span className="text-sm font-bold text-emerald-800">Loading AgriConnect Dashboard...</span>
-            </div>
-          }>
+        <Suspense fallback={
+          <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
+            <span className="h-10 w-10 rounded-full border-3 border-emerald-600 border-t-transparent animate-spin mb-3" />
+            <span className="text-sm font-bold text-emerald-800">Loading AgriConnect Dashboard...</span>
+          </div>
+        }>
+          <ChunkErrorBoundary key={activeTab} label={activeTab}>
             {renderContent()}
-          </Suspense>
-        </ChunkErrorBoundary>
+          </ChunkErrorBoundary>
+        </Suspense>
       </main>
 
       {!isFullScreen && (
@@ -522,18 +521,10 @@ const IndexInner: React.FC = () => {
   );
 };
 
-import { AuthProvider } from '@/hooks/useAuth';
-
 const Index: React.FC = () => (
-  <AuthProvider>
-    <RoleProvider>
-      <LanguageProvider>
-        <FarmProvider>
-          <IndexInner />
-        </FarmProvider>
-      </LanguageProvider>
-    </RoleProvider>
-  </AuthProvider>
+    <FarmProvider>
+      <IndexInner />
+    </FarmProvider>
 );
 
 

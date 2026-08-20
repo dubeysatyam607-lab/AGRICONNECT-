@@ -83,6 +83,7 @@ const FeatureButton: React.FC<FeatureButtonProps> = ({
             alt={label}
             loading="lazy"
             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
           <Icon size={26} className="transition-transform duration-300 group-hover:scale-110" />

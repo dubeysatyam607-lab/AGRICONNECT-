@@ -71,18 +71,6 @@ export class DeviceTrackingService {
       // Filter out this device if already recorded, then prepend updated current session
       sessions = sessions.filter(s => s.deviceId !== deviceId);
       sessions.forEach(s => (s.isCurrentDevice = false));
-      
-      // Ensure we simulate at least 1 secondary device for demonstration of multi-device management
-      if (sessions.length === 0) {
-        sessions.push({
-          id: 'sess_dev_mobile_alt',
-          deviceId: 'dev_mobile_alt',
-          deviceName: 'Chrome on Android Mobile',
-          ipAddress: '103.20.140.45 (Jaipur Cellular)',
-          lastActive: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-          isCurrentDevice: false,
-        });
-      }
 
       sessions.unshift(currentSession);
       await secureStorage.setItem(DeviceTrackingService.ACTIVE_SESSIONS_KEY, JSON.stringify(sessions));

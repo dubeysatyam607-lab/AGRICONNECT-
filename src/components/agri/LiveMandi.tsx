@@ -360,7 +360,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     return (
       <AgriCard
         key={c.id}
-        className="p-0 animate-fade-up hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border border-border/80 bg-card rounded-2xl flex flex-col justify-between"
+        className="p-0 animate-fade-up hover:shadow-xl active:scale-[0.98] transition-all duration-200 cursor-pointer relative overflow-hidden group border border-border/80 bg-card rounded-2xl flex flex-col justify-between"
         style={{ animationDelay: `${Math.min(index * 35, 300)}ms` } as React.CSSProperties}
         onClick={() => setSelectedCrop(c)}
       >
@@ -372,6 +372,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               alt={c.crop}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=400'; }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 

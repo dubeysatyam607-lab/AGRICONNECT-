@@ -5,7 +5,7 @@ import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 
 const ALLOWED_ORIGINS = (
   Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:8000,https://agriconnect.in"
+  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
 ).split(",").map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -94,6 +94,35 @@ const TRACK_NOS = ["DL-8821-44512", "BD-3320-77891", "EK-5512-90834", "IN-9923-1
 
 const ORDERS = new Map<string, Record<string, unknown>>();
 const REVIEWS: Array<Record<string, unknown>> = [];
+
+async function saveOrder(order: Record<string, unknown>, userId?: string) {
+  ORDERS.set(order.id as string, order);
+  if (!userId) return;
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseKey) return;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    await supabase.from("market_orders").insert({
+      user_id: userId,
+      order_id: order.id,
+      items: JSON.stringify(order.items),
+      subtotal: order.subtotal,
+      discount: order.discount,
+      shipping: order.shipping,
+      total: order.total,
+      coupon_code: order.couponCode || "",
+      user_name: order.userName || "Farmer",
+      phone: order.phone || "",
+      address: order.address || "",
+      payment_method: order.paymentMethod || "upi",
+      payment_status: "pending",
+      status: "confirmed",
+    });
+  } catch {
+    console.error("Order persistence skipped (table may not exist)");
+  }
+}
 
 function mulberry32(seed: number) {
   let a = seed >>> 0;
@@ -290,7 +319,10 @@ serve(async (req) => {
 
       case "place-order": {
         const authResult = await validateAuth(req);
-        const userId = authResult.authenticated && authResult.userId ? authResult.userId : undefined;
+        if (!authResult.authenticated) {
+          return authErrorResponse("Authentication required to place an order", headers);
+        }
+        const userId = authResult.userId;
         const items = Array.isArray(body.items) ? body.items as Array<{ id: string; qty: number }> : [];
         if (items.length === 0) return bad("Cart is empty");
         const lines: Array<Record<string, unknown>> = [];
@@ -337,7 +369,7 @@ serve(async (req) => {
           userId,
           placedAt: new Date().toISOString(),
         };
-        ORDERS.set(id, order);
+        await saveOrder(order, userId);
         return new Response(JSON.stringify({ order, tracking: buildTracking(id, 300 + (hashStr(id) % 700), Date.now()) }), { headers });
       }
 
@@ -346,8 +378,36 @@ serve(async (req) => {
         if (!authResult.authenticated) {
           return authErrorResponse("Authentication required", headers);
         }
-        const all = Array.from(ORDERS.values());
-        const mine = all.filter(o => o.userId === authResult.userId);
+        let mine = Array.from(ORDERS.values()).filter(o => o.userId === authResult.userId);
+        if (mine.length === 0) {
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL");
+            const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            if (supabaseUrl && supabaseKey) {
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data } = await supabase.from("market_orders").select("*").eq("user_id", authResult.userId).order("created_at", { ascending: false });
+              if (data && data.length > 0) {
+                mine = data.map((r: Record<string, unknown>) => ({
+                  id: r.order_id || r.id,
+                  items: typeof r.items === "string" ? JSON.parse(r.items) : r.items,
+                  subtotal: r.subtotal,
+                  discount: r.discount,
+                  shipping: r.shipping,
+                  total: r.total,
+                  couponCode: r.coupon_code,
+                  userName: r.user_name,
+                  phone: r.phone,
+                  address: r.address,
+                  paymentMethod: r.payment_method,
+                  status: r.status,
+                  userId: r.user_id,
+                }));
+              }
+            }
+          } catch {
+            // fall back to in-memory only
+          }
+        }
         return new Response(JSON.stringify({ orders: mine.slice().reverse() }), { headers });
       }
 
@@ -364,6 +424,10 @@ serve(async (req) => {
       }
 
       case "review": {
+        const authResult = await validateAuth(req);
+        if (!authResult.authenticated) {
+          return authErrorResponse("Authentication required to post a review", headers);
+        }
         const product = CATALOG.find(p => p.id === body.productId);
         if (!product) return bad("Product not found", 404);
         const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) || 5)));

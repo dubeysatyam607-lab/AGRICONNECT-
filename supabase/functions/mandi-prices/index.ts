@@ -3,7 +3,7 @@ import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts"
 import { mandiPricesRequestSchema, parseAndValidate } from "../_shared/validators.ts";
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -15,12 +15,6 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Max-Age": "86400",
   };
 }
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
 
 const RATE_LIMIT_CONFIG = { maxRequests: 30, windowMs: 60 * 1000 };
 
@@ -210,8 +204,11 @@ function enrichPrice(item: Record<string, unknown>, price: number, seed: string)
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const headers = getCORSHeaders(origin);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: headers });
   }
 
   const forwarded = req.headers.get('x-forwarded-for');
@@ -225,7 +222,7 @@ serve(async (req) => {
       {
         status: 429,
         headers: {
-          ...corsHeaders,
+          ...headers,
           ...getRateLimitHeaders(rateLimitResult),
           "Content-Type": "application/json",
           "Retry-After": Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000).toString()
@@ -234,7 +231,7 @@ serve(async (req) => {
     );
   }
 
-  const parseResult = await parseAndValidate(req, mandiPricesRequestSchema, corsHeaders);
+  const parseResult = await parseAndValidate(req, mandiPricesRequestSchema, headers);
   if (!parseResult.success) {
     return parseResult.response;
   }
@@ -345,7 +342,7 @@ serve(async (req) => {
         {
           status: 503,
           headers: {
-            ...corsHeaders,
+            ...headers,
             ...getRateLimitHeaders(rateLimitResult),
             "Content-Type": "application/json",
           },
@@ -374,7 +371,7 @@ serve(async (req) => {
       lastUpdated: new Date().toISOString(),
     }), {
       headers: {
-        ...corsHeaders,
+        ...headers,
         ...getRateLimitHeaders(rateLimitResult),
         "Content-Type": "application/json",
       },
@@ -384,7 +381,7 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : "Failed to fetch prices";
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
 });

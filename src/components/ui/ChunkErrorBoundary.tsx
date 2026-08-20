@@ -33,6 +33,24 @@ export class ChunkErrorBoundary extends Component<Props, State> {
     crashLoggingService.logCrash(error, `ChunkErrorBoundary:${this.props.label ?? "feature"}`);
   }
 
+  // Timer reference for scheduled retry
+  private retryTimer?: ReturnType<typeof setTimeout>;
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    // When an error first occurs, schedule an automatic retry after a short delay
+    if (!prevState.hasError && this.state.hasError) {
+      this.retryTimer = setTimeout(() => {
+        this.retry();
+      }, 2000); // 2 seconds delay
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+    }
+  }
+
   private retry = () => {
     this.setState({ hasError: false, reloading: true });
     // A chunk that failed once is almost always fixed by a fresh import — this

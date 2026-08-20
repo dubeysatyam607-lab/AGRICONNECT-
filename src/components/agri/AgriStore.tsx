@@ -619,7 +619,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       <div key={p.id} className="bg-card rounded-2xl border border-border shadow-card overflow-hidden flex flex-col group">
         <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center cursor-pointer" onClick={() => openDetails(p.id)}>
           {p.imageUrl ? (
-            <img src={p.imageUrl} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+            <img src={p.imageUrl} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           ) : (
             <>
               <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(circle at 50% 100%, ${p.color}, transparent 70%)` }}></div>
@@ -861,7 +861,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             <div className="p-3.5 pb-0 overflow-y-auto flex-1">
               <div className="relative h-40 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center mb-3">
                 {selected.imageUrl ? (
-                  <img src={selected.imageUrl} alt={selected.name} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={selected.imageUrl} alt={selected.name} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <>
                     <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(circle at 50% 100%, ${selected.color}, transparent 70%)` }}></div>

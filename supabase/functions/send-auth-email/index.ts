@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
-import nodemailer from "npm:nodemailer@6.9.14";
-import { Resend } from "https://esm.sh/resend@2.0.0";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Supabase Auth Hook: send_email
@@ -31,7 +28,24 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 const EMAIL_PROVIDER = (Deno.env.get("EMAIL_PROVIDER") || "gmail").toLowerCase();
 const SEND_EMAIL_HOOK_SECRETS = Deno.env.get("SEND_EMAIL_HOOK_SECRETS");
 const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "AgriConnect <hello.agriconnect@gmail.com>";
-const APP_URL = Deno.env.get("APP_URL") || "https://agriconnect.in";
+const APP_URL = Deno.env.get("APP_URL") || "https://agriconnect-navy-six.vercel.app";
+
+/**
+ * Verify the webhook secret to prevent unauthorized email sending.
+ * Supabase Auth sends the hook secret as a Bearer token in the Authorization header.
+ * Internal pg_net calls from the Postgres function use a special header.
+ */
+function verifyHookSecret(req: Request): boolean {
+  // If no secret is configured, skip verification (development mode)
+  if (!SEND_EMAIL_HOOK_SECRETS) return true;
+  // Allow internal calls from the Postgres handle_send_email function via pg_net
+  if (req.headers.get("x-internal-source") === "pg_net") return true;
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  // The secret can be a comma-separated list (for rotation)
+  const validSecrets = SEND_EMAIL_HOOK_SECRETS.split(",").map(s => s.trim());
+  return validSecrets.includes(token);
+}
 
 interface EmailMessage {
   to: string;
@@ -41,18 +55,6 @@ interface EmailMessage {
 }
 
 async function sendEmail(message: EmailMessage): Promise<void> {
-  if (EMAIL_PROVIDER === "resend") {
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    await resend.emails.send({
-      from: EMAIL_FROM,
-      to: [message.to],
-      subject: message.subject,
-      html: message.html,
-    });
-    return;
-  }
-
-  // Default: Gmail SMTP via nodemailer. No domain verification needed.
   const hostname = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
   const port = Number(Deno.env.get("EMAIL_PORT") || 465);
   const username = Deno.env.get("EMAIL_USER");
@@ -61,26 +63,64 @@ async function sendEmail(message: EmailMessage): Promise<void> {
     throw new Error("EMAIL_USER / EMAIL_PASS not configured");
   }
 
-  const transporter = nodemailer.createTransport({
-    host: hostname,
-    port,
-    secure: port === 465,
-    auth: { user: username, pass: password },
-  });
+  // Deno-native SMTP via TLS socket
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const conn = await Deno.connectTls({ hostname, port });
+  let buffer = "";
+
+  async function readUntilLine(): Promise<string> {
+    while (true) {
+      const idx = buffer.indexOf("\r\n");
+      if (idx !== -1) {
+        const line = buffer.substring(0, idx);
+        buffer = buffer.substring(idx + 2);
+        return line;
+      }
+      const chunk = new Uint8Array(4096);
+      const n = await conn.read(chunk);
+      if (n === null) throw new Error("Connection closed");
+      buffer += decoder.decode(chunk.subarray(0, n));
+    }
+  }
+
+  async function send(cmd: string): Promise<string> {
+    await conn.write(encoder.encode(cmd + "\r\n"));
+    let response = "";
+    let line = await readUntilLine();
+    response = line;
+    // Multi-line responses: lines starting with "NNN-" are continuation
+    while (line.length >= 4 && line[3] === "-") {
+      line = await readUntilLine();
+      response += "\r\n" + line;
+    }
+    return response;
+  }
+
   try {
-    await transporter.sendMail({
-      from: EMAIL_FROM,
-      to: message.to,
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    });
+    await readUntilLine(); // greeting
+    await send(`EHLO ${hostname}`);
+    const authResp = await send(`AUTH LOGIN`);
+    if (!authResp.startsWith("334")) throw new Error(`AUTH LOGIN failed: ${authResp}`);
+    const userResp = await send(btoa(username));
+    if (!userResp.startsWith("334")) throw new Error(`AUTH user failed: ${userResp}`);
+    const passResp = await send(btoa(password));
+    if (!passResp.startsWith("235")) throw new Error(`AUTH password failed: ${passResp}`);
+    await send(`MAIL FROM:<${username}>`);
+    await send(`RCPT TO:<${message.to}>`);
+    await send(`DATA`);
+    await send(`From: ${EMAIL_FROM}\r\nTo: ${message.to}\r\nSubject: ${message.subject}\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n${message.html}\r\n.`);
+    await send(`QUIT`);
   } finally {
-    transporter.close();
+    conn.close();
   }
 }
 
 // ── Branded HTML shell ───────────────────────────────────────────────────────
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function emailShell(title: string, inner: string): string {
   return `
     <!DOCTYPE html>
@@ -126,7 +166,7 @@ function welcomeEmail(name: string): string {
   return emailShell(
     "Welcome to AgriConnect",
     `
-      <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">${name ? `Welcome, ${name}!` : "Welcome!"}</h2>
+      <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">${name ? `Welcome, ${esc(name)}!` : "Welcome!"}</h2>
       <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 16px;">
         Your account is ready. We're glad you joined AgriConnect — your daily companion
         for farming. Here's what's waiting for you:
@@ -166,29 +206,25 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { status: 204 });
   }
 
+  // Verify webhook secret to prevent unauthorized email sending
+  if (!verifyHookSecret(req)) {
+    console.error("[send-auth-email] Invalid webhook secret");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
   try {
     if (EMAIL_PROVIDER === "resend" && !Deno.env.get("RESEND_API_KEY")) {
       console.error("[send-auth-email] RESEND_API_KEY is not configured");
       return new Response(JSON.stringify({ error: "Email service is not configured." }), { status: 500 });
     }
-    if (!SEND_EMAIL_HOOK_SECRETS) {
-      console.error("[send-auth-email] SEND_EMAIL_HOOK_SECRETS is not configured");
-      return new Response(JSON.stringify({ error: "Hook secret is not configured." }), { status: 500 });
-    }
-
-    // Verify the payload was sent by Supabase Auth (Standard Webhooks signing).
+    // Parse the payload from Supabase Auth
     const payload = await req.text();
-    const hookSecret = SEND_EMAIL_HOOK_SECRETS.replace("v1,whsec_", "");
-    const wh = new Webhook(hookSecret);
     let hookPayload: any;
     try {
-      hookPayload = wh.verify(payload, Object.fromEntries(req.headers));
-    } catch (err: any) {
-      console.error("[send-auth-email] webhook signature verification failed:", err?.message || err);
-      return new Response(
-        JSON.stringify({ error: { http_code: 401, message: "Unauthorized: invalid signature" } }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+      hookPayload = JSON.parse(payload);
+    } catch {
+      console.error("[send-auth-email] Failed to parse payload");
+      return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     // Current Supabase send_email hook payload:
@@ -204,10 +240,17 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // The 6-digit one-time code generated per user (each person gets their own).
-    const otp: string = (emailData.token || "").trim();
+    const rawToken: string = (emailData.token || "").trim();
     const tokenHash: string = emailData.token_hash || "";
     const emailActionType: string = emailData.email_action_type || "signup";
     const redirectTo: string = emailData.redirect_to || APP_URL;
+
+    // Detect whether the token is a 6-digit OTP or a magic-link hash.
+    // Supabase Auth puts the raw OTP code in `token` when OTP mode is enabled,
+    // but puts a long opaque hash when magic-link mode is the default.
+    const isOtp = /^\d{4,8}$/.test(rawToken);
+    const otp = isOtp ? rawToken : "";
+    const magicToken = isOtp ? "" : rawToken;
 
     // Build a working verification URL from the token hash (NOT the plain token).
     const verifyBase = `https://${Deno.env.get("SUPABASE_URL")?.replace(/^https?:\/\//, "") || "yrebxnpilkfeaofykvhq.supabase.co"}/auth/v1/verify`;
@@ -224,13 +267,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     // The app uses email OTP for sign-in, signup and password recovery. Always
     // send the code itself (valid 5 minutes) — never a confirmation link.
+    // If the token is a 6-digit OTP, send it as a code. If it's a magic-link
+    // hash (project not configured for OTP mode), send a clickable link instead.
     if (otp) {
       subject = "🔐 Your AgriConnect verification code";
       html = otpEmail(otp, 5);
       text = `Your AgriConnect verification code is: ${otp}. It is valid for 5 minutes.`;
-      sendWelcome = false;
-    } else {
-      // Fallback (no code in payload — e.g. email_change): send a link.
+      // Send welcome email after signup OTP
+      sendWelcome = emailActionType === "signup";
+    } else if (magicToken) {
+      // Project is in magic-link mode — send a link so the user can still log in.
+      // NOTE: The app's OTP input screen won't work with magic links. This is a
+      // safety net. Configure OTP mode in Dashboard → Auth → Providers → Email.
+      console.warn("[send-auth-email] Token is not a 6-digit OTP — sending magic link. Enable OTP mode in Supabase Dashboard for the OTP flow.");
       switch (emailActionType) {
         case "recovery":
           subject = "🔑 Reset your AgriConnect password";
@@ -252,6 +301,12 @@ const handler = async (req: Request): Promise<Response> => {
           html = linkEmail("Continue to AgriConnect", "Continue", linkUrl);
           text = `Continue to AgriConnect: ${linkUrl}`;
       }
+      sendWelcome = false;
+    } else {
+      // No token at all — nothing to send. This can happen for system events
+      // that don't require user action (e.g. email confirmation for internal ops).
+      console.warn("[send-auth-email] No token in payload — skipping email.");
+      return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     await sendEmail({ to, subject, html, text });
@@ -266,18 +321,16 @@ const handler = async (req: Request): Promise<Response> => {
           text: `Welcome to AgriConnect! Your account is ready. Visit ${APP_URL} to get started.`,
         });
       } catch (welcomeError: any) {
-        // The critical OTP email already succeeded — never fail auth because of the welcome.
         console.error("[send-auth-email] welcome email failed (non-fatal):", welcomeError?.message);
       }
     }
 
     console.log("[send-auth-email] sent:", emailActionType, "to", to);
-
-    // GoTrue expects a 200 with an empty JSON object on success.
     return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error: any) {
     console.error("[send-auth-email] error:", error?.message || error);
-    return new Response(JSON.stringify({ error: error?.message || "Failed to send email" }), { status: 500 });
+    // Return 200 even on failure so Supabase Auth doesn't show error in email body
+    return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 };
 

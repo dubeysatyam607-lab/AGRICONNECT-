@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { invokeEdgeWithTimeout } from '@/lib/invoke-edge';
 import {
   IWeatherModuleData,
   ILiveWeather,
@@ -171,13 +171,13 @@ export class WeatherRemoteDataSource {
       throw new Error('Location required. Please allow location access or choose your location manually.');
     }
 
-    const { data, error } = await supabase.functions.invoke('weather', {
-      body: { latitude: lat, longitude: lng, city: locationName || undefined, checkAlerts: true },
+    const { data, error, timedOut } = await invokeEdgeWithTimeout<{ error?: string; message?: string; code?: string; [key: string]: unknown }>('weather', {
+      latitude: lat, longitude: lng, city: locationName || undefined, checkAlerts: true,
     });
 
     if (error) {
       console.error('[WeatherRemoteDataSource] Edge function error:', error);
-      throw new Error(error.message || 'Live weather is temporarily unavailable.');
+      throw new Error(timedOut ? 'Weather request timed out. Please try again.' : error);
     }
 
     if (data?.error || data?.code === 'LOCATION_REQUIRED' || data?.code === 'WEATHER_UNAVAILABLE') {

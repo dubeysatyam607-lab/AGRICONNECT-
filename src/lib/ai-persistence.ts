@@ -46,6 +46,7 @@ export async function fetchConversations(): Promise<StoredConversation[]> {
   const { data, error } = await supabase
     .from("ai_conversations")
     .select("id, title, language, updated_at, created_at")
+    .is("deleted_at", null)
     .order("updated_at", { ascending: false })
     .limit(50);
   if (error) return [];

@@ -85,7 +85,25 @@ const AgriNews: React.FC = () => {
   };
 
   useEffect(() => {
-    loadNews();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchLiveAgriNews();
+        if (!cancelled) {
+          setArticles(data);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.message || 'Could not load the latest news.');
+          setArticles([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredArticles = useMemo(() => {

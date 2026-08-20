@@ -8,7 +8,7 @@ import {
   getCategoryCounts,
 } from '../../domain/notificationStore';
 import { runNotificationScheduler } from '../../domain/scheduler';
-import type { AppNotification, NotifCategory } from '../domain/notificationTypes';
+import type { AppNotification, NotifCategory } from '../../domain/notificationTypes';
 
 export interface UseNotificationsResult {
   notifications: AppNotification[];

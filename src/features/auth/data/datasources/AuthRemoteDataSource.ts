@@ -34,14 +34,47 @@ const RATE_LIMIT = {
 
 // Per‑action limits (can be overridden via environment variables)
 const PER_ACTION_LIMITS: Record<string, { maxAttempts: number; windowMs: number; cooldownMs: number }> = {
-  signin: { maxAttempts: Number(process.env.RATE_LIMIT_SIGNIN_MAX) || 5, windowMs: Number(process.env.RATE_LIMIT_SIGNIN_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_SIGNIN_COOLDOWN) || 30_000 },
-  signup: { maxAttempts: Number(process.env.RATE_LIMIT_SIGNUP_MAX) || 3, windowMs: Number(process.env.RATE_LIMIT_SIGNUP_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_SIGNUP_COOLDOWN) || 60_000 },
-  'send-otp': { maxAttempts: Number(process.env.RATE_LIMIT_SENDOTP_MAX) || 1, windowMs: Number(process.env.RATE_LIMIT_SENDOTP_WINDOW) || 60_000, cooldownMs: Number(process.env.RATE_LIMIT_SENDOTP_COOLDOWN) || 0 },
-  'verify-otp': { maxAttempts: Number(process.env.RATE_LIMIT_VERIFYOTP_MAX) || 5, windowMs: Number(process.env.RATE_LIMIT_VERIFYOTP_WINDOW) || 300_000, cooldownMs: Number(process.env.RATE_LIMIT_VERIFYOTP_COOLDOWN) || 0 },
+  signin: { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_MAX) || 5, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNIN_COOLDOWN) || 30_000 },
+  signup: { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_MAX) || 3, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SIGNUP_COOLDOWN) || 60_000 },
+  'send-otp': { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_MAX) || 1, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_WINDOW) || 60_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_SENDOTP_COOLDOWN) || 0 },
+  'verify-otp': { maxAttempts: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_MAX) || 5, windowMs: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_WINDOW) || 300_000, cooldownMs: Number(import.meta.env.VITE_RATE_LIMIT_VERIFYOTP_COOLDOWN) || 0 },
 };
 
 const attemptLog: Record<string, number[]> = {};
 const cooldowns: Record<string, number> = {};
+
+const RATE_LIMIT_STORAGE_KEY = 'agri_auth_rate_limits';
+
+function loadRateLimits(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { attempts?: Record<string, number[]>; cooldowns?: Record<string, number> };
+    const now = Date.now();
+    // Only restore entries within their window
+    for (const [k, v] of Object.entries(parsed.attempts || {})) {
+      const actionKey = k.split(':')[0] as string;
+      const cfg = (PER_ACTION_LIMITS as Record<string, { windowMs: number }>)[actionKey];
+      const windowMs = cfg?.windowMs || RATE_LIMIT.windowMs;
+      const valid = (v as number[]).filter(t => now - t < windowMs);
+      if (valid.length) attemptLog[k] = valid;
+    }
+    for (const [k, v] of Object.entries(parsed.cooldowns || {})) {
+      if (typeof v === 'number' && v > now) cooldowns[k] = v;
+    }
+  } catch { /* corrupt storage — use empty in-memory */ }
+}
+
+function persistRateLimits(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify({
+      attempts: attemptLog,
+      cooldowns,
+    }));
+  } catch { /* storage unavailable */ }
+}
 // Track last OTP sent timestamp per email to avoid duplicate OTP emails within
 // the validity period. Persisted to localStorage so a page refresh cannot reset
 // the 5-minute window and mint a brand-new OTP (which would invalidate the
@@ -109,18 +142,24 @@ function assertWithinRateLimit(action: string, identifier: string, ip?: string):
   if (recent.length >= limits.maxAttempts) {
     cooldowns[key] = now + limits.cooldownMs;
     delete attemptLog[key];
+    persistRateLimits();
     throw new AuthException('Too many attempts. Please wait before trying again.', 429);
   }
 
   recent.push(now);
   attemptLog[key] = recent;
+  persistRateLimits();
 }
 
 function recordAuthSuccess(action: string, identifier: string, ip?: string): void {
   const key = rateLimitKey(action, identifier, ip);
   delete attemptLog[key];
   delete cooldowns[key];
+  persistRateLimits();
 }
+
+// Hydrate rate-limit state from localStorage on module load
+loadRateLimits();
 
 export interface IOAuthProfileSyncResult {
   profileExisted: boolean;
@@ -337,29 +376,12 @@ export class AuthRemoteDataSource {
     }
     assertWithinRateLimit('verify-otp', normalized, ip);
 
-    // Try verifying as 'magiclink' first (for existing users logging in)
-    let response = await supabase.auth.verifyOtp({
+    // Only 'email' type is valid — the app uses signInWithOtp with shouldCreateUser.
+    const { data, error } = await supabase.auth.verifyOtp({
       email: normalized,
       token: cleanToken,
-      type: 'magiclink',
+      type: 'email',
     });
-
-    // If it fails, try verifying as 'signup' (for new users registering)
-    if (response.error) {
-      console.warn("[AuthRemoteDataSource] verifyOtp magiclink failed, trying signup:", response.error.message);
-      const signupResponse = await supabase.auth.verifyOtp({
-        email: normalized,
-        token: cleanToken,
-        type: 'signup',
-      });
-      
-      // If the signup verification succeeded or has a session, use it
-      if (!signupResponse.error || signupResponse.data?.session) {
-        response = signupResponse;
-      }
-    }
-
-    const { data, error } = response;
 
     if (error) {
       throw new AuthException('Invalid or expired OTP code. Please request a new code.', 401, error);
@@ -396,7 +418,7 @@ export class AuthRemoteDataSource {
   public async forgotPassword(identifier: string): Promise<void> {
     const base = getAuthRedirectBase();
     const { error } = await supabase.auth.resetPasswordForEmail(identifier, {
-      redirectTo: base ? `${base}/reset-password` : undefined,
+      redirectTo: base ? `${base}/auth/reset` : undefined,
     });
     // Keep 'not found' silent for privacy (don't reveal whether an account exists),
     // but surface real failures so users are never told instructions were sent

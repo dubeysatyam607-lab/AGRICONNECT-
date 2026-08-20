@@ -55,6 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       persistAuthMeta(session?.user ?? null);
       if (session) cleanAuthHash();
+    }).catch(() => {
+      // Network failure or IndexedDB corruption — treat as logged out
+      setSession(null);
+      setUser(null);
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -69,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'global' });
     localStorage.removeItem('agri_auth_meta');
     localStorage.removeItem('agri_token');
     localStorage.removeItem('agri_user');
@@ -78,8 +83,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Verify OTP after registration
   const verifyOtp = async (email: string, token: string) => {
-    const { error } = await authRemoteDataSource.verifyOtp(email, token);
-    return { error };
+    try {
+      await authRemoteDataSource.verifyOtp(email, token);
+      return { error: null };
+    } catch (err: any) {
+      return { error: err?.message || 'OTP verification failed.' };
+    }
   };
 
   const signUp = async (email: string, password: string, fullName?: string, phone?: string) => {
@@ -98,8 +107,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     const ip = undefined; // TODO: retrieve client IP if needed
-    const { error } = await authRemoteDataSource.signIn(email, password, ip);
-    return { error };
+    try {
+      await authRemoteDataSource.signIn(email, password, ip);
+      return { error: null };
+    } catch (err: any) {
+      return { error: err?.message || 'Sign in failed. Please try again.' };
+    }
   };
 
   return (

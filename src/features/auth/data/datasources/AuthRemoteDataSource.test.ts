@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Raise the client-side send-otp rate limit so this unit test isolates the
-// 5-minute OTP-reuse window logic (the 1/min default would otherwise throw
-// before the reuse check is reached). Set before the module is imported.
+// 60-second OTP-reuse window logic (the 1/min default would otherwise throw
+// before the reuse check is reached). We mock import.meta.env which is how
+// the production code reads these values (Vite).
 vi.hoisted(() => {
-  process.env.RATE_LIMIT_SENDOTP_MAX = '10';
-  process.env.RATE_LIMIT_SENDOTP_WINDOW = '600000';
+  vi.stubEnv('VITE_RATE_LIMIT_SENDOTP_MAX', '10');
+  vi.stubEnv('VITE_RATE_LIMIT_SENDOTP_WINDOW', '600000');
 });
 
 import { authRemoteDataSource as ds, resetAuthRateLimits } from './AuthRemoteDataSource';

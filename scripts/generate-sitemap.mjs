@@ -1,45 +1,68 @@
 import fs from 'fs';
 import path from 'path';
 
-// Base URL of the site – adjust if different
-const BASE_URL = 'https://agriconnect.in';
+const BASE_URL = 'https://agriconnect-navy-six.vercel.app';
 
-// List of routes to include in the sitemap. Add more as needed.
-const routes = [
-  '/',
-  '/about',
-  '/features',
-  '/pricing',
-  '/blog',
-  '/contact',
-  '/faq',
-  '/help-center',
-  '/knowledge-hub',
-  '/terms',
-  '/privacy-policy',
+const STATES = [
+  'maharashtra', 'uttar-pradesh', 'madhya-pradesh', 'rajasthan', 'karnataka',
+  'gujarat', 'andhra-pradesh', 'tamil-nadu', 'west-bengal', 'bihar',
+  'punjab', 'haryana', 'jharkhand', 'chhattisgarh', 'odisha', 'telangana',
+  'assam', 'kerala', 'jammu-and-kashhimir', 'himachal-pradesh', 'uttarakhand',
+  'goa', 'tripura', 'meghalaya', 'manipur', 'nagaland', 'mizoram',
+  'arunachal-pradesh', 'sikkim', 'chandigarh', 'delhi',
 ];
 
-function formatDate(date) {
-  return date.toISOString();
-}
+const staticPages = [
+  { path: '/', priority: '1.0', changefreq: 'weekly' },
+  { path: '/about', priority: '0.8', changefreq: 'monthly' },
+  { path: '/features', priority: '0.8', changefreq: 'monthly' },
+  { path: '/pricing', priority: '0.7', changefreq: 'monthly' },
+  { path: '/blogs', priority: '0.7', changefreq: 'weekly' },
+  { path: '/blogs/future-of-farming', priority: '0.6', changefreq: 'monthly' },
+  { path: '/contact', priority: '0.6', changefreq: 'monthly' },
+  { path: '/faq', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help-center', priority: '0.5', changefreq: 'monthly' },
+  { path: '/knowledge-hub', priority: '0.7', changefreq: 'weekly' },
+  { path: '/terms', priority: '0.3', changefreq: 'yearly' },
+  { path: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
+];
+
+const dynamicSections = [
+  { prefix: '/mandi-prices', priority: '0.7', changefreq: 'daily' },
+  { prefix: '/schemes', priority: '0.7', changefreq: 'monthly' },
+  { prefix: '/weather', priority: '0.6', changefreq: 'daily' },
+  { prefix: '/tractor-rental', priority: '0.6', changefreq: 'weekly' },
+];
+
+const now = new Date().toISOString();
 
 let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
 xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n`;
-xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"\n`;
-xml += `        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n`;
+xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
-const now = new Date();
-for (const route of routes) {
+for (const page of staticPages) {
   xml += `  <url>\n`;
-  xml += `    <loc>${BASE_URL}${route}</loc>\n`;
-  xml += `    <lastmod>${formatDate(now)}</lastmod>\n`;
-  xml += `    <changefreq>weekly</changefreq>\n`;
-  xml += `    <priority>0.8</priority>\n`;
+  xml += `    <loc>${BASE_URL}${page.path}</loc>\n`;
+  xml += `    <lastmod>${now}</lastmod>\n`;
+  xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
+  xml += `    <priority>${page.priority}</priority>\n`;
   xml += `  </url>\n`;
 }
+
+for (const section of dynamicSections) {
+  for (const state of STATES) {
+    xml += `  <url>\n`;
+    xml += `    <loc>${BASE_URL}${section.prefix}/${state}</loc>\n`;
+    xml += `    <lastmod>${now}</lastmod>\n`;
+    xml += `    <changefreq>${section.changefreq}</changefreq>\n`;
+    xml += `    <priority>${section.priority}</priority>\n`;
+    xml += `  </url>\n`;
+  }
+}
+
 xml += `</urlset>`;
 
 const outputPath = path.resolve('public', 'sitemap.xml');
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, xml, { encoding: 'utf8' });
-console.log('Sitemap generated at', outputPath);
+console.log(`Sitemap generated: ${outputPath} (${staticPages.length + dynamicSections.length * STATES.length} URLs)`);

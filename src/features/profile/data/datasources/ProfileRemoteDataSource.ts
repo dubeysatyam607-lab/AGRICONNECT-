@@ -67,17 +67,50 @@ export class ProfileRemoteDataSource {
       }
 
       const defaultProf = ProfileRemoteDataSource.getDefaultProfile(userId);
+
+      // Parse extended_profile JSON column for all additional fields
+      let extended: Record<string, any> = {};
+      try {
+        extended = data.extended_profile ? JSON.parse(data.extended_profile) : {};
+      } catch { /* corrupt JSON — use defaults */ }
+
       return {
         ...defaultProf,
         personal: {
           ...defaultProf.personal,
           fullName: data.full_name || defaultProf.personal.fullName,
           mobileNumber: data.phone || defaultProf.personal.mobileNumber,
+          emailAddress: data.email || extended.emailAddress || defaultProf.personal.emailAddress,
+          gender: extended.gender || defaultProf.personal.gender,
+          dateOfBirth: extended.dateOfBirth || defaultProf.personal.dateOfBirth,
+          aadhaarNumber: extended.aadhaarNumber || defaultProf.personal.aadhaarNumber,
+          isAadhaarVerified: extended.isAadhaarVerified ?? false,
         },
         location: {
           ...defaultProf.location,
-          villageOrTehsil: data.location || defaultProf.location.villageOrTehsil,
+          villageOrTehsil: data.location || extended.villageOrTehsil || defaultProf.location.villageOrTehsil,
+          district: extended.district || defaultProf.location.district,
+          state: extended.state || defaultProf.location.state,
+          pinCode: extended.pinCode || defaultProf.location.pinCode,
+          gpsCoordinates: extended.gpsCoordinates || defaultProf.location.gpsCoordinates,
+          isLocationPermissionGranted: extended.isLocationPermissionGranted ?? false,
+          farmCentroidAddress: extended.farmCentroidAddress || defaultProf.location.farmCentroidAddress,
         },
+        farmSpecs: {
+          ...defaultProf.farmSpecs,
+          totalArea: extended.totalArea ?? 0,
+          landUnit: extended.landUnit || defaultProf.farmSpecs.landUnit,
+          soilType: extended.soilType || defaultProf.farmSpecs.soilType,
+          irrigationType: extended.irrigationType || defaultProf.farmSpecs.irrigationType,
+          primaryWaterSource: extended.primaryWaterSource || defaultProf.farmSpecs.primaryWaterSource,
+        },
+        crops: Array.isArray(extended.crops) ? extended.crops : [],
+        machineryOwned: Array.isArray(extended.machineryOwned) ? extended.machineryOwned : [],
+        livestock: {
+          ...defaultProf.livestock,
+          ...(extended.livestock || {}),
+        },
+        preferredLanguage: extended.preferredLanguage || 'en',
         profilePictureUrl: data.avatar_url || defaultProf.profilePictureUrl,
       };
     } catch (e) {
@@ -88,12 +121,38 @@ export class ProfileRemoteDataSource {
 
   public async saveRemoteProfile(profile: IFarmerProfile): Promise<IFarmerProfile> {
     try {
+      // Store extended fields as JSON in a dedicated column
+      const extendedProfile = {
+        emailAddress: profile.personal.emailAddress,
+        gender: profile.personal.gender,
+        dateOfBirth: profile.personal.dateOfBirth,
+        aadhaarNumber: profile.personal.aadhaarNumber,
+        isAadhaarVerified: profile.personal.isAadhaarVerified,
+        villageOrTehsil: profile.location.villageOrTehsil,
+        district: profile.location.district,
+        state: profile.location.state,
+        pinCode: profile.location.pinCode,
+        gpsCoordinates: profile.location.gpsCoordinates,
+        isLocationPermissionGranted: profile.location.isLocationPermissionGranted,
+        farmCentroidAddress: profile.location.farmCentroidAddress,
+        totalArea: profile.farmSpecs.totalArea,
+        landUnit: profile.farmSpecs.landUnit,
+        soilType: profile.farmSpecs.soilType,
+        irrigationType: profile.farmSpecs.irrigationType,
+        primaryWaterSource: profile.farmSpecs.primaryWaterSource,
+        crops: profile.crops,
+        machineryOwned: profile.machineryOwned,
+        livestock: profile.livestock,
+        preferredLanguage: profile.preferredLanguage,
+      };
+
       const { error } = await supabase.from('profiles').upsert({
         id: profile.id,
         full_name: profile.personal.fullName,
         phone: profile.personal.mobileNumber,
         location: profile.location.villageOrTehsil,
         avatar_url: profile.profilePictureUrl,
+        extended_profile: JSON.stringify(extendedProfile),
       });
 
       if (error) {

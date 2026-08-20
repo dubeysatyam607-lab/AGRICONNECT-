@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Mail, Phone, Download, Users, Award, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage } from '@/lib/seo-config';
 import { organizationSchema } from '@/lib/structured-data';
@@ -14,18 +15,39 @@ const About: React.FC = () => {
       name: 'About AgriConnect',
       url: canonical('/about'),
       description:
-        'AgriConnect is India\'s complete digital agriculture ecosystem — AI advisory, machinery rental, live mandi bhav, weather, IoT soil monitoring, laser fencing, and government schemes on one platform.',
+        'AgriConnect is on a mission to make AI work for every Indian farmer, in their language, for free. Built in India for India\'s 150 million farming families.',
       mainEntity: { '@id': `${canonical('/')}#organization` },
     },
   ];
 
+  const handleDownloadPressKit = () => {
+    // Generate simple press kit text package / download trigger
+    const pressContent = `AgriConnect — Press & Media Kit (2026)
+Mission: Making AI work for every Indian farmer, in their language, for free.
+Founded: 2026 | Version: 1.0 (Launched August 2026)
+Audience: Built for India's 150 million farming families.
+Key Features: Live Mandi Bhav, Hyperlocal Weather, AI Crop Disease Detection, Tractor & Machinery Rental, Government Scheme Alerts.
+Contact: hello.agriconnect@gmail.com | +91-7067820256
+Website: https://agriconnect-navy-six.vercel.app`;
+
+    const blob = new Blob([pressContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'AgriConnect-Press-Kit.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <SeoHead
-        title="About Us — AgriConnect | India's Complete Digital Agriculture Ecosystem"
-        description="AgriConnect is on a mission to digitize Indian agriculture and empower every farmer — especially small and marginal farmers — with affordable AI technology. Live mandi bhav, pay-per-acre AI advisory, machinery rental, IoT soil monitoring, laser fencing, and government schemes in 12 Indian languages."
+        title="About Us — AgriConnect | Making AI Work for Every Indian Farmer"
+        description="AgriConnect is on a mission to make AI work for every Indian farmer, in their language, for free. Built in India for India's 150 million farming families."
         canonical="/about"
-        keywords={['about AgriConnect', 'digital agriculture ecosystem India', 'smart farming platform', 'agritech company India', 'new-age farmer', 'IoT farming']}
+        keywords={['about AgriConnect', 'AI farming India', 'digital agriculture ecosystem India', 'smart farming platform', 'agritech company India', 'Kisan AI']}
         ogType="profile"
         ogImage={ogImage()}
         jsonLd={jsonLd}
@@ -45,96 +67,96 @@ const About: React.FC = () => {
                 <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
                   About AgriConnect
                 </h1>
-                <p className="text-emerald-100/80 mt-2 font-medium">
-                  Creating the "new-age farmer" — India's complete digital agriculture ecosystem
+                <p className="text-emerald-100/90 mt-2 text-lg font-semibold">
+                  "Making AI work for every Indian farmer, in their language, for free"
                 </p>
               </div>
             </div>
             <p className="max-w-3xl text-emerald-50/90 text-lg leading-relaxed">
-              AgriConnect is an AI-powered digital agriculture ecosystem built to transform
-              traditional farming into smart farming. We connect <strong>farmers, service
-              providers, buyers, and agricultural experts</strong> on a single intelligent
+              Built in India for <strong>India's 150 million farming families</strong>. We connect
+              farmers, service providers, buyers, and agricultural experts on a single intuitive
               platform — live mandi bhav, personalized AI advisory, machinery rental, hyperlocal
-              weather, crop disease detection, IoT soil monitoring, and government scheme alerts,
-              available in <strong>12 Indian languages</strong>.
+              weather, crop disease detection, and government scheme alerts in <strong>12 Indian languages</strong>.
             </p>
+
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
+              <button
+                onClick={handleDownloadPressKit}
+                className="inline-flex items-center gap-2 rounded-xl bg-white text-emerald-900 px-5 py-3 font-bold text-sm shadow-md hover:bg-emerald-50 transition"
+              >
+                <Download size={16} /> Download Press Kit
+              </button>
+              <a
+                href="mailto:hello.agriconnect@gmail.com"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/15 border border-white/25 text-white px-5 py-3 font-bold text-sm hover:bg-white/25 transition"
+              >
+                <Mail size={16} /> hello.agriconnect@gmail.com
+              </a>
+            </div>
           </div>
         </header>
 
-        {/* Mission */}
+        {/* Mission Statement Banner */}
         <section className="responsive-container py-12" aria-labelledby="mission-heading">
-          <h2 id="mission-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-            Our Mission: Digitize Indian Agriculture
-          </h2>
-          <p className="text-muted-foreground leading-relaxed text-lg mb-6">
-            Indian farmers lose an estimated <strong>₹3.5 lakh crore annually</strong> to lack of
-            timely information — market prices, weather risk, crop diseases, and scheme awareness.
-            AgriConnect exists to close that information gap with technology that is free, simple,
-            and available in every farmer's native language. Our goal is not just another farming
-            app — it is India's complete digital agriculture ecosystem that connects{" "}
-            <strong>technology, services, machinery, data, and farmers</strong> on one platform,
-            helping them reduce costs, increase productivity, improve profitability, and make
-            smarter farming decisions every day.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            {[
-              { icon: '🌾', title: 'Free for All', desc: 'Every core feature — mandi bhav, crop doctor, weather — is completely free for farmers.' },
-              { icon: '📱', title: '12 Languages', desc: 'Hindi, Marathi, Punjabi, Tamil, Telugu and 7 more — technology in your mother tongue.' },
-              { icon: '🤖', title: 'AI-Powered', desc: 'From disease scanning to price intelligence, AI works behind the scenes for you.' },
-            ].map((f) => (
-              <div key={f.title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
-                <span className="text-3xl" aria-hidden="true">{f.icon}</span>
-                <h3 className="font-bold text-foreground mt-3">{f.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
+          <div className="rounded-3xl border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 p-8 md:p-12 text-center shadow-card">
+            <span className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-emerald-600 text-white mb-4">
+              <Award size={24} />
+            </span>
+            <h2 id="mission-heading" className="text-2xl md:text-4xl font-black text-foreground max-w-2xl mx-auto leading-tight">
+              Making AI work for every Indian farmer, in their language, for free.
+            </h2>
+            <p className="text-muted-foreground leading-relaxed text-base md:text-lg mt-4 max-w-3xl mx-auto">
+              Indian farmers lose an estimated ₹3.5 lakh crore annually due to information gaps.
+              AgriConnect provides free, instant, and stage-aware advisory directly in regional languages
+              so no farmer is left behind.
+            </p>
           </div>
         </section>
 
-        {/* Digital Bridge */}
-        <section className="bg-muted/40 border-y border-border" aria-labelledby="bridge-heading">
-          <div className="responsive-container py-12">
-            <h2 id="bridge-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-              A Digital Bridge for Indian Agriculture
+        {/* Team & Leadership */}
+        <section className="bg-muted/30 border-y border-border py-12" aria-labelledby="team-heading">
+          <div className="responsive-container">
+            <h2 id="team-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-3 text-center">
+              Our Leadership & Founders
             </h2>
-            <p className="text-muted-foreground max-w-3xl leading-relaxed">
-              AgriConnect acts as a digital bridge connecting the four pillars of the agricultural
-              economy — so every transaction, advisory, and service happens on one trusted platform.
+            <p className="text-muted-foreground text-center max-w-xl mx-auto mb-8">
+              A dedicated team of technologists, agronomists, and grassroots innovators passionate about rural empowerment.
             </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-8">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
               {[
-                { icon: '👨‍🌾', title: 'Farmers', desc: 'Personalized AI advisory, live mandi bhav, affordable machinery rental, and fair market access.' },
-                { icon: '🚜', title: 'Service Providers', desc: 'Equipment owners earn extra income by renting out idle tractors, harvesters, threshers, seed drills, and rotavators.' },
-                { icon: '🤝', title: 'Buyers', desc: 'Direct access to fresh produce and verified sellers — cutting middlemen and improving farmer margins by 15-30%.' },
-                { icon: '🧑‍🔬', title: 'Agri Experts', desc: 'AI plus real expertise — crop, soil, weather, and stage-aware guidance that helps farmers decide better, every day.' },
-              ].map((p) => (
-                <div key={p.title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
-                  <span className="text-3xl" aria-hidden="true">{p.icon}</span>
-                  <h3 className="font-bold text-foreground mt-3">{p.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{p.desc}</p>
+                { name: 'Satyam Dubey', role: 'Founder & CEO / Product Lead', bio: 'Passionate technologist driving AI adoption across India\'s agricultural heartlands.' },
+                { name: 'Core Agritech Team', role: 'AI & Agronomy Engineers', bio: 'Specializing in computer vision models for crop pest detection and multimodal Indic voice models.' },
+                { name: 'Field Operations', role: 'Kisan Outreach & Network', bio: 'Working directly with FPOs, APMC mandis, and tractor owners across states.' },
+              ].map((member) => (
+                <div key={member.name} className="rounded-2xl border border-border bg-card p-6 shadow-card text-center">
+                  <div className="h-16 w-16 rounded-full bg-emerald-600/10 text-emerald-600 flex items-center justify-center mx-auto text-xl font-black mb-3">
+                    <Users size={28} />
+                  </div>
+                  <h3 className="font-bold text-foreground text-base">{member.name}</h3>
+                  <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">{member.role}</p>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{member.bio}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Journey */}
+        {/* Timeline */}
         <section className="responsive-container py-12" aria-labelledby="journey-heading">
-          <h2 id="journey-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-8">
-            Our Journey
+          <h2 id="journey-heading" className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-center">
+            Company Timeline
           </h2>
-          <div className="space-y-6">
+          <div className="max-w-2xl mx-auto space-y-6">
             {[
-              { year: '2024', title: 'The Idea', desc: 'Started after field visits to Shivpuri and Jaipur districts, where farmers struggled to get fair mandi prices and disease diagnosis.' },
-              { year: '2025', title: 'The Platform', desc: 'Launched the AgriConnect app with mandi bhav, AI Crop Doctor, weather, and tractor rental — serving 10,000+ farmers in pilot districts.' },
-              { year: '2026', title: 'The Ecosystem', desc: 'Expanded to 28 states with 12 Indian languages, pay-per-acre AI advisory, IoT soil monitoring, laser fencing, and a farmer-first marketplace. Now empowering farmers across India.' },
+              { year: '2026', title: 'Founded & Conceived', desc: 'AgriConnect established to build India\'s complete farmer-first digital super-app.' },
+              { year: 'Aug 2026', title: 'v1 Official Launch', desc: 'Released AgriConnect v1 across 28 states in 12 languages with Live Mandi Bhav, AI Crop Doctor, Weather, and Tractor Market.' },
             ].map((item) => (
-              <div key={item.year} className="flex gap-4">
+              <div key={item.year} className="flex gap-4 items-start rounded-2xl border border-border bg-card p-5 shadow-card">
                 <span className="shrink-0 rounded-xl gradient-hero text-primary-foreground px-3 py-1.5 text-sm font-black h-fit">
                   {item.year}
                 </span>
                 <div>
-                  <h3 className="font-bold text-foreground">{item.title}</h3>
+                  <h3 className="font-bold text-foreground text-base">{item.title}</h3>
                   <p className="text-muted-foreground text-sm mt-1 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
@@ -142,28 +164,19 @@ const About: React.FC = () => {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="responsive-container py-12 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            Start Your Smart Farming Journey
-          </h2>
-          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-            Check live mandi bhav, rent machinery, scan your crops with AI, and get government
-            scheme alerts — free.
+        {/* Contact & Support Section */}
+        <section className="responsive-container py-8 text-center border-t border-border mt-6">
+          <h2 className="text-2xl font-bold text-foreground mb-3">Get in Touch</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto mb-6 text-sm">
+            Have questions, partnership inquiries, or press requests? Reach out directly.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mt-6">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-lg gradient-hero text-primary-foreground px-6 py-3 font-semibold shadow-md hover:brightness-110 transition"
-            >
-              Explore the App
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-semibold text-foreground hover:bg-muted transition"
-            >
-              Contact Us
-            </Link>
+          <div className="flex flex-wrap justify-center gap-6 text-sm font-semibold">
+            <a href="mailto:hello.agriconnect@gmail.com" className="flex items-center gap-2 text-foreground hover:text-emerald-600 transition">
+              <Mail size={18} className="text-emerald-600" /> hello.agriconnect@gmail.com
+            </a>
+            <a href="tel:+917067820256" className="flex items-center gap-2 text-foreground hover:text-emerald-600 transition">
+              <Phone size={18} className="text-emerald-600" /> +91-7067820256
+            </a>
           </div>
         </section>
       </main>
@@ -172,3 +185,4 @@ const About: React.FC = () => {
 };
 
 export default About;
+

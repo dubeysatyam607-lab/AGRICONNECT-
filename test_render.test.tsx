@@ -48,6 +48,53 @@ vi.mock('@/hooks/use-toast', () => ({
   }))
 }));
 
+vi.mock('@/hooks/useOfflineSync', () => ({
+  useOfflineSync: vi.fn(() => ({
+    queueCount: 0,
+    isOnline: true,
+  }))
+}));
+
+vi.mock('@/features/location/LocationContext', () => ({
+  useLocation: vi.fn(() => ({
+    location: { latitude: 18.6298, longitude: 73.7997, status: 'ready' },
+    farms: [],
+    farmsLoading: false,
+    setActiveFarm: vi.fn(),
+    addFarm: vi.fn(),
+  })),
+  LocationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/contexts/LanguageContext', () => ({
+  useLanguage: vi.fn(() => ({
+    language: 'en',
+    setLanguage: vi.fn(),
+    languageName: 'English (India)',
+    t: (key: string, fallback?: string) => fallback || key,
+  })),
+  LANGUAGE_NAMES: { en: 'English (India)', hi: 'Hindi', mr: 'Marathi', gu: 'Gujarati', pa: 'Punjabi', ta: 'Tamil', te: 'Telugu', kn: 'Kannada', ml: 'Malayalam', bn: 'Bengali', or: 'Odia', as: 'Assamese' },
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/contexts/RoleContext', () => ({
+  useRole: vi.fn(() => ({
+    role: 'farmer',
+    setRole: vi.fn(),
+  })),
+  RoleProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/core/theme/ThemeManager', () => ({
+  ThemeManagerProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useThemeManager: vi.fn(() => ({
+    theme: 'light',
+    resolvedTheme: 'light',
+    setTheme: vi.fn(),
+    toggleTheme: vi.fn(),
+  })),
+}));
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => ({

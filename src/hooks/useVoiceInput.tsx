@@ -18,6 +18,7 @@ export const useVoiceInput = (options: UseVoiceInputOptions = {}) => {
   const [isSupported, setIsSupported] = useState(true);
   const controllerRef = useRef<SttController | null>(null);
   const committedRef = useRef(false);
+  const transcriptRef = useRef('');
 
   useEffect(() => {
     return () => {
@@ -32,21 +33,26 @@ export const useVoiceInput = (options: UseVoiceInputOptions = {}) => {
       options.onError?.('Speech recognition not supported in this browser');
       return;
     }
+    // Ensure supported state is true when STT is available
+    setIsSupported(true);
 
     committedRef.current = false;
+    transcriptRef.current = '';
     setTranscript('');
     setIsListening(true);
 
     controllerRef.current = listen(options.language || 'hi-IN', {
       onStart: () => setIsListening(true),
-      onTranscript: (combined) => setTranscript(combined),
+      onTranscript: (combined) => {
+        transcriptRef.current = combined;
+        setTranscript(combined);
+      },
       onEnd: () => {
         controllerRef.current = null;
         setIsListening(false);
-        // Silence auto-stop — commit what was captured once.
-        if (!committedRef.current && transcript.trim()) {
+        if (!committedRef.current && transcriptRef.current.trim()) {
           committedRef.current = true;
-          options.onResult?.(transcript.trim());
+          options.onResult?.(transcriptRef.current.trim());
         }
       },
       onError: (error) => {
@@ -61,7 +67,7 @@ export const useVoiceInput = (options: UseVoiceInputOptions = {}) => {
         }
       },
     });
-  }, [options, transcript]);
+  }, [options]);
 
   const stopListening = useCallback(() => {
     const final = transcript;
@@ -72,7 +78,7 @@ export const useVoiceInput = (options: UseVoiceInputOptions = {}) => {
       committedRef.current = true;
       options.onResult?.(final.trim());
     }
-  }, [options, transcript]);
+  }, [options]);
 
   const toggleListening = useCallback(() => {
     if (isListening) {

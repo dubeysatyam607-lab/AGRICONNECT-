@@ -82,6 +82,6 @@ Disallow: /profile
 Crawl-delay: 10
 
 # ── Sitemaps ───────────────────────────────────────────────
-Sitemap: https://agriconnect.in/sitemap.xml
-Sitemap: https://agriconnect.in/sitemap-images.xml
+Sitemap: https://agriconnect-navy-six.vercel.app/sitemap.xml
+Sitemap: https://agriconnect-navy-six.vercel.app/sitemap-images.xml
 

@@ -8,7 +8,7 @@ import type {
 } from '../domain/walletTypes';
 
 const FUNC_URL =
-  import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '') +
+  (import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '') || '') +
   '/functions/v1/wallet';
 
 async function postEdgeJson<T>(body: Record<string, unknown>): Promise<T> {
@@ -18,19 +18,34 @@ async function postEdgeJson<T>(body: Record<string, unknown>): Promise<T> {
   if (!session) {
     throw new Error('Sign in required');
   }
-  const res = await fetch(FUNC_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const json = (await res.json().catch(() => ({}))) as Record<string, any>;
-  if (!res.ok) {
-    throw new Error(json.error ?? `Wallet request failed (${res.status})`);
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 25000);
+  try {
+    const res = await fetch(FUNC_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const json = (await res.json().catch(() => ({}))) as Record<string, any>;
+    if (!res.ok) {
+      throw new Error(json.error ?? `Wallet request failed (${res.status})`);
+    }
+    return json as T;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Wallet request timed out. Please try again.');
+    }
+    if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+      throw new Error('Unable to connect to wallet service. Please check your connection.');
+    }
+    throw err;
+  } finally {
+    window.clearTimeout(timer);
   }
-  return json as T;
 }
 
 export interface WalletRepository {

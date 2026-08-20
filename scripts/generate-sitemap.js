@@ -8,7 +8,7 @@ import path from 'path';
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Base URL – should match the public site URL
-const BASE_URL = process.env.BASE_URL || 'https://agriconnect.in';
+const BASE_URL = process.env.BASE_URL || 'https://agriconnect-navy-six.vercel.app';
 
 // List of canonical paths (no trailing slash unless root)
 const routes = [

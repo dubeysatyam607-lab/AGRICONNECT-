@@ -6,7 +6,7 @@ import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 import { aiChatCompletion, AiGatewayError, type AiMessage } from "../_shared/ai-gateway.ts";
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in,https://www.agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -19,13 +19,6 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Allow-Credentials": "true",
   };
 }
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Credentials": "true",
-};
 
 const RATE_LIMIT_CONFIG = { maxRequests: 10, windowMs: 60 * 1000 };
 
@@ -96,11 +89,12 @@ async function logUsage(userId: string, provider?: string) {
   }
 }
 
-async function persistScan(userId: string, result: Record<string, unknown>, mime?: string) {
+async function persistScan(userId: string, result: Record<string, unknown>, mime?: string, language?: string) {
   try {
     const { error } = await supabaseAdmin.from("crop_scans").insert({
       user_id: userId,
       mime_type: mime ?? null,
+      language: language ?? null,
       crop: result.crop ?? null,
       plant_part: result.plant_part ?? null,
       health_status: result.health_status ?? null,
@@ -250,7 +244,7 @@ serve(async (req) => {
       };
     }
 
-    await persistScan(authResult.userId!, result, validation.mime);
+    await persistScan(authResult.userId!, result, validation.mime, language);
     await logUsage(authResult.userId!, provider);
 
     return new Response(

@@ -46,12 +46,17 @@ function isAgricultureRelated(title: string, description: string): boolean {
 
 export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
   // Check local cache first for instant load
+  let cachedArticles: LiveAgriNewsArticle[] | null = null;
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (Date.now() - parsed.timestamp < 1000 * 60 * 30 && parsed.articles?.length > 0) { // 30 min cache
-        return parsed.articles;
+      if (parsed.articles?.length > 0) {
+        cachedArticles = parsed.articles;
+        // If cache is fresh (less than 30 min), return it directly
+        if (Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+          return parsed.articles;
+        }
       }
     }
   } catch {
@@ -77,6 +82,11 @@ export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
 
     return verifiedArticles;
   } catch (err) {
+    // Return stale cache if available instead of failing
+    if (cachedArticles && cachedArticles.length > 0) {
+      console.warn('[AgriNews Service] Live API failed, serving cached news:', err);
+      return cachedArticles;
+    }
     // Surface the failure so the UI can show a friendly error + retry.
     console.warn('[AgriNews Service] Live API request failed:', err);
     throw err;

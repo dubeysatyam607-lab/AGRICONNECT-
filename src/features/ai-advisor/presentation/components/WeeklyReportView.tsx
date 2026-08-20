@@ -39,7 +39,11 @@ export const WeeklyReportView: React.FC<WeeklyReportViewProps> = ({ report, onNa
             <Gauge size={14} className={cn(section.confidence >= 80 ? 'text-emerald-500' : 'text-amber-500')} />
             <h3 className="text-sm font-black text-foreground">{t(section.titleKey)}</h3>
             <span className="ml-auto text-[10px] font-black text-muted-foreground">
-              {t('adv.confidence')} {section.confidence}%
+              {section.confidence >= 80
+                ? 'Verified'
+                : section.confidence >= 65
+                  ? 'High confidence'
+                  : 'Based on your data'}
             </span>
           </div>
           <p className="mt-1.5 text-[13px] leading-snug text-muted-foreground">

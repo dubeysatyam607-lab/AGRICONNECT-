@@ -4,13 +4,19 @@ import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 
 const ALLOWED_ORIGINS = (
   Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:8000,https://agriconnect.in"
+  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
 ).split(",").map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && ALLOWED_ORIGINS.some((o) => o === origin) ? origin : null;
+  const allowed = origin && ALLOWED_ORIGINS.some((o) => {
+    if (o.includes("*")) {
+      const prefix = o.replace("*", "");
+      return origin.startsWith(prefix);
+    }
+    return o === origin;
+  }) ? origin : null;
   return {
-    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Origin": allowed ?? "https://agriconnect-navy-six.vercel.app",
     "Access-Control-Allow-Headers": "authorization, x-client-info, content-type, x-razorpay-signature",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Max-Age": "86400",
@@ -257,8 +263,17 @@ serve(async (req) => {
     return json({ ok: true, transaction: data }, 200, cors);
   }
 
-  // Admin manual adjustment (audited)
+  // Admin manual adjustment (audited) — requires admin role
   if (action === "admin-adjust") {
+    // Verify admin role: check app_metadata for admin role
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !user) {
+      return json({ error: "Unauthorized" }, 401, cors);
+    }
+    const role = (user.app_metadata as any)?.role;
+    if (role !== "admin") {
+      return json({ error: "Forbidden: admin access required" }, 403, cors);
+    }
     const { data, error } = await supabase.rpc("wallet_admin_adjust", {
       p_user_id: body.userId,
       p_amount: Number(body.amount),
@@ -269,8 +284,16 @@ serve(async (req) => {
     return json({ ok: true, transaction: data }, 200, cors);
   }
 
-  // Admin wallet list
+  // Admin wallet list — requires admin role
   if (action === "admin-list") {
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !user) {
+      return json({ error: "Unauthorized" }, 401, cors);
+    }
+    const role = (user.app_metadata as any)?.role;
+    if (role !== "admin") {
+      return json({ error: "Forbidden: admin access required" }, 403, cors);
+    }
     const { data, error } = await supabase.rpc("admin_wallets_list");
     if (error) return json({ error: error.message }, error.code === "42501" ? 403 : 500, cors);
     return json({ wallets: data }, 200, cors);

@@ -3,20 +3,20 @@ import { canonical, ogImage, SITE_CONFIG } from './src/lib/seo-config';
 
 describe('seo-config canonical()', () => {
   it('returns baseUrl for the root path', () => {
-    expect(canonical('/')).toBe('https://agriconnect.in/');
-    expect(canonical()).toBe('https://agriconnect.in/');
+    expect(canonical('/')).toBe('https://agriconnect-navy-six.vercel.app/');
+    expect(canonical()).toBe('https://agriconnect-navy-six.vercel.app/');
   });
 
   it('appends a leading slash when missing', () => {
-    expect(canonical('about')).toBe('https://agriconnect.in/about');
+    expect(canonical('about')).toBe('https://agriconnect-navy-six.vercel.app/about');
   });
 
   it('builds nested paths unchanged', () => {
-    expect(canonical('/mandi-prices/maharashtra')).toBe('https://agriconnect.in/mandi-prices/maharashtra');
+    expect(canonical('/mandi-prices/maharashtra')).toBe('https://agriconnect-navy-six.vercel.app/mandi-prices/maharashtra');
   });
 
   it('does not double the site base', () => {
-    expect(canonical('/about')).toBe('https://agriconnect.in/about');
+    expect(canonical('/about')).toBe('https://agriconnect-navy-six.vercel.app/about');
   });
 });
 
@@ -30,8 +30,8 @@ describe('seo-config ogImage()', () => {
   });
 
   it('prefixes relative paths with the site base', () => {
-    expect(ogImage('/og-image-1200x630.png')).toBe('https://agriconnect.in/og-image-1200x630.png');
-    expect(ogImage('og-image-1200x630.png')).toBe('https://agriconnect.in/og-image-1200x630.png');
+    expect(ogImage('/og-image-1200x630.png')).toBe('https://agriconnect-navy-six.vercel.app/og-image-1200x630.png');
+    expect(ogImage('og-image-1200x630.png')).toBe('https://agriconnect-navy-six.vercel.app/og-image-1200x630.png');
   });
 });
 

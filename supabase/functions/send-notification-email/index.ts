@@ -5,9 +5,13 @@ import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts"
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // Get allowed origins from environment
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -103,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
     let html: string;
 
     if (type === "price_alert") {
-      subject = `📈 Price Alert: ${data.commodity}`;
+      subject = `📈 Price Alert: ${esc(data.commodity || '')}`;
       html = `
         <!DOCTYPE html>
         <html>
@@ -119,20 +123,20 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             <div style="padding: 30px;">
               <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0;">
-                <h2 style="color: #166534; margin: 0 0 10px; font-size: 20px;">${data.commodity} Price ${data.alertType === 'above' ? 'Rose Above' : 'Fell Below'} Target</h2>
+                <h2 style="color: #166534; margin: 0 0 10px; font-size: 20px;">${esc(data.commodity || '')} Price ${esc(data.alertType || '') === 'above' ? 'Rose Above' : 'Fell Below'} Target</h2>
               </div>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Commodity</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">${data.commodity}</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">${esc(data.commodity || '')}</td>
                 </tr>
                 <tr>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Current Price</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #16a34a;">₹${data.currentPrice}/quintal</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #16a34a;">₹${esc(String(data.currentPrice || ''))}/quintal</td>
                 </tr>
                 <tr>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Your Target</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">₹${data.targetPrice}/quintal</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">₹${esc(String(data.targetPrice || ''))}/quintal</td>
                 </tr>
               </table>
               <div style="margin-top: 25px; text-align: center;">
@@ -147,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
         </html>
       `;
     } else {
-      subject = `⛈️ Weather Alert: ${data.location}`;
+      subject = `⛈️ Weather Alert: ${esc(data.location || '')}`;
       html = `
         <!DOCTYPE html>
         <html>
@@ -168,15 +172,15 @@ const handler = async (req: Request): Promise<Response> => {
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Location</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">${data.location}</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #111827;">${esc(data.location || '')}</td>
                 </tr>
                 <tr>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Condition</td>
-                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #f59e0b;">${data.weatherCondition}</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #f59e0b;">${esc(data.weatherCondition || '')}</td>
                 </tr>
               </table>
               <div style="background: #fef9c3; padding: 15px; border-radius: 8px; margin-top: 20px;">
-                <p style="color: #713f12; margin: 0; font-size: 14px;">${data.message}</p>
+                <p style="color: #713f12; margin: 0; font-size: 14px;">${esc(data.message || '')}</p>
               </div>
               <div style="margin-top: 25px; text-align: center;">
                 <p style="color: #6b7280; font-size: 14px;">Protect your crops and livestock accordingly!</p>
@@ -198,9 +202,9 @@ const handler = async (req: Request): Promise<Response> => {
       html,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully");
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...headers },
     });

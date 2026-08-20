@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { getCropImage, getCropCategory } from "./crop-images";
 
 const RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070";
@@ -299,8 +299,8 @@ async function fetchFromGovt(query?: string): Promise<MandiPrice[]> {
 async function fetchFromEdge(searchQuery?: string): Promise<MandiPrice[]> {
   log(`[Mandi Edge Request] Invoking edge function 'mandi-prices' with query: '${searchQuery || ""}'`);
   try {
-    const { data: result, error } = await supabase.functions.invoke("mandi-prices", {
-      body: { searchQuery: searchQuery || "" },
+    const { data: result, error } = await invokeEdgeWithTimeout("mandi-prices", {
+      searchQuery: searchQuery || "",
     });
 
     if (error) throw error;

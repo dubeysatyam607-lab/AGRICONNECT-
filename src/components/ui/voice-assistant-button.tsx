@@ -76,6 +76,11 @@ export const VoiceAssistantButton: React.FC<VoiceAssistantButtonProps> = ({
         URL.revokeObjectURL(url);
       };
 
+      audio.onerror = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(url);
+      };
+
       await audio.play();
       setIsPlaying(true);
     } catch (error) {

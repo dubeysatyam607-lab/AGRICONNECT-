@@ -43,7 +43,7 @@ export default async function reverseGeocode(
   const timer = setTimeout(() => controller.abort(), 10000);
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'AgriConnect/1.0 (https://agriconnect.in)' },
+      headers: { 'User-Agent': 'AgriConnect/1.0 (https://agriconnect-navy-six.vercel.app)' },
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`Reverse geocoding failed (${res.status})`);

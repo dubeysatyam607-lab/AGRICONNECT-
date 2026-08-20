@@ -13,9 +13,13 @@ export async function validateAuth(req: Request): Promise<AuthResult> {
     return { authenticated: false, error: 'Missing or invalid authorization header' };
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
   
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return { authenticated: false, error: 'Server configuration error' };
+  }
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } }
   });
@@ -23,13 +27,13 @@ export async function validateAuth(req: Request): Promise<AuthResult> {
   const token = authHeader.replace('Bearer ', '');
   
   try {
-    const { data, error } = await supabase.auth.getClaims(token);
-    
-    if (error || !data?.claims) {
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data?.user) {
       return { authenticated: false, error: 'Invalid or expired token' };
     }
 
-    return { authenticated: true, userId: data.claims.sub };
+    return { authenticated: true, userId: data.user.id };
   } catch (error) {
     console.error('Auth validation error:', error);
     return { authenticated: false, error: 'Authentication failed' };

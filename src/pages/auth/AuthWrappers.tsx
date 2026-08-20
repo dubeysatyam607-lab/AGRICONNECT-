@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 /** Wrapper page for Login */
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading } = useAuth();
 
   React.useEffect(() => {
@@ -26,7 +27,10 @@ export const LoginPage: React.FC = () => {
     );
   }
 
-  const handleSuccess = () => navigate('/', { replace: true });
+  const handleSuccess = () => {
+    const from = (location.state as { from?: string })?.from;
+    navigate(from || '/', { replace: true });
+  };
   return (
     <LoginView
       onSwitchToSignUp={() => navigate('/auth/register')}
@@ -75,6 +79,22 @@ export const OtpPage: React.FC = () => {
   const type = state.type ?? 'email';
   const handleSuccess = () => navigate('/', { replace: true });
   const handleBack = () => navigate('/auth/login');
+
+  // If no target (direct navigation / page refresh), redirect to login
+  React.useEffect(() => {
+    if (!target) {
+      navigate('/auth/login', { replace: true });
+    }
+  }, [target, navigate]);
+
+  if (!target) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0B1F14] text-white">
+        <span className="h-8 w-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <OtpVerificationView
       target={target}
@@ -101,9 +121,11 @@ export const ForgotPasswordPage: React.FC = () => {
 /** Wrapper page for Change/Reset Password (used after email link) */
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
-  const query = new URLSearchParams(window.location.search);
-  const token = query.get('access_token') ?? '';
-  const type = (query.get('type') as 'recovery' | 'magiclink') ?? 'recovery';
+  // Supabase puts tokens in the hash fragment (#access_token=...), not query params
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const queryParams = new URLSearchParams(window.location.search);
+  const token = hashParams.get('access_token') ?? queryParams.get('access_token') ?? '';
+  const type = (hashParams.get('type') ?? queryParams.get('type') as 'recovery' | 'magiclink') ?? 'recovery';
   const handleSuccess = () => navigate('/auth/login');
   return (
     <ChangePasswordView

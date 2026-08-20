@@ -5,7 +5,7 @@ import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts"
 
 // Get allowed origins from environment
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -53,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     webpush.setVapidDetails(
-      "mailto:support@agriconnect.in",
+      "mailto:hello.agriconnect@gmail.com",
       vapidPublicKey,
       vapidPrivateKey
     );

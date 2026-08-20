@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppButton } from '@/shared/widgets/AppButton';
 import { AppCard } from '@/shared/widgets/AppCard';
 import { FadeIn } from '@/shared/widgets/AppAnimations';
@@ -6,25 +6,62 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 import { PasswordStrength } from '../components/PasswordStrength';
 import { isPasswordStrong } from '@/utils/passwordPolicy';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Enterprise Change Password View / Modal.
- * Secure password change interface with real-time strength meter and confirmation matching.
+ * When used for password recovery (token + type='recovery' from email link),
+ * establishes a session from the recovery token before allowing password change.
  */
 interface IChangePasswordViewProps {
+  token?: string;
+  type?: 'recovery' | 'magiclink' | 'signup';
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSuccess, onCancel }) => {
+export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, type, onSuccess, onCancel }) => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
+  const [isRecoverySession, setIsRecoverySession] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
 
   const [state, { changePassword, clearError }] = useAuthViewModel();
   const { t } = useLanguage();
   const [fieldError, setFieldError] = useState<string | null>(null);
+
+  // For recovery flows: establish session from token so updateUser works
+  useEffect(() => {
+    if (type === 'recovery' && token && !isRecoverySession) {
+      // The hash fragment contains access_token + refresh_token
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const refreshToken = hashParams.get('refresh_token') ?? '';
+      if (refreshToken) {
+        supabase.auth.setSession({
+          access_token: token,
+          refresh_token: refreshToken,
+        }).then(({ error }) => {
+          if (error) {
+            console.error('[ChangePasswordView] Failed to set recovery session:', error);
+            setSessionError('Recovery link has expired or is invalid. Please request a new one.');
+          } else {
+            setIsRecoverySession(true);
+            // Clean the hash from URL
+            window.history.replaceState({}, '', window.location.pathname + window.location.search);
+          }
+        });
+      } else {
+        setSessionError('Recovery link is invalid. Please request a new password reset link.');
+      }
+    }
+  }, [token, type, isRecoverySession]);
+
+  const isRecovery = type === 'recovery';
+  const canSubmit = isRecovery
+    ? newPassword && newPassword === confirmPassword && isPasswordStrong(newPassword)
+    : oldPassword && newPassword && newPassword === confirmPassword && isPasswordStrong(newPassword);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +70,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
       setFieldError('Password does not meet strength requirements');
       return;
     }
-    const success = await changePassword(oldPassword, newPassword, confirmPassword);
+    const success = await changePassword(isRecovery ? '' : oldPassword, newPassword, confirmPassword);
     if (success && onSuccess) {
       onSuccess();
     }
@@ -62,6 +99,11 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
           )}
         </div>
 
+        {sessionError && (
+          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium">
+            ⚠️ {sessionError}
+          </div>
+        )}
         {state.error && (
           <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium animate-shake">
             ⚠️ {state.error}
@@ -74,6 +116,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isRecovery && (
           <div className="space-y-1">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {t('chpw.current')}
@@ -88,6 +131,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
               className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
             />
           </div>
+          )}
 
           <div className="space-y-1">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -152,7 +196,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ onSucce
               size="md"
               fullWidth
               isLoading={state.isLoading}
-              disabled={!oldPassword || !newPassword || newPassword !== confirmPassword || !isPasswordStrong(newPassword)}
+              disabled={!canSubmit || (isRecovery && !isRecoverySession && !sessionError) || (!isRecovery && !oldPassword)}
             >
               {t('chpw.update')}
             </AppButton>

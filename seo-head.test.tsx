@@ -37,25 +37,25 @@ describe('SeoHead — title handling', () => {
 describe('SeoHead — canonical handling', () => {
   it('honours an explicit canonical path', () => {
     render(<SeoHead title="Pricing" description="d" canonical="/pricing" />);
-    expect(canonicalLink()).toBe('https://agriconnect.in/pricing');
+    expect(canonicalLink()).toBe('https://agriconnect-navy-six.vercel.app/pricing');
   });
 
   it('auto-derives the canonical from the current pathname', () => {
     window.history.replaceState({}, '', '/about');
     render(<SeoHead title="About" description="d" />);
-    expect(canonicalLink()).toBe('https://agriconnect.in/about');
+    expect(canonicalLink()).toBe('https://agriconnect-navy-six.vercel.app/about');
   });
 
   it('replaces a stale static canonical instead of appending a second one', () => {
     const stale = document.createElement('link');
     stale.rel = 'canonical';
-    stale.href = 'https://agriconnect.in/';
+    stale.href = 'https://agriconnect-navy-six.vercel.app/';
     document.head.appendChild(stale);
 
     render(<SeoHead title="Contact" description="d" canonical="/contact" />);
     const links = document.head.querySelectorAll('link[rel="canonical"]');
     expect(links.length).toBe(1);
-    expect(links[0].getAttribute('href')).toBe('https://agriconnect.in/contact');
+    expect(links[0].getAttribute('href')).toBe('https://agriconnect-navy-six.vercel.app/contact');
   });
 });
 
@@ -64,7 +64,7 @@ describe('SeoHead — meta directives', () => {
     render(<SeoHead title="Home" description="d" />);
     expect(meta('name', 'theme-color')).toBe(SITE_CONFIG.themeColor);
     expect(meta('property', 'og:image:alt')).toBe(SITE_CONFIG.ogImageAlt);
-    expect(meta('property', 'og:url')).toBe('https://agriconnect.in/');
+    expect(meta('property', 'og:url')).toBe('https://agriconnect-navy-six.vercel.app/');
   });
 
   it('defaults robots to index, follow', () => {
@@ -80,7 +80,7 @@ describe('SeoHead — meta directives', () => {
 
   it('uses the canonical URL for og:url so the two never diverge', () => {
     render(<SeoHead title="Faq" description="d" canonical="/faq" />);
-    expect(meta('property', 'og:url')).toBe('https://agriconnect.in/faq');
+    expect(meta('property', 'og:url')).toBe('https://agriconnect-navy-six.vercel.app/faq');
   });
 });
 

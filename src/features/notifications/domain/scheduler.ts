@@ -253,7 +253,7 @@ function generateFarmReminders(): void {
     severity: 'info',
     titleKey: map.titleKey,
     bodyKey: map.bodyKey,
-    params: { crop: 'soybean', day: new Date().toLocaleDateString('en-IN', { weekday: 'long' }) },
+    params: { crop: 'your crop', day: new Date().toLocaleDateString('en-IN', { weekday: 'long' }) },
     dedupeKey: `${type}-${todayKey()}`,
     actions: [actionView('crop-calendar')],
   });

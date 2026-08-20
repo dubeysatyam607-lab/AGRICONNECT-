@@ -58,7 +58,7 @@ const CropDoctor: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { languageName } = useLanguage();
+  const { languageName, t } = useLanguage();
 
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
@@ -198,8 +198,8 @@ const CropDoctor: React.FC = () => {
 
     const { data, error: err } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
       "crop-doctor",
-      { description: input, imageBase64 },
-      20000,
+      { description: input, imageBase64, language: languageName },
+      30000,
     );
 
     setIsLoading(false);

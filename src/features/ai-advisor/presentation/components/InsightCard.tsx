@@ -86,19 +86,18 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
           <h3 className="mt-1 text-sm font-black text-foreground">{title}</h3>
           <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{body}</p>
 
-          {/* Confidence meter */}
+          {/* FIX 6: Trust signal instead of raw confidence % */}
           <div className="mt-3 flex items-center gap-2">
-            <div className="flex h-1.5 w-24 overflow-hidden rounded-full bg-muted">
-              <div
-                className={cn(
-                  'h-full rounded-full transition-all',
-                  insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 55 ? 'bg-amber-500' : 'bg-rose-500',
-                )}
-                style={{ width: `${insight.confidence}%` }}
-              />
-            </div>
+            <span className={cn(
+              'h-1.5 w-1.5 rounded-full',
+              insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 55 ? 'bg-amber-500' : 'bg-rose-500',
+            )} />
             <span className="text-[10px] font-black text-muted-foreground">
-              {t('adv.confidence')} {insight.confidence}% · {t(`adv.confidenceLabel.${CONFIDENCE_LABEL(insight.confidence)}`)}
+              {insight.confidence >= 80
+                ? 'Verified recommendation'
+                : insight.confidence >= 65
+                  ? 'High confidence · Based on your farm data'
+                  : 'Based on your farm data'}
             </span>
           </div>
 

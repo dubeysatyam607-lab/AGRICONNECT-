@@ -131,8 +131,18 @@ const SoilHealthCard: React.FC<SoilHealthCardProps> = ({ onClose, onToast }) => 
     const k = parseFloat(potassium);
     const phVal = parseFloat(ph);
 
-    if (!n || !p || !k) {
-      onToast(lang === "hi" ? "कृपया N, P, K मान दर्ज करें" : "Please enter N, P, K values");
+    if (!n || !p || !k || isNaN(n) || isNaN(p) || isNaN(k)) {
+      onToast(lang === "hi" ? "कृपया N, P, K मान दर्ज करें" : "Please enter valid N, P, K numeric values");
+      return;
+    }
+
+    // Validate all inputs are finite positive numbers to prevent prompt injection
+    if (!Number.isFinite(n) || !Number.isFinite(p) || !Number.isFinite(k) || n < 0 || p < 0 || k < 0) {
+      onToast(lang === "hi" ? "मान सकारात्मक संख्या होने चाहिए" : "Values must be positive numbers");
+      return;
+    }
+    if (phVal && (isNaN(phVal) || phVal < 0 || phVal > 14 || !Number.isFinite(phVal))) {
+      onToast(lang === "hi" ? "pH मान 0-14 के बीच होना चाहिए" : "pH must be between 0 and 14");
       return;
     }
 
