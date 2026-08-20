@@ -12,24 +12,36 @@ interface LaborHireProps {
   onToast: (message: string) => void;
 }
 
+interface Laborer {
+  id: string;
+  name: string;
+  location: string;
+  skill: string;
+  rate: string | number;
+  count: number;
+  status: string;
+}
+
 const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
   const { t } = useLanguage();
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [laborersList, setLaborersList] = useState([]);
-  
+  const [laborersList, setLaborersList] = useState<Laborer[]>([]);
 
   useEffect(() => {
     const fetchLaborers = async () => {
-      const { data, error } = await supabase.from('laborers').select('*').returns<typeof LABORERS>();
-      if (data && !error && data.length > 0) {
-        setLaborersList(data);
-        
+      try {
+        const { data, error } = await supabase.from('laborers').select('*').returns<Laborer[]>();
+        if (data && !error && data.length > 0) {
+          setLaborersList(data);
+        }
+      } catch {
+        // Silently handle offline/no data
       }
     };
     fetchLaborers();
   }, []);
 
-  const handleContactLabor = (labor: typeof LABORERS[0]) => {
+  const handleContactLabor = (labor: Laborer) => {
     onToast(`Contacting ${labor.name}...`);
     window.open('https://nrega.nic.in/', '_blank', 'noopener,noreferrer');
   };
@@ -79,8 +91,6 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
           <ExternalLink size={14} /> MGNREGA Portal
         </AgriButton>
       </div>
-
-
 
       <div className="space-y-4">
         {laborersList.map((labor) => (

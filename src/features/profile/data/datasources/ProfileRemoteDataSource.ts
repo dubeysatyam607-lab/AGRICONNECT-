@@ -156,10 +156,12 @@ export class ProfileRemoteDataSource {
       });
 
       if (error) {
-        console.warn('[ProfileRemoteDataSource] Supabase upsert error:', error);
+        console.error('[ProfileRemoteDataSource] Supabase upsert error:', error.message);
+        throw new Error(`Failed to save profile: ${error.message}`);
       }
     } catch (e) {
-      console.warn('[ProfileRemoteDataSource] Offline mode: profile saved locally.');
+      if (e instanceof Error && e.message.startsWith('Failed to save')) throw e;
+      console.error('[ProfileRemoteDataSource] Network error, profile saved locally only');
     }
     return profile;
   }

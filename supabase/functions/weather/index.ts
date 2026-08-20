@@ -3,16 +3,20 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts";
 import { weatherRequestSchema, parseAndValidate } from "../_shared/validators.ts";
 
-const ALLOWED_ORIGINS = [
-  'https://agriconnect-navy-six.vercel.app',
-  'https://agriconnect-navy-six-*.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-];
+const ALLOWED_ORIGINS = (
+  Deno.env.get("ALLOWED_ORIGINS") ||
+  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
+).split(",").map(o => o.trim());
 
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
-  return ALLOWED_ORIGINS.some(o => origin === o || origin.endsWith('.' + new URL(o).hostname));
+  return ALLOWED_ORIGINS.some(o => {
+    if (o.includes("*")) {
+      const prefix = o.replace("*", "");
+      return origin.startsWith(prefix);
+    }
+    return o === origin;
+  });
 }
 
 function getCorsHeaders(origin: string | null) {

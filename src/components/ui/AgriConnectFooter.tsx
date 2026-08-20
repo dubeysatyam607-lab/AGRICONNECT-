@@ -280,31 +280,30 @@ const AgriConnectFooter: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <a
-                href="/"
-                aria-label="Download AgriConnect on Google Play"
-                className="inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow"
+              <div
+                className="relative inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card select-none opacity-90"
               >
                 <PlayBadge />
                 <span className="text-left leading-tight">
-                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">Get it on</span>
-                  <span className="block text-[13px] font-bold">Google Play</span>
+                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">Google Play</span>
+                  <span className="block text-[13px] font-bold">Android App</span>
                 </span>
-              </a>
-              <a
-                href="/"
-                aria-label="AgriConnect on the App Store — coming soon"
-                className="relative inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow"
+                <span className="absolute -top-2 right-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                  Coming Soon
+                </span>
+              </div>
+              <div
+                className="relative inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card select-none opacity-90"
               >
                 <AppleBadge />
                 <span className="text-left leading-tight">
-                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">Download on</span>
-                  <span className="block text-[13px] font-bold">App Store</span>
+                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">App Store</span>
+                  <span className="block text-[13px] font-bold">iOS App</span>
                 </span>
                 <span className="absolute -top-2 right-2 rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-950">
                   Coming Soon
                 </span>
-              </a>
+              </div>
             </div>
           </div>
 

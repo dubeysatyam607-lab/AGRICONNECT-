@@ -157,6 +157,8 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
             await load();
           } catch (e: any) {
             onToast?.(e.message ?? 'Payment verification failed');
+          } finally {
+            setAdding(false);
           }
         },
         modal: { ondismiss: () => setAdding(false) },

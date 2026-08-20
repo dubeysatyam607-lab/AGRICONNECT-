@@ -20,27 +20,6 @@ const About: React.FC = () => {
     },
   ];
 
-  const handleDownloadPressKit = () => {
-    // Generate simple press kit text package / download trigger
-    const pressContent = `AgriConnect — Press & Media Kit (2026)
-Mission: Making AI work for every Indian farmer, in their language, for free.
-Founded: 2026 | Version: 1.0 (Launched August 2026)
-Audience: Built for India's 150 million farming families.
-Key Features: Live Mandi Bhav, Hyperlocal Weather, AI Crop Disease Detection, Tractor & Machinery Rental, Government Scheme Alerts.
-Contact: hello.agriconnect@gmail.com | +91-7067820256
-Website: https://agriconnect-navy-six.vercel.app`;
-
-    const blob = new Blob([pressContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'AgriConnect-Press-Kit.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <>
       <SeoHead
@@ -80,12 +59,12 @@ Website: https://agriconnect-navy-six.vercel.app`;
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 items-center">
-              <button
-                onClick={handleDownloadPressKit}
+              <a
+                href="/contact"
                 className="inline-flex items-center gap-2 rounded-xl bg-white text-emerald-900 px-5 py-3 font-bold text-sm shadow-md hover:bg-emerald-50 transition"
               >
-                <Download size={16} /> Download Press Kit
-              </button>
+                Contact Team
+              </a>
               <a
                 href="mailto:hello.agriconnect@gmail.com"
                 className="inline-flex items-center gap-2 rounded-xl bg-white/15 border border-white/25 text-white px-5 py-3 font-bold text-sm hover:bg-white/25 transition"

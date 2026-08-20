@@ -51,10 +51,10 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ onToast }) 
     const success = await subscribe(priceAlerts, weatherAlerts);
     if (success) {
       toast({ title: 'Notifications Enabled', description: 'You will receive price and weather alerts.' });
-      // Show a test notification
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         showNotification('🌾 AgriConnect', 'Notifications are now active! You\'ll receive important alerts.');
       }, 1000);
+      return () => clearTimeout(timer);
     } else {
       toast({ title: 'Permission Denied', description: 'Please allow notifications in your browser settings.', variant: 'destructive' });
     }

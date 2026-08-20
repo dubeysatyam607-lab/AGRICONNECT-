@@ -329,7 +329,8 @@ const ChatModal = ({ owner, tractorName, onClose, t }: {
       "Ok, noted. I will reach your village by evening. Keep your field cleared.",
     ];
     const reply = replies[Math.floor(Math.random() * replies.length)];
-    setTimeout(() => setMsgs(m => [...m, { from: "owner", text: reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]), 900);
+    const replyTimer = setTimeout(() => setMsgs(m => [...m, { from: "owner", text: reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]), 900);
+    return () => clearTimeout(replyTimer);
   };
 
   const quick = ["Is the tractor available today?", "Can you send a driver?", "What is the rate for 5 acres?", "Can you deliver to my village?"];

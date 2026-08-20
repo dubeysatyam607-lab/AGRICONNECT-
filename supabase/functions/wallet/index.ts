@@ -16,9 +16,9 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     return o === origin;
   }) ? origin : null;
   return {
-    "Access-Control-Allow-Origin": allowed ?? "https://agriconnect-navy-six.vercel.app",
+    "Access-Control-Allow-Origin": allowed ?? "",
     "Access-Control-Allow-Headers": "authorization, x-client-info, content-type, x-razorpay-signature",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "86400",
   };
 }

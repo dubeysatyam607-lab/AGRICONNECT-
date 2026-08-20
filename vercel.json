@@ -5,14 +5,6 @@
       "maxDuration": 30
     }
   },
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "agriconnect-navy-six.vercel.app" }],
-      "destination": "https://agriconnect.in/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
