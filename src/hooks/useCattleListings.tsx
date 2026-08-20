@@ -128,10 +128,12 @@ export const useCattleListings = () => {
     // Get old data for audit log
     const oldListing = myListings.find(l => l.id === id);
     
+    // Defense-in-depth: filter by seller_id even though RLS enforces ownership
     const { error } = await supabase
       .from('cattle_listings')
       .update(updates)
-      .eq('id', id);
+      .eq('id', id)
+      .eq('seller_id', user?.id ?? '');
 
     if (error) throw error;
     
@@ -151,10 +153,12 @@ export const useCattleListings = () => {
     // Get old data for audit log
     const oldListing = myListings.find(l => l.id === id);
     
+    // Defense-in-depth: filter by seller_id even though RLS enforces ownership
     const { error } = await supabase
       .from('cattle_listings')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('seller_id', user?.id ?? '');
 
     if (error) throw error;
     

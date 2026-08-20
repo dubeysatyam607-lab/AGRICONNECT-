@@ -207,8 +207,9 @@ serve(async (req) => {
     try {
       const order = await createRazorpayOrder(amount, userId);
       return json({ orderId: order.id, amount: order.amount / 100, key: RAZORPAY_KEY_ID }, 200, cors);
-    } catch (err: any) {
-      return json({ error: err.message }, 502, cors);
+    } catch (err: unknown) {
+      console.error("Razorpay order creation failed:", err);
+      return json({ error: "Failed to create payment order. Please try again." }, 502, cors);
     }
   }
 
@@ -274,11 +275,30 @@ serve(async (req) => {
     if (role !== "admin") {
       return json({ error: "Forbidden: admin access required" }, 403, cors);
     }
+    // Input validation for admin-adjust
+    const targetUserId = body.userId;
+    const amount = Number(body.amount);
+    const direction = body.direction;
+    const reason = body.reason;
+
+    if (!targetUserId || typeof targetUserId !== "string" || !/^[0-9a-f-]{36}$/i.test(targetUserId)) {
+      return json({ error: "Invalid user ID format" }, 400, cors);
+    }
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1000000) {
+      return json({ error: "Invalid amount (must be 1-1000000)" }, 400, cors);
+    }
+    if (direction !== "in" && direction !== "out") {
+      return json({ error: "Invalid direction (must be 'in' or 'out')" }, 400, cors);
+    }
+    if (!reason || typeof reason !== "string" || reason.trim().length < 5 || reason.length > 500) {
+      return json({ error: "Reason must be 5-500 characters" }, 400, cors);
+    }
+
     const { data, error } = await supabase.rpc("wallet_admin_adjust", {
-      p_user_id: body.userId,
-      p_amount: Number(body.amount),
-      p_direction: body.direction,
-      p_reason: body.reason,
+      p_user_id: targetUserId,
+      p_amount: amount,
+      p_direction: direction,
+      p_reason: reason.trim(),
     });
     if (error) return json({ error: error.message }, error.code === "42501" ? 403 : 500, cors);
     return json({ ok: true, transaction: data }, 200, cors);

@@ -154,9 +154,8 @@ serve(async (req) => {
 
   } catch (error: unknown) {
     console.error("Contact seller error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get contact info";
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: "Failed to get contact info. Please try again." }),
       { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }

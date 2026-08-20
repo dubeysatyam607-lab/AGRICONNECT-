@@ -328,6 +328,7 @@ export const hi: JourneyDict = {
   'svc.storeSub': 'बीज · सामग्री · औज़ार',
   'svc.schemes': 'सरकारी योजनाएँ',
   'svc.schemesSub': 'सब्सिडी और लाभ',
+    'svc.cropDoctorSub': 'तत्काल रोग पहचान',
   'svc.cropDoctor': 'फसल स्कैन',
   'svc.transport': 'परिवहन',
   'svc.loans': 'कर्ज़',

@@ -416,10 +416,34 @@ serve(async (req) => {
         if (!authResult.authenticated) {
           return authErrorResponse("Authentication required", headers);
         }
-        const order = ORDERS.get(String(body.orderId || ""));
-        if (!order || (order.userId && order.userId !== authResult.userId)) {
-          return bad("Order not found", 404);
+        const orderId = String(body.orderId || "");
+        if (!orderId) return bad("orderId is required", 400);
+
+        // Try in-memory first, then DB fallback
+        let order = ORDERS.get(orderId);
+        if (order && order.userId !== authResult.userId) return bad("Order not found", 404);
+
+        if (!order) {
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL");
+            const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            if (supabaseUrl && supabaseKey) {
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data } = await supabase
+                .from("transport_bookings")
+                .select("*")
+                .eq("id", orderId)
+                .single();
+              if (data && data.name) {
+                order = { id: data.id, userId: data.name, status: data.date || "confirmed" };
+              }
+            }
+          } catch {
+            // fall back to in-memory only
+          }
         }
+
+        if (!order) return bad("Order not found", 404);
         return new Response(JSON.stringify({ tracking: buildTracking(order.id as string, 500, Date.now()) }), { headers });
       }
 
@@ -451,7 +475,6 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error("Agri market function error:", error);
-    const msg = error instanceof Error ? error.message : "Internal error";
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), { status: 500, headers });
   }
 });

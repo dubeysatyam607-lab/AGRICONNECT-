@@ -13,8 +13,13 @@ import { SocialAuthUseCase } from '../../domain/usecases/SocialAuthUseCase';
 import { ManageSessionsUseCase } from '../../domain/usecases/ManageSessionsUseCase';
 import { ErrorHandler } from '@/core/errors/ErrorHandler';
 import { snackbarService } from '@/core/services/SnackbarService';
-import { supabase } from '@/integrations/supabase/client';
-import { sessionManager } from '@/core/auth/SessionManager';
+import { useAuth, useOptionalAuth } from '@/hooks/useAuth';
+
+/* useAuthViewModel now consumes the centralized AuthProvider context via
+ * useAuth() instead of subscribing to supabase.auth.onAuthStateChange
+ * independently. This eliminates the dual-subscription race condition where
+ * two separate listeners could get out of sync and cause inconsistent auth
+ * state across the application. */
 
 /**
  * Enterprise MVVM Reactive ViewModel for Authentication.
@@ -45,6 +50,12 @@ export interface IAuthViewModelActions {
 }
 
 export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions] {
+  // Use the centralized AuthProvider context when available.
+  const authContext = useOptionalAuth();
+  const authUser = authContext?.user ?? null;
+  const authSession = authContext?.session ?? null;
+  const authLoading = authContext?.loading ?? false;
+
   const [state, setState] = useState<IAuthViewModelState>({
     user: null,
     isLoading: false,
@@ -63,57 +74,30 @@ export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions]
   const socialAuthUseCase = inject<SocialAuthUseCase>(DI_TOKENS.SocialAuthUseCase);
   const manageSessionsUseCase = inject<ManageSessionsUseCase>(DI_TOKENS.ManageSessionsUseCase);
 
+  // Sync with centralized auth state from AuthProvider
   useEffect(() => {
-    let mounted = true;
-    const checkSession = async () => {
-      try {
-        const isExpired = await sessionManager.isSessionExpiredWithoutRemember();
-        if (isExpired) {
-          await authRepository.signOut();
-          if (mounted) {
-            setState(prev => ({ ...prev, user: null, isAuthenticated: false, isInitializing: false }));
-          }
-          return;
-        }
+    if (authLoading) return; // Wait for auth to resolve
 
-        const session = await authRepository.getCurrentSession();
-        if (mounted) {
-          setState(prev => ({
-            ...prev,
-            user: session?.user || null,
-            isAuthenticated: !!session?.user,
-            isInitializing: false,
-          }));
-          if (session) {
-            await sessionManager.startSessionMonitor(session);
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(prev => ({ ...prev, isInitializing: false }));
-        }
-      }
-    };
+    // Map Supabase User to IFarmerUser for the ViewModel
+    const mappedUser: IFarmerUser | null = authUser ? {
+      id: authUser.id,
+      email: authUser.email || '',
+      fullName: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Farmer',
+      phone: authUser.user_metadata?.phone || '',
+      avatarUrl: authUser.user_metadata?.avatar_url,
+      role: (authUser.user_metadata?.role as any) || 'farmer',
+      isEmailVerified: !!authUser.email_confirmed_at,
+      isPhoneVerified: !!authUser.phone_confirmed_at,
+      createdAt: authUser.created_at || new Date().toISOString(),
+    } : null;
 
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (mounted && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT')) {
-        const currentUser = session ? await authRepository.getCurrentUser() : null;
-        setState(prev => ({
-          ...prev,
-          user: currentUser,
-          isAuthenticated: !!currentUser,
-          isLoading: false,
-        }));
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [authRepository]);
+    setState(prev => ({
+      ...prev,
+      user: mappedUser,
+      isAuthenticated: !!mappedUser,
+      isInitializing: false,
+    }));
+  }, [authUser, authLoading]);
 
   const signIn = useCallback(async (email: string, pass: string, rememberMe: boolean = true): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));

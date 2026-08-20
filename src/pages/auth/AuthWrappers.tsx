@@ -7,6 +7,23 @@ import { ForgotPasswordView } from '@/features/auth/presentation/views/ForgotPas
 import { ChangePasswordView } from '@/features/auth/presentation/views/ChangePasswordView';
 import { useAuth } from '@/hooks/useAuth';
 
+/** Sanitize a redirect path to prevent open-redirect attacks.
+ *  Only allows relative paths starting with '/' and blocks protocol-relative URLs. */
+function sanitizeRedirectPath(path: string | undefined): string {
+  if (!path || typeof path !== 'string') return '/';
+  // Must start with '/' and not be '//' (protocol-relative) or contain '://'
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('://')) {
+    return '/';
+  }
+  // Normalize to prevent path traversal (e.g., /../../../etc)
+  try {
+    const normalized = new URL(path, window.location.origin).pathname;
+    return normalized.startsWith('/') ? normalized : '/';
+  } catch {
+    return '/';
+  }
+}
+
 /** Wrapper page for Login */
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,8 +45,9 @@ export const LoginPage: React.FC = () => {
   }
 
   const handleSuccess = () => {
-    const from = (location.state as { from?: string })?.from;
-    navigate(from || '/', { replace: true });
+    const raw = (location.state as { from?: string })?.from;
+    const safePath = sanitizeRedirectPath(raw);
+    navigate(safePath, { replace: true });
   };
   return (
     <LoginView

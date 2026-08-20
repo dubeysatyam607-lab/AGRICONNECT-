@@ -327,6 +327,7 @@ export const gu: JourneyDict = {
   'svc.storeSub': 'બિયારણ · ઇનપુટ · સાધનો',
   'svc.schemes': 'સરકારી યોજનાઓ',
   'svc.schemesSub': 'સબસિડી અને લાભ',
+    'svc.cropDoctorSub': 'ત્વરિત રોગ નિદાન',
   'svc.cropDoctor': 'પાક સ્કેન',
   'svc.transport': 'પરિવહન',
   'svc.loans': 'લોન',

@@ -585,8 +585,56 @@ serve(async (req) => {
       case "track": {
         const authResult = await validateAuth(req);
         if (!authResult.authenticated) return authErrorResponse("Authentication required", headers);
-        const booking = BOOKINGS.get(String(body.bookingId || ""));
-        if (!booking || booking.userId !== authResult.userId) return bad("Booking not found", 404);
+        const bookingId = String(body.bookingId || "");
+        if (!bookingId) return bad("bookingId is required", 400);
+
+        // Try in-memory first, then fall back to DB for persisted bookings
+        let booking = BOOKINGS.get(bookingId);
+        if (booking && booking.userId !== authResult.userId) return bad("Booking not found", 404);
+
+        if (!booking) {
+          // DB fallback: query by id + user_id to enforce ownership server-side
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL");
+            const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            if (supabaseUrl && supabaseKey) {
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data } = await supabase
+                .from("tractor_bookings")
+                .select("*")
+                .eq("id", bookingId)
+                .eq("user_id", authResult.userId)
+                .single();
+              if (data) {
+                booking = {
+                  id: data.id,
+                  tractorId: data.tractor_id,
+                  tractorName: data.tractor_name,
+                  category: data.category,
+                  ownerId: data.owner_id,
+                  ownerName: data.owner_name,
+                  userName: data.user_name,
+                  hours: data.hours,
+                  acres: data.acres,
+                  address: data.address,
+                  paymentMethod: data.payment_method,
+                  withDriver: data.with_driver,
+                  baseFare: data.base_fare,
+                  fuelSurcharge: data.fuel_surcharge,
+                  driverCharge: data.driver_charge,
+                  deposit: data.deposit,
+                  total: data.total,
+                  status: data.status,
+                  userId: data.user_id,
+                };
+              }
+            }
+          } catch {
+            // fall back to in-memory only
+          }
+        }
+
+        if (!booking) return bad("Booking not found", 404);
         return new Response(JSON.stringify({ tracking: await buildTracking(booking, Date.now()) }), { headers });
       }
 

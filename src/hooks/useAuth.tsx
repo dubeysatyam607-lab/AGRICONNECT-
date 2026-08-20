@@ -106,9 +106,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const ip = undefined; // TODO: retrieve client IP if needed
     try {
-      await authRemoteDataSource.signIn(email, password, ip);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        return { error: error.message };
+      }
+      // Session will be updated by onAuthStateChange listener
       return { error: null };
     } catch (err: any) {
       return { error: err?.message || 'Sign in failed. Please try again.' };

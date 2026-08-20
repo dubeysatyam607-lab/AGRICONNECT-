@@ -43,16 +43,16 @@ const ALERTS = [
 //   --feature-ai (purple), --feature-mandi (emerald), --feature-weather (sky),
 //   --feature-tractor (orange), --feature-schemes (indigo), --feature-loans (amber).
 const PRIMARY_SERVICES = [
+  { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor", subKey: "svc.cropDoctorSub", token: "--feature-doctor" },
   { id: "ai-chat", icon: Bot, labelKey: "svc.aiChat", subKey: "svc.aiChatSub", token: "--feature-ai" },
-  { id: "mandi", icon: TrendingUp, labelKey: "svc.mandi", subKey: "svc.mandiSub", token: "--feature-mandi" },
   { id: "weather", icon: CloudSun, labelKey: "svc.weather", subKey: "svc.weatherSub", token: "--feature-weather" },
+  { id: "mandi", icon: TrendingUp, labelKey: "svc.mandi", subKey: "svc.mandiSub", token: "--feature-mandi" },
   { id: "tractors", icon: Tractor, labelKey: "svc.tractors", subKey: "svc.tractorsSub", token: "--feature-tractor" },
-  { id: "store", icon: ShoppingBag, labelKey: "svc.store", subKey: "svc.storeSub", token: "--feature-schemes" },
-  { id: "schemes", icon: Landmark, labelKey: "svc.schemes", subKey: "svc.schemesSub", token: "--feature-loans" },
+  { id: "store", icon: ShoppingBag, labelKey: "svc.store", subKey: "svc.storeSub", token: "--feature-store" },
 ] as const;
 
 const SECONDARY_SERVICES = [
-  { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor" },
+  { id: "schemes", icon: Landmark, labelKey: "svc.schemes" },
   { id: "transport", icon: Truck, labelKey: "svc.transport" },
   { id: "loans", icon: Coins, labelKey: "svc.loans" },
   { id: "news", icon: Newspaper, labelKey: "svc.news" },

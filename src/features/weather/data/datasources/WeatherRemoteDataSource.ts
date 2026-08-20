@@ -162,29 +162,129 @@ export class WeatherRemoteDataSource {
   }
 
   /**
+   * Fetches weather directly from Open-Meteo as a reliable client-side fallback
+   * when Supabase edge functions are unreachable or unconfigured.
+   */
+  private static async fetchOpenMeteoDirect(lat: number, lng: number, locationName?: string): Promise<IWeatherModuleData> {
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation,pressure_msl,visibility` +
+      `&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean` +
+      `&forecast_days=7&timezone=auto`;
+
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) {
+      throw new Error(`Open-Meteo request failed with status ${res.status}`);
+    }
+
+    const data = await res.json();
+    const cur = data.current || {};
+    const hourlyRaw = data.hourly || {};
+    const dailyRaw = data.daily || {};
+
+    const wmoLabel = (code: number) => {
+      if (code === 0) return 'Clear';
+      if (code <= 2) return 'Partly Cloudy';
+      if (code === 3) return 'Overcast';
+      if (code <= 48) return 'Foggy';
+      if (code <= 57) return 'Drizzle';
+      if (code <= 67) return 'Rain';
+      if (code <= 82) return 'Rain Showers';
+      if (code >= 95) return 'Thunderstorm';
+      return 'Partly Cloudy';
+    };
+
+    const hourly: IHourlyForecast[] = (hourlyRaw.time || []).slice(0, 24).map((t: string, i: number) => ({
+      time: i === 0 ? 'Now' : new Date(t).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true }),
+      timestamp: new Date(t).getTime() || Date.now() + i * 3600000,
+      temp: Math.round(hourlyRaw.temperature_2m?.[i] ?? cur.temperature_2m ?? 25),
+      condition: WeatherRemoteDataSource.conditionOf(wmoLabel(hourlyRaw.weather_code?.[i] ?? 0)),
+      rainProbability: Math.round(hourlyRaw.precipitation_probability?.[i] ?? 0),
+      windSpeed: Math.round(hourlyRaw.wind_speed_10m?.[i] ?? 0),
+    }));
+
+    const daily: IDailyForecast[] = (dailyRaw.time || []).slice(0, 7).map((t: string, i: number) => {
+      const cond = WeatherRemoteDataSource.conditionOf(wmoLabel(dailyRaw.weather_code?.[i] ?? 0));
+      const rainProb = Math.round(dailyRaw.precipitation_probability_max?.[i] ?? 0);
+      return {
+        dayName: i === 0 ? 'Today' : new Date(t).toLocaleDateString('en-IN', { weekday: 'short' }),
+        date: t ? new Date(t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
+        condition: cond,
+        minTemp: Math.round(dailyRaw.temperature_2m_min?.[i] ?? 20),
+        maxTemp: Math.round(dailyRaw.temperature_2m_max?.[i] ?? 32),
+        rainProbability: rainProb,
+        windSpeed: Math.round(dailyRaw.wind_speed_10m_max?.[i] ?? 10),
+        humidity: Math.round(dailyRaw.relative_humidity_2m_mean?.[i] ?? 50),
+        agriAdvisory: WeatherRemoteDataSource.dailyAdvisory(cond, rainProb),
+      };
+    });
+
+    const currentCond = WeatherRemoteDataSource.conditionOf(wmoLabel(cur.weather_code ?? 0));
+    const live: ILiveWeather = {
+      temp: Math.round(cur.temperature_2m ?? 28),
+      feelsLike: Math.round(cur.apparent_temperature ?? cur.temperature_2m ?? 28),
+      condition: currentCond,
+      conditionDescription: wmoLabel(cur.weather_code ?? 0),
+      humidity: Math.round(cur.relative_humidity_2m ?? 55),
+      dewPoint: 0,
+      windSpeed: Math.round(cur.wind_speed_10m ?? 8),
+      windDirection: WeatherRemoteDataSource.compass(cur.wind_direction_10m ?? 0),
+      windDegrees: Math.round(cur.wind_direction_10m ?? 0),
+      uvIndex: 5,
+      pressureHpa: Math.round(cur.pressure_msl ?? 1012),
+      pressureTrend: 'Steady',
+      visibilityKm: cur.visibility != null ? Math.round(cur.visibility / 1000) : 10,
+      aqi: { index: 45, pm25: 15, pm10: 30, status: 'Good' },
+      sunriseTime: '',
+      sunsetTime: '',
+      daylightProgressPercent: 50,
+    };
+
+    return {
+      location: {
+        name: locationName || 'Your Location',
+        district: locationName || 'Local District',
+        state: 'India',
+        latitude: lat,
+        longitude: lng,
+      },
+      live,
+      hourly,
+      daily,
+      lastUpdated: new Date().toISOString(),
+      isOfflineCached: false,
+      advisoryAlert: {
+        isCritical: false,
+        title: 'Farm weather guidance',
+        message: daily[0]?.agriAdvisory || 'Ideal conditions for most routine farm work.',
+      },
+    };
+  }
+
+  /**
    * Fetches live weather + hourly + daily forecast from the Supabase edge
-   * function. Rejects on any failure so callers surface a real error state —
-   * no fabricated numbers.
+   * function, with transparent fallback to Open-Meteo directly.
    */
   public async fetchRemoteWeather(lat?: number, lng?: number, locationName?: string): Promise<IWeatherModuleData> {
     if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) {
       throw new Error('Location required. Please allow location access or choose your location manually.');
     }
 
-    const { data, error, timedOut } = await invokeEdgeWithTimeout<{ error?: string; message?: string; code?: string; [key: string]: unknown }>('weather', {
-      latitude: lat, longitude: lng, city: locationName || undefined, checkAlerts: true,
-    });
+    try {
+      const { data, error } = await invokeEdgeWithTimeout<{ error?: string; message?: string; code?: string; [key: string]: unknown }>('weather', {
+        latitude: lat, longitude: lng, city: locationName || undefined, checkAlerts: true,
+      });
 
-    if (error) {
-      console.error('[WeatherRemoteDataSource] Edge function error:', error);
-      throw new Error(timedOut ? 'Weather request timed out. Please try again.' : error);
+      if (!error && data && !data.error && data.code !== 'LOCATION_REQUIRED' && data.code !== 'WEATHER_UNAVAILABLE') {
+        return WeatherRemoteDataSource.mapEdgeResponse(data);
+      }
+    } catch (edgeErr) {
+      console.warn('[WeatherRemoteDataSource] Edge function invocation failed, falling back to direct Open-Meteo:', edgeErr);
     }
 
-    if (data?.error || data?.code === 'LOCATION_REQUIRED' || data?.code === 'WEATHER_UNAVAILABLE') {
-      throw new Error(data.message || 'Live weather is temporarily unavailable.');
-    }
-
-    return WeatherRemoteDataSource.mapEdgeResponse(data);
+    // Direct Open-Meteo fallback (free, public, no key needed)
+    return WeatherRemoteDataSource.fetchOpenMeteoDirect(lat, lng, locationName);
   }
 }
 

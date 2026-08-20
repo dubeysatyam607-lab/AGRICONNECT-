@@ -351,6 +351,7 @@ export const en: JourneyDict = {
   'svc.storeSub': 'Seeds · inputs · tools',
   'svc.schemes': 'Government Schemes',
   'svc.schemesSub': 'Subsidies & benefits',
+    'svc.cropDoctorSub': 'Instant disease detection',
   'svc.cropDoctor': 'Crop Scan',
   'svc.transport': 'Transport',
   'svc.loans': 'Loans',

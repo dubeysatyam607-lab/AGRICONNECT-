@@ -327,6 +327,7 @@ export const kn: JourneyDict = {
   'svc.storeSub': 'ಬೀಜ · ಇನ್ಪುಟ್ಗಳು · ಉಪಕರಣ',
   'svc.schemes': 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು',
   'svc.schemesSub': 'ಸಬ್ಸಿಡಿ ಮತ್ತು ಲಾಭಗಳು',
+    'svc.cropDoctorSub': 'ತಕ್ಷಣದ ರೋಗ ಪತ್ತೆ',
   'svc.cropDoctor': 'ಬೆಳೆ ಸ್ಕ್ಯಾನ್',
   'svc.transport': 'ಸಾರಿಗೆ',
   'svc.loans': 'ಸಾಲ',

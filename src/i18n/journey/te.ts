@@ -327,6 +327,7 @@ export const te: JourneyDict = {
   'svc.storeSub': 'విత్తనాలు · ఎరువులు · పనిముట్లు',
   'svc.schemes': 'ప్రభుత్వ పథకాలు',
   'svc.schemesSub': 'రాయితీలు, ప్రయోజనాలు',
+    'svc.cropDoctorSub': 'తక్షణ వ్యాధి నిర్ధారణ',
   'svc.cropDoctor': 'పంట స్కాన్',
   'svc.transport': 'రవాణా',
   'svc.loans': 'రుణాలు',
