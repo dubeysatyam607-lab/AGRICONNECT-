@@ -526,10 +526,11 @@ serve(async (req) => {
           createdAt: new Date().toISOString(),
         };
         const authResult = await validateAuth(req);
-        if (authResult.authenticated && authResult.userId) {
-          booking.userId = authResult.userId;
+        if (!authResult.authenticated || !authResult.userId) {
+          return authErrorResponse("Authentication required to book machinery", headers);
         }
-        await saveBooking(booking, authResult.authenticated ? authResult.userId : undefined);
+        booking.userId = authResult.userId;
+        await saveBooking(booking, authResult.userId);
         const tracking = await buildTracking(booking, Date.now());
         return new Response(JSON.stringify({
           booking,

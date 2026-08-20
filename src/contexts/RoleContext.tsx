@@ -19,22 +19,38 @@ interface RoleContextType {
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
+const ALLOWED_PUBLIC_ROLES: UserRole[] = [
+  'Farmer',
+  'Labour',
+  'Store Owner',
+  'Tractor Owner',
+  'Cattle Owner',
+  'Transport Owner',
+  'Soil Tester',
+];
+
 export const RoleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Lazily initialize state from localStorage to persist across reloads
+
+  // Lazily initialize state from localStorage to persist across reloads.
+  // Never trust 'Admin' from localStorage to prevent client-side privilege escalation.
   const [activeRole, setActiveRoleState] = useState<UserRole>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('agri_user_role') as UserRole) || 'Farmer';
+      const stored = localStorage.getItem('agri_user_role') as UserRole;
+      if (stored && ALLOWED_PUBLIC_ROLES.includes(stored)) {
+        return stored;
+      }
     }
     return 'Farmer';
   });
   
   const [isMuted, setIsMuted] = useState(false);
 
-  // Securely update state and storage (in production, sync this with Supabase Auth user_metadata)
   const setActiveRole = (role: UserRole) => {
-    setActiveRoleState(role);
+    // Prevent client-side setting of Admin without server authorization
+    const safeRole = ALLOWED_PUBLIC_ROLES.includes(role) ? role : 'Farmer';
+    setActiveRoleState(safeRole);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('agri_user_role', role);
+      localStorage.setItem('agri_user_role', safeRole);
     }
   };
 

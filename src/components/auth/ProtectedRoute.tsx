@@ -39,12 +39,10 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   // Defense-in-depth: verify the JWT hasn't expired by checking the session's
-  // expires_at timestamp. Supabase auto-refreshes the token, but if refresh
-  // fails (e.g. user deleted, token revoked), we catch it here.
+  // expires_at timestamp.
   if (session?.expires_at) {
     const expiresAtMs = session.expires_at * 1000;
-    // Add a 30-second grace period to avoid edge-case redirects during refresh
-    if (Date.now() > expiresAtMs + 30_000) {
+    if (Date.now() >= expiresAtMs) {
       return <Navigate to="/auth/login" replace state={{ from: location.pathname, reason: 'session_expired' }} />;
     }
   }

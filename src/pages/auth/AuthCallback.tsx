@@ -48,6 +48,8 @@ export const AuthCallback: React.FC = () => {
 
         let user: { id: string } | null = null;
 
+        let isFirstTime = false;
+
         // 1. PKCE flow: exchange authorization code
         if (code) {
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
@@ -56,7 +58,10 @@ export const AuthCallback: React.FC = () => {
           }
           user = data.user ?? data.session?.user ?? null;
           if (data.session) {
-            await syncOAuthProfileFromIdentity(data.session.user);
+            const syncResult = await syncOAuthProfileFromIdentity(data.session.user);
+            if (!syncResult.profileExisted) {
+              isFirstTime = true;
+            }
           }
         }
         // 2. Implicit flow: set session from hash tokens
@@ -70,7 +75,10 @@ export const AuthCallback: React.FC = () => {
           }
           user = data.user ?? data.session?.user ?? null;
           if (data.session) {
-            await syncOAuthProfileFromIdentity(data.session.user);
+            const syncResult = await syncOAuthProfileFromIdentity(data.session.user);
+            if (!syncResult.profileExisted) {
+              isFirstTime = true;
+            }
           }
         }
         // 3. No code or tokens - check if we already have an active session
@@ -78,13 +86,21 @@ export const AuthCallback: React.FC = () => {
           const { data: sessionData } = await supabase.auth.getSession();
           if (sessionData.session) {
             user = sessionData.session.user;
-            await syncOAuthProfileFromIdentity(sessionData.session.user);
+            const syncResult = await syncOAuthProfileFromIdentity(sessionData.session.user);
+            if (!syncResult.profileExisted) {
+              isFirstTime = true;
+            }
           }
         }
 
         if (user && mounted) {
-          // After successful authentication, always navigate to the main dashboard.
-          navigate('/', { replace: true });
+          // First-time Google user who hasn't finished farm profile setup:
+          const isProfileComplete = typeof window !== 'undefined' && localStorage.getItem('agri_profile_complete') === 'true';
+          if (isFirstTime && !isProfileComplete) {
+            navigate('/', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
           return;
         }
 
