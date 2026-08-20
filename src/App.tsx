@@ -269,21 +269,21 @@ const App = () => (
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
                   {/* ── Core App / Public Landing ───────────── */}
-                  {/* Authenticated farmers → app dashboard; anonymous
-                      visitors & crawlers → indexable SEO landing. */}
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/market" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/ai" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/services" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/wallet" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/farm" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/crop-scan" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/mandi" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/agri-store" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/machinery" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/schemes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  {/* Both authenticated farmers and guest visitors can access
+                      the unified smart farming dashboard, mandi rates, and tools. */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Index />} />
+                  <Route path="/market" element={<Index />} />
+                  <Route path="/ai" element={<Index />} />
+                  <Route path="/services" element={<Index />} />
+                  <Route path="/wallet" element={<Index />} />
+                  <Route path="/profile" element={<Index />} />
+                  <Route path="/farm" element={<Index />} />
+                  <Route path="/crop-scan" element={<Index />} />
+                  <Route path="/mandi" element={<Index />} />
+                  <Route path="/agri-store" element={<Index />} />
+                  <Route path="/machinery" element={<Index />} />
+                  <Route path="/schemes" element={<Index />} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />
