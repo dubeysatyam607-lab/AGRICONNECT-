@@ -3,7 +3,7 @@ import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
   CalendarDays, Droplets, Wind, IndianRupee, CloudSun,
   TrendingDown, Leaf, Landmark, AlertTriangle, MapPin,
-  Star, ArrowRight, Flame,
+  Star, ArrowRight, Flame, Sprout,
   Coins, FlaskConical, Warehouse, Users, Bot,
 } from "lucide-react";
 import DynamicHero from "./DynamicHero";
@@ -25,17 +25,13 @@ import { deriveFarmAdvice } from "@/lib/farm-advisor";
 import { fetchMandiPrices, type MandiPrice } from "@/lib/mandi-api";
 import { WeatherDashboardModal } from "@/features/weather/presentation/views/WeatherDashboardModal";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/ui/Logo";
 
 interface FarmerHomeProps {
   onNavigate: (tab: string) => void;
   onBookTractor: (tractor: (typeof INITIAL_TRACTORS)[number]) => void;
 }
-
-const TICKER = [] as { crop: string; price: string; chg: string; up: boolean }[];
-
-const TODAY_MANDI = [] as { crop: string; price: string; chg: number; up: boolean }[];
-
-const TRENDS = [] as { crop: string; price: string; chg: number; up: boolean }[];
 
 const ALERTS = [
   { icon: AlertTriangle, tone: "text-amber-600 dark:text-amber-400 bg-amber-500/12", textKey: "home.alert1", tab: "crop-doctor" },
@@ -87,12 +83,33 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   const { t, language } = useLanguage();
   const { activeRole } = useRole();
   const auth = useOptionalAuth();
-const user = auth?.user;
+  const user = auth?.user;
   const weather = useWeatherViewModel();
   const { profile: farmProfile } = useFarm();
   const advice = useMemo(() => deriveFarmAdvice(farmProfile, weather.data), [farmProfile, weather.data]);
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || (t('home.guestName'));
+  // Fetch real profile from the profiles table for display name
+  const [profileFullName, setProfileFullName] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.full_name) setProfileFullName(data.full_name);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // FIX 4: Smart display name — never show raw usernames like "satyamff124"
+  const rawEmailName = user?.email?.split('@')[0] || '';
+  const cleanedEmailName = rawEmailName.split(/[^a-zA-Z]/)[0]; // first alphabetic word only
+  const capitalizedName = cleanedEmailName ? cleanedEmailName.charAt(0).toUpperCase() + cleanedEmailName.slice(1) : '';
+  const userName = profileFullName
+    || user?.user_metadata?.full_name
+    || user?.user_metadata?.name
+    || capitalizedName
+    || (t('home.guestName'));
   const village = user?.user_metadata?.village || (t('home.guestVillage'));
   const wl = weather.data;
   const liveCity = wl?.location?.name || village;
@@ -121,6 +138,9 @@ const user = auth?.user;
 
   useEffect(() => {
     loadMandi();
+    // FIX 9: Auto-retry mandi prices every 30 minutes
+    const interval = setInterval(loadMandi, 30 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [loadMandi]);
 
   const tickerItems = mandiPrices.slice(0, 10).map((p) => ({
@@ -212,8 +232,9 @@ const user = auth?.user;
       {/* Floating glass header */}
       <header className="sticky top-3 z-40 mx-3 flex items-center justify-between rounded-2xl bg-card/80 backdrop-blur-xl border border-border/70 shadow-card px-3.5 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="relative flex h-8 w-8 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
-            <Leaf size={16} />
+          {/* FIX 10: Consistent logo across app */}
+          <span className="relative flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden">
+            <Logo size={32} />
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-secondary animate-live-pulse" />
           </span>
           <div className="leading-none">
@@ -251,6 +272,30 @@ const user = auth?.user;
 
         {/* ── First-day personalized board (after onboarding) ─── */}
         <FirstDayBoard onGo={go} />
+
+        {/* ── FIX 5: Profile completion prompt ─── */}
+        {user && typeof window !== 'undefined' && localStorage.getItem('agri_onboarding_seen') !== 'true' && (
+          <section className="px-4 mt-4 animate-fade-in">
+            <button
+              onClick={() => go('profile')}
+              className="w-full rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-green-500/10 p-4 text-left shadow-card hover-lift"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                  <Sprout size={18} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-foreground leading-snug">
+                    🌱 Complete your profile to unlock AI recommendations personalised for your farm
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                    Complete Now (2 min) →
+                  </p>
+                </div>
+              </div>
+            </button>
+          </section>
+        )}
 
         {/* ── Weather ──────────────────────────────────── */}
         <section className="px-4 mt-6 reveal" style={{ animationDelay: "240ms" }} aria-labelledby="weather-heading">
@@ -292,7 +337,24 @@ const user = auth?.user;
                 </div>
               </button>
             ) : (
-              <div className="h-44 w-full rounded-[28px] border border-border bg-card animate-shimmer" />
+              /* FIX 3 + FIX 8: Replace empty skeleton with meaningful CTA */
+              <button
+                onClick={() => go('profile')}
+                className="w-full rounded-[28px] border border-border bg-card p-6 text-center shadow-card hover-lift"
+              >
+                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                  <Sprout size={26} />
+                </span>
+                <h3 className="mt-3 text-[15px] font-bold text-foreground">Your farm summary is loading</h3>
+                <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
+                  {weather.error
+                    ? '🌤 Set your location for hyperlocal weather'
+                    : 'Complete your profile to get personalised insights for your crops'}
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 text-white px-4 py-2 text-[12px] font-bold shadow-colorful">
+                  Set Up My Farm <ArrowRight size={13} />
+                </span>
+              </button>
             )}
         </section>
         {/* ── AI Insight Card (heart of the home screen) ─── */}
@@ -315,7 +377,7 @@ const user = auth?.user;
               <button
                 key={s.id}
                 onClick={() => go(s.id)}
-                className="group relative flex flex-col items-start gap-3 rounded-2xl border border-border p-4 text-left active:scale-[0.97] transition-transform"
+                className="group relative flex flex-col items-start gap-3 rounded-2xl border border-border p-4 text-left active:scale-[0.97] transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5"
                 style={{
                   backgroundColor: `hsl(var(${s.token}) / 0.13)`,
                   borderColor: `hsl(var(${s.token}) / 0.32)`,
@@ -334,7 +396,7 @@ const user = auth?.user;
                 </span>
                 <ChevronRight
                   size={15}
-                  className="absolute top-4 right-3.5 text-muted-foreground/40"
+                  className="absolute top-4 right-3.5 text-muted-foreground/40 group-hover:translate-x-0.5 group-hover:text-muted-foreground transition-all"
                 />
               </button>
             ))}
@@ -379,6 +441,7 @@ const user = auth?.user;
               ))}
             </div>
           ) : (
+            /* FIX 9: User-friendly mandi message instead of raw errors */
             <button
               onClick={() => { go("mandi"); if (mandiError) loadMandi(); }}
               className="mx-4 flex w-[calc(100%-2rem)] items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-card"
@@ -386,7 +449,7 @@ const user = auth?.user;
               <span className="text-[13px] font-semibold text-muted-foreground leading-snug">
                 {mandiLoading
                   ? t("home.mandiLoading")
-                  : mandiError || t("home.mandiUnavailable")}
+                  : 'Prices update daily · Tap to check latest rates'}
               </span>
               <span className="shrink-0 text-[12px] font-bold text-forest dark:text-emerald-400">{t("home.viewMore")} →</span>
             </button>
@@ -397,7 +460,7 @@ const user = auth?.user;
 
         {/* ── Crop Health Alert ────────────────────────── */}
         <section className="px-4 mt-6 reveal" style={{ animationDelay: "240ms" }} aria-labelledby="health-heading">
-          <div className="flex items-center gap-4 rounded-2xl border border-feature-doctor/25 bg-feature-doctor/8 p-4">
+          <div className="interactive-card flex items-center gap-4 rounded-2xl border border-feature-doctor/25 bg-feature-doctor/8 p-4 cursor-pointer" onClick={() => go("crop-doctor")}>
             <span className="relative h-14 w-14 shrink-0 rounded-full bg-emerald-700 text-white flex items-center justify-center shadow-colorful animate-ripple">
               <Scan size={22} />
             </span>
@@ -430,7 +493,7 @@ const user = auth?.user;
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
             {trendsItems.map((c) => (
-              <button key={c.id} onClick={() => go("mandi")} className="w-[150px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card hover-lift">
+              <button key={c.id} onClick={() => go("mandi")} className="interactive-card w-[150px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card cursor-pointer">
                 <div className="flex items-center justify-between">
                   <p className="text-[13px] font-bold text-foreground">{cropT(c.crop)}</p>
                   <Flame size={13} className="text-feature-tractor" />
@@ -451,9 +514,13 @@ const user = auth?.user;
         <section className="mt-6 reveal" style={{ animationDelay: "480ms" }} aria-labelledby="tractors-heading">
           <div className="px-4">
             {sectionHeader("tractors-heading", t("home.nearbyTractors"), { label: t("home.all"), tab: "tractors" }, "🚜")}
-            <p className="mb-3 px-1 text-[12px] font-semibold text-muted-foreground">
-              {t("home.sampleListings")}
-            </p>
+            {/* FIX 7: Supply acquisition CTA instead of "sample listings" disclaimer */}
+            <button
+              onClick={() => go('tractors')}
+              className="mb-3 px-1 text-[12px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              Be the first to list your tractor in your area →
+            </button>
           </div>
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-1">
             {INITIAL_TRACTORS.map((tractor) => (
@@ -532,7 +599,7 @@ const user = auth?.user;
             {todayMandiItems.length > 0 ? (
               <div className="divide-y divide-border">
                 {todayMandiItems.map((item) => (
-                  <button key={item.id} onClick={() => go("mandi")} className="group flex w-full items-center gap-3 py-2.5 text-left">
+                  <button key={item.id} onClick={() => go("mandi")} className="group flex w-full items-center gap-3 py-2.5 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]">
                     <span className={cn("h-8 w-8 shrink-0 rounded-xl flex items-center justify-center", item.up ? "bg-feature-mandi/12 text-feature-mandi" : "bg-feature-news/12 text-feature-news")}>
                       {item.up ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
                     </span>
@@ -547,11 +614,12 @@ const user = auth?.user;
                 ))}
               </div>
             ) : (
+              /* FIX 9: User-friendly mandi message */
               <button onClick={() => { go("mandi"); if (mandiError) loadMandi(); }} className="flex w-full items-center justify-between gap-3 py-2 text-left">
                 <span className="text-[13px] font-semibold text-muted-foreground leading-snug">
                   {mandiLoading
                     ? t("home.mandiLoading")
-                    : mandiError || t("home.mandiUnavailable")}
+                    : 'Government servers refresh daily · Tap to check'}
                 </span>
                 <span className="shrink-0 text-[12px] font-bold text-forest dark:text-emerald-400">{t("home.viewMore")} →</span>
               </button>
@@ -565,7 +633,7 @@ const user = auth?.user;
           <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
             <div className="divide-y divide-border">
               {ALERTS.map((a) => (
-                <button key={a.textKey} onClick={() => go(a.tab)} className="group flex w-full items-start gap-3 py-2.5 text-left">
+                <button key={a.textKey} onClick={() => go(a.tab)} className="group flex w-full items-start gap-3 py-2.5 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]">
                   <span className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", a.tone)}>
                     <a.icon size={15} />
                   </span>
@@ -584,7 +652,7 @@ const user = auth?.user;
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
             {NEWS.map((n) => (
-              <button key={n.titleKey} onClick={() => go("news")} className="w-[240px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card hover-lift">
+              <button key={n.titleKey} onClick={() => go("news")} className="interactive-card w-[240px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card cursor-pointer">
                 <span className="feature-chip bg-feature-news/12 text-feature-news">{t(n.tagKey)}</span>
                 <p className="mt-2.5 text-[14px] font-bold text-foreground leading-snug line-clamp-3">{t(n.titleKey)}</p>
                 <p className="mt-2 text-[11px] font-semibold text-muted-foreground">{t(n.sourceKey)} · {t(n.timeKey)}</p>
@@ -606,7 +674,7 @@ const user = auth?.user;
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {SECONDARY_SERVICES.map((s) => (
-              <button key={s.id} onClick={() => go(s.id)} className="flex shrink-0 flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-card hover-lift active:scale-95 transition-transform">
+              <button key={s.id} onClick={() => go(s.id)} className="flex shrink-0 flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5 active:scale-95">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
                   <s.icon size={20} />
                 </span>

@@ -14,6 +14,11 @@ if (typeof globalThis.window === 'undefined') {
 if (typeof globalThis.document === 'undefined') {
   // @ts-expect-error -- jsdom supplies document for browser-focused tests.
   (globalThis as any).document = {};
+
+// Polyfill scrollTo method used in components/tests
+if (typeof (globalThis as any).window.scrollTo === 'undefined') {
+  (globalThis as any).window.scrollTo = () => {};
+}
 }
 
 // Polyfill ResizeObserver (used by recharts ResponsiveContainer in jsdom)

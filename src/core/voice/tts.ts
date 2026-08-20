@@ -89,7 +89,80 @@ interface ActiveSession {
 const activeSessions = new Map<number, ActiveSession>();
 let sessionCounter = 0;
 
+function speakWithNativeSpeechSynthesis(
+  text: string,
+  lang: string,
+  callbacks: TtsCallbacks
+): TtsController {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    callbacks.onError?.(new Error("Speech synthesis not supported"));
+    return {
+      pause: () => {},
+      resume: () => {},
+      stop: () => {},
+      replay: () => {},
+      setRate: () => {},
+      isSpeaking: () => false,
+      isPaused: () => false,
+      getRate: () => 1.0,
+    };
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.95;
+
+  let isPaused = false;
+  let isSpeaking = true;
+
+  utterance.onstart = () => {
+    isSpeaking = true;
+    callbacks.onStart?.(1);
+    callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
+  };
+  utterance.onend = () => {
+    isSpeaking = false;
+    callbacks.onEnd?.();
+  };
+  utterance.onerror = (e) => {
+    isSpeaking = false;
+    callbacks.onError?.(e);
+  };
+
+  window.speechSynthesis.speak(utterance);
+
+  return {
+    pause: () => {
+      window.speechSynthesis.pause();
+      isPaused = true;
+    },
+    resume: () => {
+      window.speechSynthesis.resume();
+      isPaused = false;
+    },
+    stop: () => {
+      window.speechSynthesis.cancel();
+      isSpeaking = false;
+      callbacks.onEnd?.();
+    },
+    replay: () => {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    },
+    setRate: (r: number) => {
+      utterance.rate = r;
+    },
+    isSpeaking: () => isSpeaking && !isPaused,
+    isPaused: () => isPaused,
+    getRate: () => utterance.rate,
+  };
+}
+
 function interruptAllSessions(): void {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    try { window.speechSynthesis.cancel(); } catch { /* noop */ }
+  }
   for (const session of activeSessions.values()) {
     try { session.stopAudio(); } catch { /* noop */ }
   }
@@ -311,14 +384,21 @@ export function speakText(
 
       source.start(startAt);
     } catch (err) {
-      console.error(`Failed playing chunk ${index}:`, err);
-      if (index === 0) {
-        // ElevenLabs is unreachable — report a friendly error. Never silently
-        // downgrade to a robotic system voice.
+      console.warn(`[VoiceEngine] ElevenLabs chunk ${index} failed, attempting native browser TTS fallback:`, err);
+      if (index === 0 && typeof window !== "undefined" && "speechSynthesis" in window) {
+        // Graceful fallback to native browser SpeechSynthesis
+        activeSessions.delete(sessionId);
+        try {
+          const fallbackCtrl = speakWithNativeSpeechSynthesis(sanitizedText, lang, callbacks);
+          return;
+        } catch (nativeErr) {
+          callbacks.onError?.(nativeErr);
+        }
+      } else if (index === 0) {
         activeSessions.delete(sessionId);
         callbacks.onError?.(err);
       } else {
-        // Skip broken chunk and proceed.
+        // Skip broken chunk and proceed to next.
         playChunk(index + 1);
       }
     }

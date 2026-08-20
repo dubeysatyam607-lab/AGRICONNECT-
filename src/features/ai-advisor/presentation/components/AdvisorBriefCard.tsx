@@ -64,36 +64,39 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
         {topInsights.length === 0 ? (
           <p className="px-1 py-2 text-xs font-semibold text-muted-foreground">{t('adv.home.empty')}</p>
         ) : (
-          topInsights.slice(0, 3).map((insight) => (
-            <button
-              key={insight.id}
-              onClick={() => onNavigate('advisor')}
-              className="flex w-full items-center gap-3 rounded-xl border border-border bg-background/60 p-3 text-left transition-colors hover:bg-muted/40"
-            >
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full ${
-                  insight.severity === 'critical' ? 'bg-rose-500' : insight.severity === 'warning' ? 'bg-amber-500' : 'bg-sky-500'
-                }`}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-bold text-foreground">
-                  {interpolate(t(insight.titleKey), insight.params || {})}
-                </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted-foreground">
-                    {t('adv.confidence')} {insight.confidence}%
-                  </span>
-                  <span className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
-                    <span
-                      className="block h-full rounded-full bg-emerald-500"
-                      style={{ width: `${insight.confidence}%` }}
-                    />
-                  </span>
-                </div>
-              </div>
-              <ArrowRight size={14} className="shrink-0 text-muted-foreground" />
-            </button>
-          ))
+          topInsights
+            .filter((insight) => insight.confidence >= 40) // FIX 6: Hide low-confidence cards
+            .slice(0, 3)
+            .map((insight) => {
+              // FIX 6: Human-readable trust signals instead of raw %
+              const trustLabel =
+                insight.confidence >= 80 ? 'Verified recommendation'
+                  : insight.confidence >= 65 ? 'High confidence · Based on your farm data'
+                    : 'Based on your farm data';
+              return (
+                <button
+                  key={insight.id}
+                  onClick={() => onNavigate('advisor')}
+                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-background/60 p-3 text-left transition-colors hover:bg-muted/40"
+                >
+                  <span
+                    className={`h-2 w-2 shrink-0 rounded-full ${
+                      insight.severity === 'critical' ? 'bg-rose-500' : insight.severity === 'warning' ? 'bg-amber-500' : 'bg-sky-500'
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-bold text-foreground">
+                      {interpolate(t(insight.titleKey), insight.params || {})}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                      <span className={`h-1.5 w-1.5 rounded-full ${insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 65 ? 'bg-sky-500' : 'bg-amber-500'}`} />
+                      {trustLabel}
+                    </p>
+                  </div>
+                  <ArrowRight size={14} className="shrink-0 text-muted-foreground" />
+                </button>
+              );
+            })
         )}
       </div>
 

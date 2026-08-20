@@ -5,7 +5,7 @@ import { contactRequestSchema, parseAndValidate } from "../_shared/validators.ts
 import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -17,12 +17,6 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Max-Age": "86400",
   };
 }
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 // Rate limit config: 10 contact requests per hour per user
 const RATE_LIMIT_CONFIG = {
@@ -56,7 +50,7 @@ serve(async (req) => {
       { 
         status: 429, 
         headers: { 
-          ...corsHeaders, 
+          ...headers, 
           ...getRateLimitHeaders(rateLimitResult),
           "Content-Type": "application/json",
           "Retry-After": Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000).toString()
@@ -66,7 +60,7 @@ serve(async (req) => {
   }
 
   // Validate request body
-  const parseResult = await parseAndValidate(req, contactRequestSchema, corsHeaders);
+  const parseResult = await parseAndValidate(req, contactRequestSchema, headers);
   if (!parseResult.success) {
     return parseResult.response;
   }
@@ -99,7 +93,7 @@ serve(async (req) => {
     if (listingError || !listing) {
       return new Response(
         JSON.stringify({ error: "Listing not found or inactive" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
@@ -107,7 +101,7 @@ serve(async (req) => {
     if (listing.seller_id === authResult.userId) {
       return new Response(
         JSON.stringify({ error: "Cannot contact yourself" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
@@ -121,7 +115,7 @@ serve(async (req) => {
           error: "Seller contact not available",
           sellerName
         }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 404, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
@@ -133,11 +127,13 @@ serve(async (req) => {
     // automated bulk-harvesting while keeping the one-tap contact feature.
     const maskedPhone = sellerPhone.slice(-4).padStart(sellerPhone.length, '*');
 
+    // Always return masked phone — full number reveal is disabled to prevent
+    // automated bulk-harvesting of seller contact information.
     return new Response(
       JSON.stringify({
         success: true,
         sellerName,
-        phone: reveal ? sellerPhone : maskedPhone,
+        phone: maskedPhone,
         maskedPhone,
         listing: {
           id: listing.id,
@@ -149,7 +145,7 @@ serve(async (req) => {
       }),
       { 
         headers: { 
-          ...corsHeaders, 
+          ...headers, 
           ...getRateLimitHeaders(rateLimitResult),
           "Content-Type": "application/json" 
         } 
@@ -161,7 +157,7 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : "Failed to get contact info";
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
 });

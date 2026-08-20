@@ -135,10 +135,10 @@ export function useAuthViewModel(): [IAuthViewModelState, IAuthViewModelActions]
     }
   }, [signInUseCase]);
 
-  const signUp = useCallback(async (email: string, pass: string, fullName: string, phone?: string): Promise<boolean> => {
+  const signUp = useCallback(async (email: string, _pass: string, fullName: string, phone?: string): Promise<boolean> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      await verifyOtpUseCase.sendOtp(phone || email, phone ? 'phone' : 'email', { full_name: fullName, phone });
+      await verifyOtpUseCase.sendOtp(email, 'email', { full_name: fullName, phone });
       setState(prev => ({ ...prev, isLoading: false }));
       snackbarService.success('Verification OTP sent. Please verify to complete registration.');
       return true;

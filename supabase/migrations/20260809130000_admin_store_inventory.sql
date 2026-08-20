@@ -19,6 +19,7 @@ DROP POLICY IF EXISTS "store_inventory_admin_insert" ON public.store_inventory;
 DROP POLICY IF EXISTS "store_inventory_admin_update" ON public.store_inventory;
 DROP POLICY IF EXISTS "store_inventory_admin_delete" ON public.store_inventory;
 
+DROP POLICY IF EXISTS "store_inventory_public_select" ON public.store_inventory;
 CREATE POLICY "store_inventory_public_select" ON public.store_inventory
   FOR SELECT USING (true);
 

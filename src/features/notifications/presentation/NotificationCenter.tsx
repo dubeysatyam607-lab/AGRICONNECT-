@@ -59,9 +59,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
   );
 
   const list = useMemo(() => {
-    if (filter === 'unread') return notifications.filter((n) => !n.read);
-    if (filter === 'all') return notifications;
-    return notifications.filter((n) => n.category === filter);
+    const filtered = notifications.filter((n) => !n.dismissed);
+    if (filter === 'unread') return filtered.filter((n) => !n.read);
+    if (filter === 'all') return filtered;
+    return filtered.filter((n) => n.category === filter);
   }, [notifications, filter]);
 
   const handleAction = (notificationId: string, tab: string) => {

@@ -85,7 +85,7 @@ const AiInsightCard: React.FC<AiInsightCardProps> = ({ wl, loading, cropLabel, i
               <button
                 key={item.title}
                 onClick={() => onGo(item.tab)}
-                className="group flex w-full items-center gap-3 py-3 text-left"
+                className="group flex w-full items-center gap-3 py-3 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]"
               >
                 <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", item.tone)}>
                   <Icon size={17} />

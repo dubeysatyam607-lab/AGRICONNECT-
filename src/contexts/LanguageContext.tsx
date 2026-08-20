@@ -50,6 +50,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const hydrated = useRef(false);
 
   const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'en';
     const saved = localStorage.getItem('app-language');
     return (saved && saved in LANGUAGE_NAMES) ? saved as Language : 'en';
   });

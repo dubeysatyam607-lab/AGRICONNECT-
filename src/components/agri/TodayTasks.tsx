@@ -172,7 +172,7 @@ const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic }) => {
 
         <div className="divide-y divide-border">
           {tasks.map((task, idx) => (
-            <button key={task.id} onClick={() => toggleTask(idx)} aria-pressed={task.done} aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })} className="flex w-full items-center gap-3 py-3 text-left active:scale-[0.99] transition-transform">
+            <button key={task.id} onClick={() => toggleTask(idx)} aria-pressed={task.done} aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })} className="flex w-full items-center gap-3 py-3 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/40 active:scale-[0.99]">
               <span className={cn(
                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                 task.done ? "border-emerald-700 bg-emerald-700 text-white animate-spring-pop" : "border-border bg-background",

@@ -100,13 +100,12 @@ export class ProfileRepositoryImpl implements IProfileRepository {
         },
         (error) => {
           console.warn('[ProfileRepositoryImpl] GPS Geolocation Error:', error.message);
-          // Fallback to demo farm coordinates in Pune agricultural belt if permission fails or timed out
-          resolve({
-            latitude: 18.6298,
-            longitude: 73.7997,
-            accuracyMeters: 15.0,
-            timestamp: new Date().toISOString(),
-          });
+          const msg = error.code === 1
+            ? 'Location permission denied. Please enable location access in your browser/device settings.'
+            : error.code === 2
+            ? 'Location unavailable. Please check your device settings.'
+            : 'Location request timed out. Please try again.';
+          reject(new Error(msg));
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
       );

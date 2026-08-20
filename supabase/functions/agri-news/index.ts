@@ -2,11 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const NEWS_API_KEY = Deno.env.get("NEWS_API_KEY");
+const NEWSDATA_API_KEY = Deno.env.get("NEWSDATA_API_KEY") || "pub_020d6f7c748249bd80e4f70f09e8d1fd";
 const FREE_NEWS_BASE = "https://saurav.tech/NewsAPI";
 const NEWS_CACHE_MINUTES = 10;
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -132,38 +133,54 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const query = encodeURIComponent('agriculture OR "farming" OR farmers OR "mandi bhav" OR "MSP" OR "crop insurance" OR "PM-KISAN"');
-    let url: string;
-    if (NEWS_API_KEY) {
-      url = `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=40&apiKey=${NEWS_API_KEY}`;
-    } else {
-      // Keyless fallback: the free saurav.tech mirror of NewsAPI. It exposes
-      // top headlines per category/country, so pull the categories most likely
-      // to carry farm/commodity/weather/agri-business stories for India.
-      url = `${FREE_NEWS_BASE}/top-headlines/category/general/in.json`;
+    let rawArticles: any[] = [];
+
+    if (NEWSDATA_API_KEY) {
+      try {
+        const newsDataUrl = `https://newsdata.io/api/1/latest?apikey=${NEWSDATA_API_KEY}&country=in&q=agriculture%20OR%20farming%20OR%20kisan%20OR%20mandi%20OR%20crop`;
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 10000);
+        const res = await fetch(newsDataUrl, { signal: ctrl.signal });
+        clearTimeout(t);
+        if (res.ok) {
+          const j = await res.json();
+          if (Array.isArray(j.results)) {
+            rawArticles = j.results.map((r: any) => ({
+              title: r.title,
+              description: r.description || r.content || '',
+              source: { name: r.source_name || r.source_id || 'News' },
+              author: Array.isArray(r.creator) ? r.creator.join(', ') : (r.creator || 'Agri Reporter'),
+              publishedAt: r.pubDate || new Date().toISOString(),
+              url: r.link,
+              urlToImage: r.image_url || '',
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('[agri-news] NewsData.io fetch failed, trying fallbacks:', err);
+      }
     }
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        headers: { 'User-Agent': 'AgriConnect/1.0' },
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timer);
+    if (rawArticles.length === 0 && NEWS_API_KEY) {
+      const query = encodeURIComponent('agriculture OR "farming" OR farmers OR "mandi bhav" OR "MSP" OR "crop insurance" OR "PM-KISAN"');
+      const url = `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=40&apiKey=${NEWS_API_KEY}`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch(url, {
+          headers: { 'User-Agent': 'AgriConnect/1.0' },
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          rawArticles = data.articles || [];
+        }
+      } catch (e) {
+        console.warn('[agri-news] NewsAPI fetch failed:', e);
+      } finally {
+        clearTimeout(timer);
+      }
     }
-    if (!response.ok) {
-      console.error('[agri-news] upstream error:', response.status);
-      return new Response(
-        JSON.stringify({ error: 'Could not reach the news provider. Please try again later.' }),
-        { status: 502, headers: { ...headers, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const data = await response.json();
-    const rawArticles: any[] = data.articles || [];
 
     if (!NEWS_API_KEY) {
       // Enrich the free feed by fetching a few more categories in parallel,

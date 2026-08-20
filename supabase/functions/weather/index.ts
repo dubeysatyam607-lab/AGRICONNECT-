@@ -3,11 +3,26 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts";
 import { weatherRequestSchema, parseAndValidate } from "../_shared/validators.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
+const ALLOWED_ORIGINS = [
+  'https://agriconnect-navy-six.vercel.app',
+  'https://agriconnect-navy-six-*.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  return ALLOWED_ORIGINS.some(o => origin === o || origin.endsWith('.' + new URL(o).hostname));
+}
+
+function getCorsHeaders(origin: string | null) {
+  const allowed = isAllowedOrigin(origin) ? origin : null;
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  };
+}
 
 // Rate limit config: 60 requests per minute per IP
 const RATE_LIMIT_CONFIG = {
@@ -129,6 +144,9 @@ function buildAlerts(
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

@@ -5,6 +5,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { syncOAuthProfileFromIdentity } from '@/features/auth/data/datasources/AuthRemoteDataSource';
+import { SeoHead } from '@/components/seo/SeoHead';
 
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -17,14 +18,26 @@ export const AuthCallback: React.FC = () => {
 
     const handleCallback = async () => {
       try {
+        // Handle both query params (PKCE flow) and hash fragment (implicit flow)
         const params = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        
         const code = params.get('code');
         const error = params.get('error');
         const errorDescription = params.get('error_description');
+        
+        // Hash-based tokens (implicit OAuth flow - e.g. Supabase default)
+        const hashAccessToken = hashParams.get('access_token');
+        const hashRefreshToken = hashParams.get('refresh_token');
+        const hashError = hashParams.get('error');
+        const hashErrorDescription = hashParams.get('error_description');
 
-        // Check for error query parameters first
+        // Check for error in either location
         if (error) {
           throw new Error(errorDescription || error);
+        }
+        if (hashError) {
+          throw new Error(hashErrorDescription || hashError);
         }
 
         // Clean up hash/query parameters immediately from window history to prevent token exposure
@@ -35,22 +48,33 @@ export const AuthCallback: React.FC = () => {
 
         let user: { id: string } | null = null;
 
+        // 1. PKCE flow: exchange authorization code
         if (code) {
-          // Exchange authorization code for a session
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             throw exchangeError;
           }
           user = data.user ?? data.session?.user ?? null;
           if (data.session) {
-            // Enrich the AgriConnect profile from the Google identity (best-effort;
-            // fills only empty name/avatar fields — never farm/location/weather).
             await syncOAuthProfileFromIdentity(data.session.user);
           }
         }
-
-        // If no code, check if we already have an active session
-        if (!user) {
+        // 2. Implicit flow: set session from hash tokens
+        else if (hashAccessToken && hashRefreshToken) {
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: hashAccessToken,
+            refresh_token: hashRefreshToken,
+          });
+          if (sessionError) {
+            throw sessionError;
+          }
+          user = data.user ?? data.session?.user ?? null;
+          if (data.session) {
+            await syncOAuthProfileFromIdentity(data.session.user);
+          }
+        }
+        // 3. No code or tokens - check if we already have an active session
+        else {
           const { data: sessionData } = await supabase.auth.getSession();
           if (sessionData.session) {
             user = sessionData.session.user;
@@ -59,6 +83,7 @@ export const AuthCallback: React.FC = () => {
         }
 
         if (user && mounted) {
+          // After successful authentication, always navigate to the main dashboard.
           navigate('/', { replace: true });
           return;
         }
@@ -69,7 +94,6 @@ export const AuthCallback: React.FC = () => {
       } catch (err: any) {
         console.error('OAuth Callback Error:', err?.message || err);
         if (mounted) {
-          // Never surface stack traces, tokens or secrets — only a safe, friendly message.
           const safeMessage = hi
             ? 'प्रमाणीकरण पूरा नहीं हो सका। कृपया पुनः प्रयास करें।'
             : 'Sign-in could not be completed. Please try again.';
@@ -87,6 +111,7 @@ export const AuthCallback: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white flex flex-col items-center justify-center px-6">
+      <SeoHead title="Signing In — AgriConnect" description="Completing your AgriConnect sign-in." noindex />
       <div className="relative flex flex-col items-center max-w-sm w-full text-center">
         <div className="relative flex items-center justify-center mb-6">
           <span className="absolute inline-flex h-24 w-24 animate-ping rounded-full bg-emerald-400/20" style={{ animationDuration: '2s' }} />

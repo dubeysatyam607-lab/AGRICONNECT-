@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -66,6 +66,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
 
   const [farms, setFarms] = useState<FarmLocation[]>([]);
   const [farmsLoading, setFarmsLoading] = useState(false);
+  const persistInFlight = useRef(false);
 
   const saveLocation = (loc: NormalizedLocation) => {
     try {
@@ -81,32 +82,38 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     if (status === 'ready') {
       saveLocation(loc);
       // Persist to Supabase so the location survives devices (best-effort).
-      if (user) {
+      // Serialize writes to prevent race conditions on rapid updates.
+      if (user && !persistInFlight.current) {
+        persistInFlight.current = true;
                 (async () => {
-          // Find existing location for this user (if any)
-          const { data: existing } = await supabase
-            .from('user_locations')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle();
-          const payload = {
-            user_id: user.id,
-            latitude: loc.latitude ?? null,
-            longitude: loc.longitude ?? null,
-            city: loc.city || null,
-            district: loc.district || null,
-            state: loc.state || null,
-            country: loc.country || null,
-            pincode: loc.pincode || null,
-            village: loc.village || null,
-            accuracy: loc.accuracy ?? null,
-            location_source: loc.source || 'manual',
-            updated_at: new Date().toISOString(),
-          };
-          const { error } = existing
-            ? await supabase.from('user_locations').update(payload).eq('id', existing.id)
-            : await supabase.from('user_locations').insert(payload);
-          if (error) console.warn('[LocationContext] Failed to persist location:', error.message);
+          try {
+            // Find existing location for this user (if any)
+            const { data: existing } = await supabase
+              .from('user_locations')
+              .select('id')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            const payload = {
+              user_id: user.id,
+              latitude: loc.latitude ?? null,
+              longitude: loc.longitude ?? null,
+              city: loc.city || null,
+              district: loc.district || null,
+              state: loc.state || null,
+              country: loc.country || null,
+              pincode: loc.pincode || null,
+              village: loc.village || null,
+              accuracy: loc.accuracy ?? null,
+              location_source: loc.source || 'manual',
+              updated_at: new Date().toISOString(),
+            };
+            const { error } = existing
+              ? await supabase.from('user_locations').update(payload).eq('id', existing.id)
+              : await supabase.from('user_locations').insert(payload);
+            if (error) console.warn('[LocationContext] Failed to persist location:', error.message);
+          } finally {
+            persistInFlight.current = false;
+          }
         })();
       }
     }
@@ -280,6 +287,22 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Safety timeout: if location is still 'loading' after 20s (user ignored the GPS prompt),
+  // transition to 'error' so weather/other features don't spin forever.
+  useEffect(() => {
+    if (location.status === 'loading') {
+      const t = setTimeout(() => {
+        setLocation((prev) => {
+          if (prev.status === 'loading') {
+            return { ...prev, status: 'error', error: 'Location permission is disabled. Please enable it in your browser settings or set your location manually.' };
+          }
+          return prev;
+        });
+      }, 20000);
+      return () => clearTimeout(t);
+    }
+  }, [location.status]);
 
   return (
     <LocationContext.Provider

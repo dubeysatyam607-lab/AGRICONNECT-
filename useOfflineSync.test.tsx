@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { useOfflineSync } from './useOfflineSync';
+import { useOfflineSync } from './src/hooks/useOfflineSync';
 import { supabase } from '@/integrations/supabase/client';
 
 // Mock the dependencies

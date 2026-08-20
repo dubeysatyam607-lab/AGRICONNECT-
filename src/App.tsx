@@ -36,8 +36,7 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 // Admin Console (code-split — only reachable by role-gated /admin route)
 const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
 
-// Auth / Onboarding flow (code-split — off the startup critical path)
-const Login = lazy(() => import("./pages/Login"));
+
 
 // Enterprise Architecture Foundations
 import { ThemeManagerProvider } from "@/core/theme/ThemeManager";

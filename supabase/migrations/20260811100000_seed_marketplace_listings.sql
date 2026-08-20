@@ -60,6 +60,9 @@ DROP POLICY IF EXISTS "Authenticated users can create listings" ON public.cattle
 CREATE POLICY "Authenticated users can create listings" ON public.cattle_listings
   FOR INSERT WITH CHECK (auth.uid() = seller_id OR seller_id IS NULL);
 
+-- Disable audit trigger during seed inserts (auth.uid() is NULL in migrations)
+ALTER TABLE public.cattle_listings DISABLE TRIGGER audit_cattle_listings;
+
 INSERT INTO public.cattle_listings
   (seller_id, type, breed, milk_yield, price, age, location, description, is_verified, is_active) VALUES
   (NULL, 'Buffalo', 'Murrah',     '12L/day', 65000, '2 Lactation', 'Rampura',  'High-yield Murrah buffalo, healthy and vaccinated.',            true,  true),
@@ -70,6 +73,9 @@ INSERT INTO public.cattle_listings
   (NULL, 'Goat',    'Jamunapari', NULL,      15000, '10 months',   'Sikar',    'Large Jamunapari doe, good milk producer.',                     true,  true),
   (NULL, 'Cow',     'Sahiwal',    '16L/day', 60000, '2 Lactation', 'Tonk',     'Indigenous Sahiwl, excellent for tropical climates.',           true,  true),
   (NULL, 'Poultry', 'Vannaraja',  NULL,        450, '3 weeks',     'Chomu',    'Dual-purpose backyard poultry birds.',                         true,  true);
+
+-- Re-enable audit trigger
+ALTER TABLE public.cattle_listings ENABLE TRIGGER audit_cattle_listings;
 
 -- ── 4. Tractor & machinery hire catalog ──────────────────────────────────
 -- Full-featured table matching the tractor-hire edge function Listing shape.

@@ -7,6 +7,7 @@ import { useRole } from '@/contexts/RoleContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminShell } from './components/AdminShell';
 import { ADMIN_MODULES, getAdminModule } from './adminModules';
+import { SeoHead } from '@/components/seo/SeoHead';
 
 const moduleKeyFromPath = (pathname: string): string => {
   const parts = pathname.split('/').filter(Boolean);
@@ -111,8 +112,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AdminShell current={current} onNavigate={go}>
-      <Module onNavigate={go} />
-    </AdminShell>
+    <>
+      <SeoHead title="Admin Dashboard — AgriConnect" description="AgriConnect administrator console." noindex />
+      <AdminShell current={current} onNavigate={go}>
+        <Module onNavigate={go} />
+      </AdminShell>
+    </>
   );
 }

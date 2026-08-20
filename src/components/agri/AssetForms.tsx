@@ -8,12 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ImageUpload from "./ImageUpload";
 
-const ImageUploadPlaceholder = () => (
-  <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer mb-4">
-    <Camera size={32} className="mb-2 text-primary/50" />
-    <span className="text-sm font-medium">{t('agr4')}</span>
-  </div>
-);
+const ImageUploadPlaceholder = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer mb-4">
+      <Camera size={32} className="mb-2 text-primary/50" />
+      <span className="text-sm font-medium">{t('agr4')}</span>
+    </div>
+  );
+};
 
 export const CattleAssetForm = () => {
   const { t } = useLanguage();

@@ -40,7 +40,24 @@ export async function invokeEdgeWithTimeout<T = Record<string, unknown>>(
       const payload = (error as { message?: string; context?: unknown }).context as
         | { error?: string }
         | undefined;
-      return { data: null, error: payload?.error || (error as { message?: string }).message || "Request failed", timedOut: false };
+      const rawMsg = payload?.error || (error as { message?: string }).message || "Request failed";
+
+      // Detect common Supabase proxy errors and translate to actionable messages.
+      const lower = rawMsg.toLowerCase();
+      if (lower.includes("function") && (lower.includes("not found") || lower.includes("not deployed"))) {
+        return { data: null, error: "This feature is not yet deployed. Please deploy the edge functions first.", timedOut: false };
+      }
+      if (lower.includes("temporary issue") || lower.includes("hit a temporary")) {
+        return { data: null, error: "AI service is not responding. Make sure edge functions are deployed and GEMINI_API_KEY is configured.", timedOut: false };
+      }
+      if (lower.includes("status 401") || lower.includes("unauthorized")) {
+        return { data: null, error: "Session expired. Please sign in again.", timedOut: false };
+      }
+      if (lower.includes("status 503") || lower.includes("no ai provider")) {
+        return { data: null, error: "AI is not configured. The administrator needs to set GEMINI_API_KEY.", timedOut: false };
+      }
+
+      return { data: null, error: rawMsg, timedOut: false };
     }
     return { data, error: null, timedOut: false };
   } catch (err) {

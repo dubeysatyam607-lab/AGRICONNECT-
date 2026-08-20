@@ -6,7 +6,7 @@ import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 import { aiChatCompletion, AiGatewayError, type AiMessage } from "../_shared/ai-gateway.ts";
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -18,12 +18,6 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Max-Age": "86400",
   };
 }
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 const AUTH_RATE_LIMIT = { maxRequests: 20, windowMs: 60 * 1000 };
 const GUEST_RATE_LIMIT = { maxRequests: 5, windowMs: 60 * 1000 };
@@ -210,7 +204,7 @@ async function runTools(
 
   if (needs.includes("scheme")) {
     toolsUsed.push("get_government_schemes");
-    const data = await invokeTool("scheme-finder", {});
+    const data = await invokeTool("scheme-finder", { action: "schemes", category: "All" });
     if (data && Array.isArray((data as { schemes?: unknown[] }).schemes)) {
       const schemes = (data as { schemes: unknown[] }).schemes.slice(0, 5);
       blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: ${JSON.stringify(schemes)}\n(Current government schemes — only mention what is listed here, do not invent scheme names or amounts.)`);
@@ -371,7 +365,7 @@ serve(async (req) => {
       {
         status: 429,
         headers: {
-          ...corsHeaders,
+          ...headers,
           ...getRateLimitHeaders(rateLimitResult),
           "Content-Type": "application/json",
           "Retry-After": Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000).toString()
@@ -380,7 +374,7 @@ serve(async (req) => {
     );
   }
 
-  const parseResult = await parseAndValidate(req, kisanChatRequestSchema, corsHeaders);
+  const parseResult = await parseAndValidate(req, kisanChatRequestSchema, headers);
   if (!parseResult.success) return parseResult.response;
 
   const { messages, language = "Hindi", persona = "", memoryContext = "", farmContext, conversationId = null, userLocation } = parseResult.data;
@@ -451,7 +445,7 @@ serve(async (req) => {
       }),
       {
         headers: {
-          ...corsHeaders,
+          ...headers,
           ...getRateLimitHeaders(rateLimitResult),
           "Content-Type": "application/json"
         }
@@ -471,13 +465,13 @@ serve(async (req) => {
             : "सेवा में अस्थायी समस्या। कृपया पुनः प्रयास करें।";
       return new Response(
         JSON.stringify({ error: message }),
-        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: "सेवा में समस्या। कृपया पुनः प्रयास करें।" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
 });

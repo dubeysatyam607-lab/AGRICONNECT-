@@ -3,7 +3,7 @@ import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts"
 
 const ALLOWED_ORIGINS = (
   Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:8000,https://agriconnect.in"
+  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
 ).split(",").map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {

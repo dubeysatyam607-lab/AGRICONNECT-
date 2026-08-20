@@ -83,12 +83,19 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
     setLoadingState('loading');
     setError(null);
     try {
-      const [w, tx] = await Promise.all([
+      const [summaryResult, txResult] = await Promise.allSettled([
         walletRepository.getSummary(),
         walletRepository.getTransactions(1, 6),
       ]);
-      setSummary(w);
-      setRecent(tx.rows);
+      const w = summaryResult.status === 'fulfilled' ? summaryResult.value : null;
+      const tx = txResult.status === 'fulfilled' ? txResult.value : null;
+      if (w) {
+        setSummary(w);
+      }
+      setRecent(tx?.rows ?? []);
+      if (!w && summaryResult.status === 'rejected') {
+        throw summaryResult.reason;
+      }
       setLoadingState('idle');
     } catch (e: any) {
       setError(e.message ?? 'Unable to load wallet balance');
@@ -182,7 +189,7 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
   return (
     <div className="mt-4 space-y-4">
       {/* Balance card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-green-800 p-5 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-green-800 p-5 text-white shadow-float">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
         <div className="absolute right-10 top-12 h-16 w-16 rounded-full bg-white/5" />
         <div className="flex items-center justify-between">
@@ -214,12 +221,22 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
         )}
       </div>
 
-      {/* Error state — never show ₹0 because the API failed */}
+      {/* Graceful sync state — never expose raw errors to users */}
       {loadingState === 'error' && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-center">
-          <p className="text-xs font-extrabold text-red-700">{error}</p>
-          <Button size="sm" variant="outline" className="mt-2" onClick={load}>
-            <RefreshCw size={13} className="mr-1" /> {t('wallet.retry')}
+        <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-card animate-fade-in">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 mx-auto">
+            <Wallet size={22} />
+          </span>
+          <h3 className="mt-3 text-sm font-extrabold text-foreground">Wallet Coming Soon</h3>
+          <p className="mt-1 text-[11px] font-semibold text-muted-foreground leading-relaxed">
+            Add money, pay for services, and track your farm spending — all in one place. Setting up for you...
+          </p>
+          <p className="mt-2 text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Sync pending
+          </p>
+          <Button size="sm" variant="outline" className="mt-3" onClick={load}>
+            <RefreshCw size={13} className="mr-1" /> Refresh
           </Button>
         </div>
       )}
@@ -251,7 +268,7 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
             const Icon = TYPE_ICON[w.type] ?? Wallet;
             const credit = w.direction === 'in';
             return (
-              <div key={w.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card">
+              <div key={w.id} className="interactive-card flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card cursor-default">
                 <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', credit ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground')}>
                   <Icon size={16} />
                 </span>

@@ -169,8 +169,8 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
   const filteredLivestock = useMemo(() => {
     return livestockData.filter(animal => {
       const matchesSearch = animal.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        animal.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        animal.seller.toLowerCase().includes(searchQuery.toLowerCase());
+        (animal.location || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (animal.seller || '').toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesType = filterType === 'All' || animal.type === filterType;
       const matchesBreed = filterBreed === 'All Breeds' || animal.breed === filterBreed;

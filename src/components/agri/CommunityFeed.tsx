@@ -185,14 +185,14 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <span className="feature-chip bg-white/15 text-white"><Users size={12} /> 1.4L+ {t("community.statsFarmers")}</span>
-          <span className="feature-chip bg-white/15 text-white"><Leaf size={12} /> {COMMUNITY_GROUPS.length * 10}+ {t("community.statsGroups")}</span>
+          <span className="feature-chip bg-white/15 text-white"><Users size={12} /> {COMMUNITY_GROUPS.length * 10}+ {t("community.statsFarmers")}</span>
+          <span className="feature-chip bg-white/15 text-white"><Leaf size={12} /> {COMMUNITY_GROUPS.length} {t("community.statsGroups")}</span>
           <span className="feature-chip bg-white/15 text-white">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-300 animate-ping opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
             </span>
-            {experts.length * 23} {t("community.statsOnline")}
+            {experts.length} {t("community.statsOnline")}
           </span>
         </div>
 

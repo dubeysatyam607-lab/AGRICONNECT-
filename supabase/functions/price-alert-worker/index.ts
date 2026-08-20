@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts";
 
 const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:8000,https://agriconnect.in'
+  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
 ).split(',').map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
@@ -15,12 +15,6 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
     "Access-Control-Max-Age": "86400",
   };
 }
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 const RATE_LIMIT_CONFIG = { maxRequests: 10, windowMs: 60 * 1000 };
 

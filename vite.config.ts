@@ -78,10 +78,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && process.env.LOVABLE === "true" && componentTagger(),
   ].filter(Boolean),
   build: {
-    // StorageMap's on-demand chunk (mapbox-gl, ~1.7 MB) is the only chunk over
-    // 900 kB — it is lazy-loaded solely when the user opens the Cold Storage map,
-    // so the threshold is raised rather than accepting a misleading warning.
-    chunkSizeWarningLimit: 1800,
+    chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -104,6 +101,5 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     "process.env.NODE_ENV": JSON.stringify(mode),
-    "process.env": {},
   },
 }));

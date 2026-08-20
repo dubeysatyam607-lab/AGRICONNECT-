@@ -76,10 +76,12 @@
     --gradient-hero-fog: linear-gradient(150deg, hsl(200 16% 52%), hsl(155 20% 18%));
     --gradient-hero-hot: linear-gradient(150deg, hsl(28 88% 52%), hsl(14 72% 40%));
 
-    --shadow-soft: 0 4px 20px -4px hsl(150 33% 11% / 0.08);
-    --shadow-card: 0 2px 12px -2px hsl(150 33% 11% / 0.05);
-    --shadow-glow: 0 0 30px hsl(40 92% 50% / 0.18);
-    --shadow-colorful: 0 14px 40px -12px hsl(150 45% 21% / 0.28);
+    --shadow-soft: 0 4px 24px -4px hsl(150 33% 11% / 0.10);
+    --shadow-card: 0 1px 8px -1px hsl(150 33% 11% / 0.06), 0 4px 16px -4px hsl(150 33% 11% / 0.04);
+    --shadow-glow: 0 0 24px hsl(40 92% 50% / 0.16);
+    --shadow-colorful: 0 8px 32px -8px hsl(150 45% 21% / 0.22);
+    --shadow-card-hover: 0 2px 12px -2px hsl(150 33% 11% / 0.08), 0 8px 28px -6px hsl(150 33% 11% / 0.08);
+    --shadow-float: 0 12px 40px -8px hsl(150 33% 11% / 0.14);
 
     /* Feature colors (one brand hue per feature) */
     --feature-ai: 268 84% 58%;
@@ -128,8 +130,21 @@
     --input: 150 20% 19%;
     --ring: 148 40% 52%;
 
+    --feature-ai: 268 88% 70%;
+    --feature-weather: 199 92% 64%;
+    --feature-mandi: 155 70% 50%;
+    --feature-tractor: 24 96% 62%;
+    --feature-store: 240 80% 70%;
     --feature-doctor: 142 78% 60%;
+    --feature-loans: 45 95% 62%;
+    --feature-community: 10 88% 68%;
     --feature-news: 350 85% 70%;
+    --feature-analytics: 188 90% 58%;
+    --feature-schemes: 38 95% 64%;
+    --feature-transport: 220 78% 66%;
+    --feature-soil: 30 68% 58%;
+    --feature-labor: 205 84% 62%;
+    --feature-cattle: 190 78% 54%;
   }
 }
 
@@ -242,6 +257,14 @@
 
   .shadow-card {
     box-shadow: var(--shadow-card);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .shadow-float {
+    box-shadow: var(--shadow-float);
   }
 
   .shadow-glow {
@@ -515,6 +538,27 @@
 
   .hover-lift {
     @apply transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_12px_35px_rgba(22,60,40,0.16)] active:scale-95 cursor-pointer;
+  }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+
+  .interactive-card {
+    @apply transition-all duration-200 ease-out cursor-pointer;
+  }
+  .interactive-card:hover {
+    @apply shadow-card-hover -translate-y-0.5;
+  }
+  .interactive-card:active {
+    @apply scale-[0.985];
+  }
+
+  .tap-scale {
+    @apply transition-transform duration-150 ease-out active:scale-95;
   }
 
   /* Smooth page transition container */

@@ -333,7 +333,7 @@ export const markCategoryRead = (category: NotifCategory): void => {
 
 export const dismissNotification = (id: string): void => {
   const s = load();
-  persist({ ...s, items: s.items.filter((n) => n.id !== id) });
+  persist({ ...s, items: s.items.map((n) => (n.id === id ? { ...n, read: true, dismissed: true } : n)) });
 };
 
 /** Remove notifications already read — keeps unread ones. */

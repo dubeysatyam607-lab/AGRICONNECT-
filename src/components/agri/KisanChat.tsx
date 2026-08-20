@@ -5,7 +5,7 @@ import {
   Phone, Clock, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -77,23 +77,6 @@ const stopSpeaking = () => {
   stopSpeakingEngine();
 };
 
-// Invoke a supabase edge function with a hard timeout so the chat never hangs
-// when the cloud assistant is unreachable — the local smart advisor takes over.
-const invokeWithTimeout = async (fnName: string, body: Record<string, unknown>, timeoutMs = 12000) => {
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const { data, error } = await supabase.functions.invoke(fnName, {
-      body,
-      signal: controller.signal,
-    } as never);
-    if (error) throw error;
-    return data;
-  } finally {
-    window.clearTimeout(timer);
-  }
-};
-
 // Language-specific greeting messages
 const GREETINGS: Record<string, string> = {
   "English (India)": "Hello! 🙏 I am Kisan Sahayak — India's smartest farming assistant. Ask me about crop diseases, fertilizers, irrigation, pests, govt schemes, mandi prices, or nearby markets & shops.",
@@ -143,7 +126,7 @@ const OFFLINE_ADVISORIES = {
 
 const ERRORS = {
   hindi: "माफ़ कीजिए, सर्वर कनेक्टिविटी में समस्या हुई। कृपया दोबारा कोशिश करें या लॉग इन करें।",
-  english: "Failed to connect to assistant. Verify your login credentials or check your connection.",
+  english: "Cannot reach the assistant. Please check your internet connection and try again.",
 };
 
 const getSpeechLangCode = (selectedLanguage: string): string => {
@@ -202,7 +185,7 @@ interface KisanChatProps {
 }
 
 const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLanguage }) => {
-  const { languageName } = useLanguage();
+  const { languageName, t } = useLanguage();
   const selectedLanguage = languageName || propLanguage || "Hindi (हिंदी)";
   const greeting = GREETINGS[selectedLanguage] || GREETINGS["Hindi (हिंदी)"];
   const isHindi = selectedLanguage.includes("Hindi");
@@ -306,7 +289,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       try {
         const conversations = await fetchConversations();
         if (cancelled) return;
-        if (conversations.length === 0) return;
+        if (!conversations || conversations.length === 0) return;
         const serverSessions: ChatSession[] = conversations.map((c: StoredConversation) => ({
           id: `server-${c.id}`,
           title: c.title,
@@ -324,7 +307,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           if (cancelled) return;
           setChatHistory([
             { role: "assistant", content: greeting },
-            ...msgs.map((m: StoredChatMessage) => ({
+            ...(msgs ?? []).map((m: StoredChatMessage) => ({
               role: m.role as ChatMessage["role"],
               content: m.content,
               source: "cloud" as const,
@@ -435,7 +418,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       const msgs = await fetchConversationMessages(serverId);
       setChatHistory([
         { role: "assistant", content: greeting },
-        ...msgs.map((m: StoredChatMessage) => ({
+        ...(msgs ?? []).map((m: StoredChatMessage) => ({
           role: m.role as ChatMessage["role"],
           content: m.content,
           source: "cloud" as const,
@@ -720,11 +703,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         }
       }
 
-      const data = await invokeWithTimeout("nearby-services", {
-        body: { latitude: lat, longitude: lng, type },
+      const { data: nearbyData, error: nearbyErr } = await invokeEdgeWithTimeout("nearby-services", {
+        latitude: lat, longitude: lng, type,
       });
 
-      const result: NearbyFetchResult = data ?? { places: [], hasLocation: false };
+      const result: NearbyFetchResult = nearbyData ?? { places: [], hasLocation: false };
       const heading = type === "markets"
         ? (result.hasLocation ? `📍 Nearby Mandis` : "📍 Popular Mandis")
         : (result.hasLocation ? `🏪 Nearby Agri Shops` : "🏪 Popular Agri Shops");
@@ -801,21 +784,37 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       // 2. Crop Doctor Mode: If image is present
       if (base64Data) {
         if (!user) {
-          toast({
-            title: "Authentication Required",
-            description: "Please sign in to diagnose crop leaves using AI image analysis.",
-            variant: "destructive"
-          });
-          throw new Error("User must be authenticated to use Crop Doctor edge function.");
-        }
+          assistantResponse = isHindi
+            ? "📸 फसल रोग जांच के लिए कृपया पहले लॉगिन करें ताकि आपकी फसल का इतिहास सुरक्षित रहे। या आप नीचे कोई भी कृषि प्रश्न लिखकर या बोलकर पूछ सकते हैं।"
+            : "📸 Please sign in to run AI crop leaf disease analysis so your diagnosis history is saved. You can also ask any farming question by typing or speaking below.";
+          suggestions = isHindi
+            ? ["खाद की सही मात्रा बताएं", "सिंचाई का सही समय", "नजदीकी मंडी भाव"]
+            : ["Fertilizer dosage", "Irrigation schedule", "Mandi prices"];
+        } else {
+          const { data: cropData, error: cropErr } = await invokeEdgeWithTimeout<{ result: Record<string, unknown>; error?: string }>("crop-doctor", {
+            description: messageToSend || "Analyze this crop health",
+            imageBase64: base64Data,
+            language: selectedLanguage,
+          }, 30000);
 
-        const data = await invokeWithTimeout("crop-doctor", {
-          description: messageToSend || "Analyze this crop health",
-          imageBase64: base64Data,
-          language: selectedLanguage,
-        });
-        assistantResponse = data?.diagnosis || "Diagnosis failed.";
-        suggestions = data?.suggestions || DEFAULT_SUGGESTIONS.slice(0, 3);
+          if (cropErr || !cropData?.result) {
+            assistantResponse = isHindi
+              ? "पत्ती की तस्वीर से रोग की पहचान में समस्या हुई। कृपया साफ धूप में खींची गई स्पष्ट तस्वीर अपलोड करें, या रोग के लक्षण (जैसे पीली पत्ती, काले धब्बे) लिखकर बताएं।"
+              : "Could not complete image diagnosis. Please upload a clear photo taken in good lighting, or describe the leaf symptoms (e.g. yellowing, black spots) for advice.";
+          } else {
+            const r = cropData.result;
+            const lines: string[] = [];
+            if (r.possible_issue) lines.push(`🩺 **${String(r.possible_issue)}**`);
+            if (r.health_status) lines.push(`• **Health**: ${r.health_status}`);
+            if (r.confidence != null) lines.push(`• **Confidence**: ${r.confidence}%`);
+            if (Array.isArray(r.symptoms) && r.symptoms.length) lines.push(`• **Symptoms**: ${r.symptoms.join(", ")}`);
+            if (Array.isArray(r.recommendations) && r.recommendations.length) lines.push(`• **Treatment**: ${r.recommendations.join("; ")}`);
+            if (r.urgency) lines.push(`• **Urgency**: ${r.urgency}`);
+            if (Array.isArray(r.next_steps_for_farmer) && r.next_steps_for_farmer.length) lines.push(`• **Next Steps**: ${r.next_steps_for_farmer.join(", ")}`);
+            assistantResponse = lines.length > 0 ? lines.join("\n") : "Unable to analyze this image. Please try a clearer photo.";
+          }
+          suggestions = DEFAULT_SUGGESTIONS.slice(0, 3);
+        }
       }
       // 3. Conversational AI Chat Mode: If text-only
       else {
@@ -860,7 +859,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           // Scan context is best-effort.
         }
 
-        const data = await invokeWithTimeout("kisan-chat", {
+        const { data: chatData, error: chatErr } = await invokeEdgeWithTimeout<{
+          message?: string;
+          suggestions?: string[];
+          conversationId?: string;
+          detectedLanguage?: string;
+          toolsUsed?: string[];
+        }>("kisan-chat", {
           messages: nextHistory.map(m => ({ role: m.role, content: m.content })),
           language: selectedLanguage,
           persona: personaInstruction(selectedLanguage.includes("Hindi") ? "hi" : "en"),
@@ -874,17 +879,21 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             area: profile.farmArea,
             soil: profile.soilType,
           },
-        });
+        }, 30000);
 
-        assistantResponse = data?.message || "Response generation failed.";
-        suggestions = data?.suggestions || DEFAULT_SUGGESTIONS;
-        if (data?.conversationId && serverConversationId !== data.conversationId) {
-          setServerConversationId(data.conversationId);
+        if (chatErr || !chatData?.message) {
+          throw new Error(chatErr || "No response from AI assistant");
+        }
+
+        assistantResponse = chatData.message;
+        suggestions = chatData.suggestions || DEFAULT_SUGGESTIONS;
+        if (chatData?.conversationId && serverConversationId !== chatData.conversationId) {
+          setServerConversationId(chatData.conversationId);
         }
         // Once a server conversation exists, switch the local session to track
         // it so future turns keep writing to the same thread.
-        if (data?.conversationId && data.conversationId !== "guest" && currentSessionId !== `server-${data.conversationId}`) {
-          setCurrentSessionId(`server-${data.conversationId}`);
+        if (chatData?.conversationId && chatData.conversationId !== "guest" && currentSessionId !== `server-${chatData.conversationId}`) {
+          setCurrentSessionId(`server-${chatData.conversationId}`);
         }
       }
 
@@ -906,16 +915,35 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
     } catch (err: any) {
       console.error("AI Assistant processing error:", err);
-      // Smart local fallback when the cloud assistant is unreachable
+      // Smart local fallback with instant agricultural knowledge
       const local = getLocalAnswer(messageToSend, profile, localLang);
+      const fallbackContent = local.matched ? local.text : (
+        isHindi
+          ? `🌾 **${profile.crop}** सारांश सलाह:\n\n` +
+            `• **फसल अवस्था**: ${profile.stage || 'वृद्धि'}\n` +
+            `• **सिंचाई व पोषण**: समय पर सिंचाई करें व NPK उर्वरक का संतुलित उपयोग करें।\n` +
+            `• **मंडी भाव व मौसम**: ताज़ा अपडेट के लिए होम स्क्रीन देखें।\n\n` +
+            `पूछें: "${profile.crop} खाद मात्रा", "${profile.crop} सिंचाई", या "${profile.crop} मंडी भाव"।`
+          : `🌾 **${profile.crop}** Advisor Summary:\n\n` +
+            `• **Current Stage**: ${profile.stage || 'Vegetative'}\n` +
+            `• **Advisory**: Maintain timely irrigation and balanced NPK fertilizer application.\n` +
+            `• **Live Data**: Check Home screen for hyperlocal weather and mandi rates.\n\n` +
+            `Try asking: "${profile.crop} fertilizer dose", "${profile.crop} irrigation schedule", or "${profile.crop} mandi price".`
+      );
+
       const finalHistory = [...nextHistory, {
         role: "assistant" as const,
-        content: local.matched ? local.text : getErrorMessage(),
-        source: local.matched ? ("local" as const) : undefined,
-        suggestions: local.matched ? LOCAL_SUGGESTIONS[local.kind] : undefined,
+        content: fallbackContent,
+        source: "local" as const,
+        suggestions: local.matched ? (LOCAL_SUGGESTIONS[local.kind] || DEFAULT_SUGGESTIONS) : [
+          `${profile.crop} fertilizer dose`,
+          `${profile.crop} irrigation schedule`,
+          `${profile.crop} mandi price`,
+        ],
       }];
       setChatHistory(finalHistory);
       saveSession(finalHistory);
+      startTypingAnimation(fallbackContent);
     } finally {
       setIsLoading(false);
     }
@@ -973,7 +1001,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   const renderPlaceCard = (place: NearbyPlace) => (
     <div
       key={place.id}
-      className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 hover:bg-white/[0.07] transition-colors"
+      className="rounded-2xl border border-white/10 bg-card/10 p-3.5 hover:bg-card/20 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -1075,14 +1103,14 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         <div className="space-y-3">
           <div className="whitespace-pre-wrap font-bold">{msg.content}</div>
           {!msg.structured.hasLocation && (
-            <p className="text-[10px] text-slate-400 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
+            <p className="text-[10px] text-slate-400 bg-card/10 border border-white/10 rounded-xl px-3 py-2">
               {isHindi
                 ? "📍 स्थान की अनुमति नहीं मिली — देश के प्रमुख मंडी/दुकानें दिखा रहे हैं। सटीक नजदीकी परिणाम के लिए स्थान की अनुमति दें।"
                 : "📍 Location permission not available — showing popular places. Allow location access for accurate nearby results."}
             </p>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {msg.structured.places.map(renderPlaceCard)}
+            {msg.structured?.places?.map(renderPlaceCard) ?? []}
           </div>
           {isLast && (
             <div className="flex gap-2 pt-1">
@@ -1320,7 +1348,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                       className={cn(
                         "p-3.5 rounded-2xl text-xs sm:text-sm shadow-md transition-all font-medium leading-relaxed",
                         msg.role === "user"
-                          ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-br-sm border border-emerald-500/20"
+                          ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-sm border border-primary/20"
                           : "bg-slate-900 border border-white/10 text-slate-100 rounded-bl-sm"
                       )}
                     >

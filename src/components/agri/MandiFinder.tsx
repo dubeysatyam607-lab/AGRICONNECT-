@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Phone, Clock } from 'lucide-react';
+import { MapPin, Navigation, Phone, Clock, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AgriCard } from '@/components/ui/agri-card';
 
@@ -7,49 +7,11 @@ interface MandiFinder {
   onToast: (message: string) => void;
 }
 
-const NEARBY_MANDIS = [
-  {
-    id: 1,
-    name: 'Jaipur Krishi Mandi',
-    nameHi: 'जयपुर कृषि मंडी',
-    distance: '2.5 km',
-    address: 'Muhana Mandi Road, Jaipur',
-    addressHi: 'मुहाना मंडी रोड, जयपुर',
-    phone: '+91 141 2712345',
-    timings: '6:00 AM - 8:00 PM',
-    lat: 26.8929,
-    lng: 75.8254,
-  },
-  {
-    id: 2,
-    name: 'Chomu Sabzi Mandi',
-    nameHi: 'चौमू सब्जी मंडी',
-    distance: '15 km',
-    address: 'Near Bus Stand, Chomu',
-    addressHi: 'बस स्टैंड के पास, चौमू',
-    phone: '+91 1423 234567',
-    timings: '5:00 AM - 6:00 PM',
-    lat: 27.1656,
-    lng: 75.7231,
-  },
-  {
-    id: 3,
-    name: 'Sanganer Phool Mandi',
-    nameHi: 'सांगानेर फूल मंडी',
-    distance: '8 km',
-    address: 'Airport Road, Sanganer',
-    addressHi: 'एयरपोर्ट रोड, सांगानेर',
-    phone: '+91 141 2550123',
-    timings: '4:00 AM - 2:00 PM',
-    lat: 26.8200,
-    lng: 75.7885,
-  },
-];
-
 const MandiFinder: React.FC<MandiFinder> = ({ onToast }) => {
   const { language, t } = useLanguage();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [locationDenied, setLocationDenied] = useState(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -62,21 +24,20 @@ const MandiFinder: React.FC<MandiFinder> = ({ onToast }) => {
           setIsLoading(false);
         },
         () => {
-          // Default to Jaipur if geolocation fails
-          setUserLocation({ lat: 26.9124, lng: 75.7873 });
+          setLocationDenied(true);
           setIsLoading(false);
         }
       );
     } else {
-      setUserLocation({ lat: 26.9124, lng: 75.7873 });
+      setLocationDenied(true);
       setIsLoading(false);
     }
   }, []);
 
-  const openInMaps = (mandi: typeof NEARBY_MANDIS[0]) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${mandi.lat},${mandi.lng}`;
+  const openInMaps = (lat: number, lng: number, name: string) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
     window.open(url, '_blank');
-    onToast(`Opening directions to ${language === 'hi' ? mandi.nameHi : mandi.name}`);
+    onToast(`Opening directions to ${name}`);
   };
 
   return (
@@ -119,42 +80,47 @@ const MandiFinder: React.FC<MandiFinder> = ({ onToast }) => {
         {t('map.nearbyMandis')}
       </h3>
       
-      <div className="space-y-3">
-        {NEARBY_MANDIS.map((mandi) => (
-          <AgriCard key={mandi.id} className="p-4">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-bold text-foreground">
-                    {language === 'hi' ? mandi.nameHi : mandi.name}
-                  </h4>
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    {mandi.distance}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {language === 'hi' ? mandi.addressHi : mandi.address}
-                </p>
-                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Phone size={12} /> {mandi.phone}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} /> {mandi.timings}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => openInMaps(mandi)}
-                className="flex items-center gap-1 bg-primary text-primary-foreground px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                <Navigation size={14} />
-                {language === 'hi' ? 'दिशा' : 'Directions'}
-              </button>
-            </div>
-          </AgriCard>
-        ))}
-      </div>
+      {locationDenied ? (
+        <AgriCard className="p-5 text-center">
+          <AlertCircle size={32} className="mx-auto text-muted-foreground mb-3" />
+          <p className="text-sm text-muted-foreground mb-3">
+            {language === 'hi'
+              ? 'मंडी खोजने के लिए स्थान की अनुमति चाहिए।'
+              : 'Location access is needed to find mandis near you.'}
+          </p>
+          <button
+            onClick={() => {
+              const q = encodeURIComponent('agricultural mandi near me');
+              window.open(`https://www.google.com/maps/search/${q}`, '_blank');
+            }}
+            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Navigation size={14} />
+            {language === 'hi' ? 'मंडी खोजें' : 'Search Mandis on Maps'}
+          </button>
+        </AgriCard>
+      ) : (
+        <AgriCard className="p-5 text-center">
+          <MapPin size={32} className="mx-auto text-primary mb-3" />
+          <p className="text-sm text-muted-foreground mb-3">
+            {language === 'hi'
+              ? 'आपके निकट कृषि मंडी खोजने के लिए मानचित्र खोलें'
+              : 'Open map to find agricultural mandis near your location'}
+          </p>
+          <button
+            onClick={() => {
+              const q = userLocation
+                ? `mandi+near+${userLocation.lat},${userLocation.lng}`
+                : 'agricultural+mandi+near+me';
+              window.open(`https://www.google.com/maps/search/${q}`, '_blank');
+            }}
+            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Navigation size={14} />
+            {language === 'hi' ? 'मंडी देखें' : 'View Mandis on Map'}
+          </button>
+        </AgriCard>
+      )}
     </div>
   );
 };

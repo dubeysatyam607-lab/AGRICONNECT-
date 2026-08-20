@@ -168,20 +168,20 @@ const HelpCenter: React.FC = () => {
                 <p className="mt-1 text-sm text-muted-foreground">Chat with our kisan support team.</p>
               </a>
               <a
-                href="mailto:support@agriconnect.in"
+                href="mailto:hello.agriconnect@gmail.com"
                 className="rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
               >
                 <Mail className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-foreground">Email Us</h3>
-                <p className="mt-1 text-sm text-muted-foreground">support@agriconnect.in</p>
+                <p className="mt-1 text-sm text-muted-foreground">hello.agriconnect@gmail.com</p>
               </a>
               <a
-                href="tel:+919876543210"
+                href="tel:+917067820256"
                 className="rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
               >
                 <Phone className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-foreground">Call the Helpdesk</h3>
-                <p className="mt-1 text-sm text-muted-foreground">+91-9876543210</p>
+                <p className="mt-1 text-sm text-muted-foreground">+91-7067820256</p>
               </a>
             </div>
           </div>

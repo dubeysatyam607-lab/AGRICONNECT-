@@ -48,26 +48,39 @@ interface Provider {
 }
 
 function configuredProviders(): Provider[] {
-  return [
-    {
+  const providers: Provider[] = [];
+
+  const geminiKey = Deno.env.get("GEMINI_API_KEY");
+  if (geminiKey && geminiKey.startsWith("AIza")) {
+    providers.push({
       name: "gemini",
-      key: Deno.env.get("GEMINI_API_KEY"),
+      key: geminiKey,
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      defaultModel: "gemini-3.5-flash",
-    },
-    {
+      defaultModel: "gemini-2.0-flash",
+    });
+  }
+
+  const openaiKey = Deno.env.get("OPENAI_API_KEY");
+  if (openaiKey) {
+    providers.push({
       name: "openai",
-      key: Deno.env.get("OPENAI_API_KEY"),
+      key: openaiKey,
       baseUrl: "https://api.openai.com/v1",
       defaultModel: "gpt-4o-mini",
-    },
-    {
+    });
+  }
+
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (lovableKey) {
+    providers.push({
       name: "lovable",
-      key: Deno.env.get("LOVABLE_API_KEY"),
+      key: lovableKey,
       baseUrl: "https://ai.gateway.lovable.dev/v1",
-      defaultModel: "google/gemini-3.5-flash",
-    },
-  ];
+      defaultModel: "google/gemini-2.0-flash",
+    });
+  }
+
+  return providers;
 }
 
 function pickProviders(preferred?: "auto" | "gemini" | "openai" | "lovable"): Provider[] {

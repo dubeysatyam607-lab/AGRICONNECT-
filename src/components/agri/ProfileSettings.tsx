@@ -671,9 +671,11 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
                   <h2 className="text-xl font-bold text-foreground truncate">
                     {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Not available"}
                   </h2>
+                  {(user?.email_confirmed_at || user?.user_metadata?.email_verified) && (
                   <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/20 shrink-0">
                     Verified ID
                   </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{user?.phone || user?.email || "Not available"}</p>
                 <div className="flex items-center justify-between mt-1">

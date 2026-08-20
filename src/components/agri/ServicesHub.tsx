@@ -184,7 +184,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="w-full rounded-2xl border border-border bg-card pl-10 pr-9 py-3 text-base font-medium text-foreground placeholder:text-muted-foreground/70 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="w-full rounded-2xl border border-border bg-card pl-10 pr-9 py-3 text-base font-medium text-foreground placeholder:text-muted-foreground/70 outline-none transition-all focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:shadow-card"
               aria-label="Search services"
             />
             {query && (
