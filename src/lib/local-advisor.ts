@@ -116,34 +116,83 @@ const CROP_GUIDES: Record<string, CropGuide> = {
 
 const MANDI_CROP_STEMS: Record<string, string> = {
   wheat: "wheat",
+  gehu: "wheat",
+  gehun: "wheat",
   rice: "rice",
+  chawal: "rice",
+  dhan: "rice",
+  paddy: "rice",
   maize: "maize",
+  makka: "maize",
+  makai: "maize",
+  corn: "maize",
   soybean: "soybean",
+  soya: "soybean",
   cotton: "cotton",
+  kapas: "cotton",
   mustard: "mustard",
+  sarson: "mustard",
+  rai: "mustard",
   gram: "gram",
+  chana: "gram",
   groundnut: "groundnut",
+  mungfali: "groundnut",
+  peanut: "groundnut",
   onion: "onion",
+  pyaj: "onion",
+  pyaz: "onion",
+  kanda: "onion",
   potato: "potato",
+  aloo: "potato",
+  aalu: "potato",
   tomato: "tomato",
+  tamatar: "tomato",
+  tamatr: "tomato",
   garlic: "garlic",
+  lahsun: "garlic",
   sugarcane: "sugarcane",
+  ganna: "sugarcane",
   cumin: "cumin",
+  jeera: "cumin",
   turmeric: "turmeric",
+  haldi: "turmeric",
   coriander: "coriander",
+  dhaniya: "coriander",
   banana: "banana",
+  kela: "banana",
   mango: "mango",
+  aam: "mango",
   moong: "lentils",
+  mung: "lentils",
   arhar: "arhar",
+  tur: "arhar",
   chilli: "red chilli",
+  chili: "red chilli",
+  mirch: "red chilli",
+  mirchi: "red chilli",
   redchilli: "red chilli",
 };
 
 const HINDI_CROP_ALIASES: Record<string, string> = {
-  गेहूं: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
+  गेहूं: "wheat", गेहूं: "wheat", गेहू: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
   टमाटर: "tomato", आलू: "potato", सरसों: "mustard", मक्का: "maize",
   चावल: "rice", धान: "rice", गन्ना: "sugarcane", मिर्च: "chilli",
-  मूंगफली: "groundnut", चना: "gram",
+  मूंगफली: "groundnut", चना: "gram", लहसुन: "garlic", अदरक: "ginger",
+  हल्दी: "turmeric", जीरा: "cumin",
+};
+
+const HINGLISH_WORDS = [
+  "kya", "hai", "hain", "kaise", "kare", "karna", "ka", "ki", "ke", "ko", "me", "mein",
+  "bhav", "bhaav", "rate", "kheti", "dawa", "dawai", "khad", "paani", "pani",
+  "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi", "kab",
+  "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
+  "patta", "patti", "peela", "sukha", "kharif", "rabi", "mandi", "tamatr", "tamatar",
+  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch"
+];
+
+const isHinglish = (q: string) => {
+  const words = q.toLowerCase().split(/\s+/);
+  return words.some((w) => HINGLISH_WORDS.includes(w.replace(/[^a-z]/g, "")));
 };
 
 const PEST_REMEDIES: Record<string, { en: string; hi: string }> = {
@@ -327,16 +376,22 @@ const findDisease = (q: string): DiseaseInfo | null => {
 const hasMandiIntent = (q: string) =>
   ["mandi", "price", "rate", "bhav", "भाव", "मंडी", "दाम", "दर"].some((k) => q.includes(k));
 
-const cropFromMandiPrices = (stem: string) =>
-  MANDI_PRICES.find((m) => m.crop.toLowerCase().split("(")[0].trim().includes(stem) || stem.includes(m.crop.toLowerCase().split("(")[0].trim()));
+const cropFromMandiPrices = (stem: string) => {
+  const s = stem.toLowerCase().trim();
+  return MANDI_PRICES.find((m) => {
+    const c = m.crop.toLowerCase();
+    const cleanCrop = c.split("(")[0].trim();
+    return c.includes(s) || s.includes(cleanCrop) || cleanCrop.includes(s);
+  });
+};
 
 const mandiAnswer = (crop: string, hi: boolean): LocalAnswer => {
   const stem = crop.toLowerCase().split("(")[0].trim();
   const entry = cropFromMandiPrices(stem);
   if (entry) {
     const text = hi
-      ? `📍 **${entry.crop}** — संदर्भ मंडी दर (लाइव नहीं)\n\n- बाज़ार: ${entry.market}, ${entry.state}\n- दर: **₹${entry.price.toLocaleString("en-IN")}/क्विंटल**\n- सीमा: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nआज की लाइव दरें **Mandi Bhav** टैब में देखें।`
-      : `📍 **${entry.crop}** — reference mandi rate (not live)\n\n- Market: ${entry.market}, ${entry.state}\n- Rate: **₹${entry.price.toLocaleString("en-IN")}/quintal**\n- Range: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nFor today's live rates, open the **Mandi Bhav** tab.`;
+      ? `📍 **${entry.crop}** — संदर्भ मंडी दर (अनुमानित)\n\n- बाज़ार: ${entry.market}, ${entry.state}\n- दर: **₹${entry.price.toLocaleString("en-IN")}/क्विंटल**\n- सीमा: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nआज की लाइव दरें **Mandi Bhav** टैब में देखें।`
+      : `📍 **${entry.crop}** — reference mandi rate (estimate)\n\n- Market: ${entry.market}, ${entry.state}\n- Rate: **₹${entry.price.toLocaleString("en-IN")}/quintal**\n- Range: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nFor today's live rates, open the **Mandi Bhav** tab.`;
     return { text, matched: true, kind: "mandi" };
   }
   const text = hi
@@ -459,16 +514,45 @@ const hasDiseaseIntent = (q: string) =>
 const hasSchemeIntent = (q: string) =>
   ["scheme", "योजना", "subsidy", "सब्सिडी", "govt", "government", "pm-kisan", "pmkisan", "kcc", "loan", "कर्ज", "बीमा", "insurance", "yojana"].some((k) => q.includes(k));
 
+const GREETING_WORDS = [
+  "namaste", "namaskar", "pranam", "hello", "hi", "hey", "hola",
+  "नमस्ते", "नमस्कार", "प्रणाम", "राम राम", "ram ram", "जय जवान", "जय किसान"
+];
+
+const isGreetingIntent = (q: string) => {
+  const trimmed = q.trim().toLowerCase().replace(/[!.,?]/g, "");
+  return GREETING_WORDS.some((w) => trimmed === w || trimmed === `${w} kisan ai` || trimmed === `${w} ai` || trimmed.startsWith(`${w} `));
+};
+
 export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: string): LocalAnswer => {
-  const hi = lang === "hi" || (lang !== "en" && hasDevanagari(query));
-  const q = query.toLowerCase();
+  const hi = lang === "hi" || (lang !== "en" && (hasDevanagari(query) || isHinglish(query)));
+  const q = query.toLowerCase().trim();
+
+  // 1. Natural greeting without unsolicited crop dumps
+  if (isGreetingIntent(q)) {
+    const greetingText = hi
+      ? "Namaste! 👋 Main Kisan AI hoon. Aap kheti, fasal, mandi bhav, mausam, rog, khaad, sinchai ya sarkari yojana ke baare mein pooch sakte hain."
+      : "Hello! 👋 I am Kisan AI. You can ask me about crops, live mandi prices, weather, pests, fertilizers, irrigation, or government schemes.";
+    return { text: greetingText, matched: true, kind: "general" };
+  }
+
   const crop = detectCrop(q);
 
+  // 2. Mandi price inquiry
   if (hasMandiIntent(q)) {
     const target = crop || profile.crop.toLowerCase().split("(")[0].trim();
     return mandiAnswer(target, hi);
   }
 
+  // 3. Vague spray / medicine inquiry without specified crop
+  if ((q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao") && !crop) {
+    const text = hi
+      ? "Kaunsi fasal ke liye spray chahiye? Kripya fasal ka naam batayein. 🌱"
+      : "Which crop do you need the spray recommendation for? Please specify the crop. 🌱";
+    return { text, matched: true, kind: "pest" };
+  }
+
+  // 4. Specific farming categories
   if (hasSchemeIntent(q)) return schemeAnswer(hi);
   if (hasFertilizerIntent(q)) return fertilizerAnswer(crop, profile, hi);
   if (hasIrrigationIntent(q)) return irrigationAnswer(crop, profile, hi);
