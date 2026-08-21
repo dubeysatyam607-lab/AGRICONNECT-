@@ -54,4 +54,29 @@ describe('getLocalAnswer — fallback', () => {
     expect(answer.kind).toBe('scheme');
     expect(answer.matched).toBe(true);
   });
+
+  it('answers greetings with a natural welcome and NO crop dumps', () => {
+    const hiAnswer = getLocalAnswer('namaste', profile);
+    expect(hiAnswer.matched).toBe(true);
+    expect(hiAnswer.kind).toBe('general');
+    expect(hiAnswer.text).toContain('Kisan AI');
+    expect(hiAnswer.text).not.toContain('Soybean');
+
+    const enAnswer = getLocalAnswer('hello', profile);
+    expect(enAnswer.matched).toBe(true);
+    expect(enAnswer.text).toContain('Kisan AI');
+  });
+
+  it('asks for clarification when vague spray query is provided without a crop', () => {
+    const answer = getLocalAnswer('spray batao', profile);
+    expect(answer.matched).toBe(true);
+    expect(answer.text).toContain('Kaunsi fasal');
+  });
+
+  it('strictly isolates requested crop (e.g. tomato) without profile crop bleed', () => {
+    const answer = getLocalAnswer('tamatar ka bhav', profile);
+    expect(answer.kind).toBe('mandi');
+    expect(answer.text).toContain('Tomato');
+    expect(answer.text).not.toContain('Soybean');
+  });
 });
