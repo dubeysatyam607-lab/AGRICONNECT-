@@ -17,9 +17,12 @@ import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
 import { LoginPage, RegisterPage, OtpPage, ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/AuthWrappers";
 import { AuthCallback } from "@/pages/auth/AuthCallback";
 
+import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
+
 // Code-split heavy page bundles
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 
 // SEO / Marketing Pages (code-split for performance)
 const About = lazy(() => import("./pages/About"));
@@ -28,6 +31,7 @@ const FAQ = lazy(() => import("./pages/FAQ"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const DataDeclaration = lazy(() => import("./pages/DataDeclaration"));
 const StateLanding = lazy(() => import("./pages/StateLanding"));
 const Features = lazy(() => import("./pages/Features"));
 const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
@@ -259,16 +263,18 @@ const App = () => (
                   Skip to main content
                 </a>
                 <FloatingWhatsApp />
+                <CookieConsentBanner />
                 <Routes>
                   {/* ── Auth Routes ─────────────────────────── */}
                   {/* Premium WelcomeFlow: Splash → Language → Onboarding →
                       Login/OTP → Farmer Profile Setup → Dashboard */}
                   <Route path="/auth/login" element={<SafeLazy><LoginPage /></SafeLazy>} />
-                <Route path="/auth/register" element={<SafeLazy><RegisterPage /></SafeLazy>} />
-                <Route path="/auth/otp" element={<SafeLazy><OtpPage /></SafeLazy>} />
-                <Route path="/auth/forgot" element={<SafeLazy><ForgotPasswordPage /></SafeLazy>} />
-                <Route path="/auth/reset" element={<SafeLazy><ResetPasswordPage /></SafeLazy>} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/auth/register" element={<SafeLazy><RegisterPage /></SafeLazy>} />
+                  <Route path="/auth/otp" element={<SafeLazy><OtpPage /></SafeLazy>} />
+                  <Route path="/auth/forgot" element={<SafeLazy><ForgotPasswordPage /></SafeLazy>} />
+                  <Route path="/auth/reset" element={<SafeLazy><ResetPasswordPage /></SafeLazy>} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/complete-profile" element={<ProtectedRoute><SafeLazy><CompleteProfile /></SafeLazy></ProtectedRoute>} />
 
                   {/* ── Core App / Public Landing ───────────── */}
                   {/* Both authenticated farmers and guest visitors can access
@@ -294,10 +300,11 @@ const App = () => (
                   <Route path="/pricing" element={<SafeLazy><MarketingLayout><Pricing /></MarketingLayout></SafeLazy>} />
                   <Route path="/privacy-policy" element={<SafeLazy><MarketingLayout><PrivacyPolicy /></MarketingLayout></SafeLazy>} />
                   <Route path="/terms" element={<SafeLazy><MarketingLayout><Terms /></MarketingLayout></SafeLazy>} />
+                  <Route path="/data-declaration" element={<SafeLazy><MarketingLayout><DataDeclaration /></MarketingLayout></SafeLazy>} />
                   <Route path="/features" element={<SafeLazy><MarketingLayout><Features /></MarketingLayout></SafeLazy>} />
                   <Route path="/knowledge-hub" element={<SafeLazy><MarketingLayout><KnowledgeHub /></MarketingLayout></SafeLazy>} />
                   <Route path="/blogs" element={<SafeLazy><MarketingLayout><Blog /></MarketingLayout></SafeLazy>} />
-<Route path="/blogs/future-of-farming" element={<SafeLazy><MarketingLayout><FutureFarming /></MarketingLayout></SafeLazy>} />
+                  <Route path="/blogs/future-of-farming" element={<SafeLazy><MarketingLayout><FutureFarming /></MarketingLayout></SafeLazy>} />
                   <Route path="/help-center" element={<SafeLazy><MarketingLayout><HelpCenter /></MarketingLayout></SafeLazy>} />
 
                   {/* ── Local SEO Landing Pages ─────────────── */}

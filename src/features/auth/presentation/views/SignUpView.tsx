@@ -78,7 +78,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
           {/* Header */}
           <FadeIn className="mt-6 text-center">
             <h1 className="text-2xl font-black tracking-tight text-foreground">
-              {t('auth.createFarmerAccount') || 'Create Farmer Account'}
+              {t('auth.signup.title')}
             </h1>
             <p className="mt-1.5 text-xs font-medium text-muted-foreground">
               {t('auth.createFarmerSubtitle') || 'Join AgriConnect for Mandi prices, AI advisory & farm management'}
@@ -102,7 +102,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Full Name */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {t('auth.fullName') || 'Full Name'}
+                  {t('auth.signup.fullNameLabel')}
                 </label>
                 <div className="relative">
                   <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -120,7 +120,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Email Address */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {t('auth.emailAddress') || 'Email Address'}
+                  {t('auth.signup.emailLabel')}
                 </label>
                 <div className="relative">
                   <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -140,7 +140,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Mobile Number (optional profile info) */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {t('auth.mobileOptional') || 'Mobile Number (Optional)'}
+                  {t('auth.signup.mobileLabel')}
                 </label>
                 <div className="flex items-stretch overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15 transition-all">
                   <span className="flex items-center gap-1 border-r border-border bg-slate-50 dark:bg-slate-800/50 px-4 text-sm font-black text-foreground">
@@ -167,7 +167,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
                   isLoading={state.isLoading}
                   rightIcon={<ArrowRight size={16} />}
                 >
-                  {t('auth.sendEmailOtp') || 'Send Email OTP'}
+                  {t('auth.signup.sendEmailOtp')}
                 </AppButton>
               </div>
             </form>
@@ -177,9 +177,9 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
         {/* Footer */}
         <SlideUp delayMs={200} className="mt-6 text-center">
           <p className="text-xs font-medium text-muted-foreground">
-            {t('auth.alreadyHaveAccount') || 'Already have an account?'}{' '}
+            {t('auth.signup.alreadyHaveAccount')}{' '}
             <button onClick={onSwitchToSignIn} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
-              {t('auth.signIn') || 'Sign In'}
+              {t('auth.signup.signInLink')}
             </button>
           </p>
         </SlideUp>

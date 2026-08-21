@@ -7,12 +7,14 @@ import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
 import { supabase } from '@/integrations/supabase/client';
 import { submitWeb3Form } from '@/config/web3forms';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '' });
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const jsonLd = [
     organizationSchema(),
@@ -55,7 +57,7 @@ const Contact: React.FC = () => {
       setSubmitted(true);
     } else {
       console.error('[Contact] submission failed:', emailResult.reason);
-      toast({ title: 'Message not sent', description: 'Please try again or contact us through WhatsApp.', variant: 'destructive' });
+      toast({ title: t('legal.contact.toastErrorTitle'), description: t('legal.contact.toastErrorDesc'), variant: 'destructive' });
     }
     setSubmitting(false);
   };
@@ -77,12 +79,11 @@ const Contact: React.FC = () => {
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
-              items={[{ label: 'Home', path: '/' }, { label: 'Contact Us' }]}
+              items={[{ label: t('nav.home'), path: '/' }, { label: t('legal.contact.title') }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight">Contact Us</h1>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight">{t('legal.contact.title')}</h1>
             <p className="text-emerald-100/80 mt-3 max-w-2xl text-lg">
-              Questions about mandi bhav, crop doctor, tractor rental, or government schemes?
-              Our farmer support team is here to help — in your language.
+              {t('legal.contact.heroSubtitle')}
             </p>
           </div>
         </header>
@@ -91,14 +92,14 @@ const Contact: React.FC = () => {
           {/* Contact info */}
           <section aria-labelledby="reach-heading">
             <h2 id="reach-heading" className="text-xl font-bold text-foreground mb-4">
-              Reach Us Directly
+              {t('legal.contact.reachUs')}
             </h2>
             <div className="space-y-4">
               {[
-                { icon: '📞', title: 'Kisan Helpline', lines: ['+91-7067820256', 'Mon–Sat, 8 AM – 8 PM IST'] },
-                { icon: '💬', title: 'WhatsApp', lines: ['Chat with our helpdesk: +91-7067820256'] },
-                { icon: '✉️', title: 'Email', lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
-                { icon: '🏢', title: 'Head Office', lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
+                { icon: '📞', title: t('legal.contact.helplineTitle'), lines: ['+91-7067820256', t('legal.contact.helplineHours')] },
+                { icon: '💬', title: t('legal.contact.whatsappTitle'), lines: [t('legal.contact.whatsappLine')] },
+                { icon: '✉️', title: t('legal.contact.emailTitle'), lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
+                { icon: '🏢', title: t('legal.contact.officeTitle'), lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
               ].map((c) => (
                 <div key={c.title} className="rounded-2xl border border-border bg-card p-5 shadow-card">
                   <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -112,15 +113,15 @@ const Contact: React.FC = () => {
             </div>
 
             <div className="mt-6 rounded-2xl gradient-hero text-primary-foreground p-6 shadow-card">
-              <h3 className="font-bold text-lg">Prefer to explore first?</h3>
+              <h3 className="font-bold text-lg">{t('legal.contact.exploreFirst')}</h3>
               <p className="text-sm text-primary-foreground/80 mt-1">
-                Check our FAQ for quick answers to common farmer questions.
+                {t('legal.contact.faqHint')}
               </p>
               <Link
                 to="/faq"
                 className="inline-flex items-center gap-2 mt-3 rounded-lg bg-white text-emerald-900 px-5 py-2.5 font-semibold text-sm hover:bg-emerald-50 transition"
               >
-                Read the FAQ
+                {t('legal.contact.readFaq')}
               </Link>
             </div>
           </section>
@@ -128,38 +129,38 @@ const Contact: React.FC = () => {
           {/* Contact form */}
           <section aria-labelledby="form-heading">
             <h2 id="form-heading" className="text-xl font-bold text-foreground mb-4">
-              Send a Message
+              {t('legal.contact.sendMessage')}
             </h2>
             {submitted ? (
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center" role="status" aria-live="polite">
                 <span className="text-4xl" aria-hidden="true">✅</span>
-                <h3 className="font-bold text-foreground mt-3 text-lg">Message Received!</h3>
+                <h3 className="font-bold text-foreground mt-3 text-lg">{t('legal.contact.messageReceived')}</h3>
                 <p className="text-muted-foreground mt-2">
-                  Thank you, {form.name || 'Kisan'}. Our team will get back to you within 24 hours.
+                  {t('legal.contact.thanksNote', { name: form.name || t('legal.contact.defaultName') })}
                 </p>
                 <button
                   onClick={() => { setSubmitted(false); setForm({ name: '', phone: '', email: '', message: '' }); }}
                   className="mt-4 rounded-lg border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground hover:bg-muted transition"
                 >
-                  Send Another
+                  {t('legal.contact.sendAnother')}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-1.5">Full Name</label>
+                  <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-1.5">{t('legal.contact.fullName')}</label>
                   <input
                     id="name"
                     type="text"
                     required
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="e.g., Ramesh Patel"
+                    placeholder={t('legal.contact.namePh')}
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-foreground mb-1.5">Mobile Number</label>
+                  <label htmlFor="phone" className="block text-sm font-semibold text-foreground mb-1.5">{t('legal.contact.mobileNumber')}</label>
                   <input
                     id="phone"
                     type="tel"
@@ -167,7 +168,7 @@ const Contact: React.FC = () => {
                     pattern="[0-9 +()-]{10,15}"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    placeholder="e.g., 98765 43210"
+                    placeholder={t('legal.contact.phonePh')}
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>

@@ -987,7 +987,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       fetchNearby("shops");
       return;
     }
-    const prompt = QUICK_ACTION_PROMPTS[actionId];
+    const quickActionPrompts: Record<string, string> = {
+      fertilizer: t('chat.qaPromptFertilizer'),
+      irrigation: t('chat.qaPromptIrrigation'),
+      pest: t('chat.qaPromptPest'),
+      schemes: t('chat.qaPromptSchemes'),
+    };
+    const prompt = quickActionPrompts[actionId];
     if (prompt) {
       handleSend(prompt);
     }
@@ -1188,11 +1194,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             </div>
             <div>
               <h2 className="font-black text-sm tracking-tight flex items-center gap-1.5 text-white">
-                Ask Kisan AI <Sparkles size={13} className="text-emerald-400 animate-pulse" />
+                {t('chat.title')} <Sparkles size={13} className="text-emerald-400 animate-pulse" />
               </h2>
               <p className="text-[10px] text-slate-400 flex items-center gap-1">
                 <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isOffline ? "bg-amber-500" : "bg-emerald-500")} />
-                {isOffline ? "Offline Mode" : "Online • Practical Farm Advisor"}
+                {isOffline ? t('chat.statusOffline') : t('chat.statusOnline')}
               </p>
             </div>
           </div>
@@ -1202,7 +1208,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           <button
             onClick={handleNewSession}
             className="p-2 bg-white/5 hover:bg-white/15 active:scale-95 text-emerald-400 rounded-xl transition-all border border-white/10 flex items-center gap-1 text-xs font-bold"
-            title="Start New Conversation"
+            title={t('chat.newChatTitle')}
           >
             <Plus size={14} />
             <span className="hidden sm:inline">{t('agr216')}</span>
@@ -1216,7 +1222,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                 : "text-slate-400 hover:text-white hover:bg-white/5 border-white/10"
             )}
-            title={autoSpeak ? "Auto Voice Enabled" : "Auto Voice Disabled"}
+            title={autoSpeak ? t('chat.autoVoiceOn') : t('chat.autoVoiceOff')}
           >
             {autoSpeak ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>
@@ -1294,12 +1300,12 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                 <div>
                   <h3 className="font-extrabold text-sm text-white">{t('agr220')}</h3>
                   <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                    Ask about crops, upload a leaf photo to diagnose, or find nearby mandis & shops.
+                    {t('chat.emptyStateSubtitle')}
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-1.5">
                   <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-3 py-1.5 flex items-center gap-1">
-                    🌾 Advising for {profile.crop} · {profile.stage}
+                    🌾 {t('chat.advisingFor', { crop: profile.crop, stage: profile.stage })}
                   </span>
                   {[
                     `${profile.crop} mandi price`,
@@ -1317,13 +1323,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   ))}
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 pt-1">
-                  {PROMPT_CHIPS.map(c => (
+                  {PROMPT_CHIPS.map(id => (
                     <button
-                      key={c.id}
-                      onClick={() => handleSend(c.prompt)}
+                      key={id}
+                      onClick={() => handleSend(chipPrompts[id])}
                       className="text-[10px] font-bold bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-slate-200 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300 transition-all active:scale-95"
                     >
-                      {c.label}
+                      {chipLabels[id]}
                     </button>
                   ))}
                 </div>
@@ -1368,11 +1374,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                             className="hover:text-emerald-400 flex items-center gap-1 transition-colors text-slate-500 dark:text-slate-300"
                           >
                             <Volume2 size={13} />
-                            {isSpeaking && isLast ? "Stop speaking" : "Listen"}
+                            {isSpeaking && isLast ? t('chat.stopSpeakingBtn') : t('chat.listenBtn')}
                           </button>
                           {msg.source === "local" && (
                             <span className="flex items-center gap-1 text-[9px] font-bold text-amber-300/90 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
-                              ⚡ Smart offline
+                              ⚡ {t('chat.badgeSmartOffline')}
                             </span>
                           )}
                         </div>
@@ -1423,14 +1429,14 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                 disabled={isLoading}
                 className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40"
               >
-                <MapPin size={11} /> Mandi
+                <MapPin size={11} /> {t('chat.qaMandi')}
               </button>
               <button
                 onClick={() => fetchNearby("shops")}
                 disabled={isLoading}
                 className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40"
               >
-                <Store size={11} /> Shops
+                <Store size={11} /> {t('chat.qaShops')}
               </button>
               {QUICK_ACTIONS.filter(a => a.id !== "markets" && a.id !== "shops").map(action => (
                 <button
@@ -1443,7 +1449,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   {action.hint === "irrigation" && "💧"}
                   {action.hint === "pest" && "🐛"}
                   {action.hint === "schemes" && "📜"}
-                  {action.label}
+                  {quickActionLabels[action.id]}
                 </button>
               ))}
             </div>
@@ -1528,7 +1534,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
               <input
                 type="text"
-                placeholder={isOffline ? "Offline mode - cannot query AI..." : "Ask crops, disease, markets, shops..."}
+                placeholder={isOffline ? t('chat.placeholderOffline') : t('chat.placeholder')}
                 className="flex-1 p-3 bg-white/5 rounded-full text-base sm:text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder:text-slate-500 border border-white/15 hover:border-white/25 focus:border-emerald-500 transition-all"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

@@ -137,7 +137,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               </svg>
             </div>
             <h2 className="mt-5 text-2xl font-black tracking-tight text-foreground">
-              {t('auth.otp.verifiedSuccess') || 'Email verified successfully.'}
+              {t('auth.otp.emailVerifiedSuccess')}
             </h2>
           </div>
         </div>
@@ -155,7 +155,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               <ArrowLeft size={16} /> {t('common.back')}
             </button>
             <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              <ShieldCheck size={13} /> {t('auth.otpVerification') || 'OTP Verification'}
+              <ShieldCheck size={13} /> {t('auth.otp.badge')}
             </span>
           </div>
 
@@ -169,10 +169,10 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               </svg>
             </div>
             <h1 className="mt-5 text-2xl font-black tracking-tight text-foreground">
-              {t('auth.enter6DigitOtp') || 'Enter the 6-digit OTP sent to your email'}
+              {t('auth.otp.title')}
             </h1>
             <p className="mx-auto mt-2 max-w-xs text-xs font-medium text-muted-foreground">
-              {t('auth.codeSentTo') || 'A 6-digit code has been sent to'}{' '}
+              {t('auth.otp.codeSentTo')}{' '}
               <span className="font-extrabold text-foreground">{maskTarget(target, type)}</span>
             </p>
           </FadeIn>
@@ -217,7 +217,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                 isLoading={state.isLoading}
                 disabled={filled !== OTP_LENGTH}
               >
-                {t('auth.verifyAndContinue') || 'Verify & Continue'}
+                {t('auth.otp.verifyAndContinue')}
               </AppButton>
 
               {/* Resend OTP & Change Number */}
@@ -228,7 +228,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                   </span>
                 ) : (
                   <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                    {t('auth.otpExpired') || 'OTP expired.'}
+                    {t('auth.otp.expired')}
                   </span>
                 )}
 
@@ -244,7 +244,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                       disabled={state.isLoading}
                       className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
                     >
-                      <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {t('auth.resendOtp') || 'Resend OTP'}
+                      <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {t('auth.otp.resend')}
                     </button>
                   )}
                 </div>
@@ -254,7 +254,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                   onClick={onBack}
                   className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
                 >
-                  {type === 'email' ? (t('auth.changeEmail') || 'Change Email') : (t('auth.changeNumber') || 'Change Number')}
+                  {type === 'email' ? t('auth.otp.changeEmail') : t('auth.otp.changeNumber')}
                 </button>
               </div>
             </div>
@@ -263,7 +263,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
 
         {/* Footer */}
         <p className="pt-6 text-center text-[10px] font-medium text-muted-foreground/70">
-          🔒 {t('auth.protectedEncryption') || 'Protected by enterprise 256-bit encryption'}
+          🔒 {t('auth.otp.encryptionFooter')}
         </p>
       </div>
       )}

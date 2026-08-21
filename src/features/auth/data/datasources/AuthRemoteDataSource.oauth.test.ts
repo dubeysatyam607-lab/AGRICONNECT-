@@ -82,12 +82,14 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
 
     const result = await syncOAuthProfileFromIdentity(user);
 
-    expect(result).toEqual({ profileExisted: false, updatedFields: ['full_name', 'avatar_url'] });
+    expect(result).toEqual({ profileExisted: false, onboardingCompleted: false, updatedFields: ['full_name', 'avatar_url', 'email'] });
     const insert = fromMock.mock.results[0].value.insert;
     expect(insert).toHaveBeenCalledWith({
       id: 'u-1',
+      email: 'ramesh@gmail.com',
       full_name: 'Ramesh Kumar',
       avatar_url: 'https://lh3.googleusercontent.com/pic',
+      onboarding_completed: false,
       role: 'farmer',
     });
   });
@@ -102,7 +104,7 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
 
     const result = await syncOAuthProfileFromIdentity(user);
 
-    expect(result).toEqual({ profileExisted: true, updatedFields: ['full_name', 'avatar_url'] });
+    expect(result).toEqual({ profileExisted: true, onboardingCompleted: false, updatedFields: ['full_name', 'avatar_url'] });
     const chain = fromMock.mock.results[0].value;
     expect(chain.update).toHaveBeenCalledWith({ full_name: 'Ramesh Kumar', avatar_url: 'https://lh3.googleusercontent.com/pic' });
     expect(chain.update.mock.calls[0][0]).not.toHaveProperty('role');
@@ -119,7 +121,7 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
 
     const result = await syncOAuthProfileFromIdentity(user);
 
-    expect(result).toEqual({ profileExisted: true, updatedFields: ['avatar_url'] });
+    expect(result).toEqual({ profileExisted: true, onboardingCompleted: false, updatedFields: ['avatar_url'] });
     const chain = fromMock.mock.results[0].value;
     expect(chain.update).toHaveBeenCalledWith({ avatar_url: 'https://lh3.googleusercontent.com/pic' });
     expect(chain.update.mock.calls[0][0]).not.toHaveProperty('full_name');
@@ -150,8 +152,10 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
     const payload = insert.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).toEqual({
       id: 'u-2',
+      email: null,
       full_name: 'Ramesh Kumar',
       avatar_url: 'https://pic',
+      onboarding_completed: false,
       role: 'farmer',
     });
   });
@@ -163,7 +167,7 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
       app_metadata: { provider: 'email' },
     };
     const result = await syncOAuthProfileFromIdentity(user);
-    expect(result).toEqual({ profileExisted: true, updatedFields: [] });
+    expect(result).toEqual({ profileExisted: true, onboardingCompleted: true, updatedFields: [] });
     expect(fromMock).not.toHaveBeenCalled();
   });
 
@@ -175,7 +179,7 @@ describe('syncOAuthProfileFromIdentity (safe Google profile enrichment)', () => 
       user_metadata: { full_name: 'R' },
       app_metadata: { provider: 'google' },
     });
-    expect(result).toEqual({ profileExisted: false, updatedFields: [] });
+    expect(result).toEqual({ profileExisted: false, onboardingCompleted: false, updatedFields: [] });
     warn.mockRestore();
   });
 });

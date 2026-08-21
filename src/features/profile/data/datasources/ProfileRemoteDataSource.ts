@@ -88,29 +88,31 @@ export class ProfileRemoteDataSource {
         },
         location: {
           ...defaultProf.location,
-          villageOrTehsil: data.location || extended.villageOrTehsil || defaultProf.location.villageOrTehsil,
-          district: extended.district || defaultProf.location.district,
-          state: extended.state || defaultProf.location.state,
+          villageOrTehsil: data.village || data.location || extended.villageOrTehsil || defaultProf.location.villageOrTehsil,
+          district: data.district || extended.district || defaultProf.location.district,
+          state: data.state || extended.state || defaultProf.location.state,
           pinCode: extended.pinCode || defaultProf.location.pinCode,
           gpsCoordinates: extended.gpsCoordinates || defaultProf.location.gpsCoordinates,
           isLocationPermissionGranted: extended.isLocationPermissionGranted ?? false,
-          farmCentroidAddress: extended.farmCentroidAddress || defaultProf.location.farmCentroidAddress,
+          farmCentroidAddress: data.farm_location || extended.farmCentroidAddress || defaultProf.location.farmCentroidAddress,
         },
         farmSpecs: {
           ...defaultProf.farmSpecs,
-          totalArea: extended.totalArea ?? 0,
+          totalArea: (data.farm_size !== null && data.farm_size !== undefined) ? Number(data.farm_size) : (extended.totalArea ?? 0),
           landUnit: extended.landUnit || defaultProf.farmSpecs.landUnit,
-          soilType: extended.soilType || defaultProf.farmSpecs.soilType,
-          irrigationType: extended.irrigationType || defaultProf.farmSpecs.irrigationType,
+          soilType: data.soil_type || extended.soilType || defaultProf.farmSpecs.soilType,
+          irrigationType: data.irrigation_type || extended.irrigationType || defaultProf.farmSpecs.irrigationType,
           primaryWaterSource: extended.primaryWaterSource || defaultProf.farmSpecs.primaryWaterSource,
         },
-        crops: Array.isArray(extended.crops) ? extended.crops : [],
+        crops: (Array.isArray(extended.crops) && extended.crops.length > 0)
+          ? extended.crops
+          : (data.primary_crop ? [data.primary_crop, ...(data.additional_crops || [])] : []),
         machineryOwned: Array.isArray(extended.machineryOwned) ? extended.machineryOwned : [],
         livestock: {
           ...defaultProf.livestock,
           ...(extended.livestock || {}),
         },
-        preferredLanguage: extended.preferredLanguage || 'en',
+        preferredLanguage: data.app_language || extended.preferredLanguage || 'en',
         profilePictureUrl: data.avatar_url || defaultProf.profilePictureUrl,
       };
     } catch (e) {
@@ -149,10 +151,22 @@ export class ProfileRemoteDataSource {
       const { error } = await supabase.from('profiles').upsert({
         id: profile.id,
         full_name: profile.personal.fullName,
+        email: profile.personal.emailAddress || null,
         phone: profile.personal.mobileNumber,
         location: profile.location.villageOrTehsil,
+        state: profile.location.state || null,
+        district: profile.location.district || null,
+        village: profile.location.villageOrTehsil || null,
+        farm_location: profile.location.farmCentroidAddress || null,
+        primary_crop: profile.crops?.[0] || null,
+        farm_size: profile.farmSpecs.totalArea || 0,
+        soil_type: profile.farmSpecs.soilType || null,
+        irrigation_type: profile.farmSpecs.irrigationType || null,
+        app_language: profile.preferredLanguage || 'en',
         avatar_url: profile.profilePictureUrl,
+        onboarding_completed: true,
         extended_profile: JSON.stringify(extendedProfile),
+        updated_at: new Date().toISOString(),
       });
 
       if (error) {

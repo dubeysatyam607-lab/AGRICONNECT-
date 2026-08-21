@@ -136,7 +136,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   {t('auth.login.welcomeTitle')}
                 </h1>
                 <p className="mt-1.5 text-xs font-medium text-muted-foreground">
-                  {t('auth.welcomeSubtitle') || 'Sign in to access Mandi prices, AI crop advice & farm management'}
+                  {t('auth.login.welcomeSubtitle')}
                 </p>
                 <AppButton
                   variant="outline"
