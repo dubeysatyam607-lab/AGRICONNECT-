@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { resolveImageUrl, getRealFallbackImage, isValidImageUrl, CATEGORY_FALLBACK_IMAGES } from "@/lib/image-resolver";
+import { fetchPexelsImageForName, PEXELS_CURATED_PHOTOS, normalizeNameForPexels } from "@/lib/pexels-api";
 import { cn } from "@/lib/utils";
 
 export interface AgriImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -35,12 +36,19 @@ export const AgriImage: React.FC<AgriImageProps> = ({
   const [allFailed, setAllFailed] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    const name = contextName || alt || "";
+    const norm = normalizeNameForPexels(name).toLowerCase();
+    const stem = norm.split(/\s+/)[0];
+    const pexelsCurated = PEXELS_CURATED_PHOTOS[stem] || PEXELS_CURATED_PHOTOS[norm];
+
     const primary = resolveImageUrl(src, type, contextName);
     const backup1 = fallbackSrc && isValidImageUrl(fallbackSrc) ? fallbackSrc : null;
-    const backup2 = getRealFallbackImage(type, contextName);
-    const backup3 = CATEGORY_FALLBACK_IMAGES.default;
+    const backup2 = pexelsCurated && isValidImageUrl(pexelsCurated) ? pexelsCurated : null;
+    const backup3 = getRealFallbackImage(type, contextName);
+    const backup4 = CATEGORY_FALLBACK_IMAGES.default;
 
-    const list = [primary, backup1, backup2, backup3].filter(
+    const list = [primary, backup1, backup2, backup3, backup4].filter(
       (url): url is string => isValidImageUrl(url)
     );
 
@@ -49,7 +57,24 @@ export const AgriImage: React.FC<AgriImageProps> = ({
     setCurrentIdx(0);
     setIsLoaded(false);
     setAllFailed(false);
-  }, [src, type, contextName, fallbackSrc]);
+
+    // Asynchronously search Pexels API for custom unmapped crops/products
+    if (name && (!src || !isValidImageUrl(src))) {
+      fetchPexelsImageForName(name, type).then((fetchedUrl) => {
+        if (isMounted && fetchedUrl && isValidImageUrl(fetchedUrl)) {
+          candidateUrls.current = Array.from(new Set([fetchedUrl, ...candidateUrls.current]));
+          setCurrentIdx(0);
+          setIsLoaded(false);
+        }
+      }).catch(() => {
+        // keep curated candidate list
+      });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [src, type, contextName, fallbackSrc, alt]);
 
   const currentSrc = candidateUrls.current[currentIdx] || resolveImageUrl(src, type, contextName);
 
