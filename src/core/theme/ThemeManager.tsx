@@ -21,12 +21,18 @@ const LEGACY_STORAGE_KEY = 'bkl_theme_preference';
 const THEME_COLORS: Record<'dark' | 'light', string> = { light: '#2E7D32', dark: '#10251a' };
 
 function applyThemeClass(theme: ThemeMode): 'dark' | 'light' {
+  if (typeof window === 'undefined' || !window.document) return 'light';
   const root = window.document.documentElement;
+  if (!root) return 'light';
   root.classList.remove('light', 'dark');
 
   let effective: 'dark' | 'light' = 'light';
   if (theme === 'system') {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window.matchMedia === 'function') {
+      effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else {
+      effective = 'light';
+    }
   } else {
     effective = theme;
   }
@@ -61,11 +67,11 @@ export const ThemeManagerProvider: React.FC<{ children: React.ReactNode; default
 
   // Listen for OS system theme changes when in 'system' mode
   useEffect(() => {
-    if (theme !== 'system') return;
+    if (theme !== 'system' || typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => setResolvedTheme(applyThemeClass(theme));
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener?.('change', handleChange);
+    return () => mediaQuery.removeEventListener?.('change', handleChange);
   }, [theme]);
 
   const setTheme = (newTheme: ThemeMode) => {
