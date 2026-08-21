@@ -13,10 +13,11 @@ import { interpolate } from '@/i18n/journey';
  */
 interface IFarmerProfileViewProps {
   onEditProfile: () => void;
+  onOpenKyc?: () => void;
   onBack?: () => void;
 }
 
-export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditProfile, onBack }) => {
+export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditProfile, onOpenKyc, onBack }) => {
   const { t } = useLanguage();
   const [state, { captureGpsLocation }] = useProfileViewModel();
 
@@ -283,6 +284,77 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
             <span className="text-2xl block mb-1">🐓</span>
             <span className="text-sm font-extrabold text-foreground block">{livestock?.poultry || 0}</span>
             <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Poultry')}</span>
+          </div>
+        </div>
+      </AppCard>
+
+      {/* Govt ID & Financial Verification Card */}
+      <AppCard variant="glass" padding="lg" className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+          <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+            <span>🛡️</span> Government & Credit Verification
+          </h3>
+          {onOpenKyc && (
+            <button
+              onClick={onOpenKyc}
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+            >
+              Manage KYC →
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground block">
+                UIDAI Aadhaar Card
+              </span>
+              <span className="text-sm font-extrabold text-foreground font-mono">
+                {personal.isAadhaarVerified && personal.aadhaarNumber
+                  ? maskAadhaar(personal.aadhaarNumber)
+                  : 'Not Linked'}
+              </span>
+            </div>
+            {personal.isAadhaarVerified ? (
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase border border-emerald-500/20">
+                Verified ✅
+              </span>
+            ) : onOpenKyc ? (
+              <button
+                onClick={onOpenKyc}
+                className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold shadow-sm cursor-pointer"
+              >
+                Verify Now
+              </button>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold">
+                Unverified
+              </span>
+            )}
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground block">
+                Kisan Credit Card (KCC)
+              </span>
+              <span className="text-sm font-extrabold text-foreground">
+                Institutional 4% Subsidized
+              </span>
+            </div>
+            {onOpenKyc ? (
+              <button
+                onClick={onOpenKyc}
+                className="px-2.5 py-1 rounded-full bg-slate-800 dark:bg-slate-700 text-white text-[10px] font-bold shadow-sm cursor-pointer hover:bg-slate-700"
+              >
+                Link KCC
+              </button>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full bg-slate-500/10 text-muted-foreground text-[10px] font-bold">
+                Optional
+              </span>
+            )}
           </div>
         </div>
       </AppCard>

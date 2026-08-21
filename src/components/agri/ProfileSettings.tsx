@@ -37,6 +37,7 @@ import AuditLogs from "./AuditLogs";
 import NotificationSettings from "./NotificationSettings";
 import { FarmerProfileView } from "@/features/profile/presentation/views/FarmerProfileView";
 import { EditFarmerProfileView } from "@/features/profile/presentation/views/EditFarmerProfileView";
+import { FarmerKYCVerificationView } from "@/features/profile/presentation/views/FarmerKYCVerificationView";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
 import { submitWeb3Form } from "@/config/web3forms";
 
@@ -49,7 +50,7 @@ interface ProfileSettingsProps {
   onToast?: (message: string) => void;
 }
 
-type SettingsView = 'main' | 'audit-logs' | 'notifications' | 'edit-profile' | 'view-profile' | 'payment-methods' | 'my-bookings' | 'help-support' | 'farm-details' | 'orders' | 'saved-chats' | 'bookmarks';
+type SettingsView = 'main' | 'audit-logs' | 'notifications' | 'edit-profile' | 'view-profile' | 'kyc-verification' | 'payment-methods' | 'my-bookings' | 'help-support' | 'farm-details' | 'orders' | 'saved-chats' | 'bookmarks';
 
 // --- Error Boundary ---
 interface ErrorBoundaryProps {
@@ -140,6 +141,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
       items: [
         { icon: User, label: tr('profile.menu.viewProfile', 'My Agricultural Identity'), sub: tr('profile.menu.viewProfileSubtitle', '14 farm specs & GPS map'), tint: 'text-primary', action: () => setCurrentView('view-profile') },
         { icon: User, label: tr('profile.menu.editProfile', 'Edit Profile Wizard'), sub: tr('profile.menu.editProfileSubtitle', 'Update farm & personal details'), tint: 'text-primary', action: () => setCurrentView('edit-profile') },
+        { icon: Shield, label: tr('profile.menu.kycVerification', 'Govt ID & KYC Verification'), sub: tr('profile.menu.kycVerificationSub', 'Aadhaar & Kisan Credit Card (KCC)'), tint: 'text-emerald-500', action: () => setCurrentView('kyc-verification') },
         { icon: MapPin, label: tr('profile.menu.farmDetails', 'Farm Details'), sub: tr('profile.menu.farmDetailsSubtitle', 'Land, crops & location'), tint: 'text-feature-mandi', action: () => setCurrentView('farm-details') },
       ],
     },
@@ -305,6 +307,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
         <SidebarErrorBoundary>
           <FarmerProfileView
             onEditProfile={() => setCurrentView('edit-profile')}
+            onOpenKyc={() => setCurrentView('kyc-verification')}
             onBack={() => setCurrentView('main')}
           />
         </SidebarErrorBoundary>
@@ -322,6 +325,21 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
               setCurrentView('view-profile');
             }}
             onCancel={() => setCurrentView('view-profile')}
+          />
+        </SidebarErrorBoundary>
+      </div>
+    );
+  }
+
+  if (currentView === 'kyc-verification') {
+    return (
+      <div className="pb-24 pt-4 px-4">
+        <SidebarErrorBoundary>
+          <FarmerKYCVerificationView
+            onBack={() => setCurrentView('main')}
+            onSuccess={() => {
+              showToastMsg("KYC Updated", "Verification details saved and badges awarded.");
+            }}
           />
         </SidebarErrorBoundary>
       </div>
