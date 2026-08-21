@@ -18,7 +18,7 @@ import {
   HelpCircle,
   Leaf,
 } from "lucide-react";
-import { COMMUNITY_GROUPS, COMMUNITY_TOPICS, type CommunityPost } from "@/lib/mock-data";
+import { COMMUNITY_GROUPS, COMMUNITY_TOPICS, COMMUNITY_POSTS, type CommunityPost } from "@/lib/mock-data";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFarm, COMMON_CROPS } from "@/contexts/FarmContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +38,18 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
   const { profile } = useFarm();
   const { user } = useAuth();
 
-  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [posts, setPosts] = useState<CommunityPost[]>(() => {
+    try {
+      const saved = localStorage.getItem("agri_community_posts");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return COMMUNITY_POSTS;
+  });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FeedFilter>("forYou");
   const [cropFilter, setCropFilter] = useState<string | null>(null);
@@ -126,7 +137,15 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
       helpWanted: text.includes("?"),
       expertReply: null,
     };
-    setPosts((prev) => [newPost, ...prev]);
+    setPosts((prev) => {
+      const updated = [newPost, ...prev];
+      try {
+        localStorage.setItem("agri_community_posts", JSON.stringify(updated.slice(0, 50)));
+      } catch {
+        // storage quota fallback
+      }
+      return updated;
+    });
     setComposerText("");
     onToast(`${firstName} ${t("community.posted")}`);
   };
