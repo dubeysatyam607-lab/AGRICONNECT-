@@ -132,13 +132,15 @@ function localCoupon(code: string, subtotal: number): { ok: boolean; discount?: 
 }
 
 function computeTotals(cart: CartLine[], couponCode: string): { subtotal: number; discount: number; shipping: number; total: number; couponDesc: string } {
-  const subtotal = cart.reduce((s, l) => s + l.lineTotal, 0);
+  const safeCart = cart.filter(l => l && Number.isFinite(l.price) && l.price > 0 && Number.isFinite(l.qty) && l.qty > 0);
+  const subtotal = safeCart.reduce((s, l) => s + (l.price * Math.max(1, Math.floor(l.qty))), 0);
   const v = localCoupon(couponCode, subtotal);
-  const discount = v.ok ? (v.discount ?? 0) : 0;
-  const afterDiscount = subtotal - discount;
+  const discount = v.ok ? Math.min(subtotal, Math.max(0, v.discount ?? 0)) : 0;
+  const afterDiscount = Math.max(0, subtotal - discount);
   const freeShip = couponCode.toUpperCase() === "FREESHIP" ? true : afterDiscount >= 499;
-  const shipping = freeShip ? 0 : 49;
-  return { subtotal, discount, shipping, total: afterDiscount + shipping, couponDesc: v.ok && v.coupon ? v.coupon.desc : "" };
+  const shipping = subtotal > 0 ? (freeShip ? 0 : 49) : 0;
+  const total = Math.max(0, afterDiscount + shipping);
+  return { subtotal, discount, shipping, total, couponDesc: v.ok && v.coupon ? v.coupon.desc : "" };
 }
 
 function buildLocalTracking(orderId: string): Tracking {

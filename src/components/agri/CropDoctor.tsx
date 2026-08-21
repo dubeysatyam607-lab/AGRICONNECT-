@@ -127,6 +127,42 @@ const CropDoctor: React.FC = () => {
     });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a valid JPG, PNG, or WebP image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: `Image size must be less than ${MAX_FILE_MB}MB.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const compressed = await compressImage(file);
+      setImagePreview(compressed);
+      setImageBase64(compressed);
+      setError(null);
+    } catch (err: any) {
+      toast({
+        title: "Upload failed",
+        description: err?.message || "Failed to process image.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getLocalCropScanDiagnosis = (desc: string, langName: string = "Hindi"): CropScanResult => {
     const isHindi = !langName.toLowerCase().includes("english");
     const text = (desc || "").toLowerCase();

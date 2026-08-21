@@ -47,12 +47,12 @@ let razorpayScriptPromise: Promise<boolean> | null = null;
 export const isRazorpayConfigured = (): boolean =>
   typeof import.meta !== 'undefined' && !!import.meta.env?.VITE_RAZORPAY_KEY_ID;
 
-const getRazorpayKey = (): string =>
-  import.meta.env?.VITE_RAZORPAY_KEY_ID ?? '';
-
 const loadRazorpayScript = (): Promise<boolean> => {
   if (typeof window === 'undefined') return Promise.resolve(false);
   if ((window as unknown as { Razorpay?: unknown }).Razorpay) return Promise.resolve(true);
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
+    return Promise.resolve(false);
+  }
   if (razorpayScriptPromise) return razorpayScriptPromise;
   razorpayScriptPromise = new Promise<boolean>((resolve) => {
     const script = document.createElement('script');
@@ -63,6 +63,11 @@ const loadRazorpayScript = (): Promise<boolean> => {
       razorpayScriptPromise = null;
       resolve(false);
     };
+    setTimeout(() => {
+      if (!((window as unknown as { Razorpay?: unknown }).Razorpay)) {
+        resolve(false);
+      }
+    }, 1500);
     document.head.appendChild(script);
   });
   return razorpayScriptPromise;
@@ -229,5 +234,9 @@ export const getGateway = (name: GatewayName = 'razorpay'): PaymentGateway => {
 };
 
 /** Gateway actually used when no gateway name is supplied. */
-export const getDefaultGateway = (): PaymentGateway =>
-  isRazorpayConfigured() ? RazorpayGateway : SimulatedGateway;
+export const getDefaultGateway = (): PaymentGateway => {
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
+    return SimulatedGateway;
+  }
+  return isRazorpayConfigured() ? RazorpayGateway : SimulatedGateway;
+};

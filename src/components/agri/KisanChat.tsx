@@ -472,6 +472,16 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const allowedMimes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedMimes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please attach a valid JPG, PNG, or WebP image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
       toast({
         title: t('chat.fileTooLargeTitle'),

@@ -171,6 +171,7 @@ export const getUnreadNotificationCount = (): number =>
   state.notifications.filter((n) => !n.read).length;
 
 const debitWallet = (amount: number, note: string, refId?: string): boolean => {
+  if (!Number.isFinite(amount) || amount <= 0) return false;
   if (state.wallet.balance < amount) return false;
   const balanceAfter = round2(state.wallet.balance - amount);
   state = {
@@ -190,6 +191,7 @@ const debitWallet = (amount: number, note: string, refId?: string): boolean => {
 };
 
 const creditWallet = (amount: number, note: string, refId?: string): void => {
+  if (!Number.isFinite(amount) || amount <= 0) return;
   const balanceAfter = round2(state.wallet.balance + amount);
   state = {
     ...state,
@@ -438,6 +440,9 @@ export const processPayment = async (input: ProcessPaymentInput): Promise<Paymen
   if (!Number.isFinite(input.subtotal) || input.subtotal <= 0) {
     throw new Error('Invalid payment amount');
   }
+  if (input.method === 'wallet' && input.purpose === 'wallet') {
+    throw new Error('Cannot top up wallet using wallet balance');
+  }
   const amounts = computeAmounts({
     subtotal: input.subtotal,
     purpose: input.purpose,
@@ -533,48 +538,62 @@ export const processPayment = async (input: ProcessPaymentInput): Promise<Paymen
 /* ── Retry logic ──────────────────────────────────────────────────────── */
 
 export const retryTransaction = async (txnId: string): Promise<PaymentTransaction | null> => {
-  const index = state.transactions.findIndex((t) => t.id === txnId);
-  if (index < 0) return null;
-  const existing = state.transactions[index];
-  if (existing.status !== 'Failed' && existing.status !== 'Expired') return existing;
-
+  const existing = state.transactions.find((t) => t.id === txnId);
+  if (!existing || existing.status !== 'Failed') return null;
+  const amounts = computeAmounts({
+    subtotal: existing.subtotal,
+    purpose: existing.purpose,
+    couponCode: existing.couponCode,
+    gstRate: existing.gstRate,
+    method: existing.method,
+  });
   const gateway = getDefaultGateway();
-  const attempt = buildAttempt(existing.method, existing.total);
-  existing.attempts = [...existing.attempts, attempt];
+  const attempt = buildAttempt(existing.method, amounts.total);
+  existing.attempts = [attempt, ...existing.attempts].slice(0, 5);
   existing.status = 'Processing';
   existing.failureReason = undefined;
-  persist({ ...state, transactions: state.transactions.map((t, i) => (i === index ? existing : t)) });
+  persist({ ...state, transactions: state.transactions.map((t) => (t.id === txnId ? existing : t)) });
+
+  if (existing.method === 'wallet' && existing.purpose !== 'wallet') {
+    if (!debitWallet(amounts.total, existing.description, existing.id)) {
+      existing.status = 'Failed';
+      existing.failureReason = 'Insufficient wallet balance on retry';
+      persist({ ...state, transactions: state.transactions.map((t) => (t.id === txnId ? existing : t)) });
+      return existing;
+    }
+  }
 
   const chargeReq: ChargeRequest = {
-    amount: existing.total,
+    amount: amounts.total,
     method: existing.method,
     orderId: existing.id,
     description: existing.description,
     upiId: existing.upiId,
     cardLast4: existing.cardLast4,
     bank: existing.bank,
-    meta: { ...(existing.meta ?? {}), attempt: existing.attempts.length - 1 },
+    customer: existing.customer,
+    meta: { ...(existing.meta ?? {}), attempt: existing.attempts.length },
   };
-  const result = await gateway.charge(chargeReq);
 
-  const attemptIndex = existing.attempts.length - 1;
-  existing.attempts[attemptIndex].status = result.success ? 'Success' : 'Failed';
-  existing.attempts[attemptIndex].completedAt = new Date().toISOString();
-  existing.attempts[attemptIndex].gatewayRef = result.gatewayRef;
-  existing.attempts[attemptIndex].failureReason = result.failureReason;
+  const result = await gateway.charge(chargeReq);
+  existing.attempts[0].status = result.success ? 'Success' : 'Failed';
+  existing.attempts[0].completedAt = new Date().toISOString();
+  existing.attempts[0].gatewayRef = result.gatewayRef;
+  existing.attempts[0].failureReason = result.failureReason;
 
   if (result.success) {
     existing.status = 'Success';
     existing.completedAt = new Date().toISOString();
     existing.gatewayRef = result.gatewayRef;
     state = applySideEffects(existing);
-    pushNotification('retry', 'Payment recovered', `${existing.description} succeeded on retry.`, existing.id);
     persist(state);
   } else {
     existing.status = 'Failed';
-    existing.failureReason = result.failureReason ?? 'Payment failed';
-    pushNotification('failure', 'Retry failed', `${existing.description} — ${existing.failureReason}.`, existing.id);
-    persist({ ...state, transactions: state.transactions.map((t, i) => (i === index ? existing : t)) });
+    existing.failureReason = result.failureReason ?? 'Retry failed';
+    if (existing.method === 'wallet' && existing.purpose !== 'wallet') {
+      creditWallet(amounts.total, `Refund of failed retry ${existing.id}`, existing.id);
+    }
+    persist({ ...state, transactions: state.transactions.map((t) => (t.id === txnId ? existing : t)) });
   }
   return existing;
 };
@@ -589,8 +608,12 @@ export const processRefund = async (
   const index = state.transactions.findIndex((t) => t.id === txnId);
   if (index < 0) return null;
   const txn = state.transactions[index];
-  if (txn.status !== 'Success' && txn.status !== 'RefundPending') return txn;
-  const refundAmount = amount && amount < txn.total ? amount : txn.total;
+  if (txn.status !== 'Success' && txn.status !== 'RefundPending' && txn.status !== 'PartialRefund') return txn;
+  if (txn.status === 'Refunded' || txn.refund?.completedAt) return txn;
+
+  const validAmount = Number.isFinite(amount) && amount! > 0 ? amount! : txn.total;
+  const refundAmount = Math.min(txn.total, validAmount);
+  if (refundAmount <= 0) return txn;
 
   txn.status = 'RefundPending';
   txn.refund = { amount: refundAmount, reason, initiatedAt: new Date().toISOString() };

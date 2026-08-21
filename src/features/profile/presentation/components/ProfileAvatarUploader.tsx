@@ -24,6 +24,11 @@ export const ProfileAvatarUploader: React.FC<IProfileAvatarUploaderProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only JPEG, PNG, and WebP images are supported.');
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         alert(t('pdetail.avatarSize'));
         return;
