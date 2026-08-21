@@ -99,7 +99,111 @@ const SCRIPT_RANGES: Array<{ lang: string; display: string; ranges: Array<[numbe
   { lang: "as", display: "Assamese (অসমীয়া)", ranges: [[0x0980, 0x09FF]] },
 ];
 
-/** Detect the dominant language script in a string. Returns {lang, display} or null for Latin. */
+const HINGLISH_KEYWORDS = [
+  "kya", "hai", "hain", "kaise", "kare", "karna", "ka", "ki", "ke", "ko", "me", "mein",
+  "bhav", "bhaav", "rate", "kheti", "dawa", "dawai", "khad", "paani", "pani",
+  "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi", "kab",
+  "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
+  "patta", "patti", "peela", "sukha", "kharif", "rabi", "mandi", "tamatr", "tamatar",
+  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch"
+];
+
+export const CROP_DICTIONARY: Record<string, string> = {
+  tomato: "Tomato",
+  tamatar: "Tomato",
+  tamatr: "Tomato",
+  tomaatar: "Tomato",
+  "टमाटर": "Tomato",
+  wheat: "Wheat",
+  gehu: "Wheat",
+  gehun: "Wheat",
+  "गेहूं": "Wheat",
+  "गेहू": "Wheat",
+  soybean: "Soybean",
+  soya: "Soybean",
+  "सोयाबीन": "Soybean",
+  onion: "Onion",
+  pyaj: "Onion",
+  pyaz: "Onion",
+  kanda: "Onion",
+  "प्याज": "Onion",
+  "प्याज़": "Onion",
+  "कांदा": "Onion",
+  potato: "Potato",
+  aloo: "Potato",
+  aalu: "Potato",
+  "आलू": "Potato",
+  cotton: "Cotton",
+  kapas: "Cotton",
+  kapaas: "Cotton",
+  "कपास": "Cotton",
+  mustard: "Mustard",
+  sarson: "Mustard",
+  rai: "Mustard",
+  "सरसों": "Mustard",
+  "राई": "Mustard",
+  chana: "Gram",
+  gram: "Gram",
+  channa: "Gram",
+  "चना": "Gram",
+  rice: "Rice",
+  paddy: "Paddy",
+  chawal: "Rice",
+  dhan: "Paddy",
+  "चावल": "Rice",
+  "धान": "Paddy",
+  chilli: "Chilli",
+  chili: "Chilli",
+  mirch: "Chilli",
+  mirchi: "Chilli",
+  "मिर्च": "Chilli",
+  garlic: "Garlic",
+  lahsun: "Garlic",
+  lehsan: "Garlic",
+  "लहसुन": "Garlic",
+  ginger: "Ginger",
+  adrak: "Ginger",
+  "अदरक": "Ginger",
+  turmeric: "Turmeric",
+  haldi: "Turmeric",
+  "हल्दी": "Turmeric",
+  maize: "Maize",
+  makka: "Maize",
+  makai: "Maize",
+  corn: "Maize",
+  "मक्का": "Maize",
+  sugarcane: "Sugarcane",
+  ganna: "Sugarcane",
+  "गन्ना": "Sugarcane",
+  bajra: "Bajra",
+  "बाजरा": "Bajra",
+  jowar: "Jowar",
+  "ज्वार": "Jowar",
+  moong: "Moong",
+  mung: "Moong",
+  "मूंग": "Moong",
+  urad: "Urad",
+  "उड़द": "Urad",
+  groundnut: "Groundnut",
+  mungfali: "Groundnut",
+  peanut: "Groundnut",
+  "मूंगफली": "Groundnut",
+};
+
+/** Extracts any specific crop mentioned in the user message */
+export function extractMentionedCrop(text: string): { englishName: string; rawTerm: string } | null {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  for (const [key, val] of Object.entries(CROP_DICTIONARY)) {
+    const regex = new RegExp(`(^|\\s|[.,!?])${key}($|\\s|[.,!?])`, "i");
+    if (regex.test(lower) || text.includes(key)) {
+      return { englishName: val, rawTerm: key };
+    }
+  }
+  return null;
+}
+
+/** Detect the dominant language script or Roman-Hindi/Hinglish in a string. */
 function detectLanguage(text: string): { lang: string; display: string } | null {
   if (!text) return null;
   const counts = new Map<string, number>();
@@ -117,13 +221,29 @@ function detectLanguage(text: string): { lang: string; display: string } | null 
     const count = counts.get(s.lang) || 0;
     if (count > 0 && (!best || count > best.count)) best = { lang: s.lang, display: s.display, count };
   }
-  if (!best) return null;
-  // Bengali & Assamese share the same block — distinguish by common Assamese letters.
-  if (best.lang === "bn") {
-    const asLetters = (text.match(/[ৰৱ](?![ংঢ])/g) || []).length;
-    if (asLetters > 2) return { lang: "as", display: "Assamese (অসমীয়া)" };
+  if (best) {
+    // Bengali & Assamese share the same block — distinguish by common Assamese letters.
+    if (best.lang === "bn") {
+      const asLetters = (text.match(/[ৰৱ](?![ংঢ])/g) || []).length;
+      if (asLetters > 2) return { lang: "as", display: "Assamese (অসমीया)" };
+    }
+    return { lang: best.lang, display: best.display };
   }
-  return { lang: best.lang, display: best.display };
+
+  // Check for Hinglish / Roman Hindi keywords
+  const words = text.toLowerCase().split(/\s+/);
+  let hinglishHits = 0;
+  for (const w of words) {
+    const cleanWord = w.replace(/[^a-z]/g, "");
+    if (cleanWord && HINGLISH_KEYWORDS.includes(cleanWord)) {
+      hinglishHits++;
+    }
+  }
+  if (hinglishHits >= 1) {
+    return { lang: "hi", display: "Hindi (हिंदी / Hinglish)" };
+  }
+
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -157,7 +277,7 @@ async function invokeTool(fnName: string, body: unknown): Promise<unknown> {
 function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme"> {
   const t = text.toLowerCase();
   const needs: Array<"weather" | "mandi" | "scheme"> = [];
-  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech"];
+  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya"];
   const weatherWords = ["weather", "rain", "mausam", "मौसम", "बारिश", "बरसात", "temperature", "तापमान", "forecast"];
   const schemeWords = ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "kcc", "pmfby", "loan"];
   if (weatherWords.some((w) => t.includes(w))) needs.push("weather");
@@ -169,9 +289,9 @@ function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme"> {
 async function runTools(
   userMessage: string,
   location: { latitude?: number; longitude?: number } | undefined,
-): Promise<{ toolsContext: string; toolsUsed: string[] }> {
+): Promise<{ toolsContext: string; toolsUsed: string[]; detectedCrop: string | null }> {
   const needs = detectToolNeeds(userMessage);
-  if (needs.length === 0) return { toolsContext: "", toolsUsed: [] };
+  const cropInfo = extractMentionedCrop(userMessage);
 
   const toolsUsed: string[] = [];
   const blocks: string[] = [];
@@ -193,12 +313,12 @@ async function runTools(
 
   if (needs.includes("mandi")) {
     toolsUsed.push("get_mandi_prices");
-    const commodityMatch = userMessage.match(/\b(wheat|soybean|rice|onion|tomato|potato|cotton|maize|गेहूं|सोयाबीन|चावल|प्याज)\b/i);
-    const data = await invokeTool("mandi-prices", commodityMatch ? { searchQuery: commodityMatch[1] } : {});
+    const query = cropInfo?.englishName || cropInfo?.rawTerm;
+    const data = await invokeTool("mandi-prices", query ? { searchQuery: query } : {});
     if (data && Array.isArray((data as { prices?: unknown[] }).prices) && (data as { prices: unknown[] }).prices.length > 0) {
-      blocks.push(`MANDI_TOOL_RESULT: ${JSON.stringify(data)}\n(Current mandi price data — quote these exact rates, do not fabricate any price.)`);
+      blocks.push(`MANDI_TOOL_RESULT (For ${query || "Requested Crops"}): ${JSON.stringify(data)}\n(Current mandi price data — quote these exact rates, do not fabricate any price.)`);
     } else {
-      blocks.push(`MANDI_TOOL_RESULT: UNAVAILABLE\n(Live mandi prices are currently unavailable — say so, do NOT invent a price.)`);
+      blocks.push(`MANDI_TOOL_RESULT: UNAVAILABLE for ${query || "crop"}\n(Live mandi prices are currently unavailable — say so, do NOT invent a price.)`);
     }
   }
 
@@ -213,7 +333,7 @@ async function runTools(
     }
   }
 
-  return { toolsContext: blocks.join("\n\n"), toolsUsed };
+  return { toolsContext: blocks.join("\n\n"), toolsUsed, detectedCrop: cropInfo ? `${cropInfo.englishName} (${cropInfo.rawTerm})` : null };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -313,6 +433,11 @@ AGRICULTURAL SAFETY (ABSOLUTE):
 - Use hedged language: "possible", "likely", "may be", "needs field confirmation".
 - Never invent mandi prices, scheme names, subsidy amounts, or weather. Only use data given to you in TOOL_RESULT blocks; if a TOOL_RESULT says UNAVAILABLE, tell the user live data is unavailable.
 
+CRITICAL CROP TARGET RULE (ABSOLUTE):
+- When the farmer asks about a specific crop (e.g. Tomato / Tamatar / टमाटर, Wheat / Gehu / गेहूं, Potato / Aloo / आलू, Onion / Pyaj / प्याज, etc.), you MUST answer exclusively for THAT specific requested crop.
+- NEVER talk about other crops (e.g. default profile Soybean) when the question is about Tomato or another crop.
+- Specifically requested crop focus: "{cropFocus}"
+
 KNOWN FARMER CONTEXT:
 "{memoryContext}"
 
@@ -397,10 +522,11 @@ serve(async (req) => {
 
   try {
     // Tool layer: fetch real-time data BEFORE composing the answer.
-    const { toolsContext, toolsUsed } = await runTools(latestUser?.content ?? "", userLocation);
+    const { toolsContext, toolsUsed, detectedCrop } = await runTools(latestUser?.content ?? "", userLocation);
 
     const systemPrompt = SYSTEM_PROMPT
       .replace("{language}", replyLanguage)
+      .replace("{cropFocus}", detectedCrop || "General query")
       .replace("{memoryContext}", memoryContext || "None provided.")
       .replace("{farmDetails}", farmDetails)
       .replace("{persona}", persona || "Warm, practical and respectful — always explain the reason behind advice.")

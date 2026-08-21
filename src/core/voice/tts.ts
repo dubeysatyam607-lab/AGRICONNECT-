@@ -87,7 +87,39 @@ interface ActiveSession {
 }
 
 const activeSessions = new Map<number, ActiveSession>();
-let sessionCounter = 0;
+// Helper to find the most natural Indian human voice for the given language
+function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (voices.length === 0) return null;
+
+  const targetLang = (lang || "hi-IN").toLowerCase().replace("_", "-");
+  const baseCode = targetLang.split("-")[0];
+
+  // 1. High-priority natural / neural voices
+  const preferredPatterns = [
+    /google.*(hindi|हिन्दी|indian)/i,
+    /microsoft.*(natural|hemant|swara|neerja|prabhat|heera|ravi)/i,
+    /(lekha|neerja|veena|rishi|pradeep|kaveri)/i,
+  ];
+
+  for (const pat of preferredPatterns) {
+    const match = voices.find((v) => pat.test(v.name) && (v.lang.toLowerCase().includes(baseCode) || v.lang.toLowerCase().includes("in")));
+    if (match) return match;
+  }
+
+  // 2. Exact language match
+  const exactMatch = voices.find((v) => v.lang.toLowerCase() === targetLang);
+  if (exactMatch) return exactMatch;
+
+  // 3. Base language match
+  const baseMatch = voices.find((v) => v.lang.toLowerCase().startsWith(baseCode));
+  if (baseMatch) return baseMatch;
+
+  // 4. Any Indian voice
+  const anyIndian = voices.find((v) => v.lang.toLowerCase().includes("in") || /india/i.test(v.name));
+  return anyIndian || null;
+}
 
 function speakWithNativeSpeechSynthesis(
   text: string,
@@ -111,7 +143,14 @@ function speakWithNativeSpeechSynthesis(
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = 0.95;
+  utterance.rate = 0.90; // Natural, human conversational pacing (not rushed)
+  utterance.pitch = 1.02; // Warm, approachable tone
+
+  // Select human Indian voice if available
+  const selectedVoice = getBestIndianVoice(lang);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
 
   let isPaused = false;
   let isSpeaking = true;
