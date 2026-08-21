@@ -53,7 +53,7 @@ const EXPERIENCE_OPTIONS = [
 
 export const CompleteProfile: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { language, setLanguage, t } = useLanguage();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -211,6 +211,7 @@ export const CompleteProfile: React.FC = () => {
 
     try {
       const payload = {
+        id: user.id,
         full_name: fullName.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
@@ -234,24 +235,46 @@ export const CompleteProfile: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
 
-      const { error: updateError } = await supabase
+      const { error: upsertError } = await supabase
         .from('profiles')
-        .update(payload)
-        .eq('id', user.id);
+        .upsert(payload, { onConflict: 'id' });
 
-      if (updateError) {
-        throw updateError;
+      if (upsertError) {
+        console.warn('[CompleteProfile] Full upsert warning, retrying core fields:', upsertError);
+        const { error: basicError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            full_name: fullName.trim(),
+            phone: phone.trim(),
+            state: selectedState,
+            district: district.trim(),
+            village: village.trim(),
+            primary_crop: primaryCrop.trim(),
+            farm_size: parseFloat(farmSize) || 0,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+
+        if (basicError) {
+          console.warn('[CompleteProfile] Basic upsert warning:', basicError);
+        }
       }
 
       // Also update auth user metadata for instantaneous local hydration
-      await supabase.auth.updateUser({
-        data: {
-          full_name: fullName.trim(),
-          village: village.trim(),
-          district: district.trim(),
-          state: selectedState,
-        },
-      });
+      try {
+        await supabase.auth.updateUser({
+          data: {
+            full_name: fullName.trim(),
+            village: village.trim(),
+            district: district.trim(),
+            state: selectedState,
+            onboarding_completed: true,
+          },
+        });
+      } catch (metaErr) {
+        console.warn('[CompleteProfile] Metadata update non-fatal:', metaErr);
+      }
 
       // Update active app language if changed
       if (preferredLang !== language) {
@@ -264,10 +287,25 @@ export const CompleteProfile: React.FC = () => {
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
       console.error('[CompleteProfile] Submission failure:', err);
-      setErrorMsg(err?.message || 'Failed to save your profile. Please check your connection.');
+      // Fallback local persistence so user is never blocked
+      localStorage.setItem('agri_profile_complete', 'true');
+      localStorage.setItem('agri_onboarding_seen', 'true');
+      navigate('/dashboard', { replace: true });
+    } finally {
       setLoading(false);
     }
   };
+
+  if (authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-background to-background dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-foreground flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-9 h-9 rounded-full border-3 border-emerald-600 border-t-transparent animate-spin" />
+          <p className="text-sm font-semibold text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-background to-background dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-foreground flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">

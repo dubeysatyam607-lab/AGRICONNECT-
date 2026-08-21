@@ -73,11 +73,13 @@ vi.mock('@/integrations/supabase/client', () => ({
           update: (...args: unknown[]) => ({
             eq: (...eqArgs: unknown[]) => mockUpdate(...args, ...eqArgs),
           }),
+          upsert: (...args: unknown[]) => mockUpdate(...args),
         };
       }
       return {
         select: vi.fn().mockReturnThis(),
         update: vi.fn().mockReturnThis(),
+        upsert: vi.fn().mockResolvedValue({ error: null }),
         eq: vi.fn().mockResolvedValue({ error: null }),
       };
     },
