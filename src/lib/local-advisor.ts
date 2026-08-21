@@ -174,7 +174,7 @@ const MANDI_CROP_STEMS: Record<string, string> = {
 };
 
 const HINDI_CROP_ALIASES: Record<string, string> = {
-  गेहूं: "wheat", गेहूं: "wheat", गेहू: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
+  गेहूं: "wheat", गेहू: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
   टमाटर: "tomato", आलू: "potato", सरसों: "mustard", मक्का: "maize",
   चावल: "rice", धान: "rice", गन्ना: "sugarcane", मिर्च: "chilli",
   मूंगफली: "groundnut", चना: "gram", लहसुन: "garlic", अदरक: "ginger",

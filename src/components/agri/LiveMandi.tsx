@@ -17,6 +17,7 @@ import { searchAgriImages } from "@/lib/pexels-api";
 import { ErrorState } from "@/components/ui/error-state";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
+import { AgriImage } from "@/components/ui/agri-image";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NearbyPlace {
@@ -381,16 +382,16 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         <div>
           {/* Top Banner Image & AI Badge */}
           <div className="relative h-32 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <img
+            <AgriImage
               src={imgSrc}
               alt={c.crop}
+              type="crop"
+              contextName={c.crop}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              containerClassName="absolute inset-0 w-full h-full"
               loading="eager"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = defaultImg;
-              }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
             <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
               {renderAdviceBadge(c)}
@@ -558,15 +559,16 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
           {/* Selected Crop Image Banner */}
           <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <img
+            <AgriImage
               src={cropImages[normalizeCropKey(c.crop)] || c.cropImage || getCropImage(c.crop)}
               alt={c.crop}
+              type="crop"
+              contextName={c.crop}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = getCropImage(c.crop);
-              }}
+              containerClassName="absolute inset-0 w-full h-full"
+              loading="eager"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
               <div>
                 <span className="text-xs bg-emerald-600/90 text-white font-bold px-2 py-0.5 rounded-full inline-block mb-1">
