@@ -34,6 +34,8 @@ const COMPANY = [
   { to: '/about', label: 'About Us' },
   { to: '/privacy-policy', label: 'Privacy Policy' },
   { to: '/terms', label: 'Terms & Conditions' },
+  { to: '/data-declaration', label: 'Data Declaration' },
+  { to: '/contact', label: 'Grievance Officer' },
 ];
 
 const SOCIALS = [
@@ -318,6 +320,14 @@ const AgriConnectFooter: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('agri_open_cookie_settings'))}
+                aria-label="Manage cookie and privacy preferences"
+                className="rounded-full border border-border bg-card px-2.5 py-1 hover:border-primary/40 hover:text-foreground transition-colors cursor-pointer"
+              >
+                🍪 Privacy & Cookie Settings
+              </button>
               <span className="rounded-full border border-border bg-card px-2.5 py-1">v{APP_VERSION}</span>
               <span className="rounded-full border border-border bg-card px-2.5 py-1">Updated {LAST_UPDATED}</span>
 

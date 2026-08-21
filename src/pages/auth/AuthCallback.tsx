@@ -47,8 +47,7 @@ export const AuthCallback: React.FC = () => {
         }
 
         let user: { id: string } | null = null;
-
-        let isFirstTime = false;
+        let isOnboardingCompleted = false;
 
         // 1. PKCE flow: exchange authorization code
         if (code) {
@@ -59,9 +58,7 @@ export const AuthCallback: React.FC = () => {
           user = data.user ?? data.session?.user ?? null;
           if (data.session) {
             const syncResult = await syncOAuthProfileFromIdentity(data.session.user);
-            if (!syncResult.profileExisted) {
-              isFirstTime = true;
-            }
+            isOnboardingCompleted = syncResult.onboardingCompleted;
           }
         }
         // 2. Implicit flow: set session from hash tokens
@@ -76,9 +73,7 @@ export const AuthCallback: React.FC = () => {
           user = data.user ?? data.session?.user ?? null;
           if (data.session) {
             const syncResult = await syncOAuthProfileFromIdentity(data.session.user);
-            if (!syncResult.profileExisted) {
-              isFirstTime = true;
-            }
+            isOnboardingCompleted = syncResult.onboardingCompleted;
           }
         }
         // 3. No code or tokens - check if we already have an active session
@@ -87,19 +82,16 @@ export const AuthCallback: React.FC = () => {
           if (sessionData.session) {
             user = sessionData.session.user;
             const syncResult = await syncOAuthProfileFromIdentity(sessionData.session.user);
-            if (!syncResult.profileExisted) {
-              isFirstTime = true;
-            }
+            isOnboardingCompleted = syncResult.onboardingCompleted;
           }
         }
 
         if (user && mounted) {
-          // First-time Google user who hasn't finished farm profile setup:
-          const isProfileComplete = typeof window !== 'undefined' && localStorage.getItem('agri_profile_complete') === 'true';
-          if (isFirstTime && !isProfileComplete) {
-            navigate('/', { replace: true });
+          // Check server authoritative onboarding status:
+          if (!isOnboardingCompleted) {
+            navigate('/complete-profile', { replace: true });
           } else {
-            navigate('/', { replace: true });
+            navigate('/dashboard', { replace: true });
           }
           return;
         }

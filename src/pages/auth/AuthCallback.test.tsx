@@ -6,7 +6,7 @@ import { cleanup } from '@testing-library/react';
 const navigate = vi.fn();
 const exchangeCodeForSession = vi.fn();
 const getSession = vi.fn();
-const syncProfile = vi.fn().mockResolvedValue({ profileExisted: false, updatedFields: [] });
+const syncProfile = vi.fn().mockResolvedValue({ profileExisted: false, onboardingCompleted: false, updatedFields: [] });
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
@@ -44,7 +44,7 @@ describe('AuthCallback (Google OAuth redirect landing page)', () => {
     navigate.mockReset();
     exchangeCodeForSession.mockReset();
     getSession.mockReset();
-    syncProfile.mockReset().mockResolvedValue({ profileExisted: false, updatedFields: [] });
+    syncProfile.mockReset().mockResolvedValue({ profileExisted: false, onboardingCompleted: false, updatedFields: [] });
     window.history.replaceState(null, '', '/auth/callback');
   });
 
@@ -52,28 +52,44 @@ describe('AuthCallback (Google OAuth redirect landing page)', () => {
     cleanup();
   });
 
-  it('exchanges the authorization code, enriches the profile, and lands on the dashboard', async () => {
+  it('exchanges authorization code and routes new Google user to /complete-profile', async () => {
     window.history.replaceState(null, '', '/auth/callback?code=valid-code&state=xyz');
     exchangeCodeForSession.mockResolvedValue({
       data: { user: googleUser, session: { user: googleUser } },
       error: null,
     });
+    syncProfile.mockResolvedValue({ profileExisted: false, onboardingCompleted: false, updatedFields: [] });
 
     render(<AuthCallback />);
 
     await waitFor(() => expect(exchangeCodeForSession).toHaveBeenCalledWith('valid-code'));
     expect(syncProfile).toHaveBeenCalledWith(googleUser);
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/', { replace: true }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/complete-profile', { replace: true }));
     expect(screen.queryByText(/Sign-in could not be completed/i)).toBeNull();
+  });
+
+  it('routes returning Google user with completed profile directly to /dashboard', async () => {
+    window.history.replaceState(null, '', '/auth/callback?code=valid-code&state=xyz');
+    exchangeCodeForSession.mockResolvedValue({
+      data: { user: googleUser, session: { user: googleUser } },
+      error: null,
+    });
+    syncProfile.mockResolvedValue({ profileExisted: true, onboardingCompleted: true, updatedFields: [] });
+
+    render(<AuthCallback />);
+
+    await waitFor(() => expect(exchangeCodeForSession).toHaveBeenCalledWith('valid-code'));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true }));
   });
 
   it('restores an already-active session when the callback is reopened (refresh / back button)', async () => {
     getSession.mockResolvedValue({ data: { session: { user: googleUser } }, error: null });
+    syncProfile.mockResolvedValue({ profileExisted: true, onboardingCompleted: true, updatedFields: [] });
 
     render(<AuthCallback />);
 
     await waitFor(() => expect(syncProfile).toHaveBeenCalledWith(googleUser));
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/', { replace: true }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true }));
     expect(exchangeCodeForSession).not.toHaveBeenCalled();
   });
 

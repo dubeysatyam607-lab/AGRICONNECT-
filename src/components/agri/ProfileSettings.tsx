@@ -126,40 +126,41 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
   };
 
   const handleUnderConstruction = (feature: string) => {
-    showToastMsg("Coming Soon", `${feature} is currently under construction`);
+    showToastMsg(tr('profile.toast.comingSoon', 'Coming Soon'), `${feature} is currently under construction`);
   };
 
-  const getTranslated = (key: string, fallback: string) => {
-    return t ? t(key) : fallback;
+  const tr = (key: string, fallback: string) => {
+    const v = t?.(key);
+    return v && v !== key ? v : fallback;
   };
 
   const menuSections = [
     {
-      title: "Account",
+      title: tr('profile.section.account', 'Account'),
       items: [
-        { icon: User, label: getTranslated('settings.viewProfile', 'My Agricultural Identity'), sub: '14 farm specs & GPS map', tint: 'text-primary', action: () => setCurrentView('view-profile') },
-        { icon: User, label: getTranslated('settings.editProfile', 'Edit Profile Wizard'), sub: 'Update farm & personal details', tint: 'text-primary', action: () => setCurrentView('edit-profile') },
-        { icon: MapPin, label: 'Farm Details', sub: 'Land, crops & location', tint: 'text-feature-mandi', action: () => setCurrentView('farm-details') },
+        { icon: User, label: tr('profile.menu.viewProfile', 'My Agricultural Identity'), sub: tr('profile.menu.viewProfileSubtitle', '14 farm specs & GPS map'), tint: 'text-primary', action: () => setCurrentView('view-profile') },
+        { icon: User, label: tr('profile.menu.editProfile', 'Edit Profile Wizard'), sub: tr('profile.menu.editProfileSubtitle', 'Update farm & personal details'), tint: 'text-primary', action: () => setCurrentView('edit-profile') },
+        { icon: MapPin, label: tr('profile.menu.farmDetails', 'Farm Details'), sub: tr('profile.menu.farmDetailsSubtitle', 'Land, crops & location'), tint: 'text-feature-mandi', action: () => setCurrentView('farm-details') },
       ],
     },
     {
-      title: "Orders & Activity",
+      title: tr('profile.section.ordersActivity', 'Orders & Activity'),
       items: [
-        { icon: CreditCard, label: getTranslated('settings.paymentMethods', 'Payment Methods'), sub: 'UPI, cards & farm khata', tint: 'text-feature-loans', action: () => setCurrentView('payment-methods') },
-        { icon: FileText, label: getTranslated('settings.myBookings', 'My Bookings'), sub: 'Tractors, labour & services', tint: 'text-feature-tractor', action: () => setCurrentView('my-bookings') },
-        { icon: ShoppingBag, label: 'My Orders', sub: 'Agri store purchases', tint: 'text-feature-store', action: () => setCurrentView('orders') },
-        { icon: MessageSquare, label: 'Saved AI Chats', sub: 'Ask Kisan AI history', tint: 'text-feature-ai', action: () => setCurrentView('saved-chats') },
-        { icon: Bookmark, label: 'Saved & Bookmarks', sub: 'Articles, prices & alerts', tint: 'text-feature-news', action: () => setCurrentView('bookmarks') },
+        { icon: CreditCard, label: tr('profile.menu.paymentMethods', 'Payment Methods'), sub: tr('profile.menu.paymentMethodsSubtitle', 'UPI, cards & farm khata'), tint: 'text-feature-loans', action: () => setCurrentView('payment-methods') },
+        { icon: FileText, label: tr('profile.menu.myBookings', 'My Bookings'), sub: tr('profile.menu.myBookingsSubtitle', 'Tractors, labour & services'), tint: 'text-feature-tractor', action: () => setCurrentView('my-bookings') },
+        { icon: ShoppingBag, label: tr('profile.menu.myOrders', 'My Orders'), sub: tr('profile.menu.myOrdersSubtitle', 'Agri store purchases'), tint: 'text-feature-store', action: () => setCurrentView('orders') },
+        { icon: MessageSquare, label: tr('profile.menu.savedAiChats', 'Saved AI Chats'), sub: tr('profile.menu.savedAiChatsSubtitle', 'Ask Kisan AI history'), tint: 'text-feature-ai', action: () => setCurrentView('saved-chats') },
+        { icon: Bookmark, label: tr('profile.menu.savedBookmarks', 'Saved & Bookmarks'), sub: tr('profile.menu.savedBookmarksSubtitle', 'Articles, prices & alerts'), tint: 'text-feature-news', action: () => setCurrentView('bookmarks') },
       ],
     },
     {
-      title: "Preferences & Security",
+      title: tr('profile.section.preferencesSecurity', 'Preferences & Security'),
       items: [
-        { icon: LayoutDashboard, label: 'Executive Admin Console', sub: 'KPI metrics, RBAC & platform control', tint: 'text-emerald-600', action: () => { setActiveRole('Admin'); window.location.href = '/admin'; } },
-        { icon: Bell, label: 'Notification Settings', sub: 'Alerts & reminders', tint: 'text-feature-schemes', action: () => setCurrentView('notifications') },
-        { icon: Shield, label: 'Audit Logs', sub: 'Security activity history', tint: 'text-primary', action: () => setCurrentView('audit-logs') },
-        { icon: HelpCircle, label: getTranslated('settings.helpSupport', 'Help & Support'), sub: 'Helpline, WhatsApp & FAQ', tint: 'text-feature-community', action: () => setCurrentView('help-support') },
-        { icon: LogOut, label: getTranslated('settings.logout', 'Logout'), sub: 'Sign out from this account', tint: 'text-destructive', action: handleLogout },
+        { icon: LayoutDashboard, label: tr('profile.menu.adminConsole', 'Executive Admin Console'), sub: tr('profile.menu.adminConsoleSubtitle', 'KPI metrics & platform control'), tint: 'text-emerald-600', action: () => { setActiveRole('Admin'); window.location.href = '/admin'; } },
+        { icon: Bell, label: tr('profile.menu.notificationSettings', 'Notification Settings'), sub: tr('profile.menu.notificationSettingsSubtitle', 'Alerts & reminders'), tint: 'text-feature-schemes', action: () => setCurrentView('notifications') },
+        { icon: Shield, label: tr('profile.menu.auditLogs', 'Audit Logs'), sub: tr('profile.menu.auditLogsSubtitle', 'Security activity history'), tint: 'text-primary', action: () => setCurrentView('audit-logs') },
+        { icon: HelpCircle, label: tr('profile.menu.helpSupport', 'Help & Support'), sub: tr('profile.menu.helpSupportSubtitle', 'Helpline, WhatsApp & FAQ'), tint: 'text-feature-community', action: () => setCurrentView('help-support') },
+        { icon: LogOut, label: tr('profile.menu.logout', 'Logout'), sub: tr('profile.menu.logoutSubtitle', 'Sign out from this account'), tint: 'text-destructive', action: handleLogout },
       ],
     },
   ];
@@ -179,7 +180,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
         newData: { language: lang },
       });
     }
-    showToastMsg("Language Changed", `Switched to ${LANGUAGE_NAMES?.[lang] || lang}`);
+    showToastMsg(tr('profile.toast.languageChangedTitle', 'Language Changed'), `Switched to ${LANGUAGE_NAMES?.[lang] || lang}`);
   };
 
   const handleSwitchMode = (newRole: UserRole) => {
@@ -197,7 +198,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
         newData: { role: newRole },
       });
     }
-    showToastMsg("Role Changed", `Switched to ${newRole} Dashboard`);
+    showToastMsg(tr('profile.toast.roleChangedTitle', 'Role Changed'), `Switched to ${newRole} Dashboard`);
   };
 
   const handleLogout = async () => {
@@ -698,9 +699,9 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
 
             <div className="relative mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-border/70 bg-background/50 p-2.5">
               {[
-                { label: "Village", value: user?.user_metadata?.village || (t ? t('home.guestVillage') : '—') },
-                { label: "Farm", value: `${farm.farmArea} acres` },
-                { label: "Crop", value: farm.crop },
+                { label: tr('profile.header.village', 'Village'), value: user?.user_metadata?.village || (t ? t('home.guestVillage') : '—') },
+                { label: tr('profile.header.farm', 'Farm'), value: `${farm.farmArea} acres` },
+                { label: tr('profile.header.crop', 'Crop'), value: farm.crop },
               ].map((s, i) => (
                 <div key={s.label} className={cn("text-center", i === 1 && "border-x border-border/50")}>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</p>
@@ -828,7 +829,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
         className="w-full bg-destructive/10 p-4 rounded-xl border border-destructive/20 flex items-center gap-3 hover:bg-destructive/15 transition-colors group"
       >
         <LogOut size={20} className="text-red-600 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform" />
-        <span className="font-medium text-red-700 dark:text-red-400 truncate">{getTranslated('settings.logout', 'Logout')}</span>
+        <span className="font-medium text-red-700 dark:text-red-400 truncate">{tr('profile.menu.logout', 'Logout')}</span>
       </button>
 
       {/* Logout from all devices */}

@@ -163,6 +163,7 @@ loadRateLimits();
 
 export interface IOAuthProfileSyncResult {
   profileExisted: boolean;
+  onboardingCompleted: boolean;
   updatedFields: string[];
 }
 
@@ -170,10 +171,11 @@ export interface IOAuthProfileSyncResult {
  * Safely enriches the AgriConnect profile from an OAuth (Google) identity.
  *
  * Security & data-integrity rules:
- * - Only identity fields Google actually provides (full name + avatar) are used.
+ * - Only identity fields Google actually provides (full name, email + avatar) are used.
  *   Farm/location/weather data is NEVER derived from the Google account.
  * - Existing profile fields are NEVER overwritten — a manually entered name or
  *   avatar stays untouched; only empty fields are filled in.
+ * - Checks authoritative server onboarding state (`onboarding_completed`).
  * - If the trigger-created profile row is missing, a minimal row is inserted.
  * - Best-effort only: any failure is logged and swallowed so an OAuth success
  *   is never turned into a login error by a secondary profile write.
@@ -187,39 +189,42 @@ export async function syncOAuthProfileFromIdentity(user: {
   const meta = user.user_metadata || {};
   const provider = user.app_metadata?.provider || meta?.provider || null;
   if (provider && provider !== 'google') {
-    return { profileExisted: true, updatedFields: [] };
+    return { profileExisted: true, onboardingCompleted: true, updatedFields: [] };
   }
 
   const fullName = String(meta.full_name || meta.name || '').trim();
   const avatarUrl = String(meta.avatar_url || meta.picture || '').trim();
+  const email = String(user.email || meta.email || '').trim().toLowerCase();
 
   const { data: existing, error: fetchError } = await supabase
     .from('profiles')
-    .select('id, full_name, avatar_url')
+    .select('id, full_name, avatar_url, email, onboarding_completed, state, district, village, primary_crop, farm_size')
     .eq('id', user.id)
     .maybeSingle();
 
   if (fetchError) {
     console.warn('[AuthRemoteDataSource] Profile sync read failed (best-effort skip):', fetchError.message);
-    return { profileExisted: false, updatedFields: [] };
+    return { profileExisted: false, onboardingCompleted: false, updatedFields: [] };
   }
 
   if (!existing) {
     const { error: insertError } = await supabase.from('profiles').insert({
       id: user.id,
+      email: email || null,
       full_name: fullName || null,
       avatar_url: avatarUrl || null,
+      onboarding_completed: false,
       role: 'farmer',
     });
     if (insertError) {
       console.warn('[AuthRemoteDataSource] Profile sync insert failed (best-effort skip):', insertError.message);
-      return { profileExisted: false, updatedFields: [] };
+      return { profileExisted: false, onboardingCompleted: false, updatedFields: [] };
     }
-    return { profileExisted: false, updatedFields: ['full_name', 'avatar_url'] };
+    return { profileExisted: false, onboardingCompleted: false, updatedFields: ['full_name', 'avatar_url', 'email'] };
   }
 
   // Fill in only the fields that are empty — never overwrite user-entered data.
-  const patch: Record<string, string> = {};
+  const patch: Record<string, any> = {};
   const updatedFields: string[] = [];
   if (!existing.full_name && fullName) {
     patch.full_name = fullName;
@@ -229,14 +234,28 @@ export async function syncOAuthProfileFromIdentity(user: {
     patch.avatar_url = avatarUrl;
     updatedFields.push('avatar_url');
   }
+  if (!existing.email && email) {
+    patch.email = email;
+    updatedFields.push('email');
+  }
+
   if (updatedFields.length) {
     const { error: updateError } = await supabase.from('profiles').update(patch).eq('id', user.id);
     if (updateError) {
       console.warn('[AuthRemoteDataSource] Profile sync update failed (best-effort skip):', updateError.message);
-      return { profileExisted: true, updatedFields: [] };
     }
   }
-  return { profileExisted: true, updatedFields };
+
+  const isCompleted = Boolean(
+    existing.onboarding_completed ||
+    (existing.state && existing.district && existing.primary_crop)
+  );
+
+  return {
+    profileExisted: true,
+    onboardingCompleted: isCompleted,
+    updatedFields,
+  };
 }
 
 export class AuthRemoteDataSource {
