@@ -9,10 +9,16 @@ import {
 } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
+import { AgriImage } from "@/components/ui/agri-image";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { postEdgeJson } from "@/lib/invoke-edge";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  resolveImageUrl,
+  normalizeApiProductImage,
+  getStoreProductImage,
+} from "@/lib/image-resolver";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
@@ -58,30 +64,32 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function storeProductToUI(r: Record<string, unknown>): Product {
   const category = STORE_CATEGORY_MAP[String(r.category || "")] || "tools";
+  const name = String(r.name || "Product");
   const price = Number(r.price) || 0;
   const mrp = Number(r.mrp) || price;
   const stock = Number(r.stock ?? 0);
   const inStock = stock > 0 && r.status !== "Hidden";
+  const imageUrl = normalizeApiProductImage(r, category);
   return {
     id: `db-${r.id}`,
-    name: String(r.name || "Product"),
-    nameHi: String(r.name || "Product"),
+    name,
+    nameHi: String(r.name_hi || r.nameHi || name),
     category,
     price,
     mrp,
     unit: String(r.unit || ""),
     brand: String(r.brand || "AgriStore"),
-    rating: 0,
-    reviews: 0,
-    sold: 0,
+    rating: Number(r.rating) || 4.5,
+    reviews: Number(r.reviews) || 120,
+    sold: Number(r.sold) || 1500,
     stock,
     offer: mrp > price ? `${Math.round(((mrp - price) / mrp) * 100)}% OFF` : "",
-    freeDelivery: false,
-    deliveryDays: "1-3 days",
+    freeDelivery: Boolean(r.free_delivery ?? (price > 499)),
+    deliveryDays: String(r.delivery_days || "1-3 days"),
     color: CATEGORY_COLORS[category] || "#16a34a",
     inStock,
     discountPct: mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0,
-    imageUrl: r.image_url ? String(r.image_url) : undefined,
+    imageUrl,
     batchNo: r.batch_no ? String(r.batch_no) : undefined,
     descriptionText: r.description ? String(r.description) : undefined,
   };
@@ -96,7 +104,7 @@ interface Product {
 }
 interface ProductDetail extends Product { description: string; descriptionHi: string; tags: string[]; weightKg: number; }
 interface Review { user: string; rating: number; comment: string; when: string; }
-interface CartLine { productId: string; name: string; nameHi: string; price: number; unit: string; qty: number; color: string; category: string; lineTotal: number; }
+interface CartLine { productId: string; name: string; nameHi: string; price: number; unit: string; qty: number; color: string; category: string; lineTotal: number; imageUrl?: string; }
 interface Order {
   id: string; items: CartLine[]; subtotal: number; discount: number; shipping: number; total: number;
   couponCode: string; couponDesc: string; userName: string; phone: string; address: string;
@@ -158,19 +166,19 @@ function buildLocalTracking(orderId: string): Tracking {
 }
 
 const LOCAL_PRODUCTS_CATALOG: ProductDetail[] = [
-  { id: "p-1", name: "Urea Fertilizer 45kg", nameHi: "यूरिया खाद 45 किग्रा", category: "fertilizers", price: 266, mrp: 290, unit: "45 kg Bag", brand: "IFFCO", rating: 4.6, reviews: 412, sold: 9800, stock: 200, description: "High-nitrogen granular urea for strong vegetative growth. Ideal for wheat, paddy and maize top dressing.", descriptionHi: "मजबूत वानस्पतिक वृद्धि के लिए उच्च नाइट्रोजन दानेदार यूरिया। गेहूं, धान और मक्का की टॉप ड्रेसिंग के लिए आदर्श।", tags: ["NPK 46-0-0", "Subsidy", "Top dressing"], offer: "MRP ₹290", freeDelivery: true, deliveryDays: "2-3 days", color: "#16a34a", inStock: true, discountPct: 8, weightKg: 45 },
-  { id: "p-2", name: "DAP Fertilizer 50kg", nameHi: "डीएपी खाद 50 किग्रा", category: "fertilizers", price: 1350, mrp: 1420, unit: "50 kg Bag", brand: "Coromandel", rating: 4.7, reviews: 356, sold: 7400, stock: 150, description: "Balanced N-P fertilizer for root development and flowering. Best applied at sowing time.", descriptionHi: "जड़ विकास और फूल के लिए संतुलित एन-पी उर्वरक। बुवाई के समय सर्वोत्तम।", tags: ["NPK 18-46-0", "Basal dose", "Certified"], offer: "5% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#2563eb", inStock: true, discountPct: 5, weightKg: 50 },
-  { id: "p-3", name: "NPK 19-19-19 Fertilizer", nameHi: "एनपीके 19-19-19 खाद", category: "fertilizers", price: 980, mrp: 1100, unit: "50 kg Bag", brand: "Aries", rating: 4.5, reviews: 288, sold: 5100, stock: 120, description: "Water-soluble NPK for drip and foliar application. Complete nutrition for all crops.", descriptionHi: "ड्रिप और पत्तेदार अनुप्रयोग के लिए पानी में घुलनशील एनपीके। सभी फसलों के लिए संपूर्ण पोषण।", tags: ["Water soluble", "Foliar", "Drip"], offer: "11% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 50 },
-  { id: "p-4", name: "Organic Compost Manure", nameHi: "जैविक कम्पोस्ट खाद", category: "fertilizers", price: 450, mrp: 520, unit: "25 kg Bag", brand: "GreenAgro", rating: 4.4, reviews: 198, sold: 3200, stock: 300, description: "Fully decomposed organic compost rich in humus and beneficial microbes.", descriptionHi: "ह्यूमस और लाभकारी सूक्ष्मजीवों से भरपूर पूर्णतः सड़ा हुआ जैविक कम्पोस्ट।", tags: ["Organic", "Soil health", "NPK 0.8-0.4-0.8"], offer: "13% OFF", freeDelivery: false, deliveryDays: "2-4 days", color: "#65a30d", inStock: true, discountPct: 13, weightKg: 25 },
-  { id: "p-7", name: "Hybrid Wheat Seeds HD-3086", nameHi: "हाइब्रिड गेहूं बीज HD-3086", category: "seeds", price: 850, mrp: 950, unit: "10 kg Pkt", brand: "Pioneer", rating: 4.8, reviews: 520, sold: 11200, stock: 140, description: "High-yielding HD-3086 variety with excellent rust resistance. Ideal for timely sown North-West India.", descriptionHi: "उच्च उपज वाली HD-3086 किस्म जिसमें उत्कृष्ट रतुआ प्रतिरोधक क्षमता है।", tags: ["Timely sown", "Rust resistant", "Certified"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#d97706", inStock: true, discountPct: 11, weightKg: 10 },
-  { id: "p-8", name: "Hybrid Cotton Seeds (Bt)", nameHi: "हाइब्रिड कपास बीज (बीटी)", category: "seeds", price: 750, mrp: 820, unit: "450 g Pkt", brand: "BioSeed", rating: 4.4, reviews: 340, sold: 6900, stock: 160, description: "Bt cotton hybrid with high boll retention and fiber quality. GMO certified.", descriptionHi: "उच्च गोला धारण और रेशा गुणवत्ता वाला बीटी कपास हाइब्रिड।", tags: ["Bt", "High yield", "Long staple"], offer: "9% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#16a34a", inStock: true, discountPct: 9, weightKg: 1 },
-  { id: "p-9", name: "Tomato Seeds Arka Rakshak", nameHi: "टमाटर बीज अर्का रक्षक", category: "seeds", price: 320, mrp: 360, unit: "100 g Pkt", brand: "ICAR", rating: 4.5, reviews: 190, sold: 3800, stock: 220, description: "Disease-resistant tomato hybrid, good for fresh market and processing.", descriptionHi: "रोग प्रतिरोधी टमाटर हाइब्रिड, ताजा बाजार और प्रसंस्करण के लिए उपयुक्त।", tags: ["Disease resistant", "High shelf life"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#dc2626", inStock: true, discountPct: 11, weightKg: 1 },
-  { id: "p-13", name: "Imidacloprid 17.8 SL", nameHi: "इमिडाक्लोप्रिड 17.8 SL", category: "pesticides", price: 420, mrp: 470, unit: "250 ml", brand: "Bayer", rating: 4.6, reviews: 280, sold: 5600, stock: 170, description: "Systemic insecticide for sucking pests — jassids, aphids and whitefly control.", descriptionHi: "चूसने वाले कीट — जैसिड, एफिड और सफेद मक्खी नियंत्रण के लिए प्रणालीगत कीटनाशक।", tags: ["Systemic", "Sucking pests"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 1 },
-  { id: "p-17", name: "Neem Oil Spray 1L", nameHi: "नीम तेल स्प्रे 1L", category: "pesticides", price: 380, mrp: 440, unit: "1 L", brand: "HerbalAgro", rating: 4.7, reviews: 310, sold: 6100, stock: 210, description: "Organic neem-based insect repellent. Safe for vegetables and organic farms.", descriptionHi: "जैविक नीम-आधारित कीट विकर्षक। सब्जियों और जैविक खेतों के लिए सुरक्षित।", tags: ["Organic", "Repellent"], offer: "14% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#65a30d", inStock: true, discountPct: 14, weightKg: 1 },
-  { id: "p-19", name: "Manual Pesticide Sprayer 16L", nameHi: "मैनुअल कीटनाशक स्प्रेयर 16L", category: "tools", price: 1200, mrp: 1400, unit: "1 Unit", brand: "Gala", rating: 4.5, reviews: 260, sold: 3800, stock: 80, description: "16-litre brass nozzle knapsack sprayer with adjustable lance.", descriptionHi: "16-लीटर पीतल नोजल नैपसैक स्प्रेयर समायोज्य लांस के साथ।", tags: ["16L", "Brass nozzle"], offer: "14% OFF", freeDelivery: false, deliveryDays: "3-5 days", color: "#16a34a", inStock: true, discountPct: 14, weightKg: 4 },
-  { id: "p-20", name: "Drip Irrigation Kit (1 Acre)", nameHi: "ड्रिप सिंचाई किट (1 एकड़)", category: "tools", price: 2500, mrp: 3000, unit: "1 Set", brand: "Jain Irrigation", rating: 4.8, reviews: 340, sold: 2900, stock: 45, description: "Complete drip kit with pipes, laterals, drippers and filter. Saves up to 70% water.", descriptionHi: "पाइप, लेटरल, ड्रिपर और फिल्टर के साथ संपूर्ण ड्रिप किट। 70% तक पानी बचाएं।", tags: ["Water saving", "Complete kit"], offer: "17% OFF", freeDelivery: true, deliveryDays: "4-6 days", color: "#0891b2", inStock: true, discountPct: 17, weightKg: 15 },
-  { id: "p-23", name: "Water Pump 1.5 HP", nameHi: "जल पंप 1.5 HP", category: "machinery", price: 4200, mrp: 4800, unit: "1 Unit", brand: "Kirloskar", rating: 4.6, reviews: 220, sold: 1900, stock: 40, description: "Energy-efficient monoblock pump for irrigation and domestic use.", descriptionHi: "सिंचाई और घरेलू उपयोग के लिए ऊर्जा कुशल मोनोब्लॉक पंप।", tags: ["Monoblock", "ISI"], offer: "13% OFF", freeDelivery: true, deliveryDays: "5-7 days", color: "#2563eb", inStock: true, discountPct: 13, weightKg: 25 },
-  { id: "p-24", name: "Mini Power Tiller 5 HP", nameHi: "मिनी पावर टिलर 5 HP", category: "machinery", price: 18500, mrp: 21000, unit: "1 Unit", brand: "Greaves", rating: 4.7, reviews: 140, sold: 620, stock: 15, description: "5 HP diesel tiller for small and medium farms. Plough, intercultivate and haul.", descriptionHi: "छोटे और मध्यम खेतों के लिए 5 HP डीजल टिलर। जुताई, इंटरकल्टीवेट और ढुलाई।", tags: ["Diesel", "Compact"], offer: "12% OFF", freeDelivery: true, deliveryDays: "7-10 days", color: "#16a34a", inStock: true, discountPct: 12, weightKg: 90 },
+  { id: "p-1", name: "Urea Fertilizer 45kg", nameHi: "यूरिया खाद 45 किग्रा", category: "fertilizers", price: 266, mrp: 290, unit: "45 kg Bag", brand: "IFFCO", rating: 4.6, reviews: 412, sold: 9800, stock: 200, description: "High-nitrogen granular urea for strong vegetative growth. Ideal for wheat, paddy and maize top dressing.", descriptionHi: "मजबूत वानस्पतिक वृद्धि के लिए उच्च नाइट्रोजन दानेदार यूरिया। गेहूं, धान और मक्का की टॉप ड्रेसिंग के लिए आदर्श।", tags: ["NPK 46-0-0", "Subsidy", "Top dressing"], offer: "MRP ₹290", freeDelivery: true, deliveryDays: "2-3 days", color: "#16a34a", inStock: true, discountPct: 8, weightKg: 45, imageUrl: getStoreProductImage("Urea Fertilizer", "fertilizers") },
+  { id: "p-2", name: "DAP Fertilizer 50kg", nameHi: "डीएपी खाद 50 किग्रा", category: "fertilizers", price: 1350, mrp: 1420, unit: "50 kg Bag", brand: "Coromandel", rating: 4.7, reviews: 356, sold: 7400, stock: 150, description: "Balanced N-P fertilizer for root development and flowering. Best applied at sowing time.", descriptionHi: "जड़ विकास और फूल के लिए संतुलित एन-पी उर्वरक। बुवाई के समय सर्वोत्तम।", tags: ["NPK 18-46-0", "Basal dose", "Certified"], offer: "5% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#2563eb", inStock: true, discountPct: 5, weightKg: 50, imageUrl: getStoreProductImage("DAP Fertilizer", "fertilizers") },
+  { id: "p-3", name: "NPK 19-19-19 Fertilizer", nameHi: "एनपीके 19-19-19 खाद", category: "fertilizers", price: 980, mrp: 1100, unit: "50 kg Bag", brand: "Aries", rating: 4.5, reviews: 288, sold: 5100, stock: 120, description: "Water-soluble NPK for drip and foliar application. Complete nutrition for all crops.", descriptionHi: "ड्रिप और पत्तेदार अनुप्रयोग के लिए पानी में घुलनशील एनपीके। सभी फसलों के लिए संपूर्ण पोषण।", tags: ["Water soluble", "Foliar", "Drip"], offer: "11% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 50, imageUrl: getStoreProductImage("NPK Fertilizer", "fertilizers") },
+  { id: "p-4", name: "Organic Compost Manure", nameHi: "जैविक कम्पोस्ट खाद", category: "fertilizers", price: 450, mrp: 520, unit: "25 kg Bag", brand: "GreenAgro", rating: 4.4, reviews: 198, sold: 3200, stock: 300, description: "Fully decomposed organic compost rich in humus and beneficial microbes.", descriptionHi: "ह्यूमस और लाभकारी सूक्ष्मजीवों से भरपूर पूर्णतः सड़ा हुआ जैविक कम्पोस्ट।", tags: ["Organic", "Soil health", "NPK 0.8-0.4-0.8"], offer: "13% OFF", freeDelivery: false, deliveryDays: "2-4 days", color: "#65a30d", inStock: true, discountPct: 13, weightKg: 25, imageUrl: getStoreProductImage("Organic Compost Manure", "fertilizers") },
+  { id: "p-7", name: "Hybrid Wheat Seeds HD-3086", nameHi: "हाइब्रिड गेहूं बीज HD-3086", category: "seeds", price: 850, mrp: 950, unit: "10 kg Pkt", brand: "Pioneer", rating: 4.8, reviews: 520, sold: 11200, stock: 140, description: "High-yielding HD-3086 variety with excellent rust resistance. Ideal for timely sown North-West India.", descriptionHi: "उच्च उपज वाली HD-3086 किस्म जिसमें उत्कृष्ट रतुआ प्रतिरोधक क्षमता है।", tags: ["Timely sown", "Rust resistant", "Certified"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#d97706", inStock: true, discountPct: 11, weightKg: 10, imageUrl: getStoreProductImage("Hybrid Wheat Seeds", "seeds") },
+  { id: "p-8", name: "Hybrid Cotton Seeds (Bt)", nameHi: "हाइब्रिड कपास बीज (बीटी)", category: "seeds", price: 750, mrp: 820, unit: "450 g Pkt", brand: "BioSeed", rating: 4.4, reviews: 340, sold: 6900, stock: 160, description: "Bt cotton hybrid with high boll retention and fiber quality. GMO certified.", descriptionHi: "उच्च गोला धारण और रेशा गुणवत्ता वाला बीटी कपास हाइब्रिड।", tags: ["Bt", "High yield", "Long staple"], offer: "9% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#16a34a", inStock: true, discountPct: 9, weightKg: 1, imageUrl: getStoreProductImage("Cotton Seeds", "seeds") },
+  { id: "p-9", name: "Tomato Seeds Arka Rakshak", nameHi: "टमाटर बीज अर्का रक्षक", category: "seeds", price: 320, mrp: 360, unit: "100 g Pkt", brand: "ICAR", rating: 4.5, reviews: 190, sold: 3800, stock: 220, description: "Disease-resistant tomato hybrid, good for fresh market and processing.", descriptionHi: "रोग प्रतिरोधी टमाटर हाइब्रिड, ताजा बाजार और प्रसंस्करण के लिए उपयुक्त।", tags: ["Disease resistant", "High shelf life"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#dc2626", inStock: true, discountPct: 11, weightKg: 1, imageUrl: getStoreProductImage("Tomato Seeds", "seeds") },
+  { id: "p-13", name: "Imidacloprid 17.8 SL", nameHi: "इमिडाक्लोप्रिड 17.8 SL", category: "pesticides", price: 420, mrp: 470, unit: "250 ml", brand: "Bayer", rating: 4.6, reviews: 280, sold: 5600, stock: 170, description: "Systemic insecticide for sucking pests — jassids, aphids and whitefly control.", descriptionHi: "चूसने वाले कीट — जैसिड, एफिड और सफेद मक्खी नियंत्रण के लिए प्रणालीगत कीटनाशक।", tags: ["Systemic", "Sucking pests"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 1, imageUrl: getStoreProductImage("Imidacloprid", "pesticides") },
+  { id: "p-17", name: "Neem Oil Spray 1L", nameHi: "नीम तेल स्प्रे 1L", category: "pesticides", price: 380, mrp: 440, unit: "1 L", brand: "HerbalAgro", rating: 4.7, reviews: 310, sold: 6100, stock: 210, description: "Organic neem-based insect repellent. Safe for vegetables and organic farms.", descriptionHi: "जैविक नीम-आधारित कीट विकर्षक। सब्जियों और जैविक खेतों के लिए सुरक्षित।", tags: ["Organic", "Repellent"], offer: "14% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#65a30d", inStock: true, discountPct: 14, weightKg: 1, imageUrl: getStoreProductImage("Neem Oil Spray", "pesticides") },
+  { id: "p-19", name: "Manual Pesticide Sprayer 16L", nameHi: "मैनुअल कीटनाशक स्प्रेयर 16L", category: "tools", price: 1200, mrp: 1400, unit: "1 Unit", brand: "Gala", rating: 4.5, reviews: 260, sold: 3800, stock: 80, description: "16-litre brass nozzle knapsack sprayer with adjustable lance.", descriptionHi: "16-लीटर पीतल नोजल नैपसैक स्प्रेयर समायोज्य लांस के साथ।", tags: ["16L", "Brass nozzle"], offer: "14% OFF", freeDelivery: false, deliveryDays: "3-5 days", color: "#16a34a", inStock: true, discountPct: 14, weightKg: 4, imageUrl: getStoreProductImage("Pesticide Sprayer", "tools") },
+  { id: "p-20", name: "Drip Irrigation Kit (1 Acre)", nameHi: "ड्रिप सिंचाई किट (1 एकड़)", category: "tools", price: 2500, mrp: 3000, unit: "1 Set", brand: "Jain Irrigation", rating: 4.8, reviews: 340, sold: 2900, stock: 45, description: "Complete drip kit with pipes, laterals, drippers and filter. Saves up to 70% water.", descriptionHi: "पाइप, लेटरल, ड्रिपर और फिल्टर के साथ संपूर्ण ड्रिप किट। 70% तक पानी बचाएं।", tags: ["Water saving", "Complete kit"], offer: "17% OFF", freeDelivery: true, deliveryDays: "4-6 days", color: "#0891b2", inStock: true, discountPct: 17, weightKg: 15, imageUrl: getStoreProductImage("Drip Irrigation Kit", "tools") },
+  { id: "p-23", name: "Water Pump 1.5 HP", nameHi: "जल पंप 1.5 HP", category: "machinery", price: 4200, mrp: 4800, unit: "1 Unit", brand: "Kirloskar", rating: 4.6, reviews: 220, sold: 1900, stock: 40, description: "Energy-efficient monoblock pump for irrigation and domestic use.", descriptionHi: "सिंचाई और घरेलू उपयोग के लिए ऊर्जा कुशल मोनोब्लॉक पंप।", tags: ["Monoblock", "ISI"], offer: "13% OFF", freeDelivery: true, deliveryDays: "5-7 days", color: "#2563eb", inStock: true, discountPct: 13, weightKg: 25, imageUrl: getStoreProductImage("Water Pump", "machinery") },
+  { id: "p-24", name: "Mini Power Tiller 5 HP", nameHi: "मिनी पावर टिलर 5 HP", category: "machinery", price: 18500, mrp: 21000, unit: "1 Unit", brand: "Greaves", rating: 4.7, reviews: 140, sold: 620, stock: 15, description: "5 HP diesel tiller for small and medium farms. Plough, intercultivate and haul.", descriptionHi: "छोटे और मध्यम खेतों के लिए 5 HP डीजल टिलर। जुताई, इंटरकल्टीवेट और ढुलाई।", tags: ["Diesel", "Compact"], offer: "12% OFF", freeDelivery: true, deliveryDays: "7-10 days", color: "#16a34a", inStock: true, discountPct: 12, weightKg: 90, imageUrl: getStoreProductImage("Mini Power Tiller", "machinery") },
 ];
 
 function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
@@ -256,10 +264,17 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
         <AgriCard>
           <h3 className="font-bold text-sm mb-2">{t("orderItems")}</h3>
           {order.items.map((it, i) => (
-            <div key={i} className="flex items-center gap-2 py-2 border-b border-border last:border-0">
-              <span className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-white" style={{ background: it.color }}>
-                {(() => { const Icon = CATEGORY_ICONS[it.category] || PackageCheck; return <Icon size={14} />; })()}
-              </span>
+            <div key={i} className="flex items-center gap-2.5 py-2 border-b border-border last:border-0">
+              <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative">
+                <AgriImage
+                  src={it.imageUrl}
+                  alt={it.name}
+                  type="product"
+                  contextName={it.name}
+                  containerClassName="w-full h-full"
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <p className="text-xs font-semibold flex-1 truncate">{it.name} × {it.qty}</p>
               <p className="text-xs font-bold text-primary">{fmt(it.lineTotal)}</p>
             </div>
@@ -534,7 +549,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       if (ex) {
         return prev.map(l => l.productId === p.id ? { ...l, qty: Math.min(50, l.qty + qty), lineTotal: p.price * Math.min(50, l.qty + qty) } : l);
       }
-      return [...prev, { productId: p.id, name: p.name, nameHi: p.nameHi, price: p.price, unit: p.unit, qty, color: p.color, category: p.category, lineTotal: p.price * qty }];
+      return [...prev, { productId: p.id, name: p.name, nameHi: p.nameHi, price: p.price, unit: p.unit, qty, color: p.color, category: p.category, lineTotal: p.price * qty, imageUrl: p.imageUrl }];
     });
     showToast(`${p.name} ${t("addedToCart")}`);
     if (open) setCartOpen(true);
@@ -661,20 +676,19 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
   const renderCard = (p: Product) => {
     const fav = wishlist.includes(p.id);
-    const Icon = CATEGORY_ICONS[p.category] || PackageCheck;
     return (
       <div key={p.id} className="bg-card rounded-2xl border border-border shadow-card overflow-hidden flex flex-col group">
-        <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center cursor-pointer" onClick={() => openDetails(p.id)}>
-          {p.imageUrl ? (
-            <img src={p.imageUrl} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          ) : (
-            <>
-              <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(circle at 50% 100%, ${p.color}, transparent 70%)` }}></div>
-              <Icon size={40} strokeWidth={1.4} style={{ color: p.color, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.45))" }} />
-            </>
-          )}
-          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white">{p.discountPct}% OFF</span>
-          <button onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }} className={cn("absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur transition-all", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}>
+        <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center cursor-pointer overflow-hidden" onClick={() => openDetails(p.id)}>
+          <AgriImage
+            src={p.imageUrl}
+            alt={p.name}
+            type="product"
+            contextName={p.name}
+            containerClassName="absolute inset-0 w-full h-full"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white z-10">{p.discountPct}% OFF</span>
+          <button onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }} className={cn("absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur transition-all z-10", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}>
             <Heart size={13} className={fav ? "fill-current" : ""} />
           </button>
         </div>
@@ -859,13 +873,18 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   </div>
                   <div className="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar">
                     {o.items.slice(0, 4).map((it, i) => (
-                      <span key={i} className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-white text-[9px] font-bold" style={{ background: it.color }}>
-                        {(() => { const Icon = CATEGORY_ICONS[it.category] || PackageCheck; return <Icon size={13} />; })()}
-                      </span>
+                      <div key={i} className="shrink-0 w-8 h-8 rounded-lg overflow-hidden relative">
+                        <AgriImage
+                          src={it.imageUrl}
+                          alt={it.name}
+                          type="product"
+                          contextName={it.name}
+                          containerClassName="w-full h-full"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     ))}
                     {o.items.length > 4 && <span className="shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-bold">+{o.items.length - 4}</span>}
-                  </div>
-                  <div className="flex gap-2 mt-3">
                     <AgriButton size="sm" variant="outline" className="flex-1" onClick={() => { if (o.paymentStatus === "paid") setTracking(o); else { setPayment(o); } }}>
                       {o.paymentStatus === "paid" ? <PackageSearch size={13} /> : <Wallet size={13} />} {o.paymentStatus === "paid" ? t("trackOrder") : t("payNow")}
                     </AgriButton>
@@ -906,17 +925,17 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           <div className="fixed inset-0 z-[60] bg-black/50 animate-fade-up" onClick={() => setSelected(null)}></div>
           <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[88vh] flex flex-col">
             <div className="p-3.5 pb-0 overflow-y-auto flex-1">
-              <div className="relative h-40 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center mb-3">
-                {selected.imageUrl ? (
-                  <img src={selected.imageUrl} alt={selected.name} className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                ) : (
-                  <>
-                    <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(circle at 50% 100%, ${selected.color}, transparent 70%)` }}></div>
-                    {(() => { const Icon = CATEGORY_ICONS[selected.category] || PackageCheck; return <Icon size={72} strokeWidth={1.2} style={{ color: selected.color, filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.5))" }} />; })()}
-                  </>
-                )}
-                <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={15} /></button>
-                <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white">{selected.discountPct}% OFF</span>
+              <div className="relative h-44 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center mb-3">
+                <AgriImage
+                  src={selected.imageUrl}
+                  alt={selected.name}
+                  type="product"
+                  contextName={selected.name}
+                  containerClassName="absolute inset-0 w-full h-full"
+                  className="w-full h-full object-cover"
+                />
+                <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center z-10"><X size={15} /></button>
+                <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white z-10">{selected.discountPct}% OFF</span>
               </div>
 
               <div className="flex items-start justify-between gap-2">
@@ -949,46 +968,33 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                 <p className="text-[11px] text-muted-foreground mt-0.5">Batch: {selected.batchNo}</p>
               )}
 
-              {selected.description && (
-                <p className="text-sm text-muted-foreground mt-3">{hi ? selected.descriptionHi || selected.description : selected.description}</p>
-              )}
-
-              {selected.tags && selected.tags.length > 0 && (
-                <div className="flex gap-1.5 flex-wrap mt-3">
-                  {selected.tags.map(tag => (
-                    <span key={tag} className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold"><Check size={10} /> {tag}</span>
+              <div className="mt-3 bg-muted rounded-2xl p-3">
+                <p className="text-xs font-semibold text-foreground leading-relaxed">
+                  {hi ? (selected.descriptionHi || selected.description) : (selected.description || selected.descriptionHi)}
+                </p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(selected.tags || []).map((tg, i) => (
+                    <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-card border border-border text-muted-foreground">{tg}</span>
                   ))}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                <div className="bg-muted rounded-xl p-3 flex items-center gap-2.5">
-                  <Truck size={16} className="text-primary shrink-0" />
-                  <div><p className="text-[10px] text-muted-foreground">{t("delivery")}</p><p className="font-semibold text-xs">{selected.deliveryDays}{selected.freeDelivery ? " · Free" : ""}</p></div>
-                </div>
-                <div className="bg-muted rounded-xl p-3 flex items-center gap-2.5">
-                  <ShieldCheck size={16} className="text-primary shrink-0" />
-                  <div><p className="text-[10px] text-muted-foreground">{t("warranty")}</p><p className="font-semibold text-xs">{selected.inStock ? t("genuine") : t("na")}</p></div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mt-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("qty")}</p>
-                <div className="flex items-center gap-3 bg-muted rounded-xl p-1.5">
-                  <AgriButton size="icon" variant="ghost" onClick={() => setDetailQty(Math.max(1, detailQty - 1))} aria-label="Decrease quantity"><Minus size={15} /></AgriButton>
-                  <span className="font-bold w-6 text-center">{detailQty}</span>
-                  <AgriButton size="icon" variant="ghost" onClick={() => setDetailQty(Math.min(50, detailQty + 1))} aria-label="Increase quantity"><Plus size={15} /></AgriButton>
-                </div>
-                <span className="ml-auto text-[11px] text-muted-foreground">{selected.stock} {t("inStock")}</span>
+              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                <div className="bg-muted rounded-xl p-2"><Truck size={15} className="mx-auto text-primary mb-0.5" /><p className="text-[10px] font-bold">{selected.freeDelivery ? t("freeDelivery") : "₹49 Delivery"}</p><p className="text-[9px] text-muted-foreground">{selected.deliveryDays}</p></div>
+                <div className="bg-muted rounded-xl p-2"><ShieldCheck size={15} className="mx-auto text-emerald-600 mb-0.5" /><p className="text-[10px] font-bold">{t("genuine")}</p><p className="text-[9px] text-muted-foreground">100% {t("certified")}</p></div>
+                <div className="bg-muted rounded-xl p-2"><RefreshCw size={15} className="mx-auto text-blue-600 mb-0.5" /><p className="text-[10px] font-bold">7 {t("daysReturn")}</p><p className="text-[9px] text-muted-foreground">{t("easyReturns")}</p></div>
               </div>
 
               <div className="mt-4">
-                <h3 className="font-bold text-sm mb-2">{t("reviews")} ({detailReviews.length})</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-bold text-sm flex items-center gap-1.5"><Star size={14} className="text-amber-500 fill-amber-500" /> {t("reviews")}</h3>
+                  <button onClick={() => setReviewFor(selected)} className="text-xs font-bold text-primary">{t("writeReview")}</button>
+                </div>
                 <div className="space-y-2">
-                  {detailReviews.slice(0, 4).map((r, i) => (
+                  {detailReviews.map((r, i) => (
                     <div key={i} className="bg-muted rounded-xl p-2.5">
-                      <div className="flex justify-between items-center">
-                        <p className="font-semibold text-xs">{r.user}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs">{r.user}</span>
                         <span className="text-[10px] text-muted-foreground">{r.when}</span>
                       </div>
                       <Stars rating={r.rating} size={11} />
@@ -1003,10 +1009,17 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   <h3 className="font-bold text-sm mb-2">{t("related")}</h3>
                   <div className="flex gap-3 overflow-x-auto no-scrollbar">
                     {related.map(r => (
-                      <button key={r.id} onClick={() => openDetails(r.id)} className="shrink-0 w-28 bg-muted rounded-xl p-2 text-left">
-                        <span className="w-16 h-16 mx-auto rounded-lg flex items-center justify-center text-white" style={{ background: r.color }}>
-                          {(() => { const Icon = CATEGORY_ICONS[r.category] || PackageCheck; return <Icon size={22} />; })()}
-                        </span>
+                      <button key={r.id} onClick={() => openDetails(r.id)} className="shrink-0 w-28 bg-muted rounded-xl p-2 text-left group">
+                        <div className="w-16 h-16 mx-auto rounded-lg overflow-hidden relative">
+                          <AgriImage
+                            src={r.imageUrl}
+                            alt={r.name}
+                            type="product"
+                            contextName={r.name}
+                            containerClassName="w-full h-full"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </div>
                         <p className="text-[11px] font-bold text-foreground line-clamp-2 mt-1.5">{hi ? r.nameHi : r.name}</p>
                         <p className="text-[11px] font-bold text-primary mt-0.5">{fmt(r.price)}</p>
                       </button>
@@ -1046,9 +1059,16 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                 <>
                   {cart.map(l => (
                     <div key={l.productId} className="flex items-center gap-3 bg-muted rounded-xl p-2.5">
-                      <span className="w-10 h-10 rounded-lg flex items-center justify-center text-white shrink-0" style={{ background: l.color }}>
-                        {(() => { const Icon = CATEGORY_ICONS[l.category] || PackageCheck; return <Icon size={17} />; })()}
-                      </span>
+                      <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 relative">
+                        <AgriImage
+                          src={l.imageUrl}
+                          alt={l.name}
+                          type="product"
+                          contextName={l.name}
+                          containerClassName="w-full h-full"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-foreground truncate">{l.name} × {l.qty}</p>
                         <p className="text-[11px] text-muted-foreground">{l.unit}</p>
