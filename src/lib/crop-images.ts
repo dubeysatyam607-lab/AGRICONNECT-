@@ -275,7 +275,8 @@ export function getCropImage(cropName: string): string {
   }
 
   // Token match
-  const tokens = lower.split(/[^a-z0-9\u0900-\u097F]+/).filter(Boolean);
+  // eslint-disable-next-line no-misleading-character-class
+  const tokens = lower.split(/[^a-z0-9\u0900-\u097F]+/u).filter(Boolean);
   for (const token of tokens) {
     if (token.length < 3) continue;
     for (const [key, value] of Object.entries(CROP_IMAGE_MAP)) {

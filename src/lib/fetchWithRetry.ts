@@ -14,7 +14,6 @@ export async function fetchWithRetry(
 ): Promise<Response> {
   let attempt = 0;
   let delay = baseDelayMs;
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       const response = await fetch(input, init);
