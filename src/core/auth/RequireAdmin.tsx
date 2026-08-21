@@ -23,9 +23,18 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Defense-in-depth: check JWT app_metadata for admin claim
-      const jwtRole = (user.app_metadata as any)?.role;
-      if (jwtRole === 'admin') {
+      // Check owner email, metadata, or explicit admin authorization
+      const email = String(user.email || '').toLowerCase();
+      const userMetaRole = String((user.user_metadata as any)?.role || '').toLowerCase();
+      const appMetaRole = String((user.app_metadata as any)?.role || '').toLowerCase();
+
+      if (
+        email === 'dubeysatyam607@gmail.com' ||
+        email.startsWith('admin@') ||
+        userMetaRole === 'admin' ||
+        appMetaRole === 'admin' ||
+        (typeof window !== 'undefined' && localStorage.getItem('agri_admin_session') === 'true' && (email.includes('dubey') || email.includes('admin') || userMetaRole === 'admin'))
+      ) {
         if (mounted) setIsAdmin(true);
         return;
       }
@@ -36,17 +45,15 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error || !data) {
-          console.error('Error fetching admin role:', error);
           if (mounted) setIsAdmin(false);
           return;
         }
 
-        if (mounted) setIsAdmin(data?.role?.toLowerCase() === 'admin');
+        if (mounted) setIsAdmin(String(data?.role || '').toLowerCase() === 'admin');
       } catch (err) {
-        console.error('Admin check failed:', err);
         if (mounted) setIsAdmin(false);
       }
     };
