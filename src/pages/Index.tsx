@@ -293,12 +293,9 @@ const IndexInner: React.FC = () => {
   };
 
   // Keep activeTab in sync if the URL changes directly (e.g. back button)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const tab = getTabFromPath(location.pathname);
-    if (tab !== activeTab) {
-      setActiveTab(tab);
-    }
+    setActiveTab(prev => (prev !== tab ? tab : prev));
   }, [location.pathname]);
 
   // Keep URL in sync when activeTab is changed from tabs/nav click

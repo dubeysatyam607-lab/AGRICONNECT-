@@ -116,7 +116,8 @@ export function normalizeNameForPexels(name: string): string {
   // Strip weights, pack sizes, parentheses
   clean = clean.replace(/\([^)]*\)/g, "");
   clean = clean.replace(/\d+\s*(kg|g|l|ml|hp|ton|acre|pack|gm|ltr|litre|liter)/gi, "");
-  clean = clean.replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ").trim();
+  // eslint-disable-next-line no-misleading-character-class
+  clean = clean.replace(/[^a-zA-Z\u0900-\u097F\s]/gu, " ").trim();
 
   // Hindi aliases
   const hindiToEnglish: Record<string, string> = {
