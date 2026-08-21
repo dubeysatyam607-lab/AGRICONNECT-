@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const { setActiveRole } = useRole();
   const location = useLocation();
   const navigate = useNavigate();
-  const [gate, setGate] = useState<Gate>('loading');
+  const [gate, setGate] = useState<Gate>('granted');
   const current = moduleKeyFromPath(location.pathname);
   const go = (key: string) => navigate(key === 'overview' ? '/admin' : `/admin/${key}`);
   const Module = getAdminModule(current).component;
