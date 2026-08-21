@@ -158,7 +158,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
     {
       title: tr('profile.section.preferencesSecurity', 'Preferences & Security'),
       items: [
-        { icon: LayoutDashboard, label: tr('profile.menu.adminConsole', 'Executive Admin Console'), sub: tr('profile.menu.adminConsoleSubtitle', 'KPI metrics & platform control'), tint: 'text-emerald-600', action: () => { setActiveRole('Admin'); if (typeof window !== 'undefined') localStorage.setItem('agri_admin_session', 'true'); window.location.href = '/admin'; } },
+        { icon: LayoutDashboard, label: tr('profile.menu.adminConsole', 'Executive Admin Console'), sub: tr('profile.menu.adminConsoleSubtitle', 'KPI metrics & platform control'), tint: 'text-emerald-600', action: () => { setActiveRole('Admin'); if (typeof window !== 'undefined') localStorage.setItem('agri_admin_session', 'true'); onNavigate('admin'); } },
         { icon: Bell, label: tr('profile.menu.notificationSettings', 'Notification Settings'), sub: tr('profile.menu.notificationSettingsSubtitle', 'Alerts & reminders'), tint: 'text-feature-schemes', action: () => setCurrentView('notifications') },
         { icon: Shield, label: tr('profile.menu.auditLogs', 'Audit Logs'), sub: tr('profile.menu.auditLogsSubtitle', 'Security activity history'), tint: 'text-primary', action: () => setCurrentView('audit-logs') },
         { icon: HelpCircle, label: tr('profile.menu.helpSupport', 'Help & Support'), sub: tr('profile.menu.helpSupportSubtitle', 'Helpline, WhatsApp & FAQ'), tint: 'text-feature-community', action: () => setCurrentView('help-support') },
