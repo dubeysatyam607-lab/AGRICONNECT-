@@ -818,10 +818,7 @@ const TractorMarket: React.FC = () => {
     const fallback = LOCAL_TRACTORS_DETAILS.find(t => t.id === id) || LOCAL_TRACTORS_DETAILS[0];
     if (fallback) {
       setSelected(fallback);
-      setDetailReviews([
-        { user: "Ranjit Singh", rating: 5, comment: "Machine arrived on time and was spotless. Driver was very professional.", when: "2d ago" },
-        { user: "Amit Sharma", rating: 4, comment: "Great quality work, my field was ready in half the expected time.", when: "5d ago" },
-      ]);
+      setDetailReviews([]);
     } else {
       showToast(t("loadFailed") || "Couldn't load tractor details. Please try again.");
     }

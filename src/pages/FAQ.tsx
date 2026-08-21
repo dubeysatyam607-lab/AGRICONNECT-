@@ -177,31 +177,35 @@ const FAQ: React.FC = () => {
 
         <div className="responsive-container py-10">
           <div className="space-y-3">
-            {EXTENDED_FAQS.map((faq, idx) => (
-              <div key={faq.q} className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
-                <button
-                  onClick={() => toggle(idx)}
-                  aria-expanded={open === idx}
-                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
-                >
-                  <span className="font-semibold text-foreground">{faq.q}</span>
-                  <span
-                    className={cn(
-                      'shrink-0 text-muted-foreground transition-transform duration-200',
-                      open === idx ? 'rotate-45' : 'rotate-0'
-                    )}
-                    aria-hidden="true"
+            {EXTENDED_FAQS.map((faq, idx) => {
+              const panelId = `faq-panel-${idx}`;
+              return (
+                <div key={faq.q} className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+                  <button
+                    onClick={() => toggle(idx)}
+                    aria-expanded={open === idx}
+                    aria-controls={panelId}
+                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
                   >
-                    +
-                  </span>
-                </button>
-                {open === idx && (
-                  <div className="px-5 pb-4">
-                    <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+                    <span className="font-semibold text-foreground">{faq.q}</span>
+                    <span
+                      className={cn(
+                        'shrink-0 text-muted-foreground transition-transform duration-200',
+                        open === idx ? 'rotate-45' : 'rotate-0'
+                      )}
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </button>
+                  {open === idx && (
+                    <div id={panelId} className="px-5 pb-4">
+                      <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-10 rounded-2xl gradient-hero text-primary-foreground p-6 text-center">

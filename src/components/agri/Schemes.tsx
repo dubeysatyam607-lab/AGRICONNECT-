@@ -287,7 +287,7 @@ const DetailSheet = ({
         </div>
 
         {/* Tab Navigation inside Detail Guide */}
-        <div className="mt-6 flex border-b border-border overflow-x-auto scrollbar-hide">
+        <div className="mt-6 flex border-b border-border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('overview')}
             className={cn("px-4 py-2.5 text-xs font-bold border-b-2 transition-colors shrink-0 flex items-center gap-1.5", activeTab === 'overview' ? "border-primary text-primary" : "border-transparent text-muted-foreground")}
@@ -911,7 +911,7 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
           </div>
 
           {/* Filters Row 1: Central vs State Level */}
-          <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-hide pb-0.5">
+          <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-0.5">
             <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 shrink-0">
               <Layers size={13} /> Level:
             </span>
@@ -936,7 +936,7 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
           </div>
 
           {/* Category Chips */}
-          <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4 no-scrollbar">
             {categories.map(cat => (
               <button
                 key={cat}

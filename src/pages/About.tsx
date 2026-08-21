@@ -27,7 +27,7 @@ const About: React.FC = () => {
         description="AgriConnect is on a mission to make AI work for every Indian farmer, in their language, for free. Built in India for India's 150 million farming families."
         canonical="/about"
         keywords={['about AgriConnect', 'AI farming India', 'digital agriculture ecosystem India', 'smart farming platform', 'agritech company India', 'Kisan AI']}
-        ogType="profile"
+        ogType="website"
         ogImage={ogImage()}
         jsonLd={jsonLd}
       />
@@ -59,12 +59,12 @@ const About: React.FC = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 items-center">
-              <a
-                href="/contact"
+              <Link
+                to="/contact"
                 className="inline-flex items-center gap-2 rounded-xl bg-white text-emerald-900 px-5 py-3 font-bold text-sm shadow-md hover:bg-emerald-50 transition"
               >
                 Contact Team
-              </a>
+              </Link>
               <a
                 href="mailto:hello.agriconnect@gmail.com"
                 className="inline-flex items-center gap-2 rounded-xl bg-white/15 border border-white/25 text-white px-5 py-3 font-bold text-sm hover:bg-white/25 transition"

@@ -216,7 +216,7 @@ const Features: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-foreground">{f.title}</h2>
                     {f.tag && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-800">
+                      <span className="rounded-full bg-secondary/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-secondary">
                         {f.tag}
                       </span>
                     )}

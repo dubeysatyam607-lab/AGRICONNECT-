@@ -335,18 +335,23 @@ export class AuthRemoteDataSource {
       throw new ValidationException('Please wait 60 seconds before requesting a new OTP.');
     }
     const requestPromise = (async () => {
+      const redirectBase = getAuthRedirectBase();
+      const emailRedirectTo = redirectBase ? `${redirectBase}/auth/callback` : undefined;
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
-        options: meta
-          ? {
-              shouldCreateUser: true,
-              data: {
-                full_name: meta.full_name ?? '',
-                phone: meta.phone ?? '',
-                role: 'farmer',
-              },
-            }
-          : undefined,
+        options: {
+          ...(emailRedirectTo ? { emailRedirectTo } : {}),
+          ...(meta
+            ? {
+                shouldCreateUser: true,
+                data: {
+                  full_name: meta.full_name ?? '',
+                  phone: meta.phone ?? '',
+                  role: 'farmer',
+                },
+              }
+            : {}),
+        },
       });
       if (error) {
         throw new ServerException(error.message, error.status || 500, error);

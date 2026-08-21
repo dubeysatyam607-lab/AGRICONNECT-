@@ -63,7 +63,9 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   const fullTitle = useMemo(() => {
     if (title === SITE_CONFIG.name) return title;
     const trimmed = title?.trim() ?? '';
-    const alreadyBranded = trimmed.toLowerCase().endsWith(SITE_CONFIG.name.toLowerCase());
+    if (!trimmed) return SITE_CONFIG.name;
+    const brandLower = SITE_CONFIG.name.toLowerCase();
+    const alreadyBranded = trimmed.toLowerCase().endsWith(brandLower) || trimmed.toLowerCase().endsWith(`${brandLower} | ${brandLower}`);
     return alreadyBranded ? trimmed : `${trimmed} | ${SITE_CONFIG.name}`;
   }, [title]);
 
@@ -71,7 +73,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     // ── Core meta ───────────────────────────────────────────
     document.title = fullTitle;
 
-    upsertMeta('name', 'description', description);
+    upsertMeta('name', 'description', description || SITE_CONFIG.description);
     if (keywords?.length) {
       upsertMeta('name', 'keywords', keywords.join(', '));
     }
@@ -86,7 +88,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     // ── Open Graph ──────────────────────────────────────────
     upsertMeta('property', 'og:type', ogType);
     upsertMeta('property', 'og:title', fullTitle);
-    upsertMeta('property', 'og:description', description);
+    upsertMeta('property', 'og:description', description || SITE_CONFIG.description);
     upsertMeta('property', 'og:url', resolvedCanonical);
     upsertMeta('property', 'og:image', resolvedOgImage);
     upsertMeta('property', 'og:image:alt', ogImageAlt || SITE_CONFIG.ogImageAlt);
@@ -98,7 +100,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:site', SITE_CONFIG.twitterHandle);
     upsertMeta('name', 'twitter:title', fullTitle);
-    upsertMeta('name', 'twitter:description', description);
+    upsertMeta('name', 'twitter:description', description || SITE_CONFIG.description);
     upsertMeta('name', 'twitter:image', resolvedOgImage);
     upsertMeta('name', 'twitter:image:alt', ogImageAlt || SITE_CONFIG.ogImageAlt);
 

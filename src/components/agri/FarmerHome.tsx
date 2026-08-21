@@ -229,24 +229,26 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
 
   return (
     <div className="relative min-h-screen pb-36 overflow-x-hidden">
-      {/* Floating glass header */}
-      <header className="sticky top-3 z-40 mx-3 flex items-center justify-between rounded-2xl bg-card/80 backdrop-blur-xl border border-border/70 shadow-card px-3.5 py-2.5">
-        <div className="flex items-center gap-2">
-          {/* FIX 10: Consistent logo across app */}
-          <span className="relative flex h-8 w-8 items-center justify-center rounded-xl overflow-hidden">
-            <Logo size={32} />
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-secondary animate-live-pulse" />
+      {/* Ultra-Modern Floating Glass Header */}
+      <header className="sticky top-3 z-40 mx-3 sm:mx-4 flex items-center justify-between rounded-2xl glass-dock border border-white/60 dark:border-white/10 shadow-xl px-4 py-3 transition-all duration-300" style={{ top: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))' }}>
+        <div className="flex items-center gap-3">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-sm bg-emerald-500/10">
+            <Logo size={34} />
+            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 border border-white dark:border-slate-900 animate-live-pulse" />
           </span>
           <div className="leading-none">
-            <p className="font-display font-black text-[17px] tracking-tight text-foreground">{t('agr207')}</p>
-            <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">{liveCity} · {dateStr.split(",")[0]}</p>
+            <p className="font-display font-black text-[18px] tracking-tight text-foreground bg-gradient-to-r from-emerald-800 to-teal-700 dark:from-emerald-300 dark:to-teal-200 bg-clip-text text-transparent">{t('agr207')}</p>
+            <p className="text-[11px] font-bold text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              {liveCity} · {dateStr.split(",")[0]}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <NotificationBell onNavigate={go} />
           <button
             onClick={() => go("profile")}
-            className="h-9 w-9 rounded-xl gradient-community text-white flex items-center justify-center font-display font-bold text-sm shadow-colorful animate-spring-pop"
+            className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-display font-black text-sm shadow-md shadow-emerald-600/30 tap-bounce transition-transform"
             aria-label={t("home.openProfile")}
           >
             {firstName.charAt(0).toUpperCase()}
@@ -372,32 +374,34 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
               <span className="mr-1.5" aria-hidden="true">⚡</span> {t("home.quickActions")}
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3.5">
             {PRIMARY_SERVICES.map((s) => (
               <button
                 key={s.id}
                 onClick={() => go(s.id)}
-                className="group relative flex flex-col items-start gap-3 rounded-2xl border border-border p-4 text-left active:scale-[0.97] transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5"
+                className="group relative flex flex-col items-start gap-3 rounded-[24px] border p-4 text-left tap-bounce transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
                 style={{
-                  backgroundColor: `hsl(var(${s.token}) / 0.13)`,
-                  borderColor: `hsl(var(${s.token}) / 0.32)`,
-                  boxShadow: `0 18px 40px -18px hsl(var(${s.token}) / 0.45)`,
+                  backgroundColor: `hsl(var(${s.token}) / 0.10)`,
+                  borderColor: `hsl(var(${s.token}) / 0.28)`,
+                  boxShadow: `0 14px 34px -14px hsl(var(${s.token}) / 0.35)`,
                 }}
               >
                 <span
-                  className="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-colorful"
-                  style={{ backgroundColor: `hsl(var(${s.token}))` }}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                  style={{ 
+                    backgroundColor: `hsl(var(${s.token}))`,
+                    boxShadow: `0 8px 20px -4px hsl(var(${s.token}) / 0.5)` 
+                  }}
                 >
-                  <s.icon size={20} />
+                  <s.icon size={22} />
                 </span>
                 <span className="flex-1">
-                  <span className="block text-[13px] font-bold leading-tight text-foreground">{t(s.labelKey)}</span>
-                  <span className="block text-[11px] font-semibold text-foreground/80 mt-0.5">{t(s.subKey)}</span>
+                  <span className="block text-[14px] font-black leading-tight text-foreground">{t(s.labelKey)}</span>
+                  <span className="block text-[11px] font-semibold text-muted-foreground mt-1">{t(s.subKey)}</span>
                 </span>
-                <ChevronRight
-                  size={15}
-                  className="absolute top-4 right-3.5 text-muted-foreground/40 group-hover:translate-x-0.5 group-hover:text-muted-foreground transition-all"
-                />
+                <span className="absolute top-4 right-3.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/60 dark:bg-black/20 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight size={14} />
+                </span>
               </button>
             ))}
           </div>
@@ -460,7 +464,10 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
 
         {/* ── Crop Health Alert ────────────────────────── */}
         <section className="px-4 mt-6 reveal" style={{ animationDelay: "240ms" }} aria-labelledby="health-heading">
-          <div className="interactive-card flex items-center gap-4 rounded-2xl border border-feature-doctor/25 bg-feature-doctor/8 p-4 cursor-pointer" onClick={() => go("crop-doctor")}>
+          <button
+            onClick={() => go("crop-doctor")}
+            className="interactive-card flex items-center gap-4 rounded-2xl border border-feature-doctor/25 bg-feature-doctor/8 p-4 w-full text-left cursor-pointer"
+          >
             <span className="relative h-14 w-14 shrink-0 rounded-full bg-emerald-700 text-white flex items-center justify-center shadow-colorful animate-ripple">
               <Scan size={22} />
             </span>
@@ -471,13 +478,10 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
               </p>
               <p className="text-[12px] text-muted-foreground mt-0.5">{t("home.farmersFlagged")}</p>
             </div>
-            <button
-              onClick={() => go("crop-doctor")}
-              className="shrink-0 rounded-full bg-emerald-700 text-white px-3.5 py-2 text-[12px] font-bold shadow-colorful active:scale-95 transition-transform"
-            >
+            <span className="shrink-0 rounded-full bg-emerald-700 text-white px-3.5 py-2 text-[12px] font-bold shadow-colorful">
               {t("home.scan")}
-            </button>
-          </div>
+            </span>
+          </button>
 
 
 

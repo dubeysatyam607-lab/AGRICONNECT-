@@ -44,7 +44,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => {
     <div className="fixed bottom-3 sm:bottom-4 inset-x-2 sm:inset-x-4 z-40 pointer-events-none flex justify-center safe-area-bottom">
       <nav
         aria-label="Primary"
-        className="pointer-events-auto relative w-full max-w-lg bg-card/90 backdrop-blur-2xl border border-border shadow-soft rounded-[26px] px-1 sm:px-1.5 py-1.5 sm:py-2 flex justify-around items-center"
+        className="pointer-events-auto relative w-full max-w-lg glass-dock rounded-[28px] px-2 py-2 flex justify-around items-center transition-all duration-300"
       >
         {navItems.slice(0, 2).map((item) => {
           const Icon = item.icon;
@@ -57,11 +57,13 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => {
               aria-label={lbl}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-90",
-                isActive ? "bg-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                "relative flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] py-2 px-3 rounded-2xl transition-all duration-300 tap-bounce",
+                isActive
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold shadow-md shadow-emerald-500/30 scale-105"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
               )}
             >
-              <Icon size={18} strokeWidth={isActive ? 2.4 : 2} className="shrink-0" />
+              <Icon size={19} strokeWidth={isActive ? 2.5 : 2} className="shrink-0 transition-transform duration-200" />
               <span className={cn("text-[11px] sm:text-xs font-bold tracking-tight", isActive ? "inline" : "hidden sm:inline font-semibold")}>
                 {lbl}
               </span>
@@ -69,22 +71,22 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => {
           );
         })}
 
-        {/* Center AI FAB */}
+        {/* Center Kisan AI FAB */}
         <button
           onClick={() => handleNavClick("ai-chat")}
           aria-current={isAiActive ? "page" : undefined}
           aria-label={getLabel("nav.ai", "Kisan AI")}
           className={cn(
-            "relative -mt-8 sm:-mt-10 flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full gradient-ai text-white shadow-colorful transition-transform duration-200 active:scale-90",
-            isAiActive ? "scale-105 sm:scale-110 ring-4 ring-feature-ai/30" : ""
+            "relative -mt-8 sm:-mt-10 flex h-13 w-13 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-emerald-500 text-white shadow-xl shadow-purple-600/30 transition-all duration-300 tap-bounce group",
+            isAiActive ? "scale-110 ring-4 ring-purple-500/40 neon-glow-ai" : "hover:scale-105"
           )}
         >
-          <span className="relative">
-            <Bot size={22} className="sm:hidden" />
-            <Bot size={24} className="hidden sm:block" />
-            <span className="absolute -top-1 -right-1.5 h-2.5 w-2.5 rounded-full bg-secondary animate-live-pulse" />
+          <span className="relative flex items-center justify-center">
+            <Bot size={24} className="sm:hidden group-hover:rotate-12 transition-transform duration-300" />
+            <Bot size={26} className="hidden sm:block group-hover:rotate-12 transition-transform duration-300" />
+            <span className="absolute -top-1 -right-1.5 h-3 w-3 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 animate-live-pulse" />
           </span>
-          <span className="absolute -bottom-3.5 sm:-bottom-4 text-[9px] sm:text-[10px] font-bold text-foreground">AI</span>
+          <span className="absolute -bottom-4 text-[10px] font-black text-foreground drop-shadow-sm tracking-wider uppercase">AI</span>
         </button>
 
         {navItems.slice(2).map((item) => {
@@ -98,11 +100,13 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab }) => {
               aria-label={lbl}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-90",
-                isActive ? "bg-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                "relative flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] py-2 px-3 rounded-2xl transition-all duration-300 tap-bounce",
+                isActive
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold shadow-md shadow-emerald-500/30 scale-105"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
               )}
             >
-              <Icon size={18} strokeWidth={isActive ? 2.4 : 2} className="shrink-0" />
+              <Icon size={19} strokeWidth={isActive ? 2.5 : 2} className="shrink-0 transition-transform duration-200" />
               <span className={cn("text-[11px] sm:text-xs font-bold tracking-tight", isActive ? "inline" : "hidden sm:inline font-semibold")}>
                 {lbl}
               </span>
