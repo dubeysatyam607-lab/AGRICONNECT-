@@ -12,6 +12,14 @@ import { useAdminCrud, logAdminExport } from '../hooks/useAdminCrud';
 import { timeAgo } from '../../domain/adminStore';
 import type { AdminUser } from '../../domain/adminTypes';
 
+const ROLE_LOOKUP: Record<string, string> = {
+  'role-super': 'Super Admin',
+  'role-ops': 'Operations Manager',
+  'role-content': 'Content Editor',
+  'role-finance': 'Finance Officer',
+  'role-analyst': 'Analyst',
+};
+
 const initials = (name: string): string =>
   name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 
@@ -49,14 +57,6 @@ const FIELDS: FormField[] = [
   { name: 'twoFactor', label: 'Enable 2FA', type: 'switch' },
   { name: 'status', label: 'Status', type: 'select', options: ['Active', 'Inactive'].map((v) => ({ value: v, label: v })) },
 ];
-
-const ROLE_LOOKUP: Record<string, string> = {
-  'role-super': 'Super Admin',
-  'role-ops': 'Operations Manager',
-  'role-content': 'Content Editor',
-  'role-finance': 'Finance Officer',
-  'role-analyst': 'Analyst',
-};
 
 export function AdminUsersModule() {
   const { rows, create, update, remove, removeMany, setStatus } = useAdminCrud({ key: 'adminUsers', label: 'Admin User', idKey: 'id' });
