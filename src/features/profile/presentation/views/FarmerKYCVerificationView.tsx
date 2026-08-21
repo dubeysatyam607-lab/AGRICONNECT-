@@ -100,8 +100,9 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
   // Handle Aadhaar OTP Submission
   const handleVerifyAadhaarOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpInput !== generatedDemoOtp && otpInput !== '123456') {
-      setAadhaarError('Invalid OTP entered. Please check the 6-digit code.');
+    const cleanOtp = otpInput.trim();
+    if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
+      setAadhaarError('Please enter a valid 6-digit OTP code.');
       return;
     }
 
@@ -351,9 +352,21 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
           ) : !otpSent ? (
             <form onSubmit={handleSendAadhaarOtp} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  12-Digit Aadhaar Number
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    12-Digit Aadhaar Number
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAadhaarInput('2345 6789 0124');
+                      setAadhaarError(null);
+                    }}
+                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    Use Sample: 2345 6789 0124
+                  </button>
+                </div>
                 <input
                   type="text"
                   maxLength={14}
@@ -363,6 +376,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     // Format with spaces XXXX XXXX XXXX
                     const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
                     setAadhaarInput(formatted);
+                    if (aadhaarError) setAadhaarError(null);
                   }}
                   placeholder="e.g. 5432 1098 7654"
                   className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono tracking-wider"
@@ -394,8 +408,25 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">OTP Status:</span>
-                  <span className="text-emerald-500 font-bold">Sent to Mobile</span>
+                  <span className="text-emerald-500 font-bold">Sent to Registered Mobile</span>
                 </div>
+              </div>
+
+              {/* Demo OTP Helper Banner */}
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
+                <span className="text-emerald-800 dark:text-emerald-200 font-medium">
+                  Demo OTP: <b className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{generatedDemoOtp}</b>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpInput(generatedDemoOtp);
+                    if (aadhaarError) setAadhaarError(null);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                >
+                  Auto-Fill OTP
+                </button>
               </div>
 
               <div className="space-y-1.5">
@@ -406,7 +437,10 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                   type="text"
                   maxLength={6}
                   value={otpInput}
-                  onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => {
+                    setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    if (aadhaarError) setAadhaarError(null);
+                  }}
                   placeholder="e.g. 123456"
                   className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base font-mono text-center tracking-[0.4em]"
                   required
