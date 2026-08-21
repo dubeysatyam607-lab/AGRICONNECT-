@@ -54,8 +54,23 @@ export const Register = () => {
     { name: 'password', type: 'password', placeholder: hi ? 'पासवर्ड' : 'Password', icon: Lock, required: true },
     { name: 'confirmPassword', type: 'password', placeholder: hi ? 'पासवर्ड की पुष्टि' : 'Confirm Password', icon: Lock, required: true },
     { name: 'location', type: 'text', placeholder: hi ? 'स्थान (वैकल्पिक)' : 'Location (optional)', icon: MapPin, required: false },
-    { name: 'language', type: 'text', placeholder: hi ? 'पसंदीदा भाषा (वैकल्पिक)' : 'Preferred Language (optional)', icon: Globe, required: false },
   ] as const;
+
+  const LANGUAGE_OPTIONS = [
+    { value: '', label: hi ? 'पसंदीदा भाषा चुनें' : 'Preferred Language (optional)' },
+    { value: 'hi', label: 'हिन्दी' },
+    { value: 'en', label: 'English' },
+    { value: 'bn', label: 'বাংলা' },
+    { value: 'te', label: 'తెలుగు' },
+    { value: 'mr', label: 'मराठी' },
+    { value: 'ta', label: 'தமிழ்' },
+    { value: 'gu', label: 'ગુજરાતી' },
+    { value: 'kn', label: 'ಕನ್ನಡ' },
+    { value: 'ml', label: 'മലയാളം' },
+    { value: 'pa', label: 'ਪੰਜਾਬੀ' },
+    { value: 'or', label: 'ଓଡ଼ିଆ' },
+    { value: 'as', label: 'অসমীয়া' },
+  ];
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 py-12">
@@ -87,8 +102,10 @@ export const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {fields.map((f) => (
               <div key={f.name} className="relative">
+                <label htmlFor={`register-${f.name}`} className="sr-only">{f.placeholder}</label>
                 <f.icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id={`register-${f.name}`}
                   name={f.name}
                   type={f.type}
                   placeholder={f.placeholder}
@@ -104,6 +121,26 @@ export const Register = () => {
                 />
               </div>
             ))}
+
+            <div className="relative">
+              <label htmlFor="register-language" className="sr-only">{hi ? 'पसंदीदा भाषा' : 'Preferred Language'}</label>
+              <Globe size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <select
+                id="register-language"
+                name="language"
+                value={form.language}
+                onChange={handleChange}
+                className={cn(
+                  "w-full h-12 pl-10 pr-4 rounded-xl bg-background/60 border border-border/60 text-sm font-medium",
+                  "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40",
+                  "transition-all duration-200 appearance-none text-foreground"
+                )}
+              >
+                {LANGUAGE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
 
             <Button
               type="submit"

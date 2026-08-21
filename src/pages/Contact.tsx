@@ -95,7 +95,7 @@ const Contact: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {[
-                { icon: '📞', title: 'Kisan Helpline', lines: ['Toll-free: 1800-XXX-XXXX', 'Mon–Sat, 8 AM – 8 PM IST'] },
+                { icon: '📞', title: 'Kisan Helpline', lines: ['+91-7067820256', 'Mon–Sat, 8 AM – 8 PM IST'] },
                 { icon: '💬', title: 'WhatsApp', lines: ['Chat with our helpdesk: +91-7067820256'] },
                 { icon: '✉️', title: 'Email', lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
                 { icon: '🏢', title: 'Head Office', lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
@@ -131,14 +131,14 @@ const Contact: React.FC = () => {
               Send a Message
             </h2>
             {submitted ? (
-              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center">
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center" role="status" aria-live="polite">
                 <span className="text-4xl" aria-hidden="true">✅</span>
                 <h3 className="font-bold text-foreground mt-3 text-lg">Message Received!</h3>
                 <p className="text-muted-foreground mt-2">
                   Thank you, {form.name || 'Kisan'}. Our team will get back to you within 24 hours.
                 </p>
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => { setSubmitted(false); setForm({ name: '', phone: '', email: '', message: '' }); }}
                   className="mt-4 rounded-lg border border-border bg-card px-5 py-2 text-sm font-semibold text-foreground hover:bg-muted transition"
                 >
                   Send Another

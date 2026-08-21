@@ -63,9 +63,9 @@ const GROUPS: Group[] = [
     title: "Machinery",
     items: [
       { id: "tractors", icon: Tractor, label: "Tractor", sub: "Hire by hour or acre", tint: "bg-feature-labor/12 text-feature-labor" },
-      { id: "tractors", icon: Combine, label: "Harvester", sub: "For wheat & paddy", tint: "bg-feature-mandi/12 text-feature-mandi" },
-      { id: "tractors", icon: RefreshCcw, label: "Rotavator", sub: "Tillage & mulching", tint: "bg-feature-soil/12 text-feature-soil" },
-      { id: "tractors", icon: Shovel, label: "Seeder", sub: "Seed sowing work", tint: "bg-feature-cattle/12 text-feature-cattle" },
+      { id: "harvester", icon: Combine, label: "Harvester", sub: "For wheat & paddy", tint: "bg-feature-mandi/12 text-feature-mandi" },
+      { id: "rotavator", icon: RefreshCcw, label: "Rotavator", sub: "Tillage & mulching", tint: "bg-feature-soil/12 text-feature-soil" },
+      { id: "seeder", icon: Shovel, label: "Seeder", sub: "Seed sowing work", tint: "bg-feature-cattle/12 text-feature-cattle" },
     ],
   },
   {
@@ -141,7 +141,12 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
 
   const go = (tab: string) => {
     triggerHaptic();
-    onNavigate(tab);
+    const MACHINERY_MAP: Record<string, string> = {
+      harvester: "tractors",
+      rotavator: "tractors",
+      seeder: "tractors",
+    };
+    onNavigate(MACHINERY_MAP[tab] ?? tab);
   };
 
   const q = query.trim().toLowerCase();
@@ -225,10 +230,10 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
               key={group.title}
               className="px-4 mt-6 reveal"
               style={{ animationDelay: `${gi * 50}ms` }}
-              aria-labelledby={`group-${group.title}`}
+              aria-labelledby={`group-${gi}`}
             >
               <h2
-                id={`group-${group.title}`}
+                id={`group-${gi}`}
                 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.14em] mb-3 px-1"
               >
                 <span className="mr-1.5" aria-hidden="true">{group.emoji}</span>

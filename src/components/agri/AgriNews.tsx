@@ -156,7 +156,7 @@ const AgriNews: React.FC = () => {
       </div>
 
       {/* Category Chips */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -192,7 +192,7 @@ const AgriNews: React.FC = () => {
           {filteredArticles.length === 0 && error && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">{t('agr0')}</p>
+              <p className="text-base font-bold text-foreground">Could not load news</p>
               <p className="text-xs text-muted-foreground mt-1">{error}</p>
               <button
                 onClick={loadNews}
@@ -206,8 +206,8 @@ const AgriNews: React.FC = () => {
           {filteredArticles.length === 0 && !error && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">{t('agr1')}</p>
-              <p className="text-xs text-muted-foreground mt-1">{t('agr2')}</p>
+              <p className="text-base font-bold text-foreground">No news found</p>
+              <p className="text-xs text-muted-foreground mt-1">Try a different search or category.</p>
             </div>
           )}
         </div>

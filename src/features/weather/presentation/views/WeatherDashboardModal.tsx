@@ -53,7 +53,18 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
     };
   }, [isOpen, data, onClose]);
 
-  if (!isOpen || !data) return null;
+  if (!isOpen) return null;
+
+  if (!data) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
+        <div className="bg-slate-950/95 border-t sm:border border-white/15 w-full max-w-3xl sm:rounded-3xl rounded-t-3xl p-8 text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="animate-spin h-8 w-8 border-2 border-emerald-400 border-t-transparent rounded-full mx-auto" />
+          <p className="text-sm text-slate-400 mt-4">{t('wth.loading') || 'Loading weather data…'}</p>
+        </div>
+      </div>
+    );
+  }
 
   const farm = deriveFarmAdvice(profile, data);
   const today = data.daily?.[0];
@@ -64,7 +75,7 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-label={t('wth.title')}>
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
       <div ref={bodyRef} className="bg-slate-950/95 border-t sm:border border-white/15 w-full max-w-3xl max-h-[92vh] sm:rounded-3xl rounded-t-3xl overflow-y-auto no-scrollbar flex flex-col shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
         
         {/* Sticky Header */}

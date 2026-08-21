@@ -12,8 +12,6 @@ import AgriConnectFooter from '@/components/ui/AgriConnectFooter';
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/features', label: 'Features' },
-  { to: '/features#ai-assistant', label: 'AI Assistant' },
-  { to: '/features#marketplace', label: 'Marketplace' },
   { to: '/weather/jaipur', label: 'Weather' },
   { to: '/mandi-prices/rajasthan', label: 'Mandi Prices' },
   { to: '/knowledge-hub', label: 'Knowledge Hub' },

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { FaGoogle as Google } from 'react-icons/fa';
 import { Logo } from '@/components/ui/Logo';
@@ -215,7 +216,6 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
-                        autoFocus
                       />
                     </div>
                   </div>
@@ -249,7 +249,6 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
-                        autoFocus
                       />
                     </div>
                   </div>
@@ -329,8 +328,8 @@ export const LoginView: React.FC<ILoginViewProps> = ({
 
             <p className="text-[10px] leading-relaxed text-muted-foreground/70">
               {hi ? 'साइन इन करने पर आप हमारी' : 'By signing in, you agree to our'}{' '}
-              <a href="/terms" className="font-bold underline-offset-2 hover:underline">{hi ? 'सेवा शर्तों' : 'Terms'}</a> &amp;{' '}
-              <a href="/privacy-policy" className="font-bold underline-offset-2 hover:underline">{hi ? 'गोपनीयता नीति' : 'Privacy Policy'}</a>
+              <Link to="/terms" className="font-bold underline-offset-2 hover:underline">{hi ? 'सेवा शर्तों' : 'Terms'}</Link> &amp;{' '}
+              <Link to="/privacy-policy" className="font-bold underline-offset-2 hover:underline">{hi ? 'गोपनीयता नीति' : 'Privacy Policy'}</Link>
             </p>
           </SlideUp>
         </div>

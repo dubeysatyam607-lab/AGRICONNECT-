@@ -79,11 +79,18 @@ const Pricing: React.FC = () => {
       name: 'AgriConnect Plans',
       url: canonical('/pricing'),
       itemListElement: PLANS.map((p) => ({
-        '@type': 'Offer',
-        name: p.name,
-        price: p.monthlyPrice === -1 ? undefined : p.monthlyPrice,
-        priceCurrency: 'INR',
-        description: p.features.join('. '),
+        '@type': 'ListItem',
+        position: PLANS.indexOf(p) + 1,
+        item: {
+          '@type': 'Offer',
+          name: p.name,
+          price: p.monthlyPrice === 0 ? '0' : p.monthlyPrice === -1 ? undefined : String(isAnnual ? p.annualPrice : p.monthlyPrice),
+          priceCurrency: 'INR',
+          description: p.features.join('. '),
+          url: canonical('/pricing'),
+          availability: 'https://schema.org/InStock',
+          eligibleRegion: { '@type': 'Country', name: 'IN' },
+        },
       })),
     },
   ];
@@ -128,9 +135,10 @@ const Pricing: React.FC = () => {
             </p>
 
             {/* Annual / Monthly toggle */}
-            <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-white/10 border border-white/20 px-2 py-1.5">
+            <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-white/10 border border-white/20 px-2 py-1.5" role="group" aria-label="Billing period">
               <button
                 onClick={() => setIsAnnual(false)}
+                aria-pressed={!isAnnual}
                 className={`rounded-full px-4 py-1.5 text-sm font-bold transition-all ${
                   !isAnnual ? 'bg-white text-emerald-900 shadow-md' : 'text-white/80 hover:text-white'
                 }`}
@@ -139,6 +147,7 @@ const Pricing: React.FC = () => {
               </button>
               <button
                 onClick={() => setIsAnnual(true)}
+                aria-pressed={isAnnual}
                 className={`rounded-full px-4 py-1.5 text-sm font-bold transition-all ${
                   isAnnual ? 'bg-white text-emerald-900 shadow-md' : 'text-white/80 hover:text-white'
                 }`}

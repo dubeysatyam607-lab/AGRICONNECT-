@@ -9,8 +9,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import NotFound from "./pages/NotFound";
-import Index from "./pages/Index";
 import { RoleProvider } from "@/contexts/RoleContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RequireAdmin } from "@/core/auth/RequireAdmin";
@@ -18,6 +16,10 @@ import MarketingLayout from "./shared/layouts/MarketingLayout";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
 import { LoginPage, RegisterPage, OtpPage, ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/AuthWrappers";
 import { AuthCallback } from "@/pages/auth/AuthCallback";
+
+// Code-split heavy page bundles
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // SEO / Marketing Pages (code-split for performance)
 const About = lazy(() => import("./pages/About"));
@@ -271,19 +273,19 @@ const App = () => (
                   {/* ── Core App / Public Landing ───────────── */}
                   {/* Both authenticated farmers and guest visitors can access
                       the unified smart farming dashboard, mandi rates, and tools. */}
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/market" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/ai" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/services" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/wallet" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/farm" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/crop-scan" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/mandi" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/agri-store" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/tractor-rental" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/schemes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/market" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/ai" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/services" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/farm" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/crop-scan" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/mandi" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/agri-store" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/tractor-rental" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/schemes" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />
@@ -311,7 +313,7 @@ const App = () => (
 <Route path="/admin/*" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
 
                   {/* ── 404 ─────────────────────────────────── */}
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="*" element={<SafeLazy><NotFound /></SafeLazy>} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
