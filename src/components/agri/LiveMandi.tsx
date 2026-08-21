@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { fetchMandiPrices, normalizeCropKey, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
+import { getCropImage } from "@/lib/crop-images";
 import { searchAgriImages } from "@/lib/pexels-api";
 import { ErrorState } from "@/components/ui/error-state";
 import { AgriCard } from "@/components/ui/agri-card";
@@ -367,7 +368,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const renderCard = (c: MandiPrice, index: number) => {
     const fav = isFav(c);
     const mspDiff = c.msp ? c.price - c.msp : null;
-    const imgSrc = cropImages[normalizeCropKey(c.crop)] || c.cropImage;
+    const defaultImg = getCropImage(c.crop);
+    const imgSrc = cropImages[normalizeCropKey(c.crop)] || c.cropImage || defaultImg;
 
     return (
       <AgriCard
@@ -383,8 +385,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               src={imgSrc}
               alt={c.crop}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-              onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=400'; }}
+              loading="eager"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = defaultImg;
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
@@ -549,6 +553,33 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               <button onClick={() => setSelectedCrop(null)} aria-label={t("mandi.hub.ariaClose")} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <X size={18} className="text-slate-400" />
               </button>
+            </div>
+          </div>
+
+          {/* Selected Crop Image Banner */}
+          <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+            <img
+              src={cropImages[normalizeCropKey(c.crop)] || c.cropImage || getCropImage(c.crop)}
+              alt={c.crop}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = getCropImage(c.crop);
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
+              <div>
+                <span className="text-xs bg-emerald-600/90 text-white font-bold px-2 py-0.5 rounded-full inline-block mb-1">
+                  {c.category}
+                </span>
+                <p className="text-sm font-bold text-white/90">
+                  {c.market} · {c.district}, {c.state}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-[11px] opacity-80 block">दैनिक आवक</span>
+                <span className="text-sm font-extrabold text-white">{c.arrivalQuantity} क्विंटल</span>
+              </div>
             </div>
           </div>
 
