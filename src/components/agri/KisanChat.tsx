@@ -947,16 +947,16 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       const local = getLocalAnswer(messageToSend, profile, localLang);
       const fallbackContent = local.matched ? local.text : (
         isHindi
-          ? `🌾 **${profile.crop}** सारांश सलाह:\n\n` +
-            `• **फसल अवस्था**: ${profile.stage || 'वृद्धि'}\n` +
-            `• **सिंचाई व पोषण**: समय पर सिंचाई करें व NPK उर्वरक का संतुलित उपयोग करें।\n` +
-            `• **मंडी भाव व मौसम**: ताज़ा अपडेट के लिए होम स्क्रीन देखें।\n\n` +
-            `पूछें: "${profile.crop} खाद मात्रा", "${profile.crop} सिंचाई", या "${profile.crop} मंडी भाव"।`
-          : `🌾 **${profile.crop}** Advisor Summary:\n\n` +
-            `• **Current Stage**: ${profile.stage || 'Vegetative'}\n` +
-            `• **Advisory**: Maintain timely irrigation and balanced NPK fertilizer application.\n` +
-            `• **Live Data**: Check Home screen for hyperlocal weather and mandi rates.\n\n` +
-            `Try asking: "${profile.crop} fertilizer dose", "${profile.crop} irrigation schedule", or "${profile.crop} mandi price".`
+          ? `🌾 **कृषि सलाह व सहायता**:\n\n` +
+            `• **फसल सवाल**: आप किसी भी फसल की खाद मात्रा, बुआई, या सिंचाई पूछ सकते हैं।\n` +
+            `• **कीट व रोग**: पत्ती पर धब्बे या कीड़े के लक्षण बताएं (जैसे: 'टमाटर में झुलसा', 'गेहूं में पीला रतुआ')।\n` +
+            `• **मंडी भाव**: फसल का नाम लिखकर भाव पूछें (जैसे: 'सोयाबीन मंडी भाव')।\n\n` +
+            `पूछें: "${profile.crop || 'गेहूं'} खाद मात्रा", "कीटनाशक स्प्रे", या "मंडी भाव"।`
+          : `🌾 **Agricultural Advisor & Support**:\n\n` +
+            `• **Crop Guidance**: Ask about fertilizer schedules, sowing, or irrigation for any crop.\n` +
+            `• **Pest & Disease**: Describe leaf symptoms (e.g., 'Tomato early blight', 'Wheat yellow rust').\n` +
+            `• **Mandi Rates**: Type crop name for market prices (e.g., 'Soybean mandi price').\n\n` +
+            `Try asking: "${profile.crop || 'Wheat'} fertilizer dose", "Pesticide spray", or "Mandi prices".`
       );
 
       const finalHistory = [...nextHistory, {
@@ -964,14 +964,18 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         content: fallbackContent,
         source: "local" as const,
         suggestions: local.matched ? (LOCAL_SUGGESTIONS[local.kind] || DEFAULT_SUGGESTIONS) : [
-          `${profile.crop} fertilizer dose`,
-          `${profile.crop} irrigation schedule`,
-          `${profile.crop} mandi price`,
+          `${profile.crop || 'Wheat'} fertilizer dose`,
+          `${profile.crop || 'Wheat'} irrigation schedule`,
+          `${profile.crop || 'Wheat'} mandi price`,
         ],
       }];
       setChatHistory(finalHistory);
       saveSession(finalHistory);
       startTypingAnimation(fallbackContent);
+
+      if (autoSpeak) {
+        playAssistantVoice(fallbackContent);
+      }
     } finally {
       setIsLoading(false);
     }

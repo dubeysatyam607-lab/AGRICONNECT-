@@ -87,10 +87,20 @@ interface ActiveSession {
 }
 
 const activeSessions = new Map<number, ActiveSession>();
+// Cache voices once loaded
+let cachedVoices: SpeechSynthesisVoice[] = [];
+
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  cachedVoices = window.speechSynthesis.getVoices() || [];
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoices = window.speechSynthesis.getVoices() || [];
+  };
+}
+
 // Helper to find the most natural Indian human voice for the given language
 function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
-  const voices = window.speechSynthesis.getVoices() || [];
+  const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices() || [];
   if (voices.length === 0) return null;
 
   const targetLang = (lang || "hi-IN").toLowerCase().replace("_", "-");
@@ -99,8 +109,8 @@ function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   // 1. High-priority natural / neural voices
   const preferredPatterns = [
     /google.*(hindi|हिन्दी|indian)/i,
-    /microsoft.*(natural|hemant|swara|neerja|prabhat|heera|ravi)/i,
-    /(lekha|neerja|veena|rishi|pradeep|kaveri)/i,
+    /microsoft.*(natural|hemant|swara|neerja|prabhat|heera|ravi|madhav|priya)/i,
+    /(lekha|neerja|veena|rishi|pradeep|kaveri|ananya|kavya|aravind)/i,
   ];
 
   for (const pat of preferredPatterns) {
@@ -118,13 +128,13 @@ function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
 
   // 4. Any Indian voice
   const anyIndian = voices.find((v) => v.lang.toLowerCase().includes("in") || /india/i.test(v.name));
-  return anyIndian || null;
+  return anyIndian || voices[0] || null;
 }
 
-function speakWithNativeSpeechSynthesis(
+export function speakWithNativeSpeechSynthesis(
   text: string,
-  lang: string,
-  callbacks: TtsCallbacks
+  lang: string = "hi-IN",
+  callbacks: TtsCallbacks = {}
 ): TtsController {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
     callbacks.onError?.(new Error("Speech synthesis not supported"));
@@ -140,61 +150,127 @@ function speakWithNativeSpeechSynthesis(
     };
   }
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = 0.90; // Natural, human conversational pacing (not rushed)
-  utterance.pitch = 1.02; // Warm, approachable tone
-
-  // Select human Indian voice if available
-  const selectedVoice = getBestIndianVoice(lang);
-  if (selectedVoice) {
-    utterance.voice = selectedVoice;
+  try {
+    window.speechSynthesis.cancel();
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+  } catch {
+    // noop
   }
 
+  const sanitized = prepareTextForTTS(text, lang);
+  const chunks = chunkForSpeech(sanitized, lang);
+  const totalChunks = chunks.length > 0 ? chunks.length : [sanitized].length;
+  const sentenceList = chunks.length > 0 ? chunks : [sanitized];
+
+  let currentIdx = 0;
   let isPaused = false;
-  let isSpeaking = true;
+  let isStopped = false;
+  let rate = 0.92;
+  let activeUtterance: SpeechSynthesisUtterance | null = null;
 
-  utterance.onstart = () => {
-    isSpeaking = true;
-    callbacks.onStart?.(1);
-    callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
-  };
-  utterance.onend = () => {
-    isSpeaking = false;
-    callbacks.onEnd?.();
-  };
-  utterance.onerror = (e) => {
-    isSpeaking = false;
-    callbacks.onError?.(e);
+  callbacks.onStart?.(totalChunks);
+
+  const speakChunk = (idx: number) => {
+    if (isStopped) return;
+    if (idx >= sentenceList.length) {
+      callbacks.onEnd?.();
+      return;
+    }
+
+    currentIdx = idx;
+    const chunkText = sentenceList[idx];
+    const utterance = new SpeechSynthesisUtterance(chunkText);
+    utterance.lang = lang || "hi-IN";
+    utterance.rate = rate;
+    utterance.pitch = 1.02;
+
+    const voice = getBestIndianVoice(lang);
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    utterance.onstart = () => {
+      if (isStopped) return;
+      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: idx });
+    };
+
+    utterance.onend = () => {
+      if (isStopped) return;
+      if (isPaused) return;
+      setTimeout(() => {
+        if (!isStopped && !isPaused) {
+          speakChunk(idx + 1);
+        }
+      }, 40);
+    };
+
+    utterance.onerror = (e) => {
+      if (e.error === "canceled" || e.error === "interrupted") return;
+      if (!isStopped && idx + 1 < sentenceList.length) {
+        speakChunk(idx + 1);
+      } else {
+        callbacks.onEnd?.();
+      }
+    };
+
+    activeUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
   };
 
-  window.speechSynthesis.speak(utterance);
+  speakChunk(0);
 
   return {
     pause: () => {
-      window.speechSynthesis.pause();
       isPaused = true;
+      try {
+        window.speechSynthesis.pause();
+      } catch {
+        // noop
+      }
     },
     resume: () => {
-      window.speechSynthesis.resume();
+      if (!isPaused) return;
       isPaused = false;
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        } else {
+          speakChunk(currentIdx);
+        }
+      } catch {
+        speakChunk(currentIdx);
+      }
     },
     stop: () => {
-      window.speechSynthesis.cancel();
-      isSpeaking = false;
+      isStopped = true;
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // noop
+      }
       callbacks.onEnd?.();
     },
     replay: () => {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      isStopped = false;
+      isPaused = false;
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // noop
+      }
+      speakChunk(0);
     },
     setRate: (r: number) => {
-      utterance.rate = r;
+      rate = Math.min(1.5, Math.max(0.7, r));
+      if (activeUtterance) {
+        activeUtterance.rate = rate;
+      }
     },
-    isSpeaking: () => isSpeaking && !isPaused,
+    isSpeaking: () => !isStopped && !isPaused,
     isPaused: () => isPaused,
-    getRate: () => utterance.rate,
+    getRate: () => rate,
   };
 }
 
@@ -277,10 +353,8 @@ const FADE_OUT_MS = 80;
 const BREATH_PAUSE_MS = 60;
 
 /**
- * Speak text using ElevenLabs Neural Voice over Web Audio API.
- * Ensures zero crackling, zero clipping, sub-1-second latency, sentence
- * prefetching, anti-pop fade ramps, natural breath pauses, and immediate
- * interruption from any caller.
+ * Speak text using natural human voice with zero latency and full sentence tracking.
+ * Uses Web Speech API with highest-quality Indian natural voices and full transport controls.
  */
 export function speakText(
   text: string,
@@ -288,9 +362,7 @@ export function speakText(
   callbacks: TtsCallbacks = {},
 ): TtsController | null {
   const sanitizedText = prepareTextForTTS(text, lang);
-  const chunks = chunkForSpeech(sanitizedText);
-
-  if (chunks.length === 0) {
+  if (!sanitizedText.trim()) {
     callbacks.onEnd?.();
     return null;
   }
@@ -298,195 +370,19 @@ export function speakText(
   // Interruption: any new utterance cuts off whatever is currently playing.
   interruptAllSessions();
 
-  let paused = false;
-  let stopped = false;
-  let rate = 1.0;
-  let currentChunkIndex = 0;
-  let activeSourceNode: AudioBufferSourceNode | null = null;
-  let activeGainNode: GainNode | null = null;
-  const prefetchedBuffers = new Map<number, Promise<AudioBuffer>>();
-
-  const sessionId = ++sessionCounter;
-  const session: ActiveSession = {
-    id: sessionId,
-    stopped: false,
-    stopAudio: () => { /* implemented below */ },
-  };
-  activeSessions.set(sessionId, session);
-
-  const isActive = () => activeSessions.has(sessionId);
-
-  const stopCurrentAudio = (fadeMs = FADE_OUT_MS) => {
-    if (activeGainNode && activeSourceNode) {
-      try {
-        const ctx = getAudioContext();
-        const now = ctx.currentTime;
-        activeGainNode.gain.cancelScheduledValues(now);
-        activeGainNode.gain.setValueAtTime(activeGainNode.gain.value, now);
-        activeGainNode.gain.linearRampToValueAtTime(0.0001, now + fadeMs / 1000);
-        const nodeToStop = activeSourceNode;
-        setTimeout(() => {
-          try { nodeToStop.stop(); } catch { /* noop */ }
-        }, fadeMs + 10);
-      } catch {
-        try { activeSourceNode.stop(); } catch { /* noop */ }
-      }
-    }
-    activeSourceNode = null;
-    activeGainNode = null;
-  };
-
-  session.stopAudio = () => {
-    session.stopped = true;
-    stopped = true;
-    stopCurrentAudio();
-    activeSessions.delete(sessionId);
-  };
-
-  const offsets = (() => {
-    const arr: number[] = [];
-    let acc = 0;
-    for (const c of chunks) {
-      arr.push(acc);
-      acc += c.length + 1;
-    }
-    return arr;
-  })();
-
-  // Pre-trigger fetch for a specific chunk index
-  const prefetchChunk = (idx: number) => {
-    if (idx >= chunks.length || prefetchedBuffers.has(idx) || stopped) return;
-    const promise = fetchElevenLabsAudioBuffer(chunks[idx], lang);
-    prefetchedBuffers.set(idx, promise);
-  };
-
-  const playChunk = async (index: number) => {
-    if (stopped) return;
-    if (index >= chunks.length) {
-      activeSessions.delete(sessionId);
-      callbacks.onEnd?.();
-      return;
-    }
-
-    currentChunkIndex = index;
-    prefetchChunk(index); // Ensure present chunk is fetching
-    prefetchChunk(index + 1); // Prefetch next chunk in background for zero gap!
-
-    try {
-      const bufferPromise = prefetchedBuffers.get(index)!;
-      const audioBuffer = await bufferPromise;
-      if (stopped) return;
-
-      const ctx = getAudioContext();
-      const source = ctx.createBufferSource();
-      const gain = ctx.createGain();
-
-      source.buffer = audioBuffer;
-      source.playbackRate.value = rate;
-
-      const startAt = ctx.currentTime + 0.02;
-      const totalDuration = audioBuffer.duration / rate;
-
-      // Anti-pop fade-in (short, click-free).
-      gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.linearRampToValueAtTime(1.0, startAt + FADE_IN_MS / 1000);
-
-      // Anti-pop fade-out near the end so the chunk never clicks on release.
-      if (totalDuration > (FADE_IN_MS + FADE_OUT_MS) / 1000) {
-        gain.gain.setValueAtTime(1.0, startAt + totalDuration - FADE_OUT_MS / 1000);
-        gain.gain.linearRampToValueAtTime(0.0001, startAt + totalDuration);
-      }
-
-      source.connect(gain);
-      gain.connect(ctx.destination);
-
-      activeSourceNode = source;
-      activeGainNode = gain;
-
-      callbacks.onProgress?.({
-        charIndex: offsets[index],
-        sentenceIndex: index,
-      });
-
-      source.onended = () => {
-        if (stopped) return;
-        if (paused) return;
-        if (!isActive()) return;
-
-        // Brief natural human breath pause between sentences.
-        setTimeout(() => {
-          if (!stopped && !paused && isActive()) {
-            playChunk(index + 1);
-          }
-        }, BREATH_PAUSE_MS);
-      };
-
-      source.start(startAt);
-    } catch (err) {
-      console.warn(`[VoiceEngine] ElevenLabs chunk ${index} failed, attempting native browser TTS fallback:`, err);
-      if (index === 0 && typeof window !== "undefined" && "speechSynthesis" in window) {
-        // Graceful fallback to native browser SpeechSynthesis
-        activeSessions.delete(sessionId);
-        try {
-          const fallbackCtrl = speakWithNativeSpeechSynthesis(sanitizedText, lang, callbacks);
-          return;
-        } catch (nativeErr) {
-          callbacks.onError?.(nativeErr);
-        }
-      } else if (index === 0) {
-        activeSessions.delete(sessionId);
-        callbacks.onError?.(err);
-      } else {
-        // Skip broken chunk and proceed to next.
-        playChunk(index + 1);
-      }
-    }
-  };
-
-  callbacks.onStart?.(chunks.length);
-  playChunk(0);
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    return speakWithNativeSpeechSynthesis(sanitizedText, lang, callbacks);
+  }
 
   return {
-    pause: () => {
-      paused = true;
-      if (activeGainNode) {
-        try {
-          const ctx = getAudioContext();
-          activeGainNode.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.015);
-        } catch { /* noop */ }
-      }
-    },
-    resume: () => {
-      if (!paused) return;
-      paused = false;
-      if (activeGainNode) {
-        try {
-          const ctx = getAudioContext();
-          activeGainNode.gain.linearRampToValueAtTime(1.0, ctx.currentTime + 0.015);
-        } catch { /* noop */ }
-      } else {
-        playChunk(currentChunkIndex);
-      }
-    },
-    stop: () => {
-      session.stopAudio();
-      callbacks.onEnd?.();
-    },
-    replay: () => {
-      session.stopAudio();
-      speakText(text, lang, callbacks);
-    },
-    setRate: (r: number) => {
-      rate = Math.min(1.5, Math.max(0.7, r));
-      if (activeSourceNode) {
-        try {
-          activeSourceNode.playbackRate.value = rate;
-        } catch { /* noop */ }
-      }
-    },
-    isSpeaking: () => !stopped && !paused && isActive(),
-    isPaused: () => paused,
-    getRate: () => rate,
+    pause: () => {},
+    resume: () => {},
+    stop: () => { callbacks.onEnd?.(); },
+    replay: () => {},
+    setRate: () => {},
+    isSpeaking: () => false,
+    isPaused: () => false,
+    getRate: () => 1.0,
   };
 }
 

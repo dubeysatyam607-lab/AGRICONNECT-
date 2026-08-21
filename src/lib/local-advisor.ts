@@ -266,46 +266,46 @@ interface DiseaseInfo {
 
 const DISEASES: DiseaseInfo[] = [
   {
-    symptoms: ["blight", "brown spot", "brownspot", "leaf spot", "dark spot", "blotch", "झुलसा", "धब्बे"],
-    title: "Leaf blight / leaf spot",
-    en: "Looks like a fungal leaf blight or leaf spot. Remove infected leaves and spray Mancozeb 2 g/L (or Chlorothalonil 2 g/L) twice, 7 days apart. Avoid overhead watering in the evening and maintain row ventilation.",
-    hi: "यह फंगल पत्ती झुलसा या धब्बा रोग लगता है। संक्रमित पत्तियां हटाएं और मैन्कोज़ेब 2 ग्रा/लीटर दो बार, 7 दिन के अंतर पर छिड़कें। शाम को ऊपर से पानी देने से बचें और पंक्तियों में हवा बनाए रखें।",
+    symptoms: ["blight", "early blight", "late blight", "brown spot", "brownspot", "leaf spot", "dark spot", "blotch", "झुलसा", "अगेती झुलसा", "पछेती झुलसा", "धब्बे"],
+    title: "Leaf Blight / Leaf Spot (झुलसा व पत्ती धब्बा रोग)",
+    en: "Looks like a fungal leaf blight or leaf spot. Recommended spray: Mancozeb 75% WP @ 2.5 g/L or Copper Oxychloride 50% WP @ 3 g/L. For late blight, apply Metalaxyl 8% + Mancozeb 64% (Ridomil) @ 2 g/L. Avoid overhead irrigation and ensure good aeration.",
+    hi: "यह फंगल पत्ती झुलसा (अगेती/पछेती) या धब्बा रोग है। अनुशंसित उपचार: मैंकोजेब 75% WP (2.5 ग्रा/लीटर) या कॉपर ऑक्सीक्लोराइड 50% WP (3 ग्रा/लीटर) का छिड़काव करें। पछेती झुलसा के लिए मेटालैक्सिल + मैंकोजेब (रिडोमिल) 2 ग्रा/लीटर का छिड़काव करें।",
   },
   {
-    symptoms: ["powdery", "white powder", "white coating", "white patina", "सफेद चूर्ण", "चूर्ण"],
-    title: "Powdery mildew",
-    en: "Classic powdery mildew — a white powdery coating on leaves. Spray Sulfur 3 g/L or Hexaconazole 1 ml/L twice, 10 days apart. Ensure good sunlight and avoid dense planting.",
-    hi: "यह ख़स्ता फफूंदी (पाउडरी मिल्ड्यू) है — पत्तियों पर सफेद पाउडर परत। सल्फर 3 ग्रा/लीटर या हेक्साकोनाज़ोल 1 मिली/लीटर दो बार, 10 दिन अंतर पर छिड़कें। धूप व हवा बनी रहे।",
+    symptoms: ["powdery", "white powder", "white coating", "white patina", "सफेद चूर्ण", "चूर्ण", "पाउडरी"],
+    title: "Powdery Mildew (चूर्णिल आसिता / सफेद फफूंद)",
+    en: "Classic powdery mildew — a white powdery coating on leaves and stems. Spray Hexaconazole 5% EC @ 1 ml/L or Wettable Sulfur 80% WP @ 3 g/L. Apply in the morning for best results.",
+    hi: "यह पाउडरी मिल्ड्यू (सफेद चूर्ण रोग) है। उपचार: हेक्साकोनाज़ोल 5% EC (1 मिली/लीटर) या घुलनशील सल्फर 80% WP (3 ग्रा/लीटर) का छिड़काव करें। सुबह के समय छिड़काव अधिक असरदार रहता है।",
   },
   {
-    symptoms: ["downy", "purple underside", "purple under leaf", "फफूंदी"],
-    title: "Downy mildew",
-    en: "Downy mildew shows pale-yellow patches with a purplish-grey mould underneath. Spray Metalaxyl + Mancozeb 2 g/L twice at 10-day intervals and reduce humidity.",
-    hi: "फफूंदी नीचे की ओर बैंगनी-भूरी परत बनाती है। मेटालैक्सिल + मैन्कोज़ेब 2 ग्रा/लीटर 10 दिन अंतर पर दो बार छिड़कें और नमी घटाएं।",
+    symptoms: ["downy", "purple underside", "purple under leaf", "मृदुरोमिल"],
+    title: "Downy Mildew (डाउनी मिल्ड्यू / मृदुरोमिल आसिता)",
+    en: "Downy mildew causes yellow angular patches on upper leaf surface with a purplish-grey mould underneath. Spray Metalaxyl + Mancozeb @ 2 g/L or Cymoxanil + Mancozeb @ 2 g/L at 10-day intervals.",
+    hi: "डाउनी मिल्ड्यू पत्तियों की ऊपरी सतह पर पीले कोणीय धब्बे और निचली सतह पर बैगनी-भूरी फफूंद बनाता है। उपचार: मेटालैक्सिल + मैंकोजेब 2 ग्रा/लीटर का 10 दिन के अंतर पर दो बार छिड़काव करें।",
   },
   {
-    symptoms: ["rust", "orange pustule", "orange spots"],
-    title: "Rust",
-    en: "Rust shows rusty-orange pustules on leaves. Spray Propiconazole 1 ml/L (or Mancozeb 2.5 g/L) twice, 10 days apart, and remove heavily infected debris.",
-    hi: "जंग (रस्ट) पत्तियों पर जंग-जैसे नारंगी धब्बे बनाता है। प्रोपिकोनाज़ोल 1 मिली/लीटर (या मैन्कोज़ेब 2.5 ग्रा/लीटर) 10 दिन अंतर पर दो बार छिड़कें।",
+    symptoms: ["rust", "yellow rust", "stripe rust", "orange pustule", "orange spots", "रतुआ", "पीला रतुआ", "गेरुआ"],
+    title: "Yellow / Stripe Rust (गेहूं का पीला रतुआ)",
+    en: "Yellow stripe rust shows linear yellow-orange spore pustules on leaves that leave yellow dust on fingers. Immediately spray Propiconazole 25% EC (Tilt) @ 1 ml/L of water. Repeat after 15 days if cloudy/cold weather persists.",
+    hi: "यह पीला रतुआ (Yellow Rust) रोग है — पत्तियों पर पीले रंग की धारियां व पाउडर बनता है। तुरंत प्रोपिकोनाजोल 25% EC (टिल्ट) 1 मिली प्रति लीटर पानी में मिलाकर छिड़काव करें। 15 दिन बाद आवश्यकतानुसार दोहराएं।",
   },
   {
-    symptoms: ["wilt", "droop", "drying from base", "stem rot", "मुरझा", "सूख"],
-    title: "Wilt / stem rot",
-    en: "Wilt is usually caused by soil-borne fungi. Drench soil with Carbendazim 1 g/L, avoid waterlogging, rotate with non-host crops, and remove affected plants.",
-    hi: "विल्ट आमतौर पर मिट्टी जनित फफूंद से होता है। कार्बेन्डाजिम 1 ग्रा/लीटर मिट्टी में डालें, जलभराव से बचें, फसल चक्र अपनाएं और रोगग्रस्त पौधे हटाएं।",
+    symptoms: ["wilt", "droop", "drying from base", "stem rot", "root rot", "मुरझा", "सूख", "उकठा", "जड़ सड़न"],
+    title: "Wilt & Root Rot (उकठा व जड़ सड़न रोग)",
+    en: "Wilt is caused by soil-borne Fusarium fungi. Drench the root zone with Carbendazim 12% + Mancozeb 63% (Saaf) @ 2 g/L or bio-control Trichoderma viride @ 10 g/L. Ensure field drainage to prevent water stagnation.",
+    hi: "उकठा (विल्ट) व जड़ सड़न मिट्टी जनित फंगस से होता है। उपचार: कार्बेन्डाजिम + मैंकोजेब (साफ) 2 ग्रा/लीटर या ट्राइकोडर्मा विरिडी 10 ग्रा/लीटर से पौधों की जड़ों के पास ड्रेंचिंग करें। खेत में जलभराव न होने दें।",
   },
   {
-    symptoms: ["blast", "diamond shaped"],
-    title: "Blast",
-    en: "Blast shows diamond-shaped lesions on leaves/neck. Spray Tricyclazole 0.6 g/L twice, 7 days apart, and apply balanced nitrogen (avoid excess urea).",
-    hi: "ब्लास्ट पत्ती/गर्दन पर हीरे जैसे धब्बे बनाता है। ट्राइसाइक्लाज़ोल 0.6 ग्रा/लीटर 7 दिन अंतर पर दो बार छिड़कें और अतिरिक्त यूरिया से बचें।",
+    symptoms: ["blast", "neck blast", "leaf blast", "diamond shaped", "ब्लास्ट", "गर्दन तोड़"],
+    title: "Paddy Blast (धान का ब्लास्ट रोग)",
+    en: "Blast causes spindle/diamond-shaped lesions with ash-grey centers on rice leaves and panicle neck. Spray Tricyclazole 75% WP @ 0.6 g/L (Baan) or Isoprothiolane 40% EC @ 1.5 ml/L. Avoid excessive urea application.",
+    hi: "धान का ब्लास्ट रोग पत्तियों पर आंख/नाव जैसे धब्बे बनाता है। उपचार: ट्राइसाइक्लाजोल 75% WP (0.6 ग्रा/लीटर) या आइसोप्रोथियोलेन 40% EC (1.5 मिली/लीटर) का छिड़काव करें। यूरिया की अत्यधिक मात्रा से बचें।",
   },
   {
-    symptoms: ["yellow", "yellowing", "chlorosis", "mosaic", "leaf curl", "curling", "पीली", "पीलापन", "मुड़ी"],
-    title: "Yellowing / virus complex",
-    en: "Yellowing with mottling or curling usually indicates a nutrient issue or a virus spread by whiteflies/aphids. For nutrition: spray 0.5% zinc sulfate + 0.5% urea. For virus: control vectors (imidacloprid 0.3 ml/L), remove infected plants, and use resistant varieties.",
-    hi: "पीलापन, धब्बेदार या मुड़ी पत्तियां पोषक तत्व की कमी या सफेद मक्खी/एफिड से फैलने वाले वायरस का संकेत हैं। पोषण हेतु: 0.5% जिंक सल्फेट + 0.5% यूरिया छिड़कें। वायरस हेतु: वेक्टर नियंत्रण (इमिडाक्लोप्रिड 0.3 मिली/लीटर), रोगी पौधे हटाएं।",
+    symptoms: ["yellow", "yellowing", "chlorosis", "mosaic", "leaf curl", "curling", "पीली", "पीलापन", "मुड़ी", "मरोड़िया", "पर्ण कुंचन"],
+    title: "Leaf Curl Virus & Vector Yellowing (पर्ण कुंचन व पीलापन)",
+    en: "Leaf curling and yellowing is transmitted by sucking pests (whiteflies/thrips). Spray Imidacloprid 17.8% SL @ 0.5 ml/L or Acetamiprid 20% SP @ 0.5 g/L to control the vectors. Apply foliar 19:19:19 @ 5 g/L to restore plant vigor.",
+    hi: "पत्तियों का मुड़ना और पीला पड़ना सफेद मक्खी व थ्रिप्स द्वारा फैलने वाले वायरस का लक्षण है। उपचार: इमिडाक्लोप्रिड 17.8% SL (0.5 मिली/लीटर) या एसिटामिप्रिड 20% SP का छिड़काव करें। पौधे में नई जान डालने हेतु 19:19:19 (5 ग्रा/लीटर) का स्प्रे करें।",
   },
 ];
 
@@ -317,31 +317,60 @@ interface SchemeInfo {
 
 const SCHEMES: SchemeInfo[] = [
   {
-    name: "PM-Kisan Samman Nidhi",
-    en: "₹6,000/year in 3 equal installments to farmer families. Apply online at pmkisan.gov.in with Aadhaar & land records; check payment status under 'Beneficiary Status'.",
-    hi: "किसान परिवारों को सालाना ₹6,000 तीन समान किश्तों में। pmkisan.gov.in पर आधार व भूमि रिकॉर्ड से आवेदन करें।",
+    name: "PM-Kisan Samman Nidhi (पीएम किसान सम्मान निधि)",
+    en: "₹6,000/year directly transferred to farmers' bank accounts in 3 installments of ₹2,000 every 4 months. Verify eKYC on pmkisan.gov.in using Aadhaar OTP or biometric CSC centers.",
+    hi: "किसानों को सालाना ₹6,000 सीधे बैंक खाते में (₹2000 की 3 किस्तों में)। pmkisan.gov.in पर आधार ओटीपी द्वारा ई-केवाईसी अवश्य पूर्ण करें।",
   },
   {
-    name: "PMKSY (Micro Irrigation)",
-    en: "Subsidy up to 55% (small/marginal farmers) and 45% (others) on drip & sprinkler systems. Apply via state agriculture department or PMKSY portal.",
-    hi: "ड्रिप व स्प्रिंकलर पर छोटे किसानों को 55% तक सब्सिडी। राज्य कृषि विभाग से आवेदन करें।",
+    name: "Pradhan Mantri Krishi Sinchai Yojana (PMKSY - ड्रिप व फव्वारा सब्सिडी)",
+    en: "Provides up to 55% subsidy for small/marginal farmers and 45% for general farmers on Drip and Sprinkler irrigation systems. Apply through your state horticulture/agriculture portal.",
+    hi: "ड्रिप और स्प्रिंकलर सिंचाई लगाने पर लघु व सीमांत किसानों को 55% तथा अन्य किसानों को 45% तक सरकारी सब्सिडी मिलती है। राज्य उद्यानिकी विभाग के पोर्टल पर आवेदन करें।",
   },
   {
-    name: "PMFBY (Crop Insurance)",
-    en: "Comprehensive crop insurance — farmer premium as low as 2% for kharif, 1.5% rabi, 5% horticulture. Enroll before the cut-off at your bank/PACS or pmfby.gov.in.",
-    hi: "फसल बीमा — किसान प्रीमियम खरीफ 2%, रबी 1.5%, बागवानी 5%। बैंक या pmfby.gov.in पर नियत तिथि से पहले नामांकन करें।",
+    name: "Pradhan Mantri Fasal Bima Yojana (PMFBY - प्रधानमंत्री फसल बीमा)",
+    en: "Comprehensive risk coverage against droughts, floods, and unseasonal rains. Farmer premium is only 2% for Kharif crops, 1.5% for Rabi crops, and 5% for annual commercial/horticultural crops. Enroll on pmfby.gov.in before seasonal cut-off dates.",
+    hi: "सूखा, बाढ़ व बेमौसम बारिश से फसल सुरक्षा। किसान का प्रीमियम सिर्फ खरीफ में 2%, रबी में 1.5% और बागवानी में 5% है। बैंक या pmfby.gov.in पर कट-ऑफ तिथि से पूर्व आवेदन करें।",
   },
   {
-    name: "Kisan Credit Card (KCC)",
-    en: "Crop loans up to ₹3 lakh at just 4% effective interest (with prompt repayment). Meet your nearest bank branch with 1-year cultivation proof & land records.",
-    hi: "किसान क्रेडिट कार्ड से ₹3 लाख तक कर्ज सिर्फ 4% ब्याज पर (समय पर चुकाने पर)। नजदीकी बैंक शाखा में जाएं।",
+    name: "Kisan Credit Card (KCC - किसान क्रेडिट कार्ड)",
+    en: "Concessional institutional crop loans up to ₹3 Lakhs at an effective interest rate of only 4% per annum (with prompt repayment subvention). Approach any rural/commercial bank with land 7/12 & Aadhaar.",
+    hi: "समय पर भुगतान करने पर मात्र 4% वार्षिक ब्याज पर ₹3 लाख तक का फसली ऋण। खतौनी/जमीन दस्तावेज व आधार कार्ड लेकर नजदीकी बैंक शाखा में संपर्क करें।",
   },
   {
-    name: "Soil Health Card",
-    en: "Free soil testing every 2 years and a report with crop-wise fertilizer recommendations. Get soil sampled from your village/Agri Department or the Soil Health Card portal.",
-    hi: "हर 2 साल में मुफ्त मिट्टी परीक्षण व फसल अनुसार उर्वरक सुझाव। कृषि विभाग से मिट्टी का नमूना भिजवाएं।",
+    name: "SMAM & Farm Mechanization Subsidy (कृषि यंत्र सब्सिडी)",
+    en: "Provides 40% to 50% subsidy on tractors, rotavators, power tillers, seed drills, and laser levellers under the Sub-Mission on Agricultural Mechanization (SMAM). Register on agrimachinery.nic.in.",
+    hi: "ट्रैक्टर, रोटावेटर, पावर टिलर और सीड ड्रिल पर 40% से 50% तक की सरकारी सब्सिडी। agrimachinery.nic.in या राज्य कृषि पोर्टल पर ऑनलाइन टोकन प्राप्त करें।",
+  },
+  {
+    name: "PM-KUSUM Solar Pump Scheme (पीएम कुसुम सोलर पंप)",
+    en: "Up to 60% subsidy for installing 3HP to 10HP stand-alone solar agriculture pumps, reducing electricity and diesel expenses to zero. Apply on state renewable energy development portals.",
+    hi: "खेतों में 3 से 10 हॉर्सपावर का सोलर पंप लगाने पर 60% तक सब्सिडी। बिजली व डीजल के खर्च से पूरी मुक्ति।",
+  },
+  {
+    name: "Soil Health Card (मृदा स्वास्थ्य कार्ड)",
+    en: "Free soil testing provided by Krishi Vigyan Kendras (KVK) with exact N-P-K, Zinc, and Sulfur fertilizer recommendations tailored to your soil pH and organic carbon content.",
+    hi: "हर 2 वर्ष में खेत की मिट्टी का निःशुल्क परीक्षण। मिट्टी के pH व पोषक तत्वों के आधार पर सटीक खाद डालने की सलाह।",
   },
 ];
+
+export const CLIMATE_ADVISORIES = {
+  frost: {
+    en: "❄️ **Frost & Cold Wave Protection Advisory (पाला व ठंड से बचाव)**:\n\n1. **Evening Irrigation**: Give light irrigation in the evening. Moist soil retains heat and raises canopy temperature by 1–2°C.\n2. **Smoke Barrier**: Burn dried weed piles along the north/west boundary at night so smoke blankets the field.\n3. **Foliar Spray**: Spray 0.1% commercial Sulfuric acid (1 ml per 1 liter water) or Water-Soluble Sulfur 80% WP @ 3 g/L to prevent cellular freezing.\n4. **Polyhouse/Covering**: Cover tender nursery and vegetable beds with straw or polythene sheets.",
+    hi: "❄️ **पाला व शीतलहर से फसल बचाव की सलाह**:\n\n1. **शाम को हल्की सिंचाई**: शाम के समय खेत में हल्की सिंचाई करें। नम मिट्टी गर्मी रोकती है और तापमान 1-2°C बढ़ा देती है।\n2. **धुआं करना**: रात के समय खेत की उत्तर-पश्चिम दिशा में सूखी घास-फूस जलाकर धुआं करें ताकि खेत पर सुरक्षा चादर बन जाए।\n3. **सल्फर/गंधक स्प्रे**: 0.1% गंधक का तेजाब (1 मिली प्रति लीटर पानी) या घुलनशील सल्फर 80% WP (3 ग्राम/लीटर) का छिड़काव करें।\n4. **सब्जियों को ढकना**: नर्सरी व सब्जी फसलों को पुआल या प्लास्टिक शीट से रात में ढकें।",
+  },
+  heatwave: {
+    en: "☀️ **Heatwave & Summer Crop Care Advisory (गर्मी व लू से बचाव)**:\n\n1. **Frequent Light Irrigation**: Use drip systems or early morning irrigations to prevent heat stress.\n2. **Organic Mulching**: Spread 3-inch straw/crop residue mulch to reduce soil moisture evaporation by up to 50%.\n3. **Potassium Spray**: Spray 1% Potassium Nitrate (13:0:45) @ 10 g/L to improve plant water retention and drought tolerance.",
+    hi: "☀️ **भीषण गर्मी व लू से फसल बचाव की सलाह**:\n\n1. **सुबह हल्की सिंचाई**: तेज धूप निकलने से पहले सुबह या शाम को ड्रिप/हल्की सिंचाई करें।\n2. **मल्चिंग (पुआल की परत)**: खेत में 3 इंच पुआल या भूसे की परत बिछाएं, इससे नमी 50% तक सुरक्षित रहती है।\n3. **पोटैशियम स्प्रे**: 13:0:45 (पोटैशियम नाइट्रेट) 10 ग्राम प्रति लीटर का छिड़काव करें जिससे पौधा गर्मी सहन कर सके।",
+  },
+  organic: {
+    en: "🌱 **Organic Farming & Bio-Control Guide (जैविक खेती एवं प्राकृतिक उपचार)**:\n\n1. **Jeevamrit Formulation**: Mix 10 kg desi cow dung + 10 L cow urine + 2 kg jaggery + 2 kg gram flour + handful farm soil in 200 L water. Ferment for 48 hours and apply 200 L/acre with irrigation.\n2. **Neem Pest Repellent**: Spray Neem Oil 1500 PPM @ 5 ml/L with 1 ml liquid soap as a broad-spectrum organic insect deterrent.\n3. **Bio-Fungicide**: Use Trichoderma viride @ 5 g/L for root/soil fungal diseases and seed treatment.",
+    hi: "🌱 **प्राकृतिक एवं जैविक खेती गाइड**:\n\n1. **जीवामृत तैयार करना**: 200 लीटर पानी में 10 किलो देसी गाय का गोबर + 10 लीटर गोमूत्र + 2 किलो गुड़ + 2 किलो बेसन + मुट्ठी भर खेत की मिट्टी मिलाएं। 48 घंटे बाद प्रति एकड़ 200 लीटर सिंचाई के साथ दें।\n2. **नीम कीटनाशक**: 1500 PPM नीम का तेल (5 मिली प्रति लीटर) थोड़े साबुन के घोल के साथ मिलाकर स्प्रे करें।\n3. **जैविक फफूंदनाशक**: ट्राइकोडर्मा विरिडी (5 ग्राम/लीटर) का उपयोग बीज शोधन और जड़ सड़न से बचाव के लिए करें।",
+  },
+  soilTest: {
+    en: "🧪 **Soil Testing (Mitti Janch) Guide**:\n\n1. Take 'V' shaped soil cuts 15 cm deep from 8–10 spots across your field.\n2. Mix all samples thoroughly, discard excess by quartering until 500 grams remains.\n3. Dry in shade, pack in a clean bag, and submit to your local KVK or Agriculture Department.\n4. You will receive a Soil Health Card with precise N-P-K, pH, and Micronutrient fertilizer requirements.",
+    hi: "🧪 **खेत की मिट्टी जांच (Soil Testing) कैसे कराएं**:\n\n1. खेत में 8-10 अलग-अलग स्थानों से 'V' आकार में 15 सेमी (6 इंच) गहराई तक मिट्टी निकालें।\n2. सभी मिट्टी को साफ तिरपाल पर अच्छी तरह मिलाएं और 500 ग्राम का एक नमूना तैयार करें।\n3. छाया में सुखाकर साफ थैली में भरें और नजदीकी कृषि विज्ञान केंद्र (KVK) या कृषि कार्यालय में जमा करें।\n4. रिपोर्ट में N-P-K, जिंक, सल्फर व pH की सटीक मात्रा के आधार पर खाद डालने की पर्ची मिलेगी।",
+  }
+};
 
 const FALLBACK_GENERAL: Record<string, string> = {
   en: "I can help with mandi rates, fertilizer doses, irrigation schedules, pest & disease control, and govt schemes. Try: \"Soybean mandi price\", \"Wheat fertilizer dose\", \"yellow leaves on tomato\", or \"irrigation schedule for maize\".",
@@ -531,9 +560,45 @@ export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: strin
   // 1. Natural greeting without unsolicited crop dumps
   if (isGreetingIntent(q)) {
     const greetingText = hi
-      ? "Namaste! 👋 Main Kisan AI hoon. Aap kheti, fasal, mandi bhav, mausam, rog, khaad, sinchai ya sarkari yojana ke baare mein pooch sakte hain."
-      : "Hello! 👋 I am Kisan AI. You can ask me about crops, live mandi prices, weather, pests, fertilizers, irrigation, or government schemes.";
+      ? "नमस्ते! 👋 मैं Kisan AI (किसान AI) हूँ। आप मुझसे फसल प्रबंधन, मंडी भाव, मौसम, कीट-रोग नियंत्रण, खाद की मात्रा, सिंचाई या सरकारी योजनाओं के बारे में पूछ सकते हैं।"
+      : "Hello! 👋 I am Kisan AI. You can ask me about crops, live mandi prices, weather alerts, pest & disease control, fertilizer doses, irrigation schedules, or government schemes.";
     return { text: greetingText, matched: true, kind: "general" };
+  }
+
+  // 1b. Appreciation / Thank you
+  if (["dhanyawad", "dhanyavad", "shukriya", "thank", "thanks", "धन्यवाद", "शुक्रिया", "बहुत अच्छा", "bohot accha"].some((w) => q.includes(w))) {
+    const thankText = hi
+      ? "आपका स्वागत है किसान साथी! 🙏 किसी भी अन्य फसल समस्या या सलाह के लिए बेझिझक पूछें। जय जवान, जय किसान! 🌾"
+      : "You're most welcome, farmer friend! 🙏 Feel free to ask anytime for any crop advisory or agricultural assistance. Happy farming! 🌾";
+    return { text: thankText, matched: true, kind: "general" };
+  }
+
+  // 1c. Frost / Cold Wave / Pala Advisory
+  if (["pala", "पाला", "frost", "cold wave", "sardi", "thand", "ठंड", "शीतलहर"].some((w) => q.includes(w))) {
+    return { text: CLIMATE_ADVISORIES.frost[hi ? "hi" : "en"], matched: true, kind: "crop" };
+  }
+
+  // 1d. Heatwave / Summer Crop Care
+  if (["heatwave", "heat wave", "garmi", "गर्मी", "लू", "loo", "drought", "सूखा"].some((w) => q.includes(w))) {
+    return { text: CLIMATE_ADVISORIES.heatwave[hi ? "hi" : "en"], matched: true, kind: "crop" };
+  }
+
+  // 1e. Organic Farming & Bio-fertilizer
+  if (["organic", "जैविक", "jeevamrit", "जीवामृत", "neem oil", "नीम तेल", "vermicompost", "केंचुआ खाद", "trichoderma", "ट्राइकोडर्मा"].some((w) => q.includes(w))) {
+    return { text: CLIMATE_ADVISORIES.organic[hi ? "hi" : "en"], matched: true, kind: "fertilizer" };
+  }
+
+  // 1f. Soil Health & Testing (Use whole word matching for pH and testing)
+  if (["soil", "mitti", "मिट्टी", "janch", "जांच", "testing", "परीक्षण"].some((w) => q.includes(w)) || /\bph\b/i.test(q)) {
+    return { text: CLIMATE_ADVISORIES.soilTest[hi ? "hi" : "en"], matched: true, kind: "scheme" };
+  }
+
+  // 1g. Hyperlocal Weather Advice
+  if (["weather", "mausam", "मौसम", "barish", "बारिश", "rain", "temperature", "तापमान"].some((w) => q.includes(w))) {
+    const weatherText = hi
+      ? "🌤️ **मौसम व छिड़काव सलाह**:\n\n• अपने क्षेत्र का सटीक तापमान, वर्षा पूर्वानुमान और छिड़काव अनुकूलता (Spray Window) देखने के लिए होम स्क्रीन पर **Live Weather** कार्ड देखें।\n• नियम: तेज़ हवा (15 किमी/घंटा से अधिक) या बारिश की संभावना होने पर कीटनाशक या खरपतवारनाशक का छिड़काव न करें।"
+      : "🌤️ **Hyperlocal Weather & Spray Advisory**:\n\n• Check the **Live Weather** widget on your Home screen for real-time temperature, rain radar, humidity, and safe spray windows.\n• General rule: Never spray pesticides or foliar nutrition if winds exceed 15 km/h or rainfall is predicted within 6 hours.";
+    return { text: weatherText, matched: true, kind: "general" };
   }
 
   const crop = detectCrop(q);
@@ -544,27 +609,32 @@ export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: strin
     return mandiAnswer(target, hi);
   }
 
-  // 3. Vague spray / medicine inquiry without specified crop
-  if ((q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao") && !crop) {
+  // 3. Pest diagnosis & remedies (check specific pest first)
+  const pestMatch = findPest(q);
+  if (pestMatch) {
+    return pestAnswer(pestMatch, hi);
+  }
+
+  // 4. Disease diagnosis & remedies (check specific disease first)
+  const diseaseMatch = findDisease(q);
+  if (diseaseMatch) {
+    return diseaseAnswer(diseaseMatch, crop, hi);
+  }
+
+  // 5. Vague spray / medicine inquiry without specified crop
+  if ((q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao" || q === "keeda lag gaya" || q === "कीड़ा लग गया") && !crop) {
     const text = hi
-      ? "Kaunsi fasal ke liye spray chahiye? Kripya fasal ka naam batayein. 🌱"
-      : "Which crop do you need the spray recommendation for? Please specify the crop. 🌱";
+      ? "Kaunsi fasal ke liye spray chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Kapas, Dhan). 🌱"
+      : "Which crop do you need the spray recommendation for? Please specify the crop (e.g. Tomato, Wheat, Cotton, Rice). 🌱";
     return { text, matched: true, kind: "pest" };
   }
 
-  // 4. Specific farming categories
+  // 6. Specific farming categories
   if (hasSchemeIntent(q)) return schemeAnswer(hi);
   if (hasFertilizerIntent(q)) return fertilizerAnswer(crop, profile, hi);
   if (hasIrrigationIntent(q)) return irrigationAnswer(crop, profile, hi);
-  if (hasPestIntent(q)) {
-    const pest = findPest(q);
-    if (pest) return pestAnswer(pest, hi);
-    return pestAnswer(crop || "pest", hi);
-  }
-  if (hasDiseaseIntent(q)) {
-    const disease = findDisease(q);
-    if (disease) return diseaseAnswer(disease, crop, hi);
-  }
+  if (hasPestIntent(q)) return pestAnswer(crop || "pest", hi);
+  if (hasDiseaseIntent(q)) return diseaseAnswer(findDisease(q) || DISEASES[0], crop, hi);
   if (crop) return cropAnswer(crop, profile, hi);
 
   return { text: FALLBACK_GENERAL[hi ? "hi" : "en"], matched: false, kind: "general" };
