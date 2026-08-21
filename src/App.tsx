@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChunkErrorBoundary } from "@/components/ui/ChunkErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -317,7 +317,9 @@ const App = () => (
 
                   {/* ── Admin Console (role-gated) ─────────────── */}
                   <Route path="/admin" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
-<Route path="/admin/*" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
+                  <Route path="/admin/*" element={<ProtectedRoute><RequireAdmin><SafeLazy><AdminDashboard /></SafeLazy></RequireAdmin></ProtectedRoute>} />
+                  <Route path="/profile/admin" element={<Navigate to="/admin" replace />} />
+                  <Route path="/profile/admin/*" element={<Navigate to="/admin" replace />} />
 
                   {/* ── 404 ─────────────────────────────────── */}
                   <Route path="*" element={<SafeLazy><NotFound /></SafeLazy>} />
