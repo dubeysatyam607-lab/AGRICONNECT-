@@ -176,11 +176,9 @@ export const PERMISSION_OPTIONS = [
   },
 ];
 
-export const INDIAN_STATES = [
-  'Andhra Pradesh', 'Bihar', 'Chhattisgarh', 'Gujarat', 'Haryana', 'Karnataka',
-  'Madhya Pradesh', 'Maharashtra', 'Odisha', 'Punjab', 'Rajasthan', 'Tamil Nadu',
-  'Telangana', 'Uttar Pradesh', 'West Bengal',
-];
+import { INDIAN_STATES_AND_DISTRICTS } from '@/features/location/indianStatesData';
+
+export const INDIAN_STATES = Object.keys(INDIAN_STATES_AND_DISTRICTS).sort();
 
 /* ── Persistence ─────────────────────────────────────────────────────────── */
 
