@@ -69,6 +69,7 @@ const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices"
 
 const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const { t, language } = useLanguage();
+  const hi = language === "hi";
 
   const L = {
     title: t("mandi.hub.title") || "Live Mandi Advisor & Prices",
