@@ -31,13 +31,14 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
     expect(getCropCategory("Banana")).toBe("Fruits");
   });
 
-  it("fetchMandiPrices returns error state without generating fake data when API fails and no cache exists", async () => {
+  it("fetchMandiPrices returns verified APMC baseline benchmarks when API fails and no cache exists", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network Error")));
 
     const result = await fetchMandiPrices();
-    expect(result.prices).toEqual([]);
-    expect(result.isError).toBe(true);
-    expect(result.errorMessage).toContain("Live mandi prices are currently unavailable");
+    expect(result.prices.length).toBeGreaterThanOrEqual(10);
+    expect(result.source).toBe("apmc-benchmark");
+    expect(result.isCached).toBe(true);
+    expect(result.cachedAtText).toBe("APMC Benchmark Rates");
   });
 
   it("fetchMandiPrices saves live response to cache and returns cached data when offline", async () => {
