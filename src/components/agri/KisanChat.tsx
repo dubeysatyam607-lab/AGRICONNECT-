@@ -107,33 +107,34 @@ const ERRORS = {
 };
 
 const getSpeechLangCode = (selectedLanguage: string): string => {
-  switch (selectedLanguage) {
-    case "Hindi (हिंदी)": return "hi-IN";
-    case "Punjabi (ਪੰਜਾਬੀ)": return "pa-IN";
-    case "Marathi (मराठी)": return "mr-IN";
-    case "Tamil (தமிழ்)": return "ta-IN";
-    case "Telugu (తెలుగు)": return "te-IN";
-    case "Kannada (ಕನ್ನಡ)": return "kn-IN";
-    case "Malayalam (മലയാളം)": return "ml-IN";
-    case "Bengali (বাংলা)": return "bn-IN";
-    case "Gujarati (ગુજરાતી)": return "gu-IN";
-    case "Odia (ଓଡ଼ିଆ)": return "or-IN";
-    case "Assamese (অসমীয়া)": return "as-IN";
-    case "English (India)": return "en-IN";
-    default: return "hi-IN";
-  }
+  const l = (selectedLanguage || "").toLowerCase();
+  if (l.includes("punjabi") || l === "pa") return "pa-IN";
+  if (l.includes("marathi") || l === "mr") return "mr-IN";
+  if (l.includes("tamil") || l === "ta") return "ta-IN";
+  if (l.includes("telugu") || l === "te") return "te-IN";
+  if (l.includes("kannada") || l === "kn") return "kn-IN";
+  if (l.includes("malayalam") || l === "ml") return "ml-IN";
+  if (l.includes("bengali") || l === "bn") return "bn-IN";
+  if (l.includes("gujarati") || l === "gu") return "gu-IN";
+  if (l.includes("odia") || l.includes("oriya") || l === "or") return "or-IN";
+  if (l.includes("assamese") || l === "as") return "as-IN";
+  if (l.includes("english") || l === "en") return "en-IN";
+  return "hi-IN";
 };
 
 const getSttLangCode = (selectedLanguage: string): string => {
-  if (selectedLanguage.includes("Punjabi")) return "pa-IN";
-  if (selectedLanguage.includes("Marathi")) return "mr-IN";
-  if (selectedLanguage.includes("Tamil")) return "ta-IN";
-  if (selectedLanguage.includes("Telugu")) return "te-IN";
-  if (selectedLanguage.includes("Kannada")) return "kn-IN";
-  if (selectedLanguage.includes("Malayalam")) return "ml-IN";
-  if (selectedLanguage.includes("Bengali")) return "bn-IN";
-  if (selectedLanguage.includes("Gujarati")) return "gu-IN";
-  if (selectedLanguage.includes("English")) return "en-IN";
+  const l = (selectedLanguage || "").toLowerCase();
+  if (l.includes("punjabi") || l === "pa") return "pa-IN";
+  if (l.includes("marathi") || l === "mr") return "mr-IN";
+  if (l.includes("tamil") || l === "ta") return "ta-IN";
+  if (l.includes("telugu") || l === "te") return "te-IN";
+  if (l.includes("kannada") || l === "kn") return "kn-IN";
+  if (l.includes("malayalam") || l === "ml") return "ml-IN";
+  if (l.includes("bengali") || l === "bn") return "bn-IN";
+  if (l.includes("gujarati") || l === "gu") return "gu-IN";
+  if (l.includes("odia") || l.includes("oriya") || l === "or") return "or-IN";
+  if (l.includes("assamese") || l === "as") return "as-IN";
+  if (l.includes("english") || l === "en") return "en-IN";
   return "hi-IN";
 };
 
