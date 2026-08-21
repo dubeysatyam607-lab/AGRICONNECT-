@@ -342,13 +342,13 @@ const CropDoctor: React.FC = () => {
         <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed flex items-start gap-2">
           <Info size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           <p>
-            <strong>AI-generated result:</strong> This is a preliminary crop analysis. For confirmed chemical treatments or severe infestations, consult your local Krishi Vigyan Kendra (KVK) or block agriculture officer.
+            <strong>{t('doctor.disclaimer.title') || 'AI-generated result'}:</strong> {t('doctor.disclaimer.desc') || 'This is a preliminary crop analysis. For confirmed chemical treatments or severe infestations, consult your local Krishi Vigyan Kendra (KVK) or block agriculture officer.'}
           </p>
         </div>
 
         <div className="mt-4 pt-4 border-t border-border">
           <AgriButton variant="outline" onClick={handleReset} className="w-full">
-            <Scan size={16} /> Analyze Another Crop
+            <Scan size={16} /> {t('doctor.analyzeAnother') || 'Analyze Another Crop'}
           </AgriButton>
         </div>
       </div>
@@ -360,11 +360,11 @@ const CropDoctor: React.FC = () => {
       <div className="mb-6 flex justify-between items-start">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Scan className="text-primary" /> Smart Crop Doctor
+            <Scan className="text-primary" /> {t('svc.cropDoctor') || 'Smart Crop Doctor'}
             <Sparkles size={18} className="text-feature-ai" />
           </h2>
           <p className="text-muted-foreground text-sm">
-            AI-powered disease detection • Upload photo for accurate results
+            {t('svc.cropDoctorSub') || 'AI-powered disease detection • Upload photo for accurate results'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -389,13 +389,13 @@ const CropDoctor: React.FC = () => {
       {showHistory && (
         <div className="bg-card rounded-2xl border border-border shadow-card p-4 mb-6 max-h-72 overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-foreground text-sm flex items-center gap-2"><History size={16} /> Scan History</h3>
+            <h3 className="font-bold text-foreground text-sm flex items-center gap-2"><History size={16} /> {t('doctor.scanHistory') || 'Scan History'}</h3>
             <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground p-1"><X size={16} /></button>
           </div>
           {!user ? (
             <p className="text-xs text-muted-foreground">{t('agr202')}</p>
           ) : historyLoading ? (
-            <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader className="animate-spin" size={14} /> Loading scans...</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader className="animate-spin" size={14} /> {t('common.loading') || 'Loading scans...'}</p>
           ) : history.length === 0 ? (
             <p className="text-xs text-muted-foreground">{t('agr203')}</p>
           ) : (
@@ -432,7 +432,7 @@ const CropDoctor: React.FC = () => {
               <Sparkles size={20} />
             </div>
             <p className="text-sm font-semibold text-foreground">
-              Describe your crop issue or upload a photo
+              {t('doctor.promptTitle') || 'Describe your crop issue or upload a photo'}
             </p>
           </div>
 
@@ -462,21 +462,21 @@ const CropDoctor: React.FC = () => {
                 className="w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
               >
                 <Upload size={24} />
-                <span className="text-sm">{t('agr204')}</span>
+                <span className="text-sm font-bold">{t('agr204')}</span>
                 <span className="text-xs opacity-60">{t('agr205')}</span>
               </button>
             )}
           </div>
 
           <textarea
-            className="w-full p-3 rounded-xl border border-border bg-muted focus:border-primary focus:ring-1 focus:ring-primary outline-none text-base sm:text-sm mb-4 min-h-[100px] text-foreground placeholder:text-muted-foreground"
-            placeholder="E.g., My wheat leaves are turning yellow at the tips with brown spots..."
+            className="w-full p-3 rounded-xl border border-border bg-muted focus:border-primary focus:ring-1 focus:ring-primary outline-none text-base sm:text-sm mb-4 min-h-[100px] text-foreground placeholder:text-muted-foreground font-medium"
+            placeholder={t('doctor.placeholder') || "E.g., My wheat leaves are turning yellow at the tips with brown spots..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs flex items-start gap-2">
+            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs flex items-start gap-2 font-bold">
               <AlertTriangle size={14} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -486,23 +486,23 @@ const CropDoctor: React.FC = () => {
             variant="magic"
             onClick={handleDiagnosis}
             disabled={isLoading || (!input.trim() && !imageBase64)}
-            className="w-full py-3"
+            className="w-full py-3 font-bold"
           >
             {isLoading ? (
               <>
                 <Loader className="animate-spin" size={20} />
-                Analyzing...
+                {t('doctor.analyzing') || 'Analyzing...'}
               </>
             ) : (
               <>
-                <Scan size={20} /> Diagnose with AI ✨
+                <Scan size={20} /> {t('doctor.diagnoseButton') || 'Diagnose with AI ✨'}
               </>
             )}
           </AgriButton>
 
           <div className="mt-6 pt-4 border-t border-border text-center">
-            <p className="text-muted-foreground text-xs mb-3">
-              Or take a photo with camera
+            <p className="text-muted-foreground text-xs mb-3 font-semibold">
+              {t('doctor.orCamera') || 'Or take a photo with camera'}
             </p>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -521,9 +521,9 @@ const CropDoctor: React.FC = () => {
         <div>
           <h4 className="font-bold text-feature-community text-sm">{t('agr206')}</h4>
           <ul className="text-xs text-foreground mt-1 space-y-1">
-            <li>• Upload a clear, close-up photo of affected area</li>
-            <li>• Mention crop name and growth stage</li>
-            <li>• Describe color changes, spots, or insects</li>
+            <li>• {t('doctor.tip1') || 'Upload a clear, close-up photo of affected area'}</li>
+            <li>• {t('doctor.tip2') || 'Mention crop name and growth stage'}</li>
+            <li>• {t('doctor.tip3') || 'Describe color changes, spots, or insects'}</li>
           </ul>
         </div>
       </div>

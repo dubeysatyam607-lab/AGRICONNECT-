@@ -8,25 +8,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const STRINGS: Record<string, [string, string]> = {
-  title: ["Services", "सेवाएँ"],
-  subtitle: ["{n}+ tools · everything for your farm", "{n}+ उपकरण · आपके खेत के लिए सब कुछ"],
-  searchPlaceholder: ["Search services… e.g. mandi, soil, tractor", "सेवाएँ खोजें… जैसे मंडी, मिट्टी, ट्रैक्टर"],
-  noResults: ["No services found", "कोई सेवा नहीं मिली"],
-  noResultsHint: ["Nothing matches “{q}”. Try a different word like mandi, soil or tractor.", "“{q}” से कुछ मेल नहीं खाता। मंडी, मिट्टी या ट्रैक्टर जैसा दूसरा शब्द आज़माएँ।"],
-  clearSearch: ["Clear search", "खोज साफ़ करें"],
-};
-
-const GROUPS_TITLE_HI: Record<string, string> = {
-  "AI & Crop Care": "AI और फसल देखभाल",
-  "Market & Mandi": "बाज़ार और मंडी",
-  "Farm Logistics": "कृषि परिवहन",
-  "Finance & Subsidy": "वित्त और सब्सिडी",
-  "Learning & Community": "सीखना और समुदाय",
-  "Farm Hardware": "कृषि हार्डवेयर",
-  "Cattle & Livestock": "पशुधन",
-};
-
 interface ServicesHubProps {
   onNavigate: (tab: string) => void;
 }
@@ -34,104 +15,98 @@ interface ServicesHubProps {
 interface ServiceItem {
   id: string;
   icon: React.ComponentType<{ size?: number | string; className?: string }>;
-  label: string;
-  sub: string;
+  labelKey: string;
+  subKey: string;
   tint: string;
 }
 
 interface Group {
   emoji: string;
-  title: string;
+  titleKey: string;
   items: ServiceItem[];
 }
 
-const GROUPS: Group[] = [
+const GROUP_DATA: Group[] = [
   {
     emoji: "✨",
-    title: "AI & Crop Care",
+    titleKey: "svc.hub.group.aiCropCare",
     items: [
-      { id: "farm-os", icon: Sparkles, label: "Farm OS", sub: "Digital farm twin & AI plan", tint: "bg-feature-ai/12 text-feature-ai" },
-      { id: "ai-chat", icon: Bot, label: "Kisan AI Assistant", sub: "Ask anything about your farm", tint: "bg-feature-ai/12 text-feature-ai" },
-      { id: "crop-doctor", icon: Scan, label: "Disease Detection", sub: "Scan a leaf, get a cure", tint: "bg-feature-doctor/12 text-feature-doctor" },
-      { id: "crop-calendar", icon: CalendarDays, label: "Crop Calendar", sub: "Sowing to harvest guide", tint: "bg-feature-mandi/12 text-feature-mandi" },
-      { id: "soil", icon: Sprout, label: "Soil Health", sub: "Test & fertilizer plan", tint: "bg-feature-soil/12 text-feature-soil" },
-      { id: "hardware-dashboard", icon: Droplets, label: "Irrigation Planner", sub: "Water schedule by weather", tint: "bg-feature-cattle/12 text-feature-cattle" },
+      { id: "farm-os", icon: Sparkles, labelKey: "svc.hub.aiCropCare.farmOs.label", subKey: "svc.hub.aiCropCare.farmOs.sub", tint: "bg-feature-ai/12 text-feature-ai" },
+      { id: "ai-chat", icon: Bot, labelKey: "svc.hub.aiCropCare.aiChat.label", subKey: "svc.hub.aiCropCare.aiChat.sub", tint: "bg-feature-ai/12 text-feature-ai" },
+      { id: "crop-doctor", icon: Scan, labelKey: "svc.hub.aiCropCare.cropDoctor.label", subKey: "svc.hub.aiCropCare.cropDoctor.sub", tint: "bg-feature-doctor/12 text-feature-doctor" },
+      { id: "crop-calendar", icon: CalendarDays, labelKey: "svc.hub.aiCropCare.cropCalendar.label", subKey: "svc.hub.aiCropCare.cropCalendar.sub", tint: "bg-feature-mandi/12 text-feature-mandi" },
+      { id: "soil", icon: Sprout, labelKey: "svc.hub.aiCropCare.soil.label", subKey: "svc.hub.aiCropCare.soil.sub", tint: "bg-feature-soil/12 text-feature-soil" },
+      { id: "hardware-dashboard", icon: Droplets, labelKey: "svc.hub.aiCropCare.hardwareDashboard.label", subKey: "svc.hub.aiCropCare.hardwareDashboard.sub", tint: "bg-feature-cattle/12 text-feature-cattle" },
     ],
   },
   {
     emoji: "🚜",
-    title: "Machinery",
+    titleKey: "svc.hub.group.machinery",
     items: [
-      { id: "tractors", icon: Tractor, label: "Tractor", sub: "Hire by hour or acre", tint: "bg-feature-labor/12 text-feature-labor" },
-      { id: "harvester", icon: Combine, label: "Harvester", sub: "For wheat & paddy", tint: "bg-feature-mandi/12 text-feature-mandi" },
-      { id: "rotavator", icon: RefreshCcw, label: "Rotavator", sub: "Tillage & mulching", tint: "bg-feature-soil/12 text-feature-soil" },
-      { id: "seeder", icon: Shovel, label: "Seeder", sub: "Seed sowing work", tint: "bg-feature-cattle/12 text-feature-cattle" },
+      { id: "tractors", icon: Tractor, labelKey: "svc.hub.machinery.tractors.label", subKey: "svc.hub.machinery.tractors.sub", tint: "bg-feature-labor/12 text-feature-labor" },
+      { id: "harvester", icon: Combine, labelKey: "svc.hub.machinery.harvester.label", subKey: "svc.hub.machinery.harvester.sub", tint: "bg-feature-mandi/12 text-feature-mandi" },
+      { id: "rotavator", icon: RefreshCcw, labelKey: "svc.hub.machinery.rotavator.label", subKey: "svc.hub.machinery.rotavator.sub", tint: "bg-feature-soil/12 text-feature-soil" },
+      { id: "seeder", icon: Shovel, labelKey: "svc.hub.machinery.seeder.label", subKey: "svc.hub.machinery.seeder.sub", tint: "bg-feature-cattle/12 text-feature-cattle" },
     ],
   },
   {
     emoji: "🛒",
-    title: "Marketplace",
+    titleKey: "svc.hub.group.marketplace",
     items: [
-      { id: "mandi", icon: TrendingUp, label: "Mandi Prices", sub: "Live rates, 100+ crops", tint: "bg-feature-mandi/12 text-feature-mandi" },
-      { id: "mandi-finder", icon: Navigation, label: "Mandi Finder", sub: "Nearest APMC mandi", tint: "bg-feature-transport/12 text-feature-transport" },
-      { id: "store", icon: ShoppingBag, label: "Agri Store", sub: "Seeds, inputs & tools", tint: "bg-feature-store/12 text-feature-store" },
-      { id: "cattle", icon: Milk, label: "Cattle Market", sub: "Buy & sell cows, buffaloes", tint: "bg-feature-cattle/12 text-feature-cattle" },
-      { id: "price-alerts", icon: BellRing, label: "Price Alerts", sub: "SMS when rates rise", tint: "bg-feature-loans/12 text-feature-loans" },
+      { id: "mandi", icon: TrendingUp, labelKey: "svc.hub.marketplace.mandi.label", subKey: "svc.hub.marketplace.mandi.sub", tint: "bg-feature-mandi/12 text-feature-mandi" },
+      { id: "mandi-finder", icon: Navigation, labelKey: "svc.hub.marketplace.mandiFinder.label", subKey: "svc.hub.marketplace.mandiFinder.sub", tint: "bg-feature-transport/12 text-feature-transport" },
+      { id: "store", icon: ShoppingBag, labelKey: "svc.hub.marketplace.store.label", subKey: "svc.hub.marketplace.store.sub", tint: "bg-feature-store/12 text-feature-store" },
+      { id: "cattle", icon: Milk, labelKey: "svc.hub.marketplace.cattle.label", subKey: "svc.hub.marketplace.cattle.sub", tint: "bg-feature-cattle/12 text-feature-cattle" },
+      { id: "price-alerts", icon: BellRing, labelKey: "svc.hub.marketplace.priceAlerts.label", subKey: "svc.hub.marketplace.priceAlerts.sub", tint: "bg-feature-loans/12 text-feature-loans" },
     ],
   },
   {
     emoji: "💰",
-    title: "Finance & Insurance",
+    titleKey: "svc.hub.group.financeInsurance",
     items: [
-      { id: "loans", icon: Coins, label: "Loan Calculator", sub: "KCC & crop loan EMI", tint: "bg-feature-loans/12 text-feature-loans" },
-      { id: "insurance", icon: ShieldCheck, label: "Crop Insurance", sub: "PM Fasal Bima Yojana", tint: "bg-feature-news/12 text-feature-news" },
-      { id: "profit-calculator", icon: Calculator, label: "Profit Calculator", sub: "Cost vs income estimate", tint: "bg-feature-ai/12 text-feature-ai" },
-      { id: "analytics", icon: BookOpen, label: "Farm Ledger", sub: "Track expenses & income", tint: "bg-feature-analytics/12 text-feature-analytics" },
+      { id: "loans", icon: Coins, labelKey: "svc.hub.financeInsurance.loans.label", subKey: "svc.hub.financeInsurance.loans.sub", tint: "bg-feature-loans/12 text-feature-loans" },
+      { id: "insurance", icon: ShieldCheck, labelKey: "svc.hub.financeInsurance.insurance.label", subKey: "svc.hub.financeInsurance.insurance.sub", tint: "bg-feature-news/12 text-feature-news" },
+      { id: "profit-calculator", icon: Calculator, labelKey: "svc.hub.financeInsurance.profitCalculator.label", subKey: "svc.hub.financeInsurance.profitCalculator.sub", tint: "bg-feature-ai/12 text-feature-ai" },
+      { id: "analytics", icon: BookOpen, labelKey: "svc.hub.financeInsurance.analytics.label", subKey: "svc.hub.financeInsurance.analytics.sub", tint: "bg-feature-analytics/12 text-feature-analytics" },
     ],
   },
   {
     emoji: "🏛️",
-    title: "Government",
+    titleKey: "svc.hub.group.government",
     items: [
-      { id: "schemes", icon: Landmark, label: "Schemes & Subsidies", sub: "PM-KISAN, KCC & more", tint: "bg-feature-schemes/12 text-feature-schemes" },
+      { id: "schemes", icon: Landmark, labelKey: "svc.hub.government.schemes.label", subKey: "svc.hub.government.schemes.sub", tint: "bg-feature-schemes/12 text-feature-schemes" },
     ],
   },
   {
     emoji: "🚚",
-    title: "Transport & Storage",
+    titleKey: "svc.hub.group.transportStorage",
     items: [
-      { id: "transport", icon: Truck, label: "Farm Transport", sub: "Trolley, pickup & trucks", tint: "bg-feature-transport/12 text-feature-transport" },
-      { id: "cold-storage", icon: Warehouse, label: "Cold Storage", sub: "Store potato & onion", tint: "bg-feature-labor/12 text-feature-labor" },
+      { id: "transport", icon: Truck, labelKey: "svc.hub.transportStorage.transport.label", subKey: "svc.hub.transportStorage.transport.sub", tint: "bg-feature-transport/12 text-feature-transport" },
+      { id: "cold-storage", icon: Warehouse, labelKey: "svc.hub.transportStorage.coldStorage.label", subKey: "svc.hub.transportStorage.coldStorage.sub", tint: "bg-feature-labor/12 text-feature-labor" },
     ],
   },
   {
     emoji: "👷",
-    title: "Labour",
+    titleKey: "svc.hub.group.labour",
     items: [
-      { id: "labor", icon: HardHat, label: "Labour Hire", sub: "Daily-wage farm workers", tint: "bg-feature-labor/12 text-feature-labor" },
+      { id: "labor", icon: HardHat, labelKey: "svc.hub.labour.labor.label", subKey: "svc.hub.labour.labor.sub", tint: "bg-feature-labor/12 text-feature-labor" },
     ],
   },
   {
     emoji: "📚",
-    title: "Learning & Community",
+    titleKey: "svc.hub.group.learningCommunity",
     items: [
-      { id: "krishi-shorts", icon: GraduationCap, label: "Krishi Shorts", sub: "60-second video lessons", tint: "bg-feature-cattle/12 text-feature-cattle" },
-      { id: "news", icon: Newspaper, label: "Krishi News", sub: "MSP, policy & weather", tint: "bg-feature-news/12 text-feature-news" },
-      { id: "community", icon: Users, label: "Farmer Community", sub: "Ask experts & farmers", tint: "bg-feature-community/12 text-feature-community" },
-      { id: "network", icon: Users2, label: "Farmer Network", sub: "Providers, buyers & bookings", tint: "bg-feature-community/12 text-feature-community" },
+      { id: "krishi-shorts", icon: GraduationCap, labelKey: "svc.hub.learningCommunity.krishiShorts.label", subKey: "svc.hub.learningCommunity.krishiShorts.sub", tint: "bg-feature-cattle/12 text-feature-cattle" },
+      { id: "news", icon: Newspaper, labelKey: "svc.hub.learningCommunity.news.label", subKey: "svc.hub.learningCommunity.news.sub", tint: "bg-feature-news/12 text-feature-news" },
+      { id: "community", icon: Users, labelKey: "svc.hub.learningCommunity.community.label", subKey: "svc.hub.learningCommunity.community.sub", tint: "bg-feature-community/12 text-feature-community" },
+      { id: "network", icon: Users2, labelKey: "svc.hub.learningCommunity.network.label", subKey: "svc.hub.learningCommunity.network.sub", tint: "bg-feature-community/12 text-feature-community" },
     ],
   },
 ];
 
 const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
   const [query, setQuery] = useState("");
-  const { language } = useLanguage();
-  const hi = language === "hi";
-  const t = (k: string, vars?: Record<string, string | number>) => {
-    let s = (STRINGS as Record<string, [string, string]>)[k]?.[hi ? 1 : 0] ?? k;
-    if (vars) for (const [key, val] of Object.entries(vars)) s = s.replace(`{${key}}`, String(val));
-    return s;
-  };
+  const { t } = useLanguage();
 
   const triggerHaptic = () => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {
@@ -149,14 +124,24 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
     onNavigate(MACHINERY_MAP[tab] ?? tab);
   };
 
+  const groups = GROUP_DATA.map((g) => ({
+    ...g,
+    title: t(g.titleKey),
+    items: g.items.map((i) => ({
+      ...i,
+      label: t(i.labelKey),
+      sub: t(i.subKey),
+    })),
+  }));
+
   const q = query.trim().toLowerCase();
   const filteredGroups = q
-    ? GROUPS
+    ? groups
         .map((g) => ({ ...g, items: g.items.filter((i) => i.label.toLowerCase().includes(q)) }))
         .filter((g) => g.items.length > 0)
-    : GROUPS;
+    : groups;
 
-  const totalServices = GROUPS.reduce((sum, g) => sum + g.items.length, 0);
+  const totalServices = GROUP_DATA.reduce((sum, g) => sum + g.items.length, 0);
 
   return (
     <div className="relative min-h-screen pb-36">
@@ -165,38 +150,38 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
         <button
           onClick={() => go("home")}
           className="p-2 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Back to home"
+          aria-label={t("svc.hub.backToHome")}
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="font-display font-bold text-[19px] text-foreground tracking-tight leading-none">
-            {t("title")}
+            {t("svc.hub.title")}
           </h1>
           <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
-            {t("subtitle", { n: totalServices })}
+            {t("svc.hub.subtitle", { n: totalServices })}
           </p>
         </div>
       </header>
 
-      <section className="pt-4" aria-label="Available services">
+      <section className="pt-4" aria-label={t("svc.hub.available")}>
         {/* Search */}
-        <section className="px-4" aria-label="Search services">
+        <section className="px-4" aria-label={t("svc.hub.search")}>
           <label className="relative block">
             <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("searchPlaceholder")}
+              placeholder={t("svc.hub.searchPlaceholder")}
               className="w-full rounded-2xl border border-border bg-card pl-10 pr-9 py-3 text-base font-medium text-foreground placeholder:text-muted-foreground/70 outline-none transition-all focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:shadow-card"
-              aria-label="Search services"
+              aria-label={t("svc.hub.search")}
             />
             {query && (
               <button
                 onClick={() => setQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
+                aria-label={t("svc.hub.clearSearch")}
               >
                 <X size={14} />
               </button>
@@ -211,15 +196,15 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/60 text-2xl" aria-hidden="true">
                   <Inbox size={22} className="text-muted-foreground" />
                 </span>
-                <p className="mt-3 text-[15px] font-bold text-foreground">{t("noResults")}</p>
+                <p className="mt-3 text-[15px] font-bold text-foreground">{t("svc.hub.noResults")}</p>
                 <p className="mt-1 max-w-[260px] text-[12px] font-medium text-muted-foreground">
-                  {t("noResultsHint", { q: query })}
+                  {t("svc.hub.noResultsHint", { q: query })}
                 </p>
                 <button
                   onClick={() => setQuery("")}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-forest text-primary-foreground px-4 py-2 text-[12px] font-bold shadow-card active:scale-95 transition-transform"
                 >
-                  {t("clearSearch")}
+                  {t("svc.hub.clearSearch")}
                 </button>
               </div>
             </div>
@@ -227,7 +212,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
         ) : (
           filteredGroups.map((group, gi) => (
             <section
-              key={group.title}
+              key={group.titleKey}
               className="px-4 mt-6 reveal"
               style={{ animationDelay: `${gi * 50}ms` }}
               aria-labelledby={`group-${gi}`}
@@ -237,12 +222,12 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
                 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.14em] mb-3 px-1"
               >
                 <span className="mr-1.5" aria-hidden="true">{group.emoji}</span>
-                {hi ? (GROUPS_TITLE_HI[group.title] ?? group.title) : group.title}
+                {group.title}
               </h2>
               <div className={cn("grid gap-2.5", group.items.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
-                {group.items.map((item, ii) => (
+                {group.items.map((item) => (
                   <button
-                    key={`${item.id}-${item.label}`}
+                    key={`${item.id}-${item.labelKey}`}
                     onClick={() => go(item.id)}
                     className="group relative flex flex-col items-start gap-2.5 rounded-[20px] border border-border bg-card p-3.5 text-left shadow-card hover-lift active:scale-[0.97] transition-transform"
                   >

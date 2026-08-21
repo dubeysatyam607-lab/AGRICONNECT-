@@ -38,10 +38,28 @@ export const LANGUAGE_CODES: Record<string, Language> = {
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
   languageName: string;
+  formatDate: (date: Date | string | number, options?: Intl.DateTimeFormatOptions) => string;
 }
 
+const STORAGE_KEY = 'agriconnect_language';
+const LEGACY_STORAGE_KEY = 'app-language';
+
+function getInitialLanguage(): Language {
+  if (typeof window === 'undefined') return 'en';
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (saved && saved in LANGUAGE_NAMES) return saved as Language;
+
+    // Detect browser language if available
+    const navLang = navigator.language?.split('-')[0];
+    if (navLang && navLang in LANGUAGE_NAMES) return navLang as Language;
+  } catch {
+    // LocalStorage or navigator access error fallback
+  }
+  return 'en';
+}
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
@@ -49,11 +67,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const user = useOptionalAuth()?.user ?? null;
   const hydrated = useRef(false);
 
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window === 'undefined') return 'en';
-    const saved = localStorage.getItem('app-language');
-    return (saved && saved in LANGUAGE_NAMES) ? saved as Language : 'en';
-  });
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
 
   // Sync language with Supabase so it survives across devices (best-effort).
   useEffect(() => {
@@ -73,17 +87,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (cancelled) return;
         const serverLang = data?.app_language as Language | undefined;
         if (serverLang && serverLang in LANGUAGE_NAMES) {
-          // Server preference wins on a fresh device; keep it in localStorage too.
           hydrated.current = true;
           setLanguageState(serverLang);
-          localStorage.setItem('app-language', serverLang);
+          localStorage.setItem(STORAGE_KEY, serverLang);
+          localStorage.setItem(LEGACY_STORAGE_KEY, serverLang);
         } else if (!hydrated.current) {
-          // No server preference yet — push the local choice so the next device syncs.
-          const local = (localStorage.getItem('app-language') ?? 'en') as Language;
+          const local = (localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || 'en') as Language;
           await supabase.from('profiles').update({ app_language: local }).eq('id', user.id);
         }
       } catch {
-        // Network/RLS errors are non-fatal; the app still works with localStorage.
+        // Network/RLS errors are non-fatal
       }
     })();
     return () => {
@@ -93,7 +106,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('app-language', lang);
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+      localStorage.setItem(LEGACY_STORAGE_KEY, lang);
+    } catch {
+      // Storage unavailable
+    }
     if (user) {
       supabase.from('profiles').update({ app_language: lang }).eq('id', user.id)
         .then(({ error }) => { if (error) console.warn('[LanguageContext] Failed to persist language:', error.message); })
@@ -101,10 +119,22 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const t = (key: string): string => resolveKey(language, key);
+  const t = (key: string, params?: Record<string, string | number>): string => resolveKey(language, key, params);
+
+  const formatDate = (date: Date | string | number, options?: Intl.DateTimeFormatOptions): string => {
+    try {
+      const d = typeof date === 'object' ? date : new Date(date);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString(language === 'en' ? 'en-IN' : `${language}-IN`, options || { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch {
+      return String(date);
+    }
+  };
 
   useEffect(() => {
-    document.documentElement.lang = language;
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
   }, [language]);
 
   return (
@@ -112,7 +142,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       language, 
       setLanguage, 
       t,
-      languageName: LANGUAGE_NAMES[language]
+      languageName: LANGUAGE_NAMES[language] || 'English (India)',
+      formatDate,
     }}>
       {children}
     </LanguageContext.Provider>

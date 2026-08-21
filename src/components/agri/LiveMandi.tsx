@@ -69,31 +69,42 @@ const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices"
 
 const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const { t, language } = useLanguage();
-  const hi = language === "hi";
 
   const L = {
-    title: hi ? "लाइव मंडी सलाह और भाव" : "Live Mandi Advisor & Prices",
-    subtitle: hi ? "भारत सरकार APMC आधिकारिक मंडी डेटा और AI बिक्री सलाह" : "Verified APMC rates & AI Selling Intelligence",
-    live: hi ? "लाइव APMC" : "LIVE APMC",
-    updated: hi ? "अपडेटेड" : "Updated",
-    search: hi ? "फसल, मंडी, जिला या राज्य खोजें..." : "Search crop, mandi, district or state...",
-    allStates: hi ? "सभी राज्य" : "All States",
-    allDistricts: hi ? "सभी जिले" : "All Districts",
-    onlyFavs: hi ? "पसंदीदा" : "Favorites",
-    tabPrices: hi ? "भाव लिस्ट" : "Prices",
-    tabAdvisor: hi ? "AI बिक्री सलाह" : "AI Advisor",
-    tabTrends: hi ? "मूल्य रुझान" : "Trends",
-    tabCompare: hi ? "मंडी तुलना" : "Compare",
-    tabNearby: hi ? "पास की मंडी" : "Nearby",
-    tabAlerts: hi ? "मूल्य अलर्ट" : "Alerts",
-    perQuintal: hi ? "/क्विंटल" : "/quintal",
-    min: hi ? "न्यूनतम" : "Min",
-    max: hi ? "अधिकतम" : "Max",
-    msp: hi ? "एमएसपी (MSP)" : "MSP",
-    loading: hi ? "लाइव मंडी डेटा लोड हो रहा है..." : "Fetching live APMC mandi prices...",
-    failed: hi ? "लाइव मंडी भाव वर्तमान में अनुपलब्ध हैं।" : "Live mandi prices are currently unavailable.",
-    retry: hi ? "पुनः प्रयास करें" : "Retry Sync",
-    verifiedSource: hi ? "सत्यापित डेटा: api.data.gov.in" : "Verified Source: api.data.gov.in",
+    title: t("mandi.hub.title") || "Live Mandi Advisor & Prices",
+    subtitle: t("mandi.hub.subtitle") || "Verified APMC rates & AI Selling Intelligence",
+    live: t("mandi.hub.liveBadge") || "LIVE APMC",
+    updated: t("mandi.updated") || "Updated",
+    search: t("mandi.hub.searchPlaceholder") || "Search crop, mandi, district or state...",
+    allStates: t("mandi.allStates") || "All States",
+    allDistricts: t("mandi.hub.allDistricts") || "All Districts",
+    onlyFavs: t("mandi.onlyFavs") || "Favorites",
+    tabPrices: t("mandi.tabPrices") || "Prices",
+    tabAdvisor: t("mandi.hub.tabAdvisor") || "AI Advisor",
+    tabTrends: t("mandi.tabTrends") || "Trends",
+    tabCompare: t("mandi.tabCompare") || "Compare",
+    tabNearby: t("mandi.tabNearby") || "Nearby",
+    tabAlerts: t("mandi.tabAlerts") || "Alerts",
+    perQuintal: t("mandi.perQuintal") || "/quintal",
+    min: t("mandi.min") || "Min",
+    max: t("mandi.max") || "Max",
+    msp: t("mandi.hub.msp") || "MSP",
+    loading: t("mandi.hub.loading") || "Fetching live APMC mandi prices...",
+    failed: t("mandi.hub.failed") || "Live mandi prices are currently unavailable.",
+    retry: t("mandi.hub.retrySync") || "Retry Sync",
+    verifiedSource: t("mandi.hub.verifiedSource") || "Verified Source: api.data.gov.in",
+    loadMore: t("mandi.hub.loadMore") || "Load More",
+  };
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    All: t("mandi.hub.categoryAll"),
+    Cereals: t("mandi.hub.categoryCereals"),
+    Pulses: t("mandi.hub.categoryPulses"),
+    Vegetables: t("mandi.hub.categoryVegetables"),
+    Fruits: t("mandi.hub.categoryFruits"),
+    Spices: t("mandi.hub.categorySpices"),
+    Oilseeds: t("mandi.hub.categoryOilseeds"),
+    Commercial: t("mandi.hub.categoryCommercial"),
   };
 
   const [data, setData] = useState<MandiPrice[]>([]);
@@ -383,7 +394,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <button
               onClick={(e) => { e.stopPropagation(); toggleFavorite(c); }}
               className="absolute top-2.5 right-2.5 p-2 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 transition-colors"
-              aria-label={fav ? "Remove favorite" : "Add favorite"}
+              aria-label={fav ? t("mandi.hub.ariaRemoveFavorite") : t("mandi.hub.ariaAddFavorite")}
             >
               <Heart size={16} className={fav ? "fill-rose-500 text-rose-500" : "text-white"} />
             </button>
@@ -492,7 +503,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       {paginated.length < filtered.length && (
         <div className="flex justify-center mt-4">
           <AgriButton variant="outline" onClick={() => setPage(p => p + 1)} className="px-6">
-            Load More
+            {L.loadMore}
           </AgriButton>
         </div>
       )}
@@ -531,10 +542,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               </p>
             </div>
             <div className="flex items-center gap-2 pt-3">
-              <button onClick={() => toggleFavorite(c)} aria-label="Favorite" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <button onClick={() => toggleFavorite(c)} aria-label={t("mandi.hub.ariaFavorite")} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <Heart size={18} className={fav ? "fill-rose-500 text-rose-500" : "text-slate-400"} />
               </button>
-              <button onClick={() => setSelectedCrop(null)} aria-label="Close" className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <button onClick={() => setSelectedCrop(null)} aria-label={t("mandi.hub.ariaClose")} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <X size={18} className="text-slate-400" />
               </button>
             </div>
@@ -655,7 +666,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <p className="text-sm text-muted-foreground">{L.subtitle}</p>
         </div>
 
-        <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label="Refresh">
+        <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label={t("mandi.hub.ariaRefresh")}>
           <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
         </AgriButton>
       </div>
@@ -710,7 +721,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                   : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground"
               )}
             >
-              {cat}
+              {CATEGORY_LABELS[cat] ?? cat}
             </button>
           ))}
         </div>
@@ -718,7 +729,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         {/* Filters & Sorting */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <select
-            aria-label="Filter State"
+            aria-label={t("mandi.hub.ariaFilterState")}
             value={selectedState}
             onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
@@ -728,7 +739,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           </select>
 
           <select
-            aria-label="Filter District"
+            aria-label={t("mandi.hub.ariaFilterDistrict")}
             value={selectedDistrict}
             onChange={(e) => { setSelectedDistrict(e.target.value); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
@@ -738,15 +749,15 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           </select>
 
           <select
-            aria-label="Sort Prices"
+            aria-label={t("mandi.hub.ariaSortPrices")}
             value={sortOption}
             onChange={(e) => { setSortOption(e.target.value as SortOption); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
-            <option value="highest">{t('agr225')}</option>
-            <option value="lowest">{t('agr226')}</option>
-            <option value="latest">{t('agr227')}</option>
-            <option value="alphabetical">{t('agr228')}</option>
+            <option value="highest">{t("mandi.hub.sortHighest")}</option>
+            <option value="lowest">{t("mandi.hub.sortLowest")}</option>
+            <option value="latest">{t("mandi.hub.sortLatest")}</option>
+            <option value="alphabetical">{t("mandi.hub.sortAlphabetical")}</option>
           </select>
 
           <button
@@ -799,7 +810,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           {paginated.map((c, i) => renderCard(c, i))}
           {paginated.length < filtered.length && (
             <div className="flex items-center justify-center col-span-full mt-4">
-              <AgriButton onClick={() => setPage(p => p + 1)}>{L.loadMore || "Load More"}</AgriButton>
+              <AgriButton onClick={() => setPage(p => p + 1)}>{L.loadMore}</AgriButton>
             </div>
           )}
         </div>

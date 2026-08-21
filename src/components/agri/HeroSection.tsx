@@ -225,10 +225,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="inline-block animate-bounce">🌾</span>
               </h1>
               <p className="text-sm md:text-base text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-sm">
-                {isMorning ? "Fresh morning! Check today's mandi rates and soil moisture across your fields." :
-                 isSunset ? "Golden hour is here. Review your farm ledger and plan tomorrow's tasks." :
-                 isNight ? "Rest well, Kisan. AI Crop Doctor can check any leaf photo whenever you need." :
-                 "Plan your day — check mandi prices, book farm machinery, and consult AI advisory."}
+                {isMorning ? (t('hero.morningPrompt') || "Fresh morning! Check today's mandi rates and soil moisture across your fields.") :
+                 isSunset ? (t('hero.sunsetPrompt') || "Golden hour is here. Review your farm ledger and plan tomorrow's tasks.") :
+                 isNight ? (t('hero.nightPrompt') || "Rest well, Kisan. AI Crop Doctor can check any leaf photo whenever you need.") :
+                 (t('hero.dayPrompt') || "Plan your day — check mandi prices, book farm machinery, and consult AI advisory.")}
               </p>
             </div>
           )}
@@ -237,15 +237,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="animate-fade-in cursor-pointer" onClick={() => handleCardClick(1, "mandi")}>
               <div className="inline-flex items-center gap-2 bg-emerald-500/30 backdrop-blur-md px-3.5 py-1 rounded-xl text-xs font-extrabold text-emerald-200 mb-2.5 border border-emerald-400/30 shadow-sm">
                 <TrendingUp size={14} className="text-emerald-300 animate-bounce" />
-                <span>Mandi Bhav • Tap for Today's Rates</span>
+                <span>{t('hero.mandiPill') || "Mandi Bhav • Tap for Today's Rates"}</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white drop-shadow-md mb-3">
-                Mandi Prices
+                {t('mandi.title') || "Mandi Prices"}
               </h1>
               <div className="max-w-xl">
                 <div className="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20">
                   <div className="text-[11px] font-bold text-slate-200 uppercase">{t('agr209')}</div>
-                  <div className="text-sm font-semibold text-white mt-0.5">Tap to see today's live rates for your crops</div>
+                  <div className="text-sm font-semibold text-white mt-0.5">{t('hero.mandiSub') || "Tap to see today's live rates for your crops"}</div>
                   <div className="text-[11px] text-white/70 mt-1.5">{t('agr210')}</div>
                 </div>
               </div>
@@ -263,7 +263,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-full">{t('agr213')}</span>
               </h1>
               <p className="text-sm md:text-base text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-sm mb-3">
-                Take a photo of a leaf and get an AI diagnosis with remedy suggestions. Check the Schemes tab for available government subsidies.
+                {t('hero.cropDoctorDesc') || "Take a photo of a leaf and get an AI diagnosis with remedy suggestions. Check the Schemes tab for available government subsidies."}
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-slate-950 px-4 py-2 rounded-2xl font-black text-xs hover:bg-slate-100 transition-colors shadow-lg">
                 <span>{t('agr214')}</span>

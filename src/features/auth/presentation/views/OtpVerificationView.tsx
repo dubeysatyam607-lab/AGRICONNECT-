@@ -137,7 +137,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               </svg>
             </div>
             <h2 className="mt-5 text-2xl font-black tracking-tight text-foreground">
-              {hi ? 'ईमेल सफलतापूर्वक सत्यापित हो गया' : 'Email verified successfully.'}
+              {t('auth.otp.verifiedSuccess') || 'Email verified successfully.'}
             </h2>
           </div>
         </div>
@@ -155,7 +155,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               <ArrowLeft size={16} /> {t('common.back')}
             </button>
             <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              <ShieldCheck size={13} /> {hi ? 'सत्यापन' : 'OTP Verification'}
+              <ShieldCheck size={13} /> {t('auth.otpVerification') || 'OTP Verification'}
             </span>
           </div>
 
@@ -169,10 +169,10 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
               </svg>
             </div>
             <h1 className="mt-5 text-2xl font-black tracking-tight text-foreground">
-              {hi ? 'अपने ईमेल पर भेजा गया 6 अंकों का ओटीपी दर्ज करें' : 'Enter the 6-digit OTP sent to your email'}
+              {t('auth.enter6DigitOtp') || 'Enter the 6-digit OTP sent to your email'}
             </h1>
             <p className="mx-auto mt-2 max-w-xs text-xs font-medium text-muted-foreground">
-              {hi ? 'कोड इस पते पर भेजा गया:' : 'A 6-digit code has been sent to'}{' '}
+              {t('auth.codeSentTo') || 'A 6-digit code has been sent to'}{' '}
               <span className="font-extrabold text-foreground">{maskTarget(target, type)}</span>
             </p>
           </FadeIn>
@@ -217,25 +217,25 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                 isLoading={state.isLoading}
                 disabled={filled !== OTP_LENGTH}
               >
-                {hi ? 'सत्यापित करें' : 'Verify & Continue'}
+                {t('auth.verifyAndContinue') || 'Verify & Continue'}
               </AppButton>
 
               {/* Resend OTP & Change Number */}
               <div className="flex flex-col items-center gap-2.5 pt-1">
                 {validityTimer > 0 ? (
                   <span className="text-xs font-bold text-muted-foreground">
-                    {hi ? `ओटीपी समाप्त होता है ${mm}:${ss}` : `OTP expires in ${mm}:${ss}`}
+                    {interpolate(t('auth.otpExpiresIn') || 'OTP expires in {time}', { time: `${mm}:${ss}` })}
                   </span>
                 ) : (
                   <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                    {hi ? 'ओटीपी समाप्त हो गया है' : 'OTP expired.'}
+                    {t('auth.otpExpired') || 'OTP expired.'}
                   </span>
                 )}
 
                 <div className="flex items-center justify-center">
                   {resendTimer > 0 ? (
                     <span className="text-xs font-semibold text-muted-foreground">
-                      {hi ? `ओटीपी पुनः भेजें (${resendTimer}s)` : `Resend OTP in ${resendTimer}s`}
+                      {interpolate(t('auth.resendOtpIn') || 'Resend OTP in {sec}s', { sec: resendTimer })}
                     </span>
                   ) : (
                     <button
@@ -244,7 +244,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                       disabled={state.isLoading}
                       className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
                     >
-                      <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {hi ? 'ओटीपी पुनः भेजें' : 'Resend OTP'}
+                      <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {t('auth.resendOtp') || 'Resend OTP'}
                     </button>
                   )}
                 </div>
@@ -254,7 +254,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                   onClick={onBack}
                   className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
                 >
-                  {type === 'email' ? (hi ? 'ईमेल बदलें' : 'Change Email') : (hi ? 'नंबर बदलें' : 'Change Number')}
+                  {type === 'email' ? (t('auth.changeEmail') || 'Change Email') : (t('auth.changeNumber') || 'Change Number')}
                 </button>
               </div>
             </div>
@@ -263,7 +263,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
 
         {/* Footer */}
         <p className="pt-6 text-center text-[10px] font-medium text-muted-foreground/70">
-          🔒 {hi ? 'सुरक्षित 256-बिट एन्क्रिप्शन द्वारा रक्षित' : 'Protected by enterprise 256-bit encryption'}
+          🔒 {t('auth.protectedEncryption') || 'Protected by enterprise 256-bit encryption'}
         </p>
       </div>
       )}

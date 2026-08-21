@@ -3,15 +3,6 @@ import { Home, Bot, TrendingUp, LayoutGrid, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const LABELS: Record<string, string> = {
-  home: 'nav.home',
-  mandi: 'nav.mandi',
-  services: 'nav.services',
-  wallet: 'nav.wallet',
-  profile: 'nav.profile',
-  ai: 'nav.ai',
-};
-
 interface BottomNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;

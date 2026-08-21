@@ -77,47 +77,24 @@ const stopSpeaking = () => {
   stopSpeakingEngine();
 };
 
-// Language-specific greeting messages
-const GREETINGS: Record<string, string> = {
-  "English (India)": "Hello! 🙏 I am Kisan AI — your farming assistant. Ask me about crop health, fertilizer dosage, irrigation timing, mandi prices, weather forecasts, or government schemes.",
-  "Hindi (हिंदी)": "नमस्ते! 🙏 मैं किसान एआई हूं — आपका कृषि सहायक। फसल स्वास्थ्य, खाद की मात्रा, सिंचाई का समय, मंडी भाव, मौसम या सरकारी योजनाओं के बारे में पूछें।",
-  "Punjabi (ਪੰਜਾਬੀ)": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! 🙏 ਮੈਂ ਕਿਸਾਨ ਏਆਈ ਹਾਂ — ਤੁਹਾਡਾ ਖੇਤੀ ਸਹਾਇਕ। ਫ਼ਸਲ ਸਿਹਤ, ਖਾਦ, ਸਿੰਚਾਈ ਸਮਾਂ, ਮੰਡੀ ਭਾਅ ਜਾਂ ਸਰਕਾਰੀ ਸਕੀਮਾਂ ਬਾਰੇ ਪੁੱਛੋ।",
-  "Marathi (मराठी)": "नमस्कार! 🙏 मी किसान एआय आहे — आपला शेती सहाय्यक. पीक आरोग्य, खत मात्रा, सिंचन वेळ, बाजारभाव किंवा सरकारी योजनांबद्दल विचारा.",
-  "Gujarati (ગુજરાતી)": "નમસ્તે! 🙏 હું કિસાન એઆઈ છું — આપનો કૃષિ સહાયક. પાક સ્વાસ્થ્ય, ખાતરની માત્રા, સિંચાઈ સમય, મંડી ભાવ કે સરકારી યોજનાઓ વિશે પૂછો.",
-  "Tamil (தமிழ்)": "வணக்கம்! 🙏 நான் கிசான் ஏஐ — உங்கள் விவசாய உதவியாளர். பயிர் ஆரோக்கியம், உர அளவு, பாசன நேரம், சந்தை விலை அல்லது அரசு திட்டங்கள் பற்றி கேளுங்கள்.",
-  "Telugu (తెలుగు)": "నమస్కారం! 🙏 నేను కిసాన్ ఏఐ — మీ వ్యవసాయ సహాయకుడు. పంట ఆరోగ్యం, ఎరువుల మోతాదు, నీటిపారుదల సమయం, మార్కెట్ ధరలు లేదా ప్రభుత్వ పథకాల గురించి అడగండి.",
-  "Kannada (ಕನ್ನಡ)": "ನಮಸ್ಕಾರ! 🙏 ನಾನು ಕಿಸಾನ್ ಎಐ — ನಿಮ್ಮ ಕೃಷಿ ಸಹಾಯಕ. ಬೆಳೆ ಆರೋಗ್ಯ, ಗೊಬ್ಬರದ ಪ್ರಮಾಣ, ನೀರಾವರಿ ಸಮಯ, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
-  "Malayalam (മലയാളം)": "നമസ്കാരം! 🙏 ഞാൻ കിസാൻ എഐ — നിങ്ങളുടെ കൃഷി സഹായി. വിള ആരോഗ്യം, വളപ്രയോഗം, ജലസേചന സമയം, വിപണി വില അല്ലെങ്കിൽ സർക്കാർ പദ്ധതികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കൂ.",
-  "Bengali (বাংলা)": "নমস্কার! 🙏 আমি কিসান এআই — আপনার কৃষি সহায়ক। ফসলের স্বাস্থ্য, সারের মাত্রা, সেচের সময়, বাজার দর বা সরকারি প্রকল্প সম্পর্কে জিজ্ঞাসা করুন।",
-  "Odia (ଓଡ଼ିଆ)": "ନମସ୍କାର! 🙏 ମୁଁ କିସାନ ଏଆଇ — ଆପଣଙ୍କ ଚାଷ ସହାୟକ। ଫସଲ ସ୍ୱାସ୍ଥ୍ୟ, ଖତ ପ୍ରୟୋଗ, ଜଳସେଚନ ସମୟ, ବଜାର ଦର କିମ୍ବା ସରକାରୀ ଯୋଜନା ବିଷୟରେ ପଚାରନ୍ତୁ।",
-  "Assamese (অসমীয়া)": "নমস্কাৰ! 🙏 মই কিষাণ এআই — আপোনাৰ কৃষি সহায়ক। শস্যৰ স্বাস্থ্য, সাৰ প্ৰয়োগ, জলসিঞ্চনৰ সময়, বজাৰ দৰ বা চৰকাৰী আঁচনি সম্পৰ্কে সোধক।",
-};
-
 // Practical Farmer Quick Prompt Chips
 const PROMPT_CHIPS = [
-  { id: "yellow_leaves", label: "🌾 My crop has yellow leaves", prompt: "My crop leaves are turning yellow. What could be the cause and how can I fix it?" },
-  { id: "irrigation", label: "💧 When should I irrigate?", prompt: "When is the optimal time to irrigate my crop and how to manage water efficiently?" },
-  { id: "pest", label: "🐛 Help identify this pest", prompt: "Help me identify and treat common pests damaging my crop." },
-  { id: "mandi", label: "📈 What is today's mandi price?", prompt: "What are today's prevailing mandi rates for major crops near my district?" },
-  { id: "weather", label: "🌦️ Weather near my farm", prompt: "What is the weather outlook and spraying advisory for my farm this week?" },
-];
+  "yellow_leaves",
+  "irrigation",
+  "pest",
+  "mandi",
+  "weather",
+] as const;
 
 // Quick action toolbar items
 const QUICK_ACTIONS = [
-  { id: "markets", label: "Mandi", hint: "markets", icon: "market" },
-  { id: "shops", label: "Shops", hint: "shops", icon: "shop" },
-  { id: "fertilizer", label: "Fertilizer", hint: "fertilizer", icon: "flask" },
-  { id: "irrigation", label: "Irrigation", hint: "irrigation", icon: "drop" },
-  { id: "pest", label: "Pests", hint: "pest", icon: "bug" },
-  { id: "schemes", label: "Schemes", hint: "schemes", icon: "file" },
+  { id: "markets", hint: "markets", icon: "market" },
+  { id: "shops", hint: "shops", icon: "shop" },
+  { id: "fertilizer", hint: "fertilizer", icon: "flask" },
+  { id: "irrigation", hint: "irrigation", icon: "drop" },
+  { id: "pest", hint: "pest", icon: "bug" },
+  { id: "schemes", hint: "schemes", icon: "file" },
 ] as const;
-
-const QUICK_ACTION_PROMPTS: Record<string, string> = {
-  fertilizer: "Suggest optimal fertilizer dosage for my crop stage with NPK ratio and application method.",
-  irrigation: "Give me a stage-wise irrigation scheduling plan for my crop with water-saving tips.",
-  pest: "Recommend organic and chemical pest control remedies for common crop pests.",
-  schemes: "List current government schemes and subsidies for farmers with eligibility details.",
-};
 
 const OFFLINE_ADVISORIES = {
   hindi: "⚠️ आप वर्तमान में ऑफ़लाइन हैं। किसान सहायक डेटाबेस में संग्रहीत जानकारी के अनुसार: अपनी खड़ी फसलों की सिंचाई को नियंत्रित रखें और रोगग्रस्त पत्तियों को तुरंत काटकर नष्ट कर दें।",
@@ -187,13 +164,36 @@ interface KisanChatProps {
 const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLanguage }) => {
   const { languageName, t } = useLanguage();
   const selectedLanguage = languageName || propLanguage || "Hindi (हिंदी)";
-  const greeting = GREETINGS[selectedLanguage] || GREETINGS["Hindi (हिंदी)"];
+  const greeting = t('chat.greeting');
   const isHindi = selectedLanguage.includes("Hindi");
 
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile } = useFarm();
   const localLang = isHindi ? "hi" : "en";
+
+  const chipLabels: Record<string, string> = {
+    yellow_leaves: t('chat.chipYellowLeaves'),
+    irrigation: t('chat.chipIrrigate'),
+    pest: t('chat.chipIdentifyPest'),
+    mandi: t('chat.chipMandiPrice'),
+    weather: t('chat.chipWeather'),
+  };
+  const chipPrompts: Record<string, string> = {
+    yellow_leaves: t('chat.chipPromptYellowLeaves'),
+    irrigation: t('chat.chipPromptIrrigate'),
+    pest: t('chat.chipPromptPest'),
+    mandi: t('chat.chipPromptMandiPrice'),
+    weather: t('chat.chipPromptWeather'),
+  };
+  const quickActionLabels: Record<string, string> = {
+    markets: t('chat.qaMandi'),
+    shops: t('chat.qaShops'),
+    fertilizer: t('chat.qaFertilizer'),
+    irrigation: t('chat.qaIrrigation'),
+    pest: t('chat.qaPests'),
+    schemes: t('chat.qaSchemes'),
+  };
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -437,10 +437,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     e.stopPropagation();
 
     const confirmed = await dialogService.confirm({
-      title: "Delete this chat?",
-      description: "This conversation will be permanently removed from your history.",
-      confirmText: "Delete",
-      cancelText: "Cancel",
+      title: t('chat.deleteConfirmTitle'),
+      description: t('chat.deleteConfirmMessage'),
+      confirmText: t('chat.deleteConfirmAction'),
+      cancelText: t('chat.cancelAction'),
       variant: "danger",
     });
     if (!confirmed) return;
@@ -473,8 +473,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
       toast({
-        title: "File Too Large",
-        description: `Please select an image smaller than ${MAX_IMAGE_SIZE_MB}MB.`,
+        title: t('chat.fileTooLargeTitle'),
+        description: t('chat.fileTooLargeDesc', { size: MAX_IMAGE_SIZE_MB }),
         variant: "destructive"
       });
       return;
@@ -498,8 +498,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   const toggleListening = () => {
     if (!sttSupported()) {
       toast({
-        title: "Voice Not Supported",
-        description: "Your browser does not support local speech recognition.",
+        title: t('chat.voiceNotSupportedTitle'),
+        description: t('chat.voiceNotSupportedDesc'),
         variant: "destructive"
       });
       return;
@@ -545,8 +545,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         setVoiceTranscript("");
         if (error === "not-allowed" || error === "service-not-allowed") {
           toast({
-            title: "Microphone Access Denied",
-            description: "Please allow microphone permissions to speak.",
+            title: t('chat.micDeniedTitle'),
+            description: t('chat.micDeniedDesc'),
             variant: "destructive",
           });
         }
