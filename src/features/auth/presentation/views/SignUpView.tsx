@@ -34,12 +34,12 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
     setFieldError(null);
 
     if (!fullName.trim()) {
-      setFieldError(hi ? 'कृपया अपना पूरा नाम दर्ज करें' : 'Please enter your full name');
+      setFieldError(t('auth.error.enterFullName') || 'Please enter your full name');
       return;
     }
 
     if (!email.trim() || !email.includes('@')) {
-      setFieldError(hi ? 'कृपया वैध ईमेल पता दर्ज करें' : 'Please enter a valid email address');
+      setFieldError(t('auth.error.validEmail') || 'Please enter a valid email address');
       return;
     }
 
@@ -71,17 +71,17 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {t('common.back')}
             </button>
             <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              <ShieldCheck size={13} /> {hi ? 'निःशुल्क पंजीकरण' : 'Free Registration'}
+              <ShieldCheck size={13} /> {t('auth.freeRegistration') || 'Free Registration'}
             </span>
           </div>
 
           {/* Header */}
           <FadeIn className="mt-6 text-center">
             <h1 className="text-2xl font-black tracking-tight text-foreground">
-              {hi ? 'नया किसान खाता बनाएं' : 'Create Farmer Account'}
+              {t('auth.createFarmerAccount') || 'Create Farmer Account'}
             </h1>
             <p className="mt-1.5 text-xs font-medium text-muted-foreground">
-              {hi ? 'एग्रीकनेक्ट के साथ स्मार्ट खेती और मंडी भाव से जुड़ें' : 'Join AgriConnect for Mandi prices, AI advisory & farm management'}
+              {t('auth.createFarmerSubtitle') || 'Join AgriConnect for Mandi prices, AI advisory & farm management'}
             </p>
           </FadeIn>
 
@@ -102,7 +102,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Full Name */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {hi ? 'पूरा नाम' : 'Full Name'}
+                  {t('auth.fullName') || 'Full Name'}
                 </label>
                 <div className="relative">
                   <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -120,7 +120,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Email Address */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {hi ? 'ईमेल पता' : 'Email Address'}
+                  {t('auth.emailAddress') || 'Email Address'}
                 </label>
                 <div className="relative">
                   <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -140,7 +140,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
               {/* Mobile Number (optional profile info) */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  {hi ? 'मोबाइल नंबर (वैकल्पिक)' : 'Mobile Number (Optional)'}
+                  {t('auth.mobileOptional') || 'Mobile Number (Optional)'}
                 </label>
                 <div className="flex items-stretch overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15 transition-all">
                   <span className="flex items-center gap-1 border-r border-border bg-slate-50 dark:bg-slate-800/50 px-4 text-sm font-black text-foreground">
@@ -167,7 +167,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
                   isLoading={state.isLoading}
                   rightIcon={<ArrowRight size={16} />}
                 >
-                  {hi ? 'ईमेल ओटीपी भेजें' : 'Send Email OTP'}
+                  {t('auth.sendEmailOtp') || 'Send Email OTP'}
                 </AppButton>
               </div>
             </form>
@@ -177,9 +177,9 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
         {/* Footer */}
         <SlideUp delayMs={200} className="mt-6 text-center">
           <p className="text-xs font-medium text-muted-foreground">
-            {hi ? 'पहले से खाता है?' : 'Already have an account?'}{' '}
+            {t('auth.alreadyHaveAccount') || 'Already have an account?'}{' '}
             <button onClick={onSwitchToSignIn} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
-              {hi ? 'साइन इन करें' : 'Sign In'}
+              {t('auth.signIn') || 'Sign In'}
             </button>
           </p>
         </SlideUp>

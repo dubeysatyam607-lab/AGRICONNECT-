@@ -95,17 +95,15 @@ export const LoginView: React.FC<ILoginViewProps> = ({
               <ShieldCheck size={48} className="text-emerald-600 dark:text-emerald-400 mb-3" />
               <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">AgriConnect</span>
               <span className="text-xs text-emerald-600 dark:text-emerald-500 mt-1">
-                {hi ? 'सुरक्षित कृषि नेटवर्क' : 'Secure Farming Network'}
+                {t('auth.secureNetwork') || 'Secure Farming Network'}
               </span>
             </div>
           )}
           <h2 className="mt-6 text-2xl font-extrabold text-emerald-800">
-            {hi ? 'कृषि के भविष्य में आपका स्वागत है' : 'Welcome to the Future of Farming'}
+            {t('auth.futureOfFarming') || 'Welcome to the Future of Farming'}
           </h2>
           <p className="mt-2 text-center text-sm text-emerald-700">
-            {hi
-              ? 'स्मार्ट अंतर्दृष्टि, रियल‑टाइम मंडी मूल्य, और AI‑सहाय्यक खेती'
-              : 'Smart insights, real‑time market prices, and AI‑assisted farming'}
+            {t('auth.tagline') || 'Smart insights, real‑time market prices, and AI‑assisted farming'}
           </p>
         </div>
 
@@ -124,7 +122,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                 <div />
               )}
               <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                <ShieldCheck size={13} /> {hi ? 'सुरक्षित 256-बिट एन्क्रिप्शन' : '256-Bit Secure'}
+                <ShieldCheck size={13} /> {t('auth.encryptionBadge') || '256-Bit Secure'}
               </span>
             </div>
 
@@ -135,10 +133,10 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   <Logo size={72} className="drop-shadow-lg" />
                 </div>
                 <h1 className="mt-4 text-2xl font-black tracking-tight text-foreground">
-                  {hi ? 'एग्रीकनेक्ट में आपका स्वागत है' : 'Welcome to AgriConnect'}
+                  {t('auth.login.welcomeTitle')}
                 </h1>
                 <p className="mt-1.5 text-xs font-medium text-muted-foreground">
-                  {hi ? 'भारत के विश्वसनीय कृषि नेटवर्क से जुड़ें' : 'Sign in to access Mandi prices, AI crop advice & farm management'}
+                  {t('auth.welcomeSubtitle') || 'Sign in to access Mandi prices, AI crop advice & farm management'}
                 </p>
                 <AppButton
                   variant="outline"
@@ -150,7 +148,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   leftIcon={<Google size={18} className="text-[#4285F4]" />}
                   className="mb-4 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  {hi ? 'Google के साथ जारी रखें' : 'Continue with Google'}
+                  {t('auth.login.continueWithGoogle')}
                 </AppButton>
               </div>
             </FadeIn>
@@ -168,7 +166,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   }`}
                 >
                   <Mail size={14} />
-                  {hi ? 'ईमेल + ओटीपी' : 'Email + OTP'}
+                  {t('auth.login.tabEmailOtp')}
                 </button>
                 <button
                   type="button"
@@ -180,7 +178,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   }`}
                 >
                   <Lock size={14} />
-                  {hi ? 'पासवर्ड' : 'Password'}
+                  {t('auth.login.tabPassword')}
                 </button>
               </div>
             </FadeIn>
@@ -203,13 +201,13 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                 <form onSubmit={handleOtpSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                      {hi ? 'ईमेल पता' : 'Email Address'}
+                      {t('auth.login.emailLabel')}
                     </label>
                     <div className="relative">
                       <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <input
                         type="email"
-                        aria-label={hi ? 'ईमेल पता' : 'Email Address'}
+                        aria-label={t('auth.login.emailLabel')}
                         required
                         autoComplete="email"
                         placeholder="farmer@example.com"
@@ -228,7 +226,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                     isLoading={state.isLoading}
                     rightIcon={<ArrowRight size={16} />}
                   >
-                    {hi ? 'ईमेल ओटीपी भेजें' : 'Send Email OTP'}
+                    {t('auth.login.sendEmailOtp')}
                   </AppButton>
                 </form>
               ) : (
@@ -236,13 +234,13 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                      {hi ? 'ईमेल पता' : 'Email Address'}
+                      {t('auth.login.emailLabel')}
                     </label>
                     <div className="relative">
                       <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <input
                         type="email"
-                        aria-label={hi ? 'ईमेल पता' : 'Email Address'}
+                        aria-label={t('auth.login.emailLabel')}
                         required
                         autoComplete="email"
                         placeholder="farmer@example.com"
@@ -256,21 +254,21 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                        {hi ? 'पासवर्ड' : 'Password'}
+                        {t('auth.login.tabPassword')}
                       </label>
                       <button
                         type="button"
                         onClick={onSwitchToForgot}
                         className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
                       >
-                        {hi ? 'पासवर्ड भूल गए?' : 'Forgot Password?'}
+                        {t('auth.login.forgotPassword')}
                       </button>
                     </div>
                     <div className="relative">
                       <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        aria-label={hi ? 'पासवर्ड' : 'Password'}
+                        aria-label={t('auth.login.tabPassword')}
                         required
                         autoComplete="current-password"
                         placeholder="••••••••"
@@ -298,7 +296,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         onChange={(e) => setRememberMe(e.target.checked)}
                         className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
                       />
-                      {hi ? 'मुझे याद रखें' : 'Remember Me'}
+                      {t('auth.login.rememberMe')}
                     </label>
                   </div>
 
@@ -310,7 +308,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                     isLoading={state.isLoading}
                     rightIcon={<ArrowRight size={16} />}
                   >
-                    {hi ? 'साइन इन करें' : 'Sign In'}
+                    {t('auth.login.signInButton')}
                   </AppButton>
                 </form>
               )}
@@ -320,16 +318,16 @@ export const LoginView: React.FC<ILoginViewProps> = ({
           {/* Footer Navigation */}
           <SlideUp delayMs={200} className="mt-8 space-y-4 text-center">
             <p className="text-xs font-medium text-muted-foreground">
-              {hi ? 'क्या आपका खाता नहीं है?' : 'New to AgriConnect?'}{' '}
+              {t('auth.login.newToAgriconnect')}{' '}
               <button onClick={onSwitchToSignUp} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
-                {hi ? 'नया खाता बनाएं' : 'Create Account'}
+                {t('auth.login.createAccount')}
               </button>
             </p>
 
             <p className="text-[10px] leading-relaxed text-muted-foreground/70">
-              {hi ? 'साइन इन करने पर आप हमारी' : 'By signing in, you agree to our'}{' '}
-              <Link to="/terms" className="font-bold underline-offset-2 hover:underline">{hi ? 'सेवा शर्तों' : 'Terms'}</Link> &amp;{' '}
-              <Link to="/privacy-policy" className="font-bold underline-offset-2 hover:underline">{hi ? 'गोपनीयता नीति' : 'Privacy Policy'}</Link>
+              {t('auth.agreeTerms') || 'By signing in, you agree to our'}{' '}
+              <Link to="/terms" className="font-bold underline-offset-2 hover:underline">{t('nav.terms') || 'Terms'}</Link> &amp;{' '}
+              <Link to="/privacy-policy" className="font-bold underline-offset-2 hover:underline">{t('nav.privacy') || 'Privacy Policy'}</Link>
             </p>
           </SlideUp>
         </div>

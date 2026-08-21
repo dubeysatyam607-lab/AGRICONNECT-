@@ -288,10 +288,10 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-bold text-foreground leading-snug">
-                    🌱 Complete your profile to unlock AI recommendations personalised for your farm
+                    🌱 {t('home.prompt.completeProfile') || 'Complete your profile to unlock AI recommendations personalised for your farm'}
                   </p>
                   <p className="mt-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    Complete Now (2 min) →
+                    {t('home.prompt.completeNow') || 'Complete Now (2 min) →'}
                   </p>
                 </div>
               </div>
@@ -347,14 +347,14 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
                   <Sprout size={26} />
                 </span>
-                <h3 className="mt-3 text-[15px] font-bold text-foreground">Your farm summary is loading</h3>
+                <h3 className="mt-3 text-[15px] font-bold text-foreground">{t('home.farmSummaryLoading') || 'Your farm summary is loading'}</h3>
                 <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
                   {weather.error
-                    ? '🌤 Set your location for hyperlocal weather'
-                    : 'Complete your profile to get personalised insights for your crops'}
+                    ? (t('home.setLocationHint') || '🌤 Set your location for hyperlocal weather')
+                    : (t('home.profilePersonalisedHint') || 'Complete your profile to get personalised insights for your crops')}
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 text-white px-4 py-2 text-[12px] font-bold shadow-colorful">
-                  Set Up My Farm <ArrowRight size={13} />
+                  {t('home.setUpMyFarm') || 'Set Up My Farm'} <ArrowRight size={13} />
                 </span>
               </button>
             )}
@@ -523,7 +523,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
               onClick={() => go('tractors')}
               className="mb-3 px-1 text-[12px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
             >
-              Be the first to list your tractor in your area →
+              {t('tractor.beFirstToList') || 'Be the first to list your tractor in your area →'}
             </button>
           </div>
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-1">
