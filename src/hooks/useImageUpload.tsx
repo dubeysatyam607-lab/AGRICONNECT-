@@ -62,6 +62,11 @@ export const useImageUpload = (bucket: string = 'cattle-images') => {
 
       const filePath = urlParts[1];
 
+      // Prevent IDOR: Ensure users can only delete their own uploaded files
+      if (!filePath.startsWith(`${user.id}/`)) {
+        throw new Error('Unauthorized: You can only delete your own photos.');
+      }
+
       const { error } = await supabase.storage
         .from(bucket)
         .remove([filePath]);
