@@ -217,6 +217,49 @@ const CROP_IMAGE_MAP: Record<string, string> = {
 };
 
 /**
+ * Secondary backup image map using independent, reliable CDN real photographs
+ */
+const CROP_BACKUP_IMAGE_MAP: Record<string, string> = {
+  wheat: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=600",
+  rice: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?auto=format&fit=crop&q=80&w=600",
+  paddy: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=600",
+  maize: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=600",
+  soybean: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&q=80&w=600",
+  cotton: "https://images.unsplash.com/photo-1605000797498-6f2145b1b9c3?auto=format&fit=crop&q=80&w=600",
+  mustard: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=600",
+  onion: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&q=80&w=600",
+  potato: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&q=80&w=600",
+  tomato: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600",
+  chana: "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&q=80&w=600",
+  garlic: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&q=80&w=600",
+  ginger: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&q=80&w=600",
+  chilli: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&q=80&w=600",
+  turmeric: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&q=80&w=600",
+  cumin: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600",
+  groundnut: "https://images.unsplash.com/photo-1567406213238-9631637e1c67?auto=format&fit=crop&q=80&w=600",
+  sugarcane: "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
+  banana: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=600",
+  mango: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=600",
+  apple: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=600",
+  orange: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&q=80&w=600",
+  default: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=600",
+};
+
+/**
+ * Category-level real photo fallbacks
+ */
+export const CATEGORY_CROP_IMAGES: Record<string, string> = {
+  Cereals: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600",
+  Pulses: "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&q=80&w=600",
+  Vegetables: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600",
+  Fruits: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=600",
+  Spices: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=600",
+  Oilseeds: "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=600",
+  Commercial: "https://images.unsplash.com/photo-1605000797498-6f2145b1b9c3?auto=format&fit=crop&q=80&w=600",
+  General: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=600",
+};
+
+/**
  * Get high-quality image URL for a given crop name.
  */
 export function getCropImage(cropName: string): string {
@@ -242,7 +285,26 @@ export function getCropImage(cropName: string): string {
     }
   }
 
-  return CROP_IMAGE_MAP.default;
+  // Category fallback to real photo
+  const category = getCropCategory(cropName);
+  return CATEGORY_CROP_IMAGES[category] || CROP_IMAGE_MAP.default;
+}
+
+/**
+ * Secondary fallback photo for a crop.
+ */
+export function getCropBackupImage(cropName: string): string {
+  if (!cropName) return CROP_BACKUP_IMAGE_MAP.default;
+  const lower = cropName.toLowerCase().trim();
+
+  for (const [key, value] of Object.entries(CROP_BACKUP_IMAGE_MAP)) {
+    if (key !== "default" && (lower.includes(key) || key.includes(lower))) {
+      return value;
+    }
+  }
+
+  const category = getCropCategory(cropName);
+  return CATEGORY_CROP_IMAGES[category] || CROP_BACKUP_IMAGE_MAP.default;
 }
 
 /**
