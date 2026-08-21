@@ -62,6 +62,7 @@ const FarmerNetworkHub = lazy(() =>
 const FarmOsHub = lazy(() =>
   import("@/features/farm-os/presentation/FarmOsHub").then((m) => ({ default: m.FarmOsHub })),
 );
+const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
 
 // ── Per-tab SEO Metadata (dynamic title/description for SPA sections) ──
 const TAB_SEO_META: Record<string, { title: string; description: string; path: string; noindex?: boolean }> = {
@@ -265,11 +266,11 @@ const IndexInner: React.FC = () => {
       case "/wallet": return "wallet";
       case "/profile": return "profile";
       case "/farm": return "farm-os";
-      case "/crop-scan": return "crop-doctor";
       case "/mandi": return "mandi";
       case "/agri-store": return "store";
       case "/machinery": return "tractors";
       case "/schemes": return "schemes";
+      case "/admin": return "admin";
       default: return "home";
     }
   };
@@ -311,7 +312,8 @@ const IndexInner: React.FC = () => {
       "crop-doctor": "/crop-scan",
       "mandi": "/mandi",
       "tractors": "/machinery",
-      "schemes": "/schemes"
+      "schemes": "/schemes",
+      "admin": "/admin"
     };
     const path = tabPaths[activeTab];
     if (path && location.pathname !== path && (location.pathname === "/" || Object.values(tabPaths).includes(location.pathname))) {
@@ -432,6 +434,8 @@ const IndexInner: React.FC = () => {
         return <FarmerNetworkHub onNavigate={handleNavigate} onToast={showToast} />;
       case "farm-os":
         return <FarmOsHub onNavigate={handleNavigate} onToast={showToast} />;
+      case "admin":
+        return <AdminDashboard />;
       case "settings":
         return (
           <ProfileSettings
