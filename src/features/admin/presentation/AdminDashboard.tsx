@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +27,64 @@ const moduleKeyFromPath = (pathname: string): string => {
 };
 
 type Gate = 'loading' | 'granted' | 'denied' | 'anon';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  moduleKey: string;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class AdminModuleErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error(`[AdminConsole] Runtime error in module "${this.props.moduleKey}":`, error, errorInfo);
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (prevProps.moduleKey !== this.props.moduleKey && this.state.hasError) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-2xl border border-red-200 bg-red-50/50 dark:bg-red-950/20 p-6 text-center space-y-3 shadow-sm my-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">Module Temporarily Unavailable</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+              The module encountered a non-critical runtime error. Other admin modules and live data streams remain fully active.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-xl font-bold"
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Retry Module
+          </Button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
@@ -295,7 +352,9 @@ export default function AdminDashboard() {
     <>
       <SeoHead title="Admin Dashboard — AgriConnect" description="AgriConnect administrator console." noindex />
       <AdminShell current={current} onNavigate={go}>
-        <Module onNavigate={go} />
+        <AdminModuleErrorBoundary moduleKey={current}>
+          <Module onNavigate={go} />
+        </AdminModuleErrorBoundary>
       </AdminShell>
     </>
   );
