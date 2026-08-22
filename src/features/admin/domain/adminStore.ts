@@ -5,7 +5,6 @@ import type {
   AdminState,
 } from './adminTypes';
 import { ADMIN_SESSION_KEY, ADMIN_STORAGE_KEY, ADMIN_SEED_VERSION } from './adminTypes';
-import { buildSeedState } from './adminSeed';
 import {
   fetchRealFarmers,
   fetchRealEquipmentOwners,
@@ -48,7 +47,41 @@ export interface AuditInput {
 
 const isBrowser = (): boolean => typeof window !== 'undefined';
 
-let state: AdminState = buildSeedState();
+const buildEmptyState = (): AdminState => ({
+  version: ADMIN_SEED_VERSION,
+  seededAt: new Date().toISOString(),
+  farmers: [],
+  equipmentOwners: [],
+  products: [],
+  orders: [],
+  tractorRentals: [],
+  schemes: [],
+  newsArticles: [],
+  knowledgeArticles: [],
+  faqs: [],
+  aiPrompts: [],
+  pushCampaigns: [],
+  weatherReadings: [],
+  mandiPrices: [],
+  reports: [],
+  verificationRequests: [],
+  kycRecords: [],
+  payments: [],
+  subscriptionPlans: [],
+  userSubscriptions: [],
+  ads: [],
+  supportTickets: [],
+  appAnalytics: [],
+  crashReports: [],
+  auditLogs: [],
+  adminRoles: [
+    { id: 'role-super', name: 'Super Admin', description: 'Full unrestricted access', permissions: ['*'], memberCount: 0, protected: true },
+    { id: 'role-admin', name: 'Admin', description: 'Standard admin access', permissions: ['users.read', 'users.write', 'marketplace.read', 'marketplace.write', 'content.read', 'content.write', 'operations.read', 'operations.write', 'analytics.read'], memberCount: 0, protected: false },
+  ],
+  adminUsers: [],
+});
+
+let state: AdminState = buildEmptyState();
 let isSyncing = false;
 
 const listeners = new Set<() => void>();
@@ -151,8 +184,8 @@ if (isBrowser()) {
 
 const defaultSession = (): AdminSession => ({
   userId: '',
-  name: 'Satyam Dubey',
-  email: 'dubeysatyam607@gmail.com',
+  name: '',
+  email: '',
   roleId: 'role-super',
   roleName: 'Super Admin',
 });
