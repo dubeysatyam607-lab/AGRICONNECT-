@@ -30,6 +30,7 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
 
       if (
         email === 'dubeysatyam607@gmail.com' ||
+        email === 'satyamff124@gmail.com' ||
         email.startsWith('admin@') ||
         userMetaRole === 'admin' ||
         appMetaRole === 'admin' ||
