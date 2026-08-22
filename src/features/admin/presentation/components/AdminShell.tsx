@@ -202,6 +202,13 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
             <Menu className="h-4 w-4" />
           </Button>
           <h2 className="truncate text-sm font-semibold text-foreground sm:text-base">{currentModule.label}</h2>
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Realtime Live
+          </div>
           <div className="ml-auto flex items-center gap-2">
             <Button variant="ghost" size="sm" className="hidden text-muted-foreground sm:inline-flex" asChild>
               <Link to="/">

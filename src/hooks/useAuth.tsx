@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { authRemoteDataSource } from '@/features/auth/data/datasources/AuthRemoteDataSource';
 import { Session, User } from '@supabase/supabase-js';
+import { rememberProfile } from '@/core/voice/memory';
 
 interface AuthContextType {
   user: User | null;
@@ -20,11 +21,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Persist only non-sensitive profile metadata for the offline AI advisor.
-  // Never mirrors the JWT or the full user object into localStorage (XSS risk).
-  const persistAuthMeta = (current: User | null): void => {
-    const meta = current?.user_metadata ?? {};
-    if (current) {
+  // Automatically syncs user profile data into Kisan AI Long-Term Memory
+  // and emits real-time audit event for the Admin Console
+  const syncUserWithAiAndAdmin = async (currentUser: User | null, eventName: string = 'SESSION_SYNC') => {
+    if (!currentUser) {
+      localStorage.removeItem('agri_auth_meta');
+      return;
+    }
+
+    try {
+      const meta = currentUser.user_metadata ?? {};
       localStorage.setItem(
         'agri_auth_meta',
         JSON.stringify({
@@ -33,8 +39,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           state: meta.state ?? '',
         }),
       );
-    } else {
-      localStorage.removeItem('agri_auth_meta');
+
+      // Fetch extended farm profile from database
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      const extended = (profile as any)?.extended_profile || {};
+      const crop = extended.crops?.[0] || extended.primaryCrop || meta.crop || 'Wheat';
+      const village = extended.village || profile?.location?.split(',')?.[0]?.trim() || meta.village || '';
+      const state = extended.state || profile?.location?.split(',')?.[1]?.trim() || meta.state || 'India';
+      const landSize = Number(extended.landSize || extended.land_size || 0);
+
+      // Feed directly into Kisan AI memory
+      rememberProfile({
+        name: profile?.full_name || meta.full_name || 'Farmer',
+        village,
+        state,
+        crop,
+        farmArea: landSize,
+        soilType: extended.soilType || 'Alluvial Soil',
+      });
+
+      // Broadcast login/registration to audit_logs for live Admin Dashboard stream
+      if (eventName === 'SIGNED_IN' || eventName === 'USER_UPDATED') {
+        await supabase.from('audit_logs').insert({
+          user_id: currentUser.id,
+          action: 'LOGIN',
+          table_name: 'profiles',
+          record_id: currentUser.id,
+          new_data: {
+            email: currentUser.email,
+            name: profile?.full_name || meta.full_name,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+    } catch (err) {
+      // Background sync is resilient & non-blocking
+      console.warn('[Auth] AI & Admin Sync warning:', err);
     }
   };
 
@@ -49,24 +94,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      persistAuthMeta(session?.user ?? null);
-      if (session) cleanAuthHash();
-    }).catch(() => {
-      // Network failure or IndexedDB corruption — treat as logged out
-      setSession(null);
-      setUser(null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        if (session?.user) {
+          syncUserWithAiAndAdmin(session.user, 'INITIAL_SESSION');
+        }
+        if (session) cleanAuthHash();
+      })
+      .catch(() => {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes in real-time
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      persistAuthMeta(session?.user ?? null);
+      if (session?.user) {
+        syncUserWithAiAndAdmin(session.user, event);
+      }
       if (session) cleanAuthHash();
     });
 
@@ -99,19 +152,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: {
           full_name: fullName,
           phone: phone,
-        }
-      }
+        },
+      },
     });
+
+    if (!error && data?.user) {
+      syncUserWithAiAndAdmin(data.user, 'SIGNED_UP');
+    }
+
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         return { error: error.message };
       }
-      // Session will be updated by onAuthStateChange listener
+      if (data?.user) {
+        syncUserWithAiAndAdmin(data.user, 'SIGNED_IN');
+      }
       return { error: null };
     } catch (err: any) {
       return { error: err?.message || 'Sign in failed. Please try again.' };
@@ -133,8 +193,4 @@ export const useAuth = () => {
   return context;
 };
 
-/**
- * Use this only in providers that can also render before authentication is
- * available (for example, public onboarding and isolated component tests).
- */
 export const useOptionalAuth = () => useContext(AuthContext);

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { fetchAdminKpis, type AdminKpiSnapshot } from '../../domain/adminRemoteData';
 
 export type KpiStatus = 'loading' | 'ready' | 'error';
@@ -11,8 +12,10 @@ export interface KpiState {
 }
 
 /**
- * Loads real production KPIs on mount and refreshes every 60s.
- * Never blocks the shell — the OverviewModule renders skeletons/zeros.
+ * Loads real production KPIs on mount, auto-refreshes periodically, and
+ * SUBSCRIBES TO SUPABASE REALTIME EVENTS on `profiles`, `audit_logs`,
+ * `payments`, `wallets`, `user_subscriptions`, and `tractor_bookings`.
+ * When a user registers or logs in, metrics automatically update live!
  */
 export function useAdminKpis() {
   const [state, setState] = useState<KpiState>({ status: 'loading', data: null, error: null, isRefreshing: false });
@@ -45,9 +48,23 @@ export function useAdminKpis() {
     };
     run();
     const interval = setInterval(run, 60000);
+
+    // Supabase Realtime Channel for Instant KPI updates
+    const channelId = `admin-kpi-realtime-${Math.random().toString(36).slice(2, 7)}`;
+    const channel = supabase
+      .channel(channelId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => setTick((t) => t + 1))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => setTick((t) => t + 1))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => setTick((t) => t + 1))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets' }, () => setTick((t) => t + 1))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_subscriptions' }, () => setTick((t) => t + 1))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tractor_bookings' }, () => setTick((t) => t + 1))
+      .subscribe();
+
     return () => {
       cancelled = true;
       clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, [tick]);
 
