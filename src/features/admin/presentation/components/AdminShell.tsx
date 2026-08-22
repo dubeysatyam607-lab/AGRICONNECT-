@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
   Globe,
   Leaf,
+  LogOut,
   Menu,
   Moon,
   RotateCcw,
@@ -210,7 +211,7 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
             <Button variant="outline" size="icon" onClick={toggleTheme} title="Toggle theme">
               {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <div className="flex items-center gap-2 rounded-lg border px-2 py-1.5">
+            <div className="flex items-center gap-2 rounded-lg border px-2 py-1.5 bg-card">
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                   {initials(actorName)}
@@ -220,8 +221,19 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
                 <p className="text-xs font-semibold text-foreground">{actorName}</p>
                 <p className="text-[10px] text-muted-foreground">{displayRole || session.roleName}</p>
               </div>
-              <ChevronsUpDown className="hidden h-3.5 w-3.5 text-muted-foreground md:block" />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 border-red-500/20"
+              title="Sign Out & Lock Console"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/admin';
+              }}
+            >
+              <LogOut className="h-3.5 w-3.5 mr-1" /> Lock
+            </Button>
           </div>
         </header>
 
