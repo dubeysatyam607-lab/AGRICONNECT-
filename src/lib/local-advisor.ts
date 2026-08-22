@@ -603,10 +603,15 @@ export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: strin
 
   const crop = detectCrop(q);
 
-  // 2. Mandi price inquiry
+  // 2. Mandi price inquiry — strict crop clarification if not specified
   if (hasMandiIntent(q)) {
-    const target = crop || profile.crop.toLowerCase().split("(")[0].trim();
-    return mandiAnswer(target, hi);
+    if (!crop) {
+      const text = hi
+        ? "Kaunsi fasal ka mandi bhav chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Soyabean, Sarson, Pyaz)."
+        : "Which crop's mandi price do you need? Please specify the crop (e.g. Tomato, Wheat, Soybean, Mustard, Onion).";
+      return { text, matched: true, kind: "mandi" };
+    }
+    return mandiAnswer(crop, hi);
   }
 
   // 3. Pest diagnosis & remedies (check specific pest first)
