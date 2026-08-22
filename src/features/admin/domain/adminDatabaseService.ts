@@ -785,9 +785,20 @@ export async function fetchRealAdminUsers(): Promise<AdminUser[]> {
   return [
     {
       id: 'admin-owner-01',
-      name: 'Satyam Dubey',
+      name: 'Satyam Dubey (Owner)',
       email: 'dubeysatyam607@gmail.com',
       phone: '+91 99999 88888',
+      roleId: 'role-super',
+      status: 'Active',
+      twoFactor: true,
+      lastLogin: new Date().toISOString(),
+      created: '2026-01-01T00:00:00.000Z',
+    },
+    {
+      id: 'admin-owner-02',
+      name: 'Satyam (Super Admin)',
+      email: 'satyamff124@gmail.com',
+      phone: '+91 99999 77777',
       roleId: 'role-super',
       status: 'Active',
       twoFactor: true,

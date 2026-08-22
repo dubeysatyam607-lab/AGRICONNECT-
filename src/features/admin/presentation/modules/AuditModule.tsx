@@ -1,12 +1,59 @@
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { DataTable } from '../components/DataTable';
 import type { DataColumn, DataFilter } from '../components/DataTable';
-import { useAdminStore } from '../hooks/useAdminStore';
 import { logAdminExport } from '../hooks/useAdminCrud';
+import { supabase } from '@/integrations/supabase/client';
 import { timeAgo } from '../../domain/adminStore';
-import type { AdminAuditLog, AdminAuditAction } from '../../domain/adminTypes';
+import type { AdminAuditAction } from '../../domain/adminTypes';
 
-const actionTone: Record<AdminAuditAction, string> = {
+interface SupabaseAuditLog {
+  id: string;
+  actor: string;
+  action: string;
+  entity: string;
+  entityId: string;
+  summary: string;
+  timestamp: string;
+}
+
+function useSupabaseAuditLogs(): SupabaseAuditLog[] {
+  const [logs, setLogs] = useState<SupabaseAuditLog[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(200);
+
+        if (error || !data || cancelled) return;
+
+        setLogs(
+          data.map((r: any) => ({
+            id: r.id,
+            actor: r.user_id ? String(r.user_id).slice(0, 12) : 'system',
+            action: (r.action || 'UPDATE') as string,
+            entity: r.table_name || 'System',
+            entityId: r.record_id || r.id,
+            summary: r.description || `${r.action} on ${r.table_name}`,
+            timestamp: r.created_at,
+          })),
+        );
+      } catch {
+        // keep empty
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return logs;
+}
+
+const actionTone: Record<string, string> = {
   CREATE: 'text-green-600',
   UPDATE: 'text-blue-600',
   DELETE: 'text-red-600',
@@ -19,9 +66,12 @@ const actionTone: Record<AdminAuditAction, string> = {
   REJECT: 'text-red-600',
   STATUS: 'text-amber-600',
   SEND: 'text-teal-600',
+  INSERT: 'text-green-600',
+  UPSERT: 'text-blue-600',
+  SELECT: 'text-purple-600',
 };
 
-const COLUMNS: DataColumn<AdminAuditLog>[] = [
+const COLUMNS: DataColumn<SupabaseAuditLog>[] = [
   { key: 'timestamp', header: 'Time', render: (r) => <span className="whitespace-nowrap text-muted-foreground">{timeAgo(r.timestamp)}</span> },
   { key: 'actor', header: 'Actor', render: (r) => <span className="font-medium text-foreground">{r.actor}</span> },
   { key: 'action', header: 'Action', render: (r) => <span className={`font-mono text-xs font-semibold ${actionTone[r.action] ?? ''}`}>{r.action}</span> },
@@ -34,17 +84,18 @@ const COLUMNS: DataColumn<AdminAuditLog>[] = [
   { key: 'summary', header: 'Summary', className: 'hidden lg:table-cell', render: (r) => <span className="max-w-md text-muted-foreground">{r.summary}</span> },
 ];
 
+const ALL_ACTIONS = ['INSERT', 'UPDATE', 'DELETE', 'UPSERT', 'SELECT', 'LOGIN', 'LOGOUT', 'EXPORT', 'BULK', 'APPROVE', 'REJECT', 'SEND', 'STATUS', 'CREATE', 'ASSIGN'] as const;
+
 const FILTERS: DataFilter[] = [
   {
     key: 'action',
     label: 'Action',
-    options: (['CREATE', 'UPDATE', 'DELETE', 'BULK', 'LOGIN', 'LOGOUT', 'EXPORT', 'ASSIGN', 'APPROVE', 'REJECT', 'STATUS', 'SEND'] as AdminAuditAction[]).map((v) => ({ value: v, label: v })),
+    options: ALL_ACTIONS.map((v) => ({ value: v, label: v })),
   },
 ];
 
 export function AuditModule() {
-  const state = useAdminStore();
-  const logs = state.auditLogs;
+  const logs = useSupabaseAuditLogs();
 
   return (
     <div className="space-y-4">

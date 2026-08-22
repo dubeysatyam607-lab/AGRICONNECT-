@@ -67,6 +67,7 @@ export default function AdminDashboard() {
       const isAuthorizedAdmin =
         (profile && String(profile.role).toLowerCase() === 'admin') ||
         userEmail === 'dubeysatyam607@gmail.com' ||
+        userEmail === 'satyamff124@gmail.com' ||
         userEmail.startsWith('admin@') ||
         userMetaRole === 'admin' ||
         appMetaRole === 'admin';
@@ -122,6 +123,7 @@ export default function AdminDashboard() {
       const isAuthorized =
         (profile && String(profile.role).toLowerCase() === 'admin') ||
         userEmail === 'dubeysatyam607@gmail.com' ||
+        userEmail === 'satyamff124@gmail.com' ||
         userEmail.startsWith('admin@') ||
         userMetaRole === 'admin' ||
         appMetaRole === 'admin';
