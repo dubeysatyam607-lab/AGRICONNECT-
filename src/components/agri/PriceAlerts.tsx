@@ -182,7 +182,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
                   <Zap size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span className="text-muted-foreground">
                     {newAlert.commodity} is at{' '}
-                    <b className="text-foreground">{formatINR(currentPrice)}</b>/qt right now
+                    <b className="text-foreground">{formatINR(currentPrice)}</b>{t('mandi.hub.perQuintal') || '/qt'} right now
                   </span>
                 </div>
               )}
@@ -191,7 +191,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
                 <label className="text-sm text-muted-foreground mb-1 block">{t('agr153')}</label>
                 <Select value={newAlert.commodity} onValueChange={(v) => setNewAlert(p => ({ ...p, commodity: v }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select commodity" />
+                    <SelectValue placeholder={t('agr153') || "Select commodity"} />
                   </SelectTrigger>
                   <SelectContent>
                     {COMMODITIES.map(c => (

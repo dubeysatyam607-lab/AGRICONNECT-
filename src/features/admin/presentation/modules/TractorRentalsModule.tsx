@@ -1,18 +1,42 @@
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '../components/PageHeader';
 import { DataTable } from '../components/DataTable';
-import type { BulkAction, DataColumn, DataFilter } from '../components/DataTable';
-import { EntityDialog } from '../components/EntityDialog';
-import type { FormField } from '../components/EntityDialog';
+import type { DataColumn, DataFilter } from '../components/DataTable';
 import { AdminStatusBadge } from '../components/StatusBadge';
-import { useAdminCrud, logAdminExport } from '../hooks/useAdminCrud';
+import { useSupabaseCollection } from '../hooks/useSupabaseCollection';
+import { logAdminExport } from '../hooks/useAdminCrud';
 import { fmtINR, shortDate } from '../../domain/adminStore';
 import type { TractorRental } from '../../domain/adminTypes';
 
+type BookingRow = Record<string, unknown>;
+
+function mapBookingToRental(b: BookingRow, idx: number): TractorRental {
+  return {
+    id: String(b.id ?? `tb-${idx}`),
+    farmer: String(b.farmer_name ?? b.farmer ?? b.user_name ?? `Farmer ${idx + 1}`),
+    tractor: String(b.tractor_name ?? b.tractor ?? b.listing_name ?? 'Tractor'),
+    owner: String(b.owner_name ?? b.owner ?? b.listing_owner ?? 'Owner'),
+    rate: Number(b.rate ?? b.hourly_rate ?? 0),
+    duration: String(b.duration ?? `${b.hours ?? 0} hours`),
+    total: Number(b.total ?? b.total_amount ?? b.amount ?? 0),
+    status: mapBookingStatus(b.status),
+    booked: String(b.created_at ?? b.booking_date ?? new Date().toISOString()),
+  };
+}
+
+function mapBookingStatus(s: unknown): TractorRental['status'] {
+  const val = String(s ?? '').toLowerCase();
+  if (val === 'confirmed') return 'Confirmed';
+  if (val === 'in_progress' || val === 'in progress') return 'In Progress';
+  if (val === 'completed') return 'Completed';
+  if (val === 'cancelled') return 'Cancelled';
+  return 'Pending';
+}
+
 const COLUMNS: DataColumn<TractorRental>[] = [
-  { key: 'id', header: 'Booking', render: (r) => <span className="font-medium text-foreground">{r.id}</span> },
+  { key: 'id', header: 'Booking', render: (r) => <span className="font-medium text-foreground">{String(r.id).slice(0, 8)}</span> },
   { key: 'farmer', header: 'Farmer' },
   { key: 'tractor', header: 'Tractor', render: (r) => (
       <div>
@@ -21,7 +45,7 @@ const COLUMNS: DataColumn<TractorRental>[] = [
       </div>
     ) },
   { key: 'duration', header: 'Duration', className: 'hidden md:table-cell' },
-  { key: 'total', header: 'Total', align: 'right', sortValue: (r) => r.total, render: (r) => <span className="font-medium">{fmtINR(r.total)}</span> },
+  { key: 'total', header: 'Total', align: 'right', sortValue: (r) => r.total, render: (r) => <span className="font-medium">{r.total ? fmtINR(r.total) : '—'}</span> },
   { key: 'status', header: 'Status', render: (r) => <AdminStatusBadge status={r.status} /> },
   { key: 'booked', header: 'Booked', className: 'hidden lg:table-cell', render: (r) => <span className="text-muted-foreground">{shortDate(r.booked)}</span> },
 ];
@@ -30,34 +54,25 @@ const FILTERS: DataFilter[] = [
   { key: 'status', label: 'Status', options: ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'].map((v) => ({ value: v, label: v })) },
 ];
 
-const FIELDS: FormField[] = [
-  { name: 'id', label: 'Booking ID', type: 'text' },
-  { name: 'farmer', label: 'Farmer', type: 'text', required: true, full: true },
-  { name: 'tractor', label: 'Tractor', type: 'text' },
-  { name: 'owner', label: 'Owner', type: 'text' },
-  { name: 'rate', label: 'Rate (₹/hr)', type: 'number' },
-  { name: 'duration', label: 'Duration', type: 'text' },
-  { name: 'total', label: 'Total (₹)', type: 'number' },
-  { name: 'status', label: 'Status', type: 'select', options: ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'].map((v) => ({ value: v, label: v })) },
-];
-
 export function TractorRentalsModule() {
-  const { rows, create, update, remove, removeMany, setStatus } = useAdminCrud({ key: 'tractorRentals', label: 'Tractor Rental', idKey: 'id' });
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<TractorRental | null>(null);
+  const { rows: rawBookings, loading, refresh } = useSupabaseCollection<BookingRow>('tractor_bookings', {
+    select: '*',
+    order: { column: 'created_at', ascending: false },
+  });
 
-  const bulkActions: BulkAction<TractorRental>[] = [
-    { label: 'Confirm', onClick: (items) => setStatus(items, 'Confirmed') },
-    { label: 'Complete', variant: 'secondary', onClick: (items) => setStatus(items, 'Completed') },
-    { label: 'Delete', variant: 'destructive', confirm: 'Delete the selected bookings?', onClick: removeMany },
-  ];
+  const rows = useMemo(() => rawBookings.map(mapBookingToRental), [rawBookings]);
+  const inProgress = rows.filter((r) => r.status === 'In Progress').length;
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Tractor Rentals"
-        subtitle={`${rows.length} bookings · ${rows.filter((r) => r.status === 'In Progress').length} in progress`}
-        actions={<Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4" /> Add Booking</Button>}
+        subtitle={loading ? 'Loading real bookings…' : `${rows.length} bookings from tractor_bookings table · ${inProgress} in progress`}
+        actions={
+          <Button variant="outline" size="sm" onClick={() => refresh()}>
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </Button>
+        }
       />
       <DataTable
         data={rows}
@@ -66,21 +81,16 @@ export function TractorRentalsModule() {
         searchKeys={['id', 'farmer', 'tractor', 'owner']}
         searchPlaceholder="Search booking, farmer, tractor…"
         filters={FILTERS}
-        bulkActions={bulkActions}
+        bulkActions={[]}
         exportName="tractor-rentals"
         onExport={(c) => logAdminExport('Tractor Rental', c)}
-        onEdit={(r) => { setEditing(r); setOpen(true); }}
-        onDelete={remove}
+        onDelete={() => refresh()}
       />
-      <EntityDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={editing ? 'Edit Booking' : 'Add Booking'}
-        fields={FIELDS}
-        initial={editing ?? undefined}
-        submitLabel={editing ? 'Save Changes' : 'Add Booking'}
-        onSubmit={(v) => (editing ? update(editing, v) : create(v))}
-      />
+      {rows.length === 0 && !loading && (
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          No tractor bookings found. Data appears as farmers book tractors.
+        </div>
+      )}
     </div>
   );
 }

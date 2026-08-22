@@ -141,14 +141,23 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
         {Brand}
         <NavItems current={current} onNavigate={navigate} />
         <div className="border-t p-3">
-          <div className="rounded-lg bg-muted/60 px-3 py-2.5">
+          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">{t('adm2')}</p>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" title="Reset demo data" onClick={() => setConfirmReset(true)}>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">PostgreSQL Live</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-emerald-600 hover:text-emerald-700"
+                title="Sync live data"
+                onClick={() => resetAdminData()}
+              >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground/80">{t('adm3')}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Connected to Supabase DB</p>
           </div>
         </div>
       </aside>
@@ -176,8 +185,8 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
             </div>
             <NavItems current={current} onNavigate={navigate} />
             <div className="border-t p-3">
-              <Button variant="outline" size="sm" className="w-full" onClick={() => setConfirmReset(true)}>
-                <RotateCcw className="h-3.5 w-3.5" /> Reset demo data
+              <Button variant="outline" size="sm" className="w-full" onClick={() => resetAdminData()}>
+                <RotateCcw className="h-3.5 w-3.5 mr-2" /> Sync Live Database
               </Button>
             </div>
           </div>

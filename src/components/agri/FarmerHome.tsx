@@ -127,14 +127,14 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
     try {
       const result = await fetchMandiPrices();
       setMandiPrices(result.prices);
-      setMandiError(result.isError ? (result.errorMessage ?? "Live mandi prices are temporarily unavailable.") : null);
+      setMandiError(result.isError ? (result.errorMessage ?? t("mandi.hub.failed")) : null);
     } catch {
       setMandiPrices([]);
-      setMandiError("Live mandi prices are temporarily unavailable.");
+      setMandiError(t("mandi.hub.failed"));
     } finally {
       setMandiLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadMandi();

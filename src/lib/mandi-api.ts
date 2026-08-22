@@ -151,17 +151,18 @@ export function normalizeCropKey(crop: string): string {
 }
 
 /**
- * Show each crop only once — keep the entry with the highest modal price so
- * farmers see the top-paying market for every crop instead of duplicate cards.
+ * Show each unique commodity+market+date combination.
+ * Different markets or dates for the same crop are kept as separate records
+ * so farmers can compare prices across mandis.
  */
-function dedupeByCrop(prices: MandiPrice[]): MandiPrice[] {
-  const best = new Map<string, MandiPrice>();
+function dedupeByRecord(prices: MandiPrice[]): MandiPrice[] {
+  const seen = new Map<string, MandiPrice>();
   for (const p of prices) {
-    const key = normalizeCropKey(p.crop);
-    const existing = best.get(key);
-    if (!existing || p.price > existing.price) best.set(key, p);
+    const key = p.id;
+    const existing = seen.get(key);
+    if (!existing || p.price > existing.price) seen.set(key, p);
   }
-  return Array.from(best.values());
+  return Array.from(seen.values());
 }
 
 function mapRecord(record: MandiRecord): MandiPrice | null {
@@ -202,7 +203,7 @@ function mapRecord(record: MandiRecord): MandiPrice | null {
   const arrivalQuantity = Math.round(150 + Math.abs(Math.sin(modalPrice) * 350));
 
   const baseItem: MandiPrice = {
-    id: `${commodity}::${market}::${district}::${state}`.toLowerCase(),
+    id: `${commodity}::${market}::${district}::${state}::${arrivalDate}`.toLowerCase(),
     crop: commodity,
     cropHi,
     cropImage,
@@ -235,7 +236,7 @@ function mapRecord(record: MandiRecord): MandiPrice | null {
 /**
  * Fetch live Mandi prices from Ministry of Agriculture's data.gov.in API feed.
  */
-async function fetchFromGovt(query?: string): Promise<MandiPrice[]> {
+async function fetchFromGovt(query?: string, stateFilter?: string, districtFilter?: string): Promise<MandiPrice[]> {
   if (!API_KEY) {
     warn("[Mandi API Audit] VITE_MANDI_API_KEY is not set in environment.");
     throw new Error("Mandi API key not configured");
@@ -248,6 +249,12 @@ async function fetchFromGovt(query?: string): Promise<MandiPrice[]> {
     let url = `https://api.data.gov.in/resource/${resourceId}?api-key=${encodeURIComponent(API_KEY)}&format=json&limit=250`;
     if (query && query.trim()) {
       url += `&filters[commodity]=${encodeURIComponent(query.trim())}`;
+    }
+    if (stateFilter && stateFilter.trim()) {
+      url += `&filters[state]=${encodeURIComponent(stateFilter.trim())}`;
+    }
+    if (districtFilter && districtFilter.trim()) {
+      url += `&filters[district]=${encodeURIComponent(districtFilter.trim())}`;
     }
 
     log(`[Mandi API Request] URL: ${url.replace(API_KEY, "KEY_HIDDEN")}`);
@@ -282,7 +289,7 @@ async function fetchFromGovt(query?: string): Promise<MandiPrice[]> {
       log(`[Mandi Model Mapping] Successfully parsed ${prices.length} live commodity records.`);
 
       if (prices.length > 0) {
-        return dedupeByCrop(prices).sort((a, b) => b.price - a.price);
+        return dedupeByRecord(prices).sort((a, b) => b.price - a.price);
       }
     } catch (err) {
       console.error(`[Mandi API Error] Resource ${resourceId} failed:`, err);
@@ -296,11 +303,13 @@ async function fetchFromGovt(query?: string): Promise<MandiPrice[]> {
 /**
  * Fetch Mandi prices from Supabase Edge Function gateway.
  */
-async function fetchFromEdge(searchQuery?: string): Promise<MandiPrice[]> {
-  log(`[Mandi Edge Request] Invoking edge function 'mandi-prices' with query: '${searchQuery || ""}'`);
+async function fetchFromEdge(searchQuery?: string, stateFilter?: string, districtFilter?: string): Promise<MandiPrice[]> {
+  log(`[Mandi Edge Request] Invoking edge function 'mandi-prices' with query: '${searchQuery || ""}' state: '${stateFilter || ""}' district: '${districtFilter || ""}'`);
   try {
     const { data: result, error } = await invokeEdgeWithTimeout("mandi-prices", {
       searchQuery: searchQuery || "",
+      state: stateFilter || "",
+      district: districtFilter || "",
     });
 
     if (error) throw error;
@@ -360,7 +369,7 @@ async function fetchFromEdge(searchQuery?: string): Promise<MandiPrice[]> {
       prices.push(item);
     }
 
-    const uniquePrices = dedupeByCrop(prices);
+    const uniquePrices = dedupeByRecord(prices);
     if (uniquePrices.length > 0) {
       uniquePrices.sort((a, b) => b.price - a.price);
       return uniquePrices;
@@ -404,12 +413,12 @@ function readCache(): { prices: MandiPrice[]; source: string; timestamp: string 
  * Primary function to fetch verified live Mandi prices across India.
  * Never generates fake/dummy prices. If live APIs fail, returns cached response or clean error state.
  */
-export async function fetchMandiPrices(searchQuery?: string): Promise<MandiResult> {
+export async function fetchMandiPrices(searchQuery?: string, stateFilter?: string, districtFilter?: string): Promise<MandiResult> {
   const nowStr = new Date().toISOString();
 
   // 1. Try Direct Ministry Data.gov.in API
   try {
-    const livePrices = await fetchFromGovt(searchQuery);
+    const livePrices = await fetchFromGovt(searchQuery, stateFilter, districtFilter);
     if (livePrices.length > 0) {
       saveCache(livePrices, "data.gov.in");
       log(`[Mandi UI Render] Serving ${livePrices.length} verified live prices from Data.gov.in`);
@@ -426,7 +435,7 @@ export async function fetchMandiPrices(searchQuery?: string): Promise<MandiResul
 
   // 2. Try Supabase Edge Function Gateway
   try {
-    const edgePrices = await fetchFromEdge(searchQuery);
+    const edgePrices = await fetchFromEdge(searchQuery, stateFilter, districtFilter);
     if (edgePrices.length > 0) {
       saveCache(edgePrices, "edge");
       log(`[Mandi UI Render] Serving ${edgePrices.length} verified live prices from Edge Function`);

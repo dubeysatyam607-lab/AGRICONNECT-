@@ -635,7 +635,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         setSpeakingSentence("");
         speakControllerRef.current = null;
         toast({
-          title: isHindi ? "आवाज़ सेवा में समस्या" : "Voice service issue",
+          title: isHindi ? "आवाज़ सेवा में समस्या" : t("chat.voiceServiceErrorTitle"),
           description: isHindi
             ? "माफ़ कीजिए, आवाज़ इस समय उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर कोशिश करें।"
             : "Sorry, voice is unavailable right now. Please try again shortly.",
@@ -1569,7 +1569,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                     ? "bg-rose-500 text-white border-rose-500 animate-pulse"
                     : "bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20 active:scale-95"
                 )}
-                title="Voice Input"
+                title={t("chat.voiceInputTitle")}
               >
                 <Mic size={18} />
               </button>

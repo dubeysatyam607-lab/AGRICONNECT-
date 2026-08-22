@@ -69,6 +69,17 @@ interface LiveMandiProps {
 
 const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices", "Oilseeds", "Commercial"];
 
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
+];
+
 const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const { t, language } = useLanguage();
   const hi = language === "hi";
@@ -97,6 +108,23 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     retry: t("mandi.hub.retrySync") || "Retry Sync",
     verifiedSource: t("mandi.hub.verifiedSource") || "Verified Source: api.data.gov.in",
     loadMore: t("mandi.hub.loadMore") || "Load More",
+    quintalArrival: t("mandi.hub.quintalArrival") || "क्विंटल आवक",
+    mandiOpen: t("mandi.hub.mandiOpen") || "मंडी खुली है",
+    mandiClosed: t("mandi.hub.mandiClosed") || "बंद",
+    viewAdvice: t("mandi.hub.viewAdvice") || "सलाह देखें",
+    aiAdvisorTitle: t("mandi.hub.aiAdvisorTitle") || "AI मंडी सलाहकार",
+    aiAdvisorDesc: t("mandi.hub.aiAdvisorDesc") || "लाइव APMC मंडी भाव, MSP और बाजार रुझान का AI विश्लेषण",
+    aiAdvisorLongDesc: t("mandi.hub.aiAdvisorLongDesc") || "यह सिस्टम सरकारी मंडियों के वास्तविक भाव, MSP सुरक्षा कवर, और आवक दबाव का गहराई से विश्लेषण करके आपको सही समय पर फसल बेचने की सलाह देता है।",
+    analysisTitle: t("mandi.hub.analysisTitle") || "कारण एवं विश्लेषण:",
+    dailyArrival: t("mandi.hub.dailyArrival") || "दैनिक आवक",
+    priceRangeLabel: t("mandi.hub.priceRangeLabel") || "अनुमानित संभावित मूल्य दायरा:",
+    yieldBenefitTitle: t("mandi.hub.yieldBenefitTitle") || "आपकी उपज पर संभावित अतिरिक्त लाभ",
+    yieldBenefitLabel: t("mandi.hub.yieldBenefitLabel") || "लाभ",
+    yieldQtyLabel: t("mandi.hub.yieldQtyLabel") || "आपकी उपज मात्रा (क्विंटल):",
+    currentModalPrice: t("mandi.hub.currentModalPrice") || "वर्तमान मॉडल मूल्य",
+    closeBtn: t("mandi.hub.close") || "बंद करें",
+    confidence: t("mandi.hub.confidence") || "% सटीक पूर्वानुमान",
+    arrivalLabel: t("mandi.hub.arrivalLabel") || "आवक:",
   };
 
   const CATEGORY_LABELS: Record<string, string> = {
@@ -123,6 +151,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedMandi, setSelectedMandi] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOption, setSortOption] = useState<SortOption>("highest");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -136,7 +165,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   // Reset pagination when filters/search change
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, selectedState, selectedDistrict, selectedCategory, favoritesOnly, sortOption]);
+  }, [searchTerm, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, sortOption]);
 
   // Real crop photos (Pexels) keyed by normalized crop name
   const [cropImages, setCropImages] = useState<Record<string, string>>({});
@@ -172,7 +201,11 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     setError(null);
 
     try {
-      const result: MandiResult = await fetchMandiPrices(searchTerm);
+      const result: MandiResult = await fetchMandiPrices(
+        undefined,
+        selectedState || undefined,
+        selectedDistrict || undefined,
+      );
 
       if (result.isError) {
         setError(result.errorMessage || L.failed);
@@ -192,7 +225,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [searchTerm, L.failed]);
+  }, [selectedState, selectedDistrict, L.failed]);
 
   useEffect(() => {
     fetchMandi();
@@ -265,13 +298,19 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`, "_blank");
   };
 
-  // States & Districts
-  const states = useMemo(() => Array.from(new Set(data.map(c => c.state))).filter(Boolean).sort(), [data]);
+  // States & Districts & Mandis
+  const states = useMemo(() => INDIAN_STATES, []);
   const districts = useMemo(() => {
     let subset = data;
     if (selectedState) subset = subset.filter(c => c.state === selectedState);
     return Array.from(new Set(subset.map(c => c.district))).filter(Boolean).sort();
   }, [data, selectedState]);
+  const mandis = useMemo(() => {
+    let subset = data;
+    if (selectedState) subset = subset.filter(c => c.state === selectedState);
+    if (selectedDistrict) subset = subset.filter(c => c.district === selectedDistrict);
+    return Array.from(new Set(subset.map(c => c.market))).filter(Boolean).sort();
+  }, [data, selectedState, selectedDistrict]);
 
   // Autocomplete Suggestions
   const searchSuggestions = useMemo(() => {
@@ -307,6 +346,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
     if (selectedState) list = list.filter(c => c.state === selectedState);
     if (selectedDistrict) list = list.filter(c => c.district === selectedDistrict);
+    if (selectedMandi) list = list.filter(c => c.market === selectedMandi);
     if (selectedCategory && selectedCategory !== "All") list = list.filter(c => c.category === selectedCategory);
     if (favoritesOnly) list = list.filter(isFav);
 
@@ -326,7 +366,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     }
 
     return list;
-  }, [data, searchTerm, selectedState, selectedDistrict, selectedCategory, favoritesOnly, sortOption, isFav]);
+  }, [data, searchTerm, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, sortOption, isFav]);
 
   // Paginated slice of filtered results
   const paginated = useMemo(() => filtered.slice(0, page * pageSize), [filtered, page, pageSize]);
@@ -410,7 +450,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 <h3 className="font-extrabold text-base tracking-tight leading-none text-white drop-shadow">
                   {c.crop} {c.cropHi && c.cropHi !== c.crop && <span className="text-xs font-normal opacity-90">({c.cropHi})</span>}
                 </h3>
-                <p className="text-[10px] opacity-80 mt-0.5">{c.category} · {c.arrivalQuantity} क्विंटल आवक</p>
+                <p className="text-[10px] opacity-80 mt-0.5">{c.category} · {c.arrivalQuantity} {L.quintalArrival}</p>
               </div>
               {changeBadge(c)}
             </div>
@@ -447,7 +487,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 flex items-start gap-2 text-xs">
                 <Bot size={15} className="text-emerald-600 shrink-0 mt-0.5" />
                 <p className="text-muted-foreground leading-snug line-clamp-2">
-                  <strong className="text-foreground font-semibold">AI सलाह: </strong>
+                  <strong className="text-foreground font-semibold">{hi ? "AI सलाह:" : "AI Advice:"} </strong>
                   {hi ? c.sellingAdvice.reasonHi : c.sellingAdvice.reasonEn}
                 </p>
               </div>
@@ -467,7 +507,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 {c.market}, {c.district}
               </span>
               <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0", c.operatingStatus === "OPEN" ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-200 dark:bg-slate-800 text-muted-foreground")}>
-                {c.operatingStatus === "OPEN" ? "🟢 मंडी खुली है" : "🔴 बंद"}
+                {c.operatingStatus === "OPEN" ? `🟢 ${L.mandiOpen}` : `🔴 ${L.mandiClosed}`}
               </span>
             </div>
           </div>
@@ -479,7 +519,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <ShieldCheck size={13} /> {L.verifiedSource}
           </span>
           <span className="flex items-center gap-1 font-semibold text-emerald-600">
-            सलाह देखें <ChevronRight size={13} />
+            {L.viewAdvice} <ChevronRight size={13} />
           </span>
         </div>
       </AgriCard>
@@ -494,12 +534,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <Bot size={20} />
           </div>
           <div>
-            <h3 className="font-extrabold text-base text-foreground">{t('agr224')}</h3>
-            <p className="text-xs text-muted-foreground">लाइव APMC मंडी भाव, MSP और बाजार रुझान का AI विश्लेषण</p>
+            <h3 className="font-extrabold text-base text-foreground">{L.aiAdvisorTitle}</h3>
+            <p className="text-xs text-muted-foreground">{L.aiAdvisorDesc}</p>
           </div>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-          यह सिस्टम सरकारी मंडियों के वास्तविक भाव, MSP सुरक्षा कवर, और आवक दबाव का गहराई से विश्लेषण करके आपको सही समय पर फसल बेचने की सलाह देता है।
+          {L.aiAdvisorLongDesc}
         </p>
       </div>
 
@@ -579,8 +619,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-[11px] opacity-80 block">दैनिक आवक</span>
-                <span className="text-sm font-extrabold text-white">{c.arrivalQuantity} क्विंटल</span>
+                <span className="text-[11px] opacity-80 block">{L.dailyArrival}</span>
+                <span className="text-sm font-extrabold text-white">{c.arrivalQuantity} {L.quintalUnit}</span>
               </div>
             </div>
           </div>
@@ -592,19 +632,19 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 <div className="flex items-center justify-between">
                   {renderAdviceBadge(c)}
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                    {advice.confidence}% सटीक पूर्वानुमान
+                    {advice.confidence}{L.confidence}
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-sm font-extrabold text-foreground mb-1">कारण एवं विश्लेषण:</p>
+                  <p className="text-sm font-extrabold text-foreground mb-1">{L.analysisTitle}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {hi ? advice.reasonHi : advice.reasonEn}
                   </p>
                 </div>
 
                 <div className="bg-card p-3 rounded-xl border border-border flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-medium">अनुमानित संभावित मूल्य दायरा:</span>
+                  <span className="text-muted-foreground font-medium">{L.priceRangeLabel}</span>
                   <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">
                     {formatINR(advice.minExpectedPrice)} - {formatINR(advice.maxExpectedPrice)} {L.perQuintal}
                   </span>
@@ -617,17 +657,17 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
-                    <Calculator size={15} className="text-emerald-600" /> आपकी उपज पर संभावित अतिरिक्त लाभ
+                    <Calculator size={15} className="text-emerald-600" /> {L.yieldBenefitTitle}
                   </span>
                   <span className="text-xs font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-lg">
-                    +{formatINR(calculatedExtraEarnings)} लाभ
+                    +{formatINR(calculatedExtraEarnings)} {L.yieldBenefitLabel}
                   </span>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[11px] text-muted-foreground font-semibold flex justify-between">
-                    <span>आपकी उपज मात्रा (क्विंटल):</span>
-                    <b className="text-foreground">{harvestQuantity} क्विंटल</b>
+                    <span>{L.yieldQtyLabel}</span>
+                    <b className="text-foreground">{harvestQuantity} {L.quintalUnit}</b>
                   </label>
                   <input
                     type="range"
@@ -645,7 +685,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             {/* Price Details */}
             <div className="flex items-end justify-between border-t border-border pt-4">
               <div>
-                <span className="text-xs text-muted-foreground font-semibold block">वर्तमान मॉडल मूल्य</span>
+                <span className="text-xs text-muted-foreground font-semibold block">{L.currentModalPrice}</span>
                 <p className="text-3xl font-black text-foreground">{formatINR(c.price)}</p>
                 <p className="text-xs text-muted-foreground">{L.perQuintal}</p>
               </div>
@@ -664,7 +704,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 <Bell size={15} /> {L.tabAlerts}
               </AgriButton>
               <AgriButton variant="outline" className="flex-1" onClick={() => setSelectedCrop(null)}>
-                {hi ? "बंद करें" : "Close"}
+                {hi ? L.closeBtn : "Close"}
               </AgriButton>
             </div>
           </div>
@@ -761,11 +801,11 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         </div>
 
         {/* Filters & Sorting */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           <select
             aria-label={t("mandi.hub.ariaFilterState")}
             value={selectedState}
-            onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setPage(1); }}
+            onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedMandi(""); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
             <option value="">{L.allStates}</option>
@@ -775,11 +815,21 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <select
             aria-label={t("mandi.hub.ariaFilterDistrict")}
             value={selectedDistrict}
-            onChange={(e) => { setSelectedDistrict(e.target.value); setPage(1); }}
+            onChange={(e) => { setSelectedDistrict(e.target.value); setSelectedMandi(""); setPage(1); }}
             className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
           >
             <option value="">{L.allDistricts}</option>
             {districts.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+
+          <select
+            aria-label="Filter by Mandi"
+            value={selectedMandi}
+            onChange={(e) => { setSelectedMandi(e.target.value); setPage(1); }}
+            className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
+          >
+            <option value="">All Mandis</option>
+            {mandis.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
 
           <select
