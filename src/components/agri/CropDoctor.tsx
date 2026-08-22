@@ -340,7 +340,7 @@ const CropDoctor: React.FC = () => {
     }
     if (!imageBase64) {
       setError("Please upload a clear photo of the affected leaf or crop to scan it.");
-      toast({ title: "Photo required", description: "Crop scanning needs a photo.", variant: "destructive" });
+      toast({ title: t("svc.cropDoctor") || "Photo required", description: "Crop scanning needs a photo.", variant: "destructive" });
       return;
     }
 

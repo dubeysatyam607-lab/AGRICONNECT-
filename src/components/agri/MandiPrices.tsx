@@ -25,7 +25,7 @@ const MandiPrices: React.FC = () => {
       const result: MandiResult = await fetchMandiPrices(searchTerm);
 
       if (result.isError) {
-        setError(result.errorMessage || "Live mandi prices are currently unavailable.");
+        setError(result.errorMessage || t('mandi.hub.failed'));
         setData([]);
       } else {
         setData(result.prices);
@@ -35,12 +35,12 @@ const MandiPrices: React.FC = () => {
       }
     } catch (err: unknown) {
       console.error("[MandiPrices Error]:", err);
-      setError("Live mandi prices are currently unavailable.");
+      setError(t('mandi.hub.failed'));
       setData([]);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm, t]);
 
   useEffect(() => {
     fetchMandiData();
@@ -76,7 +76,7 @@ const MandiPrices: React.FC = () => {
       {isCachedData && cachedAtText && (
         <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm">
           <span className="flex items-center gap-2">
-            <WifiOff size={15} /> Showing cached prices from {cachedAtText} (Offline Mode)
+            <WifiOff size={15} /> {t('mandi.hub.offlineNotice', { time: cachedAtText })}
           </span>
           <button onClick={fetchMandiData} className="underline font-extrabold ml-2">{t('agr111')}</button>
         </div>
@@ -85,7 +85,7 @@ const MandiPrices: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <TrendingUp className="text-emerald-600" /> Real-Time Mandi Prices
+            <TrendingUp className="text-emerald-600" /> {t('mandi.title')}
           </h2>
           <p className="text-muted-foreground text-sm">{t('agr112')}</p>
         </div>
@@ -99,7 +99,7 @@ const MandiPrices: React.FC = () => {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             type="text"
-            placeholder="Search by Crop, Mandi, District or State..."
+            placeholder={t('mandi.hub.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium"
@@ -180,7 +180,7 @@ const MandiPrices: React.FC = () => {
                 <span className="flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-400">
                   <ShieldCheck size={12} /> api.data.gov.in
                 </span>
-                <span>Arrival: {record.arrivalDate}</span>
+                <span>{t("mandi.hub.arrivalLabel") || "Arrival:"} {record.arrivalDate}</span>
               </div>
             </AgriCard>
           ))}

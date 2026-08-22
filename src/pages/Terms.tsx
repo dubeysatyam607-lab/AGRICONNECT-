@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage } from '@/lib/seo-config';
 import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SECTIONS = [
   {
@@ -62,6 +63,11 @@ const SECTIONS = [
 ];
 
 const Terms: React.FC = () => {
+  const { t } = useLanguage();
+  const tr = (key: string, fallback: string) => {
+    const v = t?.(key);
+    return v && v !== key ? v : fallback;
+  };
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -91,10 +97,10 @@ const Terms: React.FC = () => {
           <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
             <MarketingBreadcrumb
               tone="light"
-              items={[{ label: 'Home', path: '/' }, { label: 'Terms of Service' }]}
+              items={[{ label: tr('legal.terms.breadcrumbHome', 'Home'), path: '/' }, { label: tr('legal.terms.breadcrumbTerms', 'Terms of Service') }]}
             />
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight">Terms of Service</h1>
-            <p className="text-emerald-100/80 mt-2">Last updated: January 2026</p>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight">{tr('legal.terms.title', 'Terms & Conditions')}</h1>
+            <p className="text-emerald-100/80 mt-2">{tr('legal.terms.lastUpdated', 'Last updated')}: January 2026</p>
           </div>
         </header>
 
@@ -109,13 +115,13 @@ const Terms: React.FC = () => {
           </div>
 
           <div className="mt-10 rounded-2xl gradient-hero text-primary-foreground p-6 text-center">
-            <h2 className="font-bold text-xl">Have questions about these terms?</h2>
-            <p className="text-sm text-primary-foreground/80 mt-2">Contact our legal team.</p>
+            <h2 className="font-bold text-xl">{tr('legal.terms.questionsCta', 'Have questions about these terms?')}</h2>
+            <p className="text-sm text-primary-foreground/80 mt-2">{tr('legal.terms.questionsSub', 'Contact our legal team.')}</p>
             <Link
               to="/contact"
               className="inline-block mt-4 rounded-lg bg-white text-emerald-900 px-5 py-2.5 font-semibold text-sm hover:bg-emerald-50 transition"
             >
-              Contact Us
+              {tr('legal.terms.contactUs', 'Contact Us')}
             </Link>
           </div>
         </div>

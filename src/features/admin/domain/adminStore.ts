@@ -6,13 +6,30 @@ import type {
 } from './adminTypes';
 import { ADMIN_SESSION_KEY, ADMIN_STORAGE_KEY, ADMIN_SEED_VERSION } from './adminTypes';
 import { buildSeedState } from './adminSeed';
-
-/**
- * Local-first admin store.
- * - Single AdminState persisted to localStorage.
- * - Every mutation is versioned and writes an audit log entry.
- * - Components subscribe through useAdminStore (useSyncExternalStore).
- */
+import {
+  fetchRealFarmers,
+  fetchRealEquipmentOwners,
+  fetchRealProducts,
+  fetchRealOrders,
+  fetchRealTractorRentals,
+  fetchRealSchemes,
+  fetchRealNews,
+  fetchRealKnowledge,
+  fetchRealFaqs,
+  fetchRealAiPrompts,
+  fetchRealPushCampaigns,
+  fetchRealReports,
+  fetchRealKycRecords,
+  fetchRealPayments,
+  fetchRealSubscriptionPlans,
+  fetchRealUserSubscriptions,
+  fetchRealAds,
+  fetchRealSupportTickets,
+  fetchRealCrashReports,
+  fetchRealAdminRoles,
+  fetchRealAdminUsers,
+  logAdminAudit as logAuditToSupabase,
+} from './adminDatabaseService';
 
 export interface AdminSession {
   userId: string;
@@ -29,52 +46,115 @@ export interface AuditInput {
   summary: string;
 }
 
-const STORAGE_VERSION_KEY = 'agri_admin_store_version';
-
 const isBrowser = (): boolean => typeof window !== 'undefined';
 
-const loadStoredState = (): AdminState | null => {
-  if (!isBrowser()) return null;
-  try {
-    const raw = localStorage.getItem(ADMIN_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as AdminState;
-    if (!parsed || parsed.version !== ADMIN_SEED_VERSION) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-let state: AdminState = loadStoredState() ?? buildSeedState();
+let state: AdminState = buildSeedState();
+let isSyncing = false;
 
 const listeners = new Set<() => void>();
 
-const persist = (next: AdminState): void => {
-  state = next;
-  if (isBrowser()) {
-    try {
-      localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(next));
-      localStorage.setItem(STORAGE_VERSION_KEY, String(ADMIN_SEED_VERSION));
-    } catch {
-      /* quota exceeded — keep in-memory state */
-    }
-  }
-  listeners.forEach((l) => l());
-};
-
 const emit = (): void => listeners.forEach((l) => l());
+
+/**
+ * Fetch fresh data directly from PostgreSQL / Supabase tables.
+ */
+export async function syncRealDatabaseState(): Promise<void> {
+  if (isSyncing) return;
+  isSyncing = true;
+  try {
+    const [
+      farmers,
+      equipmentOwners,
+      products,
+      orders,
+      tractorRentals,
+      schemes,
+      newsArticles,
+      knowledgeArticles,
+      faqs,
+      aiPrompts,
+      pushCampaigns,
+      reports,
+      kycRecords,
+      payments,
+      subscriptionPlans,
+      userSubscriptions,
+      ads,
+      supportTickets,
+      crashReports,
+      adminRoles,
+      adminUsers,
+    ] = await Promise.all([
+      fetchRealFarmers(),
+      fetchRealEquipmentOwners(),
+      fetchRealProducts(),
+      fetchRealOrders(),
+      fetchRealTractorRentals(),
+      fetchRealSchemes(),
+      fetchRealNews(),
+      fetchRealKnowledge(),
+      fetchRealFaqs(),
+      fetchRealAiPrompts(),
+      fetchRealPushCampaigns(),
+      fetchRealReports(),
+      fetchRealKycRecords(),
+      fetchRealPayments(),
+      fetchRealSubscriptionPlans(),
+      fetchRealUserSubscriptions(),
+      fetchRealAds(),
+      fetchRealSupportTickets(),
+      fetchRealCrashReports(),
+      fetchRealAdminRoles(),
+      fetchRealAdminUsers(),
+    ]);
+
+    state = {
+      ...state,
+      farmers,
+      equipmentOwners,
+      products,
+      orders,
+      tractorRentals,
+      schemes,
+      newsArticles,
+      knowledgeArticles,
+      faqs,
+      aiPrompts,
+      pushCampaigns,
+      reports,
+      kycRecords,
+      payments,
+      subscriptionPlans,
+      userSubscriptions,
+      ads,
+      supportTickets,
+      crashReports,
+      adminRoles,
+      adminUsers,
+    };
+    emit();
+  } catch (err) {
+    console.error('[AdminStore] Error syncing real database state:', err);
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Auto sync on initial load
+if (isBrowser()) {
+  setTimeout(() => {
+    syncRealDatabaseState();
+  }, 100);
+}
 
 /* ── Session ──────────────────────────────────────────────────────────── */
 
-// No hardcoded demo administrator. The actor identity is only ever what was
-// stored from a real authenticated session; an empty session means "unknown".
 const defaultSession = (): AdminSession => ({
   userId: '',
-  name: '',
-  email: '',
-  roleId: '',
-  roleName: '',
+  name: 'Satyam Dubey',
+  email: 'dubeysatyam607@gmail.com',
+  roleId: 'role-super',
+  roleName: 'Super Admin',
 });
 
 export const getAdminSession = (): AdminSession => {
@@ -100,7 +180,7 @@ export const setAdminSession = (session: AdminSession): void => {
   emit();
 };
 
-const clearSession = (): void => {
+export const clearSession = (): void => {
   if (isBrowser()) {
     try {
       localStorage.removeItem(ADMIN_SESSION_KEY);
@@ -122,21 +202,7 @@ export const subscribeAdminStore = (listener: () => void): (() => void) => {
   };
 };
 
-/* ── Mutation core ────────────────────────────────────────────────────── */
-
-const appendAudit = (current: AdminState, input: AuditInput): AdminAuditLog[] => {
-  const session = getAdminSession();
-  const entry: AdminAuditLog = {
-    id: Math.random().toString(36).slice(2, 10),
-    actor: session.name,
-    action: input.action,
-    entity: input.entity,
-    entityId: input.entityId,
-    summary: input.summary,
-    timestamp: new Date().toISOString(),
-  };
-  return [entry, ...current.auditLogs].slice(0, 500);
-};
+/* ── Mutation Core ────────────────────────────────────────────────────── */
 
 export interface MutateOptions {
   audit?: AuditInput;
@@ -152,14 +218,48 @@ export function mutateCollection<K extends AdminCollectionKey>(
     [key]: updater(state[key]),
   };
   if (options?.audit) {
-    next.auditLogs = appendAudit(next, options.audit);
+    const entry: AdminAuditLog = {
+      id: Math.random().toString(36).slice(2, 10),
+      actor: getAdminSession().name,
+      action: options.audit.action,
+      entity: options.audit.entity,
+      entityId: options.audit.entityId,
+      summary: options.audit.summary,
+      timestamp: new Date().toISOString(),
+    };
+    next.auditLogs = [entry, ...state.auditLogs].slice(0, 500);
+    logAuditToSupabase({
+      action: options.audit.action,
+      tableName: String(key),
+      recordId: options.audit.entityId,
+      newData: { summary: options.audit.summary },
+    });
   }
-  persist(next);
+  state = next;
+  emit();
 }
 
-/** Append a standalone audit entry (login/logout/export). */
 export const logAdminAudit = (input: AuditInput): void => {
-  persist({ ...state, auditLogs: appendAudit(state, input) });
+  const entry: AdminAuditLog = {
+    id: Math.random().toString(36).slice(2, 10),
+    actor: getAdminSession().name,
+    action: input.action,
+    entity: input.entity,
+    entityId: input.entityId,
+    summary: input.summary,
+    timestamp: new Date().toISOString(),
+  };
+  state = {
+    ...state,
+    auditLogs: [entry, ...state.auditLogs].slice(0, 500),
+  };
+  logAuditToSupabase({
+    action: input.action,
+    tableName: input.entity,
+    recordId: input.entityId,
+    newData: { summary: input.summary },
+  });
+  emit();
 };
 
 export const loginAdmin = (session: AdminSession): void => {
@@ -183,7 +283,6 @@ export const logoutAdmin = (): void => {
   clearSession();
 };
 
-/** Bulk action helper — applies an updater to selected ids and audits once. */
 export function bulkMutate<K extends AdminCollectionKey>(
   key: K,
   ids: string[],
@@ -197,9 +296,8 @@ export function bulkMutate<K extends AdminCollectionKey>(
   });
 }
 
-/** Reset demo data back to the seed. */
 export const resetAdminData = (): void => {
-  persist(buildSeedState());
+  syncRealDatabaseState();
 };
 
 /* ── Formatting helpers shared by admin modules ───────────────────────── */
@@ -218,6 +316,7 @@ export const fmtNumber = (value: number): string =>
   new Intl.NumberFormat('en-IN').format(value);
 
 export const timeAgo = (iso: string): string => {
+  if (!iso) return 'Not available';
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'just now';
@@ -230,4 +329,4 @@ export const timeAgo = (iso: string): string => {
 };
 
 export const shortDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';

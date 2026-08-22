@@ -146,28 +146,28 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           Platform Overview KPIs (18 Core Indicators)
         </h2>
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          <StatCard title="Total Farmers" value={fmtNumber(k.totalFarmers)} icon={Users} iconClassName="bg-emerald-100 text-emerald-700" hint="farmer profiles" />
-          <StatCard title="Total Active Users" value={fmtNumber(k.totalUsers)} icon={Activity} iconClassName="bg-sky-100 text-sky-700" hint="registered accounts" />
+          <StatCard title="Total Users" value={fmtNumber(k.totalUsers)} icon={Users} iconClassName="bg-emerald-100 text-emerald-700" hint="from profiles table" />
           <StatCard title="New Users Today" value={fmtNumber(k.newToday)} icon={TrendingUp} iconClassName="bg-blue-100 text-blue-700" hint="signups today" />
-          <StatCard title="New Users (30 days)" value={fmtNumber(k.new30d)} icon={Users} iconClassName="bg-indigo-100 text-indigo-700" hint="last 30 days" />
+          <StatCard title="New (7 days)" value={fmtNumber(k.new7d)} icon={Users} iconClassName="bg-sky-100 text-sky-700" hint="last 7 days" />
+          <StatCard title="New (30 days)" value={fmtNumber(k.new30d)} icon={Users} iconClassName="bg-indigo-100 text-indigo-700" hint="last 30 days" />
 
-          <StatCard title="AI Conversations" value="0" icon={Bot} iconClassName="bg-teal-100 text-teal-700" hint="tracking not connected" />
-          <StatCard title="Total Crop Scans" value="0" icon={ScanLine} iconClassName="bg-green-100 text-green-700" hint="tracking not connected" />
-          <StatCard title="Tractor Rentals" value={fmtNumber(k.tractorBookings)} icon={Tractor} iconClassName="bg-amber-100 text-amber-700" hint="all-time bookings" />
+          <StatCard title="AI Conversations" value={fmtNumber(k.aiConversations)} icon={Bot} iconClassName="bg-teal-100 text-teal-700" hint={k.aiConversations > 0 ? "total conversations" : "0"} />
+          <StatCard title="Crop Scans" value={fmtNumber(k.cropScans)} icon={ScanLine} iconClassName="bg-green-100 text-green-700" hint={k.cropScans > 0 ? "total scans" : "0"} />
+          <StatCard title="Tractor Rentals" value={fmtNumber(k.tractorBookings)} icon={Tractor} iconClassName="bg-amber-100 text-amber-700" hint={`${k.bookingsToday} today`} />
           <StatCard title="Cattle Listings" value={fmtNumber(k.cattleListings)} icon={BadgeCheck} iconClassName="bg-yellow-100 text-yellow-700" hint="marketplace listings" />
 
-          <StatCard title="Scheme Apps" value="0" icon={Landmark} iconClassName="bg-orange-100 text-orange-700" hint="not tracked" />
-          <StatCard title="Total Revenue" value={fmtINR(0)} icon={CreditCard} iconClassName="bg-purple-100 text-purple-700" hint="no payments recorded" />
-          <StatCard title="Subscription Rev" value={fmtINR(0)} icon={Layers} iconClassName="bg-violet-100 text-violet-700" hint="no subscriptions recorded" />
-          <StatCard title="Equipment Listings" value={fmtNumber(k.vehicles)} icon={Tractor} iconClassName="bg-lime-100 text-lime-700" hint="available machinery" />
+          <StatCard title="Marketplace" value={fmtNumber(k.marketplaceProducts)} icon={Store} iconClassName="bg-orange-100 text-orange-700" hint="product listings" />
+          <StatCard title="Equipment" value={fmtNumber(k.equipmentListings)} icon={Tractor} iconClassName="bg-lime-100 text-lime-700" hint="tractor listings" />
+          <StatCard title="Active Subs" value={fmtNumber(k.activeSubscriptions)} icon={Layers} iconClassName="bg-violet-100 text-violet-700" hint="subscribers" />
+          <StatCard title="Payments" value={fmtNumber(k.successfulPayments)} icon={CreditCard} iconClassName="bg-purple-100 text-purple-700" hint="successful payments" />
 
-          <StatCard title="Dealer Registrations" value="0" icon={Store} iconClassName="bg-rose-100 text-rose-700" hint="no dealer profiles" />
-          <StatCard title="FPO Registrations" value="0" icon={Building2} iconClassName="bg-cyan-100 text-cyan-700" hint="no FPO profiles" />
-          <StatCard title="Blog & News Views" value="0" icon={Newspaper} iconClassName="bg-slate-100 text-slate-700" hint="not tracked" />
-          <StatCard title="Push Subscribers" value={fmtNumber(k.pushSubscribers)} icon={Send} iconClassName="bg-amber-100 text-amber-700" hint="active subscriptions" />
+          <StatCard title="Push Subscribers" value={fmtNumber(k.pushSubscribers)} icon={Send} iconClassName="bg-amber-100 text-amber-700" hint="push subscribers" />
+          <StatCard title="Price Alerts" value={fmtNumber(k.priceAlerts)} icon={TrendingUp} iconClassName="bg-sky-100 text-sky-700" hint="active alerts" />
+          <StatCard title="Support Tickets" value={fmtNumber(k.openSupportTickets)} icon={AlertTriangle} iconClassName="bg-red-100 text-red-700" hint="open tickets" />
+          <StatCard title="Crash Reports" value={fmtNumber(k.crashReports)} icon={ShieldCheck} iconClassName="bg-rose-100 text-rose-700" hint="reported crashes" />
 
-          <StatCard title="App Rating" value="—" icon={Star} iconClassName="bg-yellow-100 text-yellow-700" hint="no rating data" />
-          <StatCard title="Crash-Free Health" value="—" icon={ShieldCheck} iconClassName="bg-emerald-100 text-emerald-700" hint="no crash reports" />
+          <StatCard title="Contact Messages" value={fmtNumber(k.contactMessages)} icon={Package} iconClassName="bg-slate-100 text-slate-700" hint="form submissions" />
+          <StatCard title="Labor Requests" value={fmtNumber(k.laborRequests)} icon={Users} iconClassName="bg-teal-100 text-teal-700" hint="labor requests" />
         </div>
       </div>
 
