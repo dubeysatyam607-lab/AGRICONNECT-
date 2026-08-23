@@ -236,7 +236,7 @@ serve(async (req) => {
     return parseResult.response;
   }
 
-  const { searchQuery } = parseResult.data;
+  const { state, district, commodity, searchQuery } = parseResult.data;
 
   try {
     console.log(`Mandi prices request - search: ${searchQuery}`);
@@ -253,8 +253,11 @@ serve(async (req) => {
 
       for (const resourceId of resourceIds) {
         try {
-          const apiUrl = `https://api.data.gov.in/resource/${resourceId}?api-key=${apiKey}&format=json&limit=100`;
-          console.log(`Trying resource: ${resourceId}`);
+          let apiUrl = `https://api.data.gov.in/resource/${resourceId}?api-key=${apiKey}&format=json&limit=250`;
+          if (state) apiUrl += `&filters[state]=${encodeURIComponent(state)}`;
+          if (district) apiUrl += `&filters[district]=${encodeURIComponent(district)}`;
+          if (commodity) apiUrl += `&filters[commodity]=${encodeURIComponent(commodity)}`;
+          console.log(`Trying resource: ${resourceId} state=${state || 'ALL'} district=${district || 'ALL'} commodity=${commodity || 'ALL'}`);
 
           const response = await fetch(apiUrl, {
             headers: { "Accept": "application/json" },
@@ -314,6 +317,7 @@ serve(async (req) => {
                     status,
                     change,
                     arrivalDate: record.arrival_date || record.Arrival_Date || isoDate(0),
+                    id: `${commodity}::${market || district || 'mandi'}::${district}::${state}::${record.arrival_date || record.Arrival_Date || isoDate(0)}`.toLowerCase(),
                   };
                 })
                 .filter(Boolean);
@@ -356,11 +360,12 @@ serve(async (req) => {
       filteredPrices = prices.filter(p =>
         String(p.crop).toLowerCase().includes(query) ||
         String(p.market).toLowerCase().includes(query) ||
-        String(p.state).toLowerCase().includes(query)
+        String(p.state).toLowerCase().includes(query) ||
+        String(p.district).toLowerCase().includes(query)
       );
     }
 
-    const finalPrices = filteredPrices.slice(0, 40);
+    const finalPrices = filteredPrices;
     const enriched = finalPrices.map(p =>
       enrichPrice(p, Number(p.price) || 0, String(p.crop) + String(p.market))
     );

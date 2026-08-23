@@ -28,7 +28,7 @@ export const useCattleListings = () => {
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     setLoading(true);
     
     // Use database function to get seller name securely without exposing phone
@@ -54,7 +54,7 @@ export const useCattleListings = () => {
     }
     
     setLoading(false);
-  };
+  }, []);
 
   // Secure contact function using edge function
   const getSellerContact = async (listingId: string) => {
@@ -85,7 +85,7 @@ export const useCattleListings = () => {
     return response.json();
   };
 
-  const fetchMyListings = async () => {
+  const fetchMyListings = useCallback(async () => {
     if (!user) return;
     
     const { data, error } = await supabase
@@ -97,7 +97,7 @@ export const useCattleListings = () => {
     if (!error && data) {
       setMyListings(data as CattleListing[]);
     }
-  };
+  }, [user]);
 
   const createListing = async (listing: Omit<CattleListing, 'id' | 'seller_id' | 'is_verified' | 'is_active' | 'created_at'>) => {
     if (!user) throw new Error('Must be logged in');
@@ -201,7 +201,7 @@ export const useCattleListings = () => {
     if (user) {
       fetchMyListings();
     }
-  }, [user]);
+  }, [user, fetchMyListings]);
 
   return {
     listings,
