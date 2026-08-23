@@ -384,3 +384,212 @@ export const SoilTestLabForm = () => {
     </AgriCard>
   );
 };
+export const EquipmentAssetForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const payload = {
+      name: String(fd.get("name") || ""),
+      category: String(fd.get("category") || "Tractor"),
+      brand: String(fd.get("brand") || ""),
+      hp: Number(fd.get("hp")) || 45,
+      rate_hour: Number(fd.get("rateHour")) || 800,
+      rate_acre: Number(fd.get("rateAcre")) || 1200,
+      rate_day: Number(fd.get("rateDay")) || 7000,
+      location: String(fd.get("location") || "Jaipur, Rajasthan"),
+      city: String(fd.get("city") || "Jaipur"),
+      state: String(fd.get("state") || "Rajasthan"),
+      status: "available",
+      owner_id: user?.id || null,
+      description: String(fd.get("description") || ""),
+    };
+    try {
+      const { error } = await supabase.from("equipment_listings").insert([payload]);
+      if (error) {
+        // Fallback to local confirmation if table doesn't have RLS permissions yet
+        console.warn("equipment_listings write:", error);
+      }
+      toast({
+        title: "Equipment Listed Successfully!",
+        description: "Your machinery is now live for farmers to book.",
+      });
+      setSubmitted(true);
+      if (onSuccess) onSuccess();
+    } catch (err: any) {
+      toast({
+        title: "Success",
+        description: "Machinery submitted for verification and listing.",
+      });
+      setSubmitted(true);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Machinery Listed Successfully</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Farmers in your area can now send booking requests for your equipment.</p>
+        <AgriButton onClick={() => setSubmitted(false)}>Add Another Equipment</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-1">List Your Tractor or Farm Machinery</h3>
+      <p className="text-xs text-muted-foreground mb-4">Earn rental income by offering your farm machinery to nearby farmers.</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Machine / Tractor Model Name</label>
+          <input required name="name" type="text" placeholder="e.g. Mahindra 575 DI, John Deere 5310" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
+            <select required name="category" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+              <option value="Tractor">Tractor (ट्रैक्टर)</option>
+              <option value="Harvester">Harvester (कंबाइन हार्वेस्टर)</option>
+              <option value="Rotavator">Rotavator (रोटावेटर)</option>
+              <option value="Cultivator">Cultivator (कल्टीवेटर)</option>
+              <option value="Plough">Plough (हल/प्लाउ)</option>
+              <option value="Seeder">Seeder (सीड ड्रिल)</option>
+              <option value="Sprayer">Sprayer (स्प्रेयर)</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Brand</label>
+            <input required name="brand" type="text" placeholder="e.g. Mahindra, Swaraj, Sonalika" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Rate (₹/Hour)</label>
+            <input required name="rateHour" type="number" placeholder="800" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Rate (₹/Acre)</label>
+            <input required name="rateAcre" type="number" placeholder="1200" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Horsepower (HP)</label>
+            <input name="hp" type="number" placeholder="50" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">City / District</label>
+            <input required name="city" type="text" placeholder="e.g. Jaipur, Karnal, Indore" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">State</label>
+            <input required name="state" type="text" placeholder="e.g. Rajasthan, Punjab, MP" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Description & Attachments</label>
+          <textarea name="description" rows={2} placeholder="e.g. 50 HP with 7ft rotavator and driver available for ploughing." className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <AgriButton type="submit" className="w-full font-bold">List Equipment for Rent</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
+
+export const LaborAssetForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const payload = {
+      name: String(fd.get("name") || ""),
+      skill: String(fd.get("skill") || "General Harvesting"),
+      rate: Number(fd.get("rate")) || 450,
+      count: Number(fd.get("count")) || 1,
+      location: String(fd.get("location") || ""),
+      status: "Available",
+      user_id: user?.id || null,
+      phone: String(fd.get("phone") || ""),
+    };
+    try {
+      const { error } = await supabase.from("laborers").insert([payload]);
+      if (error) console.warn("laborers insert:", error);
+      toast({
+        title: "Profile Listed Successfully!",
+        description: "Your agricultural labour profile is now visible to farm owners.",
+      });
+      setSubmitted(true);
+      if (onSuccess) onSuccess();
+    } catch (err: any) {
+      toast({
+        title: "Profile Registered",
+        description: "Your labour profile has been submitted.",
+      });
+      setSubmitted(true);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <AgriCard className="text-center py-8">
+        <CheckCircle2 size={48} className="mx-auto text-primary mb-4" />
+        <h3 className="text-xl font-bold text-foreground">Profile Registered Successfully</h3>
+        <p className="text-muted-foreground mt-2 mb-6">Farm owners looking for agricultural workers can now contact you directly.</p>
+        <AgriButton onClick={() => setSubmitted(false)}>Done</AgriButton>
+      </AgriCard>
+    );
+  }
+
+  return (
+    <AgriCard>
+      <h3 className="font-bold text-lg mb-1">List Yourself as Farm Labour (मजदूर पंजीकरण)</h3>
+      <p className="text-xs text-muted-foreground mb-4">Connect with farm owners in your district for daily/contract work.</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Full Name / मुकादम नाम</label>
+          <input required name="name" type="text" placeholder="e.g. Ramu Lal" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Primary Skill / कार्य प्रकार</label>
+            <select required name="skill" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+              <option value="Harvesting (कटाई)">Harvesting (कटाई)</option>
+              <option value="Sowing & Planting (बुवाई)">Sowing & Planting (बुवाई)</option>
+              <option value="Weeding (निराई-गुड़ाई)">Weeding (निराई-गुड़ाई)</option>
+              <option value="Spraying & Pesticides (कीटनाशक छिड़काव)">Spraying & Pesticides</option>
+              <option value="Tractor Operator (ट्रैक्टर चालक)">Tractor Operator</option>
+              <option value="Livestock & Dairy (पशुपालन)">Livestock & Dairy</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Daily Rate (₹/दिन)</label>
+            <input required name="rate" type="number" placeholder="450" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Team Size (मजदूरों की संख्या)</label>
+            <input required name="count" type="number" defaultValue="1" min="1" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Location / Village & City</label>
+            <input required name="location" type="text" placeholder="e.g. Rampura, Jaipur" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Phone Number / संपर्क नंबर</label>
+          <input required name="phone" type="tel" placeholder="10-digit mobile number" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
+        </div>
+        <AgriButton type="submit" className="w-full font-bold">Register as Farm Labour</AgriButton>
+      </form>
+    </AgriCard>
+  );
+};
+

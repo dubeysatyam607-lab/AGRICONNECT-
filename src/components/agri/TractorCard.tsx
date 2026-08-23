@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tractor as TractorIcon, User, Star, MapPin, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { AgriImage } from "@/components/ui/agri-image";
 import type { Tractor } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -54,14 +55,15 @@ const TractorCard: React.FC<TractorCardProps> = ({ tractor, onBook, className })
 
       {/* Premium Image Header */}
       <div className="relative w-full h-44 overflow-hidden rounded-t-[24px]">
-        <img
-          src={imgSrc}
-          alt={tractor.name}
+        <AgriImage
+          type="tractor"
+          contextName={tractor.name}
+          seedKey={tractor.id || tractor.name}
+          alt={`${tractor.name} tractor working in agricultural field`}
           loading="lazy"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = DEFAULT_TRACTOR_IMAGE; }}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 ease-out"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent pointer-events-none" />
 
         {/* Top Badges (Distance & Status) */}
         <div className="absolute top-3 inset-x-3 flex justify-between items-center z-10">

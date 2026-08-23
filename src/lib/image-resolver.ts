@@ -1,100 +1,89 @@
 /**
- * Unified Image Resolution System for AgriConnect
- * Production-ready handler for Mandi crops, Agri Store products, Machinery, and Schemes.
+ * Unified Image Resolution System for AgriConnect.
+ * Production-ready handler with verified Pexels real photography for Mandi crops, Agri Store products, Machinery, and Schemes.
  */
 
 import { getCropImage, getCropBackupImage, CATEGORY_CROP_IMAGES } from "./crop-images";
+import { PEXELS_CURATED_PHOTOS } from "./pexels-api";
 
 // In-memory cache for resolved URLs
 const RESOLVE_CACHE = new Map<string, string>();
 
 /**
- * High-quality, CDN-hosted agricultural product images for Indian Agri Store items.
+ * High-quality, Pexels CDN-hosted agricultural product images for Indian Agri Store items.
  */
 export const STORE_PRODUCT_IMAGES: Record<string, string> = {
   // Fertilizers
-  "urea": "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600",
-  "dap": "https://images.unsplash.com/photo-1597657133350-14b85b99ef95?auto=format&fit=crop&q=80&w=600",
-  "npk": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  "compost": "https://images.unsplash.com/photo-1606865923806-e24e9d4a0da3?auto=format&fit=crop&q=80&w=600",
-  "potash": "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600",
-  "mop": "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600",
-  "vermicompost": "https://images.unsplash.com/photo-1606865923806-e24e9d4a0da3?auto=format&fit=crop&q=80&w=600",
-  "micronutrient": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  "zinc": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  "sulfur": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
+  "urea": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "dap": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "npk": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "compost": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "potash": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "fertilizer": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 
   // Seeds
-  "wheat seed": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600",
-  "cotton seed": "https://images.unsplash.com/photo-1605000797498-6f2145b1b9c3?auto=format&fit=crop&q=80&w=600",
-  "tomato seed": "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&q=80&w=600",
-  "maize seed": "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=600",
-  "paddy seed": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=600",
-  "vegetable seed": "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=600",
-  "mustard seed": "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=600",
-  "soybean seed": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&q=80&w=600",
-  "onion seed": "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&q=80&w=600",
-  "chilli seed": "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&q=80&w=600",
+  "wheat seed": "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "cotton seed": "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "tomato seed": "https://images.pexels.com/photos/5685910/pexels-photo-5685910.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "maize seed": "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "paddy seed": "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "vegetable seed": "https://images.pexels.com/photos/28991058/pexels-photo-28991058.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "mustard seed": "https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "soybean seed": "https://images.pexels.com/photos/9940116/pexels-photo-9940116.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "seed": "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "seeds": "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 
-  // Pesticides & Bio-Control
-  "imidacloprid": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  "chlorpyrifos": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  "mancozeb": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  "glyphosate": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  "neem oil": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=600",
-  "bio pesticide": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=600",
-  "fungicide": "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  "insecticide": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
+  // Pesticides & Sprayers
+  "sprayer": "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "pesticide": "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "fungicide": "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "insecticide": "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 
   // Tools & Irrigation
-  "sprayer": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  "drip irrigation": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
-  "rotavator": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "pruning": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "spreader": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "motor": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600",
-  "pipe": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
+  "drip irrigation": "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "irrigation": "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "rotavator": "https://images.pexels.com/photos/27054126/pexels-photo-27054126.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "tiller": "https://images.pexels.com/photos/37634578/pexels-photo-37634578.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "tools": "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 
-  // Machinery & Equipment
-  "pump": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600",
-  "tiller": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "drill": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "chaff": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  "solar": "https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&q=80&w=600",
-  "trolley": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=600",
-  "transplanter": "https://images.unsplash.com/photo-1536657464919-892534f60d6e?auto=format&fit=crop&q=80&w=600",
-  "drone": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=600",
-  "harvester": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=600",
-  "tractor": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
+  // Machinery & Tractors
+  "harvester": "https://images.pexels.com/photos/27054126/pexels-photo-27054126.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "tractor": "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  "machinery": "https://images.pexels.com/photos/163752/tractor-agriculture-machine-field-163752.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 };
 
 /**
- * Secondary real photo backups for store products
+ * Secondary real photo backups for store products from Pexels CDN.
  */
 export const STORE_PRODUCT_BACKUP_IMAGES: Record<string, string> = {
-  fertilizer: "https://images.unsplash.com/photo-1585336261026-775c74256856?auto=format&fit=crop&q=80&w=600",
-  seed: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600",
-  pesticide: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  tool: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
-  machinery: "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  default: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=600",
+  fertilizer: "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  seed: "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  pesticide: "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  tool: "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  machinery: "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  default: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 };
 
 /**
- * Category-level default real photo fallbacks
+ * Category-level default real photo fallbacks from Pexels CDN.
  */
 export const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
-  seeds: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600",
-  fertilizers: "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600",
-  pesticides: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=600",
-  tools: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
-  machinery: "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=600",
-  irrigation: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
-  default: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=600",
+  seeds: "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  fertilizers: "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  pesticides: "https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  tools: "https://images.pexels.com/photos/11337256/pexels-photo-11337256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  machinery: "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  tractor: "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  harvester: "https://images.pexels.com/photos/27054126/pexels-photo-27054126.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  farmer: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  crops: "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  mandi: "https://images.pexels.com/photos/34921704/pexels-photo-34921704.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  irrigation: "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+  default: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
 };
 
 /**
- * Guaranteed offline SVG agricultural placeholder for offline environments.
+ * Guaranteed offline SVG agricultural placeholder for completely offline environments.
  */
 export const OFFLINE_AGRI_SVG =
   "data:image/svg+xml;utf8," +
@@ -137,8 +126,10 @@ export function isValidImageUrl(url: unknown): url is string {
 /**
  * Sanitizes and upgrades URLs (e.g. http -> https, relative paths).
  */
-export function sanitizeImageUrl(url: string): string {
+export function sanitizeImageUrl(url?: string | null): string {
+  if (!url || typeof url !== "string") return "";
   const trimmed = url.trim();
+  if (!trimmed) return "";
   if (trimmed.startsWith("data:image/")) return trimmed;
   if (trimmed.startsWith("//")) return `https:${trimmed}`;
   if (trimmed.startsWith("http://")) return trimmed.replace(/^http:\/\//i, "https://");
@@ -152,7 +143,7 @@ export function sanitizeImageUrl(url: string): string {
 }
 
 /**
- * Match an Agri Store product by its name or category to a curated photo.
+ * Match an Agri Store product by its name or category to a curated Pexels photo.
  */
 export function getStoreProductImage(productName?: string, category?: string): string {
   if (!productName && !category) return CATEGORY_FALLBACK_IMAGES.default;
@@ -168,7 +159,6 @@ export function getStoreProductImage(productName?: string, category?: string): s
   }
 
   // Token matching on product name
-  // eslint-disable-next-line no-misleading-character-class
   const tokens = lowerName.split(/[^a-z0-9\u0900-\u097F]+/u).filter(Boolean);
   for (const token of tokens) {
     if (token.length >= 3 && STORE_PRODUCT_IMAGES[token]) {
@@ -233,7 +223,7 @@ export function getRealFallbackImage(
 
 /**
  * Master image resolver for AgriConnect.
- * Guarantees a safe, valid, high-resolution agricultural image for any UI component.
+ * Guarantees a safe, valid, high-resolution agricultural Pexels image for any UI component.
  */
 export function resolveImageUrl(
   imageSource?: unknown,
@@ -251,7 +241,6 @@ export function resolveImageUrl(
   if (isValidImageUrl(imageSource)) {
     finalUrl = sanitizeImageUrl(imageSource);
   } else if (typeof imageSource === "object" && imageSource !== null) {
-    // Handle objects with image / imageUrl / url properties
     const obj = imageSource as Record<string, unknown>;
     const extracted =
       obj.imageUrl || obj.image_url || obj.url || obj.src || obj.photo || obj.photo_url || obj.cropImage;
@@ -260,7 +249,7 @@ export function resolveImageUrl(
     }
   }
 
-  // 2. If no valid direct URL, resolve by context and type
+  // 2. If no valid direct URL, resolve by context and type using verified Pexels CDN maps
   if (!finalUrl) {
     if (type === "crop") {
       finalUrl = getCropImage(contextName || "crop");
@@ -269,6 +258,8 @@ export function resolveImageUrl(
     } else if (type === "category") {
       const cat = (contextName || "").toLowerCase();
       finalUrl = CATEGORY_FALLBACK_IMAGES[cat] || CATEGORY_FALLBACK_IMAGES.default;
+    } else if (type === "tractor") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.tractor;
     } else {
       finalUrl = CATEGORY_FALLBACK_IMAGES.default;
     }

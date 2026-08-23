@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Calendar, Droplets, Leaf, Scissors, Info, Sun, Sprout } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
+import { AgriImage } from "@/components/ui/agri-image";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -173,9 +174,15 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
             <div key={season.id} className={`rounded-2xl overflow-hidden border ${season.borderColor}`}>
               {/* Season Banner */}
               <div className="relative h-32 overflow-hidden">
-                <img src={season.image} alt={t(`crop.${season.id}`)} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=800"; }} className="w-full h-full object-cover" />
-                <div className={`absolute inset-0 bg-gradient-to-r ${season.color}`} />
-                <div className="absolute inset-0 flex items-center px-5">
+                <AgriImage
+                  type="crops"
+                  category={season.id}
+                  contextName={`${season.id} seasonal agriculture crop field`}
+                  alt={`${t(`crop.${season.id}`)} farming season`}
+                  className="w-full h-full object-cover"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-r ${season.color} pointer-events-none`} />
+                <div className="absolute inset-0 flex items-center px-5 pointer-events-none">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-2xl">{season.icon}</span>
@@ -201,8 +208,15 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
                   >
                     {/* Crop Photo */}
                     <div className="h-24 overflow-hidden relative">
-                      <img src={c.img} alt={t(cropNameKey(c.id))} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=400"; }} className="w-full h-full object-cover" loading="lazy" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      <AgriImage
+                        type="crop"
+                        crop={c.id}
+                        contextName={t(cropNameKey(c.id))}
+                        alt={`${t(cropNameKey(c.id))} crop farming`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
                       {farmer.cropIdSet.has(c.id) && (
                         <span className="absolute top-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm">
                           ★ {t('crop.yourCrop')}

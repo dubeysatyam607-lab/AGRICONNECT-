@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Milk, MapPin, Clock, Phone, ExternalLink, BadgeCheck } from "lucide-react";
+import { Milk, MapPin, Clock, Phone, ExternalLink, BadgeCheck, PlusCircle, Search, Filter } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { AgriImage } from "@/components/ui/agri-image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CattleAssetForm } from "./AssetForms";
+import { cn } from "@/lib/utils";
 
 interface CattleItem {
   id: number;
@@ -21,45 +23,49 @@ interface CattleItem {
   sellerPhone: string;
 }
 
-
-
 const CattleMarket: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedAnimal, setSelectedAnimal] = useState<CattleItem | null>(null);
   const [showContact, setShowContact] = useState(false);
+  const [showSellDialog, setShowSellDialog] = useState(false);
   const [cattleList, setCattleList] = useState<CattleItem[]>([]);
-  
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-// Address the "missing thing": Fetch live data using the imported Supabase client
-  useEffect(() => {
-    const fetchCattle = async () => {
+  const fetchCattle = async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('cattle_listings')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching cattle:', error);
-      } else if (data && data.length > 0) {
-        // Map Supabase data to CattleItem interface
+      } else if (data) {
         const mapped: CattleItem[] = data.map((item: any) => ({
           id: parseInt(item.id, 10) || Math.random(),
           type: item.type || 'Cow',
-          breed: item.breed,
+          breed: item.breed || 'Desi',
           milk: item.milk_yield || '—',
-          price: item.price,
-          age: item.age,
-          location: item.location,
-          image: item.image_url || 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=800',
-          sellerName: 'Verified Seller',
-          sellerPhone: 'Contact for details',
+          price: item.price || 0,
+          age: item.age || 'Adult',
+          location: item.location || 'India',
+          image: item.image_url || 'https://images.pexels.com/photos/11053137/pexels-photo-11053137.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+          sellerName: item.seller_name || 'Verified Farmer',
+          sellerPhone: item.seller_phone || 'Contact via app',
         }));
         setCattleList(mapped);
-        
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCattle();
   }, []);
 
@@ -107,96 +113,191 @@ const CattleMarket: React.FC = () => {
     window.open(`https://wa.me/${cleaned}?text=${msg}`, '_blank', 'noopener,noreferrer');
   };
 
+  const filtered = useMemo(() => {
+    let list = [...cattleList];
+    if (selectedCategory !== "All") {
+      list = list.filter(a => a.type.toLowerCase().includes(selectedCategory.toLowerCase()));
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(a =>
+        a.breed.toLowerCase().includes(q) ||
+        a.type.toLowerCase().includes(q) ||
+        a.location.toLowerCase().includes(q) ||
+        a.sellerName.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [cattleList, selectedCategory, searchQuery]);
+
   return (
-    <div className="pb-24 pt-4 px-4 overflow-y-auto min-h-screen">
+    <div className="pb-24 pt-4 px-4 overflow-y-auto min-h-screen max-w-5xl mx-auto space-y-4">
       {/* Hero Banner */}
-      <div className="relative rounded-2xl overflow-hidden h-44 mb-5 shadow-lg">
+      <div className="relative rounded-3xl overflow-hidden h-48 shadow-lg">
         <AgriImage
           src="https://images.unsplash.com/photo-1557166983-5c50b4cb2b4a?auto=format&fit=crop&q=80&w=800"
           alt="Livestock market"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40" />
-        <div className="absolute inset-0 flex items-center justify-between px-5">
-          <div>
-            <h2 className="text-2xl font-bold text-primary-foreground flex items-center gap-2">
-              <Milk size={22} /> Pashu Mela
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-900/70 to-emerald-950/80" />
+        <div className="absolute inset-0 flex items-center justify-between px-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-white flex items-center gap-2">
+              <Milk className="text-emerald-400" size={24} /> Pashu Mela
             </h2>
-            <p className="text-primary-foreground/80 text-sm mt-1">{t('agr78')}</p>
-            <p className="text-primary-foreground/60 text-xs mt-0.5">{cattleList.length} animals listed nearby</p>
+            <p className="text-emerald-100 text-sm">{t('agr78')}</p>
+            <p className="text-emerald-300 text-xs font-semibold">{cattleList.length} verified animals available across India</p>
           </div>
-          <AgriButton
-            size="sm"
-            onClick={() => window.open('https://epashuhaat.gov.in/', '_blank', 'noopener,noreferrer')}
-            className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/30"
-          >
-            <ExternalLink size={14} /> e-Pashuhaat
-          </AgriButton>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <AgriButton
+              size="sm"
+              onClick={() => {
+                if (!user) {
+                  toast({
+                    title: "Login Required",
+                    description: "Please login to list your cattle for sale.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                setShowSellDialog(true);
+              }}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-md"
+            >
+              <PlusCircle size={15} /> + पशु बेचें (Sell Cattle)
+            </AgriButton>
+            <AgriButton
+              size="sm"
+              variant="outline"
+              onClick={() => window.open('https://epashuhaat.gov.in/', '_blank', 'noopener,noreferrer')}
+              className="bg-black/30 text-white border-white/20 hover:bg-black/50"
+            >
+              <ExternalLink size={14} /> e-Pashuhaat
+            </AgriButton>
+          </div>
         </div>
       </div>
 
-      
-
-      {/* Cards */}
-      <div className="space-y-4">
-        {cattleList.map((animal) => (
-          <div
-            key={animal.id}
-            className="bg-card rounded-2xl shadow-card border border-border overflow-hidden"
-          >
-            {/* Full-width image */}
-            <div className="relative h-52 overflow-hidden">
-              <AgriImage
-                src={animal.image}
-                alt={`${animal.breed} ${animal.type}`}
-                assetName={`${animal.breed} ${animal.type}`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
-                <div>
-                  <h4 className="font-bold text-white text-lg leading-tight">
-                    {animal.breed} {animal.type}
-                  </h4>
-                  <p className="text-white/80 text-sm flex items-center gap-1 mt-0.5">
-                    <MapPin size={12} /> {animal.location}
-                  </p>
-                </div>
-                <span className="text-xl font-bold text-white bg-primary/80 px-3 py-1 rounded-xl backdrop-blur-sm">
-                  ₹{animal.price.toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="p-4">
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  🥛 {animal.milk}
-                </span>
-                <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                  <Clock size={12} /> {animal.age}
-                </span>
-                <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                  👤 {animal.sellerName} <BadgeCheck size={14} className="text-primary" />
-                </span>
-                {isDemoListing(animal.sellerPhone) && (
-                  <span className="bg-amber-500/15 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">
-                    Demo
-                  </span>
-                )}
-              </div>
-
-              <AgriButton
-                className="w-full"
-                onClick={() => handleContactSeller(animal)}
-              >
-                <Phone size={16} /> Contact Seller
-              </AgriButton>
-            </div>
-          </div>
-        ))}
+      {/* Search & Categories Bar */}
+      <div className="bg-card p-3 rounded-2xl border border-border shadow-sm space-y-2">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search breed, cow, buffalo, goat, city..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+          />
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {["All", "Cow", "Buffalo", "Goat", "Bull"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={cn(
+                "px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors",
+                selectedCategory === cat
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {cat === "All" ? "सभी (All)" : cat === "Cow" ? "गाय (Cow)" : cat === "Buffalo" ? "भैंस (Buffalo)" : cat === "Goat" ? "बकरी (Goat)" : "बैल (Bull)"}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Cards List / Empty State */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-card rounded-3xl border border-dashed border-border space-y-3">
+          <Milk className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
+          <h4 className="text-base font-bold text-foreground">No livestock listings found</h4>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            No active cattle listings match your search. Be the first farmer to list livestock for buyers across your state!
+          </p>
+          <AgriButton
+            size="sm"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Login Required", description: "Please login to list livestock.", variant: "destructive" });
+                return;
+              }
+              setShowSellDialog(true);
+            }}
+          >
+            <PlusCircle size={15} /> List Your Cattle
+          </AgriButton>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map((animal) => (
+            <div
+              key={animal.id}
+              className="bg-card rounded-2xl shadow-card border border-border overflow-hidden hover:shadow-lg transition-all"
+            >
+              {/* Full-width image */}
+              <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                <AgriImage
+                  src={animal.image}
+                  type="cattle"
+                  contextName={`${animal.breed} ${animal.type}`}
+                  alt={`${animal.breed} ${animal.type} dairy cattle`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent pointer-events-none" />
+                <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+                  <div>
+                    <h4 className="font-extrabold text-white text-lg leading-tight drop-shadow">
+                      {animal.breed} {animal.type}
+                    </h4>
+                    <p className="text-white/90 text-xs flex items-center gap-1 mt-0.5 font-medium">
+                      <MapPin size={12} className="text-emerald-400" /> {animal.location}
+                    </p>
+                  </div>
+                  <span className="text-lg font-black text-white bg-emerald-600 px-3 py-1 rounded-xl shadow-md">
+                    ₹{animal.price.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="p-4 space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold">
+                    🥛 {animal.milk}
+                  </span>
+                  <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold">
+                    <Clock size={12} /> {animal.age}
+                  </span>
+                  <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold">
+                    👤 {animal.sellerName} <BadgeCheck size={14} className="text-emerald-600" />
+                  </span>
+                </div>
+
+                <AgriButton
+                  className="w-full font-bold"
+                  onClick={() => handleContactSeller(animal)}
+                >
+                  <Phone size={15} /> Contact Farmer / पशुपालक से संपर्क करें
+                </AgriButton>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sell Cattle Dialog */}
+      <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Milk className="text-emerald-600" size={20} /> पशु बिक्री हेतु सूचीबद्ध करें (List Cattle for Sale)
+            </DialogTitle>
+          </DialogHeader>
+          <CattleAssetForm />
+        </DialogContent>
+      </Dialog>
 
       {/* Contact Dialog */}
       <Dialog open={showContact} onOpenChange={setShowContact}>

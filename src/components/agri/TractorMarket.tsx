@@ -11,7 +11,11 @@ import { AgriButton } from "@/components/ui/agri-button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { MACHINE_IMG, DEFAULT_MACHINE_IMG } from "@/lib/machine-images";
+import { AgriImage } from "@/components/ui/agri-image";
 import { postEdgeJson } from "@/lib/invoke-edge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EquipmentAssetForm } from "./AssetForms";
+import { PlusCircle } from "lucide-react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/tractor-hire`;
@@ -139,28 +143,23 @@ function CategoryIcon({ category, size = 18 }: { category: string; size?: number
 }
 
 const MachinePhoto: React.FC<{ name: string; category: string; color: string; className?: string }> = ({ name, category, color, className }) => {
-  const [failed, setFailed] = useState(false);
-  const Icon = CATEGORY_ICONS[category] || Tractor;
-
-  if (failed) {
-    return (
-      <div className={cn("relative h-28 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center overflow-hidden", className)}>
-        <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(circle at 50% 100%, ${color}, transparent 70%)` }}></div>
-        <Icon size={46} strokeWidth={1.4} style={{ color, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.45))" }} />
-      </div>
-    );
-  }
+  const machineType = category.toLowerCase().includes("harvester")
+    ? "harvester"
+    : category.toLowerCase().includes("sprayer") || category.toLowerCase().includes("drill") || category.toLowerCase().includes("rotavator")
+    ? "equipment"
+    : "tractor";
 
   return (
     <div className={cn("relative h-28 bg-slate-900 overflow-hidden", className)}>
-      <img
-        src={MACHINE_IMG[name] || DEFAULT_MACHINE_IMG}
-        alt={name}
+      <AgriImage
+        type={machineType}
+        contextName={name}
+        seedKey={name}
+        alt={`${name} ${category} agricultural machinery`}
         loading="lazy"
-        onError={() => setFailed(true)}
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
     </div>
   );
 };
@@ -729,6 +728,7 @@ const TractorMarket: React.FC = () => {
   const [tracking, setTracking] = useState<Booking | null>(null);
   const [chat, setChat] = useState<{ name: string; nameHi: string; phone: string; tractor: string } | null>(null);
   const [history, setHistory] = useState<Booking[]>([]);
+  const [showListEquipment, setShowListEquipment] = useState(false);
   const [toast, setToast] = useState("");
 
   const showToast = (m: string) => {
@@ -984,10 +984,28 @@ const TractorMarket: React.FC = () => {
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t("subtitle")}</p>
           </div>
-          <AgriButton size="icon" variant="outline" onClick={locate} disabled={locating} title="Nearby">
-            {locating ? <RefreshCw size={16} className="animate-spin" /> : <Navigation size={16} className="text-primary" />}
-          </AgriButton>
+          <div className="flex items-center gap-2">
+            <AgriButton
+              size="sm"
+              onClick={() => setShowListEquipment(true)}
+              className="bg-primary/90 text-primary-foreground font-semibold shadow-sm"
+            >
+              <PlusCircle size={15} /> + उपकरण जोड़ें
+            </AgriButton>
+            <AgriButton size="icon" variant="outline" onClick={locate} disabled={locating} title="Nearby">
+              {locating ? <RefreshCw size={16} className="animate-spin" /> : <Navigation size={16} className="text-primary" />}
+            </AgriButton>
+          </div>
         </div>
+
+        <Dialog open={showListEquipment} onOpenChange={setShowListEquipment}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>List Your Tractor / Equipment</DialogTitle>
+            </DialogHeader>
+            <EquipmentAssetForm onSuccess={() => setShowListEquipment(false)} />
+          </DialogContent>
+        </Dialog>
 
         <div className="grid grid-cols-4 gap-2 mt-4">
           {[
