@@ -4,7 +4,7 @@ import {
   mutateCollection,
 } from '../../domain/adminStore';
 import type { AdminAuditAction, AdminCollectionKey, AdminState } from '../../domain/adminTypes';
-import { uid } from '../../domain/adminSeed';
+const uid = () => 'uid_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 import { useAdminStore } from '../hooks/useAdminStore';
 
 const ACTOR_FALLBACK = 'Unknown Admin';
