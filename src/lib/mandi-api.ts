@@ -5,7 +5,7 @@ const RESOURCE_ID = "9ef84268-d588-465a-a308-a864a43d0070";
 const ALT_RESOURCE_ID = "35985678-0d79-46b4-9ed6-6f13308a1d24";
 const API_KEY = import.meta.env.VITE_MANDI_API_KEY as string | undefined;
 
-const CACHE_KEY = "mandi_prices_live_cache_v2";
+const CACHE_KEY = "mandi_prices_live_cache_v3";
 
 const DEBUG = import.meta.env.DEV;
 const log = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
@@ -28,6 +28,7 @@ export interface MandiPrice {
   market: string;
   district: string;
   state: string;
+  variety?: string;
   minPrice: number;
   maxPrice: number;
   msp?: number;
@@ -44,7 +45,7 @@ export interface MandiPrice {
 
 export interface MandiResult {
   prices: MandiPrice[];
-  source: "data.gov.in" | "edge" | "cache";
+  source: "data.gov.in" | "edge" | "cache" | "apmc-benchmark";
   lastUpdated: string;
   isCached?: boolean;
   cachedAtText?: string;
@@ -64,7 +65,7 @@ interface MandiRecord {
   modal_price?: string | number;
 }
 
-const HINDI_CROP_NAMES: Record<string, string> = {
+export const HINDI_CROP_NAMES: Record<string, string> = {
   Wheat: "गेहूं",
   "Rice (Basmati)": "चावल (बासमती)",
   Rice: "चावल",
@@ -99,61 +100,79 @@ const HINDI_CROP_NAMES: Record<string, string> = {
   Brinjal: "बैंगन",
   "Okra (Bhindi)": "भिंडी",
   Bhindi: "भिंडी",
-  Spinach: "पालक",
-  "Bitter Gourd": "करेला",
-  "Lentils (Moong)": "मूंग दाल",
+  Ginger: "अदरक",
+  Barley: "जौ",
+  Jowar: "ज्वार",
+  Bajra: "बाजरा",
   Moong: "मूंग",
-  "Arhar (Tur Dal)": "अरहर (तूर)",
-  Tur: "अरहर",
+  Urad: "उड़द",
+  Tur: "अरहर/तुअर",
+  Arhar: "अरहर",
+  Apple: "सेब",
+  Pomegranate: "अनार",
+  Papaya: "पपीता",
+  Guava: "अमरूद",
+  Orange: "संतरा",
+  Grapes: "अंगूर",
+  Watermelon: "तरबूज",
+  Coconut: "नारियल",
+  Cardamom: "इलायची",
+  Jute: "जूट",
+  Tobacco: "तंबाकू",
+  Tea: "चाय",
+  Coffee: "कॉफ़ी",
 };
 
-// Official Government Minimum Support Prices (MSP) in ₹/Quintal (2025-2026)
-const CROP_MSP: Record<string, number> = {
-  Wheat: 2425,
-  Paddy: 2300,
-  "Paddy(Common)": 2300,
-  Rice: 2300,
-  Maize: 2225,
-  Soybean: 4892,
-  Mustard: 5950,
-  Cotton: 7121,
-  Gram: 5440,
+/**
+ * Official MSP (Minimum Support Price) benchmark values (2025–2026 season)
+ */
+export const MSP_DATA: Record<string, number> = {
+  Wheat: 2275,
+  "Rice (Basmati)": 2300,
+  Rice: 2183,
+  "Paddy(Common)": 2183,
+  Paddy: 2183,
+  Maize: 2090,
+  Soybean: 4600,
+  Cotton: 6620,
+  Mustard: 5650,
   "Gram(Chana)": 5440,
+  Gram: 5440,
   Chana: 5440,
-  Groundnut: 6783,
-  Masoor: 6700,
-  Moong: 8682,
-  Tur: 7550,
-  Arhar: 7550,
+  Groundnut: 6377,
+  "Masoor Dal": 6425,
+  Masoor: 6425,
+  Moong: 8558,
+  Urad: 6950,
+  Tur: 7000,
+  Arhar: 7000,
+  Barley: 1850,
+  Jowar: 3180,
+  Bajra: 2500,
   Sugarcane: 340,
 };
 
-function getCropMSP(cropName: string): number | undefined {
-  const lower = cropName.toLowerCase();
-  for (const [key, val] of Object.entries(CROP_MSP)) {
-    if (lower.includes(key.toLowerCase())) return val;
+export function getCropMSP(cropName?: string): number | undefined {
+  if (!cropName) return undefined;
+  const name = cropName.trim();
+  if (MSP_DATA[name]) return MSP_DATA[name];
+
+  const lower = name.toLowerCase();
+  for (const [k, v] of Object.entries(MSP_DATA)) {
+    if (lower.includes(k.toLowerCase())) return v;
   }
   return undefined;
 }
 
-/**
- * Normalize a crop name to a stable dedup key.
- * Strips parenthetical suffixes (English + Hindi): "Paddy(Common)" -> "paddy",
- * "Wheat (गेहूं)" -> "wheat".
- */
-export function normalizeCropKey(crop: string): string {
-  return (crop || "")
+export function normalizeCropKey(name: string): string {
+  return name
     .toLowerCase()
-    .replace(/\([^)]*\)/g, " ")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[^a-z0-9]/g, "")
     .trim();
 }
 
 /**
- * Show each unique commodity+market+date combination.
- * Different markets or dates for the same crop are kept as separate records
- * so farmers can compare prices across mandis.
+ * Deduplicates records while preserving varieties (e.g. Red Onion vs White Onion).
  */
 function dedupeByRecord(prices: MandiPrice[]): MandiPrice[] {
   const seen = new Map<string, MandiPrice>();
@@ -179,6 +198,7 @@ function mapRecord(record: MandiRecord): MandiPrice | null {
   const market = (record.market || "").trim();
   const district = (record.district || market || "Local Mandi").trim();
   const state = (record.state || "India").trim();
+  const variety = (record.variety || "").trim();
 
   const midRange = (maxPrice + minPrice) / 2 || modalPrice;
   let status: "up" | "down" | "stable" = "stable";
@@ -202,12 +222,15 @@ function mapRecord(record: MandiRecord): MandiPrice | null {
   const yesterdayPrice = Math.round(modalPrice * (status === "up" ? 0.97 : status === "down" ? 1.03 : 1.0));
   const arrivalQuantity = Math.round(150 + Math.abs(Math.sin(modalPrice) * 350));
 
+  const uniqueId = `${commodity}::${variety}::${market}::${district}::${state}::${arrivalDate}`.toLowerCase();
+
   const baseItem: MandiPrice = {
-    id: `${commodity}::${market}::${district}::${state}::${arrivalDate}`.toLowerCase(),
+    id: uniqueId,
     crop: commodity,
     cropHi,
     cropImage,
     category,
+    variety: variety || undefined,
     price: Math.round(modalPrice),
     market,
     district,
@@ -235,8 +258,14 @@ function mapRecord(record: MandiRecord): MandiPrice | null {
 
 /**
  * Fetch live Mandi prices from Ministry of Agriculture's data.gov.in API feed.
+ * Fetches all available records up to 500 per query to ensure comprehensive crop coverage.
  */
-async function fetchFromGovt(query?: string, stateFilter?: string, districtFilter?: string): Promise<MandiPrice[]> {
+async function fetchFromGovt(
+  query?: string,
+  stateFilter?: string,
+  districtFilter?: string,
+  marketFilter?: string
+): Promise<MandiPrice[]> {
   if (!API_KEY) {
     warn("[Mandi API Audit] VITE_MANDI_API_KEY is not set in environment.");
     throw new Error("Mandi API key not configured");
@@ -246,7 +275,7 @@ async function fetchFromGovt(query?: string, stateFilter?: string, districtFilte
   let lastError: unknown;
 
   for (const resourceId of targetResources) {
-    let url = `https://api.data.gov.in/resource/${resourceId}?api-key=${encodeURIComponent(API_KEY)}&format=json&limit=250`;
+    let url = `https://api.data.gov.in/resource/${resourceId}?api-key=${encodeURIComponent(API_KEY)}&format=json&limit=500`;
     if (query && query.trim()) {
       url += `&filters[commodity]=${encodeURIComponent(query.trim())}`;
     }
@@ -255,6 +284,9 @@ async function fetchFromGovt(query?: string, stateFilter?: string, districtFilte
     }
     if (districtFilter && districtFilter.trim()) {
       url += `&filters[district]=${encodeURIComponent(districtFilter.trim())}`;
+    }
+    if (marketFilter && marketFilter.trim()) {
+      url += `&filters[market]=${encodeURIComponent(marketFilter.trim())}`;
     }
 
     log(`[Mandi API Request] URL: ${url.replace(API_KEY, "KEY_HIDDEN")}`);
@@ -303,13 +335,19 @@ async function fetchFromGovt(query?: string, stateFilter?: string, districtFilte
 /**
  * Fetch Mandi prices from Supabase Edge Function gateway.
  */
-async function fetchFromEdge(searchQuery?: string, stateFilter?: string, districtFilter?: string): Promise<MandiPrice[]> {
-  log(`[Mandi Edge Request] Invoking edge function 'mandi-prices' with query: '${searchQuery || ""}' state: '${stateFilter || ""}' district: '${districtFilter || ""}'`);
+async function fetchFromEdge(
+  searchQuery?: string,
+  stateFilter?: string,
+  districtFilter?: string,
+  marketFilter?: string
+): Promise<MandiPrice[]> {
+  log(`[Mandi Edge Request] Invoking edge function 'mandi-prices' with query: '${searchQuery || ""}' state: '${stateFilter || ""}' district: '${districtFilter || ""}' market: '${marketFilter || ""}'`);
   try {
     const { data: result, error } = await invokeEdgeWithTimeout("mandi-prices", {
       searchQuery: searchQuery || "",
       state: stateFilter || "",
       district: districtFilter || "",
+      market: marketFilter || "",
     });
 
     if (error) throw error;
@@ -320,40 +358,40 @@ async function fetchFromEdge(searchQuery?: string, stateFilter?: string, distric
     const seen = new Set<string>();
 
     for (const p of rawPrices) {
-      const crop = String(p.crop || "").trim();
-      const modalPrice = Number(p.price || p.modalPrice) || 0;
+      const crop = String(p.crop || p.commodity || "").trim();
+      const modalPrice = Number(p.price || p.modalPrice || p.modal_price || 0);
       if (!crop || modalPrice === 0) continue;
 
-      const market = String(p.market || "Local Mandi").trim();
-      const district = String(p.district || market).trim();
+      const market = String(p.market || "").trim();
+      const district = String(p.district || market || "Local Mandi").trim();
       const state = String(p.state || "India").trim();
-      const id = `${crop}::${market}::${district}::${state}`.toLowerCase();
+      const variety = String(p.variety || "").trim();
+      const minPrice = Number(p.minPrice || p.min_price || modalPrice * 0.95);
+      const maxPrice = Number(p.maxPrice || p.max_price || modalPrice * 1.05);
+      const arrivalDate = String(p.arrivalDate || p.arrival_date || new Date().toISOString().split("T")[0]);
 
-      if (seen.has(id)) continue;
-      seen.add(id);
+      const key = `${crop}::${variety}::${market}::${district}::${state}::${arrivalDate}`.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
 
-      const minPrice = Number(p.minPrice) || Math.round(modalPrice * 0.95);
-      const maxPrice = Number(p.maxPrice) || Math.round(modalPrice * 1.05);
-      const arrivalDate = String(p.arrivalDate || new Date().toISOString().split("T")[0]);
-
-      const status = (p.status as "up" | "down" | "stable") || "stable";
-      const currentHour = new Date().getHours();
-      const operatingStatus: "OPEN" | "CLOSED" = currentHour >= 8 && currentHour < 17 ? "OPEN" : "CLOSED";
-      const yesterdayPrice = Math.round(modalPrice * (status === "up" ? 0.97 : status === "down" ? 1.03 : 1.0));
-      const arrivalQuantity = Math.round(150 + Math.abs(Math.sin(modalPrice) * 350));
+      const status: "up" | "down" | "stable" = (p.status as "up" | "down" | "stable") || "stable";
+      const yesterdayPrice = Number(p.yesterdayPrice || Math.round(modalPrice * 0.98));
+      const arrivalQuantity = Number(p.arrivalQuantity || 200);
+      const operatingStatus: "OPEN" | "CLOSED" = (p.operatingStatus as "OPEN" | "CLOSED") || "OPEN";
 
       const item: MandiPrice = {
-        id,
+        id: key,
         crop,
-        cropHi: HINDI_CROP_NAMES[crop] || String(p.cropHi || crop),
+        cropHi: HINDI_CROP_NAMES[crop] || (p.cropHi as string) || crop,
         cropImage: getCropImage(crop),
         category: getCropCategory(crop),
+        variety: variety || undefined,
         price: Math.round(modalPrice),
         market,
         district,
         state,
-        minPrice,
-        maxPrice,
+        minPrice: Math.round(minPrice),
+        maxPrice: Math.round(maxPrice),
         msp: getCropMSP(crop),
         unit: "₹/Quintal",
         status,
@@ -410,15 +448,49 @@ function readCache(): { prices: MandiPrice[]; source: string; timestamp: string 
 }
 
 /**
+ * Searches and filters a mandi dataset comprehensively.
+ * Supports partial names ('gar' -> Garlic), case-insensitivity, Hindi translations, and location names.
+ */
+export function searchMandiDataset(prices: MandiPrice[], query?: string): MandiPrice[] {
+  if (!query || !query.trim()) return prices;
+  const q = query.trim().toLowerCase();
+
+  return prices.filter((p) => {
+    const matchCrop = p.crop.toLowerCase().includes(q);
+    const matchCropHi = p.cropHi ? p.cropHi.toLowerCase().includes(q) : false;
+    const matchVariety = p.variety ? p.variety.toLowerCase().includes(q) : false;
+    const matchMarket = p.market.toLowerCase().includes(q);
+    const matchDistrict = p.district.toLowerCase().includes(q);
+    const matchState = p.state.toLowerCase().includes(q);
+    const matchCategory = p.category.toLowerCase().includes(q);
+
+    return (
+      matchCrop ||
+      matchCropHi ||
+      matchVariety ||
+      matchMarket ||
+      matchDistrict ||
+      matchState ||
+      matchCategory
+    );
+  });
+}
+
+/**
  * Primary function to fetch verified live Mandi prices across India.
  * Never generates fake/dummy prices. If live APIs fail, returns cached response or clean error state.
  */
-export async function fetchMandiPrices(searchQuery?: string, stateFilter?: string, districtFilter?: string): Promise<MandiResult> {
+export async function fetchMandiPrices(
+  searchQuery?: string,
+  stateFilter?: string,
+  districtFilter?: string,
+  marketFilter?: string
+): Promise<MandiResult> {
   const nowStr = new Date().toISOString();
 
   // 1. Try Direct Ministry Data.gov.in API
   try {
-    const livePrices = await fetchFromGovt(searchQuery, stateFilter, districtFilter);
+    const livePrices = await fetchFromGovt(searchQuery, stateFilter, districtFilter, marketFilter);
     if (livePrices.length > 0) {
       saveCache(livePrices, "data.gov.in");
       log(`[Mandi UI Render] Serving ${livePrices.length} verified live prices from Data.gov.in`);
@@ -435,7 +507,7 @@ export async function fetchMandiPrices(searchQuery?: string, stateFilter?: strin
 
   // 2. Try Supabase Edge Function Gateway
   try {
-    const edgePrices = await fetchFromEdge(searchQuery, stateFilter, districtFilter);
+    const edgePrices = await fetchFromEdge(searchQuery, stateFilter, districtFilter, marketFilter);
     if (edgePrices.length > 0) {
       saveCache(edgePrices, "edge");
       log(`[Mandi UI Render] Serving ${edgePrices.length} verified live prices from Edge Function`);
@@ -454,15 +526,17 @@ export async function fetchMandiPrices(searchQuery?: string, stateFilter?: strin
   const cache = readCache();
   if (cache && cache.prices && cache.prices.length > 0) {
     let filtered = cache.prices;
+    if (stateFilter && stateFilter.trim()) {
+      filtered = filtered.filter((p) => p.state.toLowerCase() === stateFilter.trim().toLowerCase());
+    }
+    if (districtFilter && districtFilter.trim()) {
+      filtered = filtered.filter((p) => p.district.toLowerCase() === districtFilter.trim().toLowerCase());
+    }
+    if (marketFilter && marketFilter.trim()) {
+      filtered = filtered.filter((p) => p.market.toLowerCase() === marketFilter.trim().toLowerCase());
+    }
     if (searchQuery && searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      filtered = cache.prices.filter(
-        (p) =>
-          p.crop.toLowerCase().includes(q) ||
-          p.market.toLowerCase().includes(q) ||
-          p.district.toLowerCase().includes(q) ||
-          p.state.toLowerCase().includes(q)
-      );
+      filtered = searchMandiDataset(filtered, searchQuery);
     }
 
     const cachedDate = new Date(cache.timestamp);
@@ -520,6 +594,14 @@ const RAW_BASELINE_CROPS = [
   { crop: "Cauliflower", price: 1350, minPrice: 1150, maxPrice: 1550, market: "Varanasi APMC", district: "Varanasi", state: "Uttar Pradesh" },
   { crop: "Brinjal", price: 1650, minPrice: 1400, maxPrice: 1900, market: "Kolkata Market", district: "Kolkata", state: "West Bengal" },
   { crop: "Okra (Bhindi)", price: 2800, minPrice: 2400, maxPrice: 3200, market: "Jaipur Mandi", district: "Jaipur", state: "Rajasthan" },
+  { crop: "Ginger", price: 6800, minPrice: 6200, maxPrice: 7400, market: "Kochi Market", district: "Ernakulam", state: "Kerala" },
+  { crop: "Moong", price: 8200, minPrice: 7900, maxPrice: 8600, market: "Latur Mandi", district: "Latur", state: "Maharashtra" },
+  { crop: "Urad", price: 7400, minPrice: 7100, maxPrice: 7800, market: "Gulbarga APMC", district: "Kalaburagi", state: "Karnataka" },
+  { crop: "Cumin", price: 28000, minPrice: 26500, maxPrice: 30000, market: "Unjha Mandi", district: "Mehsana", state: "Gujarat" },
+  { crop: "Coriander", price: 7200, minPrice: 6800, maxPrice: 7600, market: "Kota Mandi", district: "Kota", state: "Rajasthan" },
+  { crop: "Apple", price: 8500, minPrice: 7500, maxPrice: 9500, market: "Shimla APMC", district: "Shimla", state: "Himachal Pradesh" },
+  { crop: "Pomegranate", price: 9200, minPrice: 8000, maxPrice: 10500, market: "Solapur APMC", district: "Solapur", state: "Maharashtra" },
+  { crop: "Coconut", price: 2800, minPrice: 2500, maxPrice: 3200, market: "Kozhikode Market", district: "Kozhikode", state: "Kerala" },
 ];
 
 export function getBaselineMandiPrices(searchQuery?: string): MandiPrice[] {
@@ -552,15 +634,7 @@ export function getBaselineMandiPrices(searchQuery?: string): MandiPrice[] {
   });
 
   if (searchQuery && searchQuery.trim()) {
-    const q = searchQuery.trim().toLowerCase();
-    return list.filter(
-      (p) =>
-        p.crop.toLowerCase().includes(q) ||
-        p.market.toLowerCase().includes(q) ||
-        p.district.toLowerCase().includes(q) ||
-        p.state.toLowerCase().includes(q)
-    );
+    return searchMandiDataset(list, searchQuery);
   }
-
   return list;
 }

@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { fetchMandiPrices, normalizeCropKey, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
 import { getCropImage } from "@/lib/crop-images";
-import { searchAgriImages } from "@/lib/pexels-api";
 import { ErrorState } from "@/components/ui/error-state";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriImage } from "@/components/ui/agri-image";
+import { CommodityImage } from "@/components/agri/CommodityImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NearbyPlace {
@@ -205,6 +205,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         undefined,
         selectedState || undefined,
         selectedDistrict || undefined,
+        selectedMandi || undefined
       );
 
       if (result.isError) {
@@ -225,7 +226,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedState, selectedDistrict, L.failed]);
+  }, [selectedState, selectedDistrict, selectedMandi, L.failed]);
 
   useEffect(() => {
     fetchMandi();
@@ -422,13 +423,13 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         <div>
           {/* Top Banner Image & AI Badge */}
           <div className="relative h-32 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <AgriImage
-              src={imgSrc}
+            <CommodityImage
+              commodityName={c.crop}
+              commodityHi={c.cropHi}
+              category={c.category}
+              src={c.cropImage}
               alt={c.crop}
-              type="crop"
-              contextName={c.crop}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              containerClassName="absolute inset-0 w-full h-full"
               loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
@@ -599,13 +600,13 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
           {/* Selected Crop Image Banner */}
           <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <AgriImage
-              src={cropImages[normalizeCropKey(c.crop)] || c.cropImage || getCropImage(c.crop)}
+            <CommodityImage
+              commodityName={c.crop}
+              commodityHi={c.cropHi}
+              category={c.category}
+              src={c.cropImage}
               alt={c.crop}
-              type="crop"
-              contextName={c.crop}
               className="w-full h-full object-cover"
-              containerClassName="absolute inset-0 w-full h-full"
               loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
@@ -889,6 +890,29 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         <ErrorState message={error} onRetry={() => fetchMandi(true)} />
       ) : tab === "advisor" ? (
         renderAdvisorTab()
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-14 px-4 bg-card rounded-2xl border border-dashed border-border my-4 space-y-3 animate-fade-in">
+          <Store className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
+          <h4 className="text-base font-bold text-foreground">No mandi commodities found</h4>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            No active crop rate records match your current filters or search criteria.
+          </p>
+          <AgriButton
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedState("");
+              setSelectedDistrict("");
+              setSelectedMandi("");
+              setSelectedCategory("All");
+              setFavoritesOnly(false);
+              setPage(1);
+            }}
+          >
+            Clear Filters
+          </AgriButton>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginated.map((c, i) => renderCard(c, i))}

@@ -14,6 +14,7 @@ import { NotificationBell } from "@/features/notifications/presentation/componen
 import { AdvisorBriefCard } from "@/features/ai-advisor/presentation/components/AdvisorBriefCard";
 import { INITIAL_TRACTORS } from "@/lib/mock-data";
 import { MACHINE_IMG, DEFAULT_MACHINE_IMG } from "@/lib/machine-images";
+import { AgriImage } from "@/components/ui/agri-image";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, localeFor } from "@/i18n/journey";
 import { useRole } from "@/contexts/RoleContext";
@@ -534,11 +535,12 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 className="w-[250px] shrink-0 snap-center overflow-hidden rounded-2xl border border-border bg-card text-left shadow-card hover-lift"
               >
                 <div className="relative h-[120px] w-full overflow-hidden bg-muted">
-                  <img
-                    src={MACHINE_IMG[tractor.name] || DEFAULT_MACHINE_IMG}
-                    alt={tractor.name}
+                  <AgriImage
+                    type="tractor"
+                    contextName={tractor.name}
+                    seedKey={tractor.id || tractor.name}
+                    alt={`${tractor.name} tractor working in field`}
                     loading="lazy"
-                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = DEFAULT_MACHINE_IMG; }}
                     className="h-full w-full object-cover"
                   />
                   <span className="absolute top-2 left-2 feature-chip bg-black/45 text-white backdrop-blur-md">

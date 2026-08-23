@@ -18,6 +18,7 @@ import {
   Share2,
 } from "lucide-react";
 import { fetchMandiPrices } from "@/lib/mandi-api";
+import { AgriImage } from "@/components/ui/agri-image";
 
 // Bilingual labels
 type Lang = "en" | "hi";
@@ -249,8 +250,15 @@ const CropPanel: React.FC<{
     <div className={`bg-card rounded-2xl border-2 ${highlight ? "border-primary" : "border-border"} overflow-hidden shadow-card`}>
       {/* crop image header */}
       <div className="relative h-28 overflow-hidden">
-        <img src={crop.image} alt={cropKey} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=400"; }} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+        <AgriImage
+          type="crop"
+          crop={cropKey}
+          contextName={crop.labelEn}
+          alt={`${crop.labelEn} agricultural crop farming`}
+          loading="lazy"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
         <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
           <div>
             <p className="text-white font-bold text-sm">{lang === "hi" ? crop.labelHi : crop.labelEn} {crop.emoji}</p>
@@ -409,13 +417,13 @@ const CropProfitCalculator: React.FC<CropProfitCalculatorProps> = ({ onToast }) 
     <div className="pb-24 pt-4 min-h-screen">
       {/* Hero */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
-        <img
-          src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800"
-          alt="Crop profit calculator"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=800"; }}
+        <AgriImage
+          type="crops"
+          contextName="Crop profit calculator"
+          alt="Agricultural crop field farming profit calculation"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40 pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-between px-5">
           <div>
             <h2 className="text-xl font-bold text-primary-foreground flex items-center gap-2">

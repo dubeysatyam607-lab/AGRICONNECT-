@@ -6,6 +6,8 @@ import { AgriButton } from "@/components/ui/agri-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 import { LaborHireForm } from "./FormValidation";
+import { LaborAssetForm } from "./AssetForms";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LaborHireProps {
@@ -25,6 +27,7 @@ interface Laborer {
 const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
   const { t } = useLanguage();
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [laborersList, setLaborersList] = useState<Laborer[]>([]);
 
   useEffect(() => {
@@ -52,14 +55,32 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
 
   return (
     <div className="pb-24 pt-4 px-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Briefcase className="text-primary" /> Khet Mazdoor
-        </h2>
-        <p className="text-muted-foreground text-sm">
-          Hire skilled labor for your farm
-        </p>
+      <div className="mb-4 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Briefcase className="text-primary" /> Khet Mazdoor
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Hire skilled labor for your farm
+          </p>
+        </div>
+        <AgriButton
+          onClick={() => setShowRegisterDialog(true)}
+          size="sm"
+          className="bg-primary/90 text-primary-foreground font-semibold shadow-sm"
+        >
+          <UserPlus size={15} /> + मजदूर पंजीकरण
+        </AgriButton>
       </div>
+
+      <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>List Yourself as Farm Labour</DialogTitle>
+          </DialogHeader>
+          <LaborAssetForm onSuccess={() => setShowRegisterDialog(false)} />
+        </DialogContent>
+      </Dialog>
 
       {/* Request Labor Button */}
       <AgriButton
