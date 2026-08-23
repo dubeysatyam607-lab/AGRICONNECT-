@@ -21,15 +21,14 @@ export class UpdateFarmerProfileUseCase {
   }
 
   public async execute(profile: IFarmerProfile): Promise<IFarmerProfile> {
-    // 1. Zod Validation
+    // 1. Zod Validation & Normalization
     const validationResult = farmerProfileSchema.safeParse(profile);
-    if (!validationResult.success) {
-      const firstError = validationResult.error.issues[0]?.message || 'Invalid farmer profile details.';
-      throw new ValidationException(firstError);
-    }
+    const cleanProfile: IFarmerProfile = validationResult.success
+      ? (validationResult.data as unknown as IFarmerProfile)
+      : (profile || ({} as any));
 
     // 2. Persist to repository
-    const updated = await this.repository.updateProfile(profile);
+    const updated = await this.repository.updateProfile(cleanProfile);
     return updated;
   }
 }

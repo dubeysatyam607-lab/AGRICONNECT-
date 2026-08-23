@@ -127,6 +127,44 @@ export class ProfileRemoteDataSource {
 
   public async saveRemoteProfile(profile: IFarmerProfile): Promise<IFarmerProfile> {
     try {
+      if (!profile) {
+        return ProfileRemoteDataSource.getDefaultProfile('anon');
+      }
+
+      // Ensure all top-level sections are non-null objects
+      const personal = profile.personal || {
+        fullName: '',
+        mobileNumber: '',
+        emailAddress: '',
+        gender: 'Prefer not to say',
+        dateOfBirth: '',
+        aadhaarNumber: '',
+        isAadhaarVerified: false,
+      };
+      const location = profile.location || {
+        villageOrTehsil: '',
+        district: '',
+        state: '',
+        pinCode: '',
+        gpsCoordinates: null,
+        isLocationPermissionGranted: false,
+        farmCentroidAddress: '',
+      };
+      const farmSpecs = profile.farmSpecs || {
+        totalArea: 0,
+        landUnit: 'Acres',
+        soilType: 'Alluvial',
+        irrigationType: 'Rainfed / Monsoon',
+        primaryWaterSource: '',
+      };
+      const livestock = profile.livestock || {
+        cows: 0,
+        buffaloes: 0,
+        bullocks: 0,
+        goatsOrSheep: 0,
+        poultry: 0,
+      };
+
       // 1. Resolve actual authenticated user ID
       let effectiveUserId = profile.id;
       if (!effectiveUserId || effectiveUserId === 'anon') {
@@ -147,43 +185,43 @@ export class ProfileRemoteDataSource {
 
       // Store extended fields as JSON
       const extendedProfile = {
-        emailAddress: profile.personal.emailAddress,
-        gender: profile.personal.gender,
-        dateOfBirth: profile.personal.dateOfBirth,
-        aadhaarNumber: profile.personal.aadhaarNumber,
-        isAadhaarVerified: profile.personal.isAadhaarVerified,
-        villageOrTehsil: profile.location.villageOrTehsil,
-        district: profile.location.district,
-        state: profile.location.state,
-        pinCode: profile.location.pinCode,
-        gpsCoordinates: profile.location.gpsCoordinates,
-        isLocationPermissionGranted: profile.location.isLocationPermissionGranted,
-        farmCentroidAddress: profile.location.farmCentroidAddress,
-        totalArea: profile.farmSpecs.totalArea,
-        landUnit: profile.farmSpecs.landUnit,
-        soilType: profile.farmSpecs.soilType,
-        irrigationType: profile.farmSpecs.irrigationType,
-        primaryWaterSource: profile.farmSpecs.primaryWaterSource,
-        crops: profile.crops,
-        machineryOwned: profile.machineryOwned,
-        livestock: profile.livestock,
-        preferredLanguage: profile.preferredLanguage,
+        emailAddress: personal.emailAddress || '',
+        gender: personal.gender || 'Prefer not to say',
+        dateOfBirth: personal.dateOfBirth || '',
+        aadhaarNumber: personal.aadhaarNumber || '',
+        isAadhaarVerified: personal.isAadhaarVerified ?? false,
+        villageOrTehsil: location.villageOrTehsil || '',
+        district: location.district || '',
+        state: location.state || '',
+        pinCode: location.pinCode || '',
+        gpsCoordinates: location.gpsCoordinates || null,
+        isLocationPermissionGranted: location.isLocationPermissionGranted ?? false,
+        farmCentroidAddress: location.farmCentroidAddress || '',
+        totalArea: farmSpecs.totalArea ?? 0,
+        landUnit: farmSpecs.landUnit || 'Acres',
+        soilType: farmSpecs.soilType || 'Alluvial',
+        irrigationType: farmSpecs.irrigationType || 'Rainfed / Monsoon',
+        primaryWaterSource: farmSpecs.primaryWaterSource || '',
+        crops: Array.isArray(profile.crops) ? profile.crops : [],
+        machineryOwned: Array.isArray(profile.machineryOwned) ? profile.machineryOwned : [],
+        livestock: livestock,
+        preferredLanguage: profile.preferredLanguage || 'en',
       };
 
       const payload = {
         id: effectiveUserId,
-        full_name: profile.personal.fullName || '',
-        email: profile.personal.emailAddress || null,
-        phone: profile.personal.mobileNumber || '',
-        location: profile.location.villageOrTehsil || null,
-        state: profile.location.state || null,
-        district: profile.location.district || null,
-        village: profile.location.villageOrTehsil || null,
-        farm_location: profile.location.farmCentroidAddress || null,
+        full_name: personal.fullName || '',
+        email: personal.emailAddress || null,
+        phone: personal.mobileNumber || '',
+        location: location.villageOrTehsil || null,
+        state: location.state || null,
+        district: location.district || null,
+        village: location.villageOrTehsil || null,
+        farm_location: location.farmCentroidAddress || null,
         primary_crop: profile.crops?.[0] || null,
-        farm_size: profile.farmSpecs.totalArea || 0,
-        soil_type: profile.farmSpecs.soilType || null,
-        irrigation_type: profile.farmSpecs.irrigationType || null,
+        farm_size: farmSpecs.totalArea ?? 0,
+        soil_type: farmSpecs.soilType || null,
+        irrigation_type: farmSpecs.irrigationType || null,
         app_language: profile.preferredLanguage || 'en',
         avatar_url: profile.profilePictureUrl || null,
         onboarding_completed: true,
@@ -197,13 +235,13 @@ export class ProfileRemoteDataSource {
         console.warn('[ProfileRemoteDataSource] Upsert warning, trying core update:', error.message);
         const { error: fallbackError } = await supabase.from('profiles').upsert({
           id: effectiveUserId,
-          full_name: profile.personal.fullName || '',
-          phone: profile.personal.mobileNumber || '',
-          state: profile.location.state || null,
-          district: profile.location.district || null,
-          village: profile.location.villageOrTehsil || null,
+          full_name: personal.fullName || '',
+          phone: personal.mobileNumber || '',
+          state: location.state || null,
+          district: location.district || null,
+          village: location.villageOrTehsil || null,
           primary_crop: profile.crops?.[0] || null,
-          farm_size: profile.farmSpecs.totalArea || 0,
+          farm_size: farmSpecs.totalArea ?? 0,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' });
@@ -217,11 +255,11 @@ export class ProfileRemoteDataSource {
       try {
         await supabase.auth.updateUser({
           data: {
-            full_name: profile.personal.fullName,
-            phone: profile.personal.mobileNumber,
-            village: profile.location.villageOrTehsil,
-            district: profile.location.district,
-            state: profile.location.state,
+            full_name: personal.fullName || '',
+            phone: personal.mobileNumber || '',
+            village: location.villageOrTehsil || '',
+            district: location.district || '',
+            state: location.state || '',
           },
         });
       } catch (authMetaErr) {
