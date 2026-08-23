@@ -20,9 +20,9 @@ import {
   listen, sttSupported, detectLanguageOf, localeForLang,
   rememberProfile, buildMemoryContext, extractFacts, rememberTopic,
   personaInstruction, speakText as engineSpeakText, stopSpeaking as stopSpeakingEngine,
-  chunkForSpeech, textForSpeech,
+  chunkForSpeech, textForSpeech, extractEntities, verifyCropConsistency,
 } from "@/core/voice";
-import type { SttController, TtsController } from "@/core/voice";
+import type { SttController, TtsController, MicState } from "@/core/voice";
 import { ListeningOverlay } from "@/core/voice/ui/ListeningOverlay";
 import { VoicePlayerBar } from "@/core/voice/ui/VoicePlayerBar";
 
@@ -203,6 +203,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [showHistory, setShowHistory] = useState(false);
+  const [micState, setMicState] = useState<MicState>("IDLE");
 
   // VoiceEngine: live transcript, silence auto-stop and spoken-language auto-detect
   const [voiceTranscript, setVoiceTranscript] = useState("");
@@ -516,6 +517,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       return;
     }
 
+    // Barge-in: If AI is speaking, interrupt it immediately
+    if (isSpeaking) {
+      stopAllSpeaking();
+    }
+
     if (isListening) {
       // Manual stop — commit whatever was captured.
       sttRef.current?.stop();
@@ -523,8 +529,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       const captured = voiceTranscriptRef.current;
       voiceTranscriptRef.current = "";
       setIsListening(false);
+      setMicState("IDLE");
       setVoiceTranscript("");
-      if (captured.trim()) setInput(captured.trim());
+      if (captured.trim()) {
+        handleSend(captured.trim());
+      }
       return;
     }
 
@@ -533,6 +542,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     voiceTranscriptRef.current = "";
     setVoiceFinal(false);
     setIsListening(true);
+    setMicState("LISTENING");
 
     sttRef.current = listen(sttLang, {
       onTranscript: (combined, isFinal) => {
@@ -540,18 +550,28 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         setVoiceTranscript(combined);
         setVoiceFinal(isFinal);
       },
-      // Silence auto-stop — commit the captured speech and send it straight in.
+      onStateChange: (state) => {
+        setMicState(state);
+        if (state === "IDLE") {
+          setIsListening(false);
+        }
+      },
+      // Silence auto-stop — automatically commit and send the captured speech straight to AI!
       onEnd: () => {
         sttRef.current = null;
         setIsListening(false);
+        setMicState("IDLE");
         const captured = voiceTranscriptRef.current;
         voiceTranscriptRef.current = "";
         setVoiceTranscript("");
-        if (captured.trim()) setInput(captured.trim());
+        if (captured.trim()) {
+          handleSend(captured.trim());
+        }
       },
       onError: (error) => {
         sttRef.current = null;
         setIsListening(false);
+        setMicState("ERROR");
         voiceTranscriptRef.current = "";
         setVoiceTranscript("");
         if (error === "not-allowed" || error === "service-not-allowed") {
@@ -567,19 +587,18 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
   const commitTranscript = (text: string) => {
     if (!text.trim()) return;
-    // Auto-detect the language the farmer actually spoke and match the next
-    // listening round (and hint the assistant) to that language.
     const detected = detectLanguageOf(text);
     if (detected && detected.lang !== "en") {
       setSttLang(localeForLang(detected.lang));
     }
     rememberTopic(text);
-    setInput(text.trim());
     voiceTranscriptRef.current = "";
     setVoiceTranscript("");
     setIsListening(false);
+    setMicState("IDLE");
     sttRef.current?.abort();
     sttRef.current = null;
+    handleSend(text.trim());
   };
 
   const stopAllSpeaking = () => {
@@ -600,19 +619,21 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   };
 
   /**
-   * Speak an assistant reply through the ElevenLabs neural engine with live
-   * sentence subtitles and transport controls. Text is always sanitised inside
-   * the engine so no markdown/symbol is ever read aloud.
+   * Speak assistant reply with Natural Indian Human Voice & immediate streaming playback.
    */
-  const playAssistantVoice = (text: string) => {
-    const langCode = getSpeechLangCode(selectedLanguage);
-    const chunks = chunkForSpeech(textForSpeech(text, langCode));
+  const playAssistantVoice = (text: string, forceLang?: string) => {
+    // Detect response language to pick the exact natural voice
+    const detected = detectLanguageOf(text);
+    const langCode = forceLang || (detected.lang === "hi" ? "hi-IN" : getSpeechLangCode(selectedLanguage));
+    const chunks = chunkForSpeech(textForSpeech(text, langCode), langCode);
+
     setSpeakActive("engine");
     setIsSpeaking(true);
     setSpeakPaused(false);
     setSpeakingSentence(chunks[0] || "");
     setSpeakTotal(chunks.length);
     setSpeakIndex(0);
+
     const controller = engineSpeakText(text, langCode, {
       onStart: (total) => {
         setSpeakTotal(total || chunks.length);
@@ -634,13 +655,6 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         setSpeakActive(null);
         setSpeakingSentence("");
         speakControllerRef.current = null;
-        toast({
-          title: isHindi ? "आवाज़ सेवा में समस्या" : t("chat.voiceServiceErrorTitle"),
-          description: isHindi
-            ? "माफ़ कीजिए, आवाज़ इस समय उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर कोशिश करें।"
-            : "Sorry, voice is unavailable right now. Please try again shortly.",
-          variant: "destructive",
-        });
       },
     });
     speakControllerRef.current = controller;
@@ -925,6 +939,21 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
         assistantResponse = chatData.message;
         suggestions = chatData.suggestions || DEFAULT_SUGGESTIONS;
+
+        // Crop Entity Consistency Protection (Part 4):
+        // If user asked for Tomato, ensure the AI answer is about Tomato and NOT replaced by Soybean!
+        const entities = extractEntities(messageToSend);
+        if (entities.crop && !verifyCropConsistency(entities.crop, assistantResponse)) {
+          console.warn(`[KisanAI] Crop mismatch detected. Requested "${entities.crop}", regenerating with guaranteed crop advisor.`);
+          const localCropAnswer = getLocalAnswer(messageToSend, profile, localLang);
+          if (localCropAnswer.matched) {
+            assistantResponse = localCropAnswer.text;
+            if (localCropAnswer.kind) {
+              suggestions = LOCAL_SUGGESTIONS[localCropAnswer.kind] || suggestions;
+            }
+          }
+        }
+
         if (chatData?.conversationId && serverConversationId !== chatData.conversationId) {
           setServerConversationId(chatData.conversationId);
         }

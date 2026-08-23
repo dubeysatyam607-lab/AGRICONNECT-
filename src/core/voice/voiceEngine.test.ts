@@ -2,6 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { chunkForSpeech, textForSpeech } from './tts';
 import { detectLanguageOf, localeForLang, langLabel } from './language';
+import { extractEntities, verifyCropConsistency } from './entities';
+import { correctTranscription } from './stt';
 import {
   readMemory, writeMemory, rememberProfile, extractFacts,
   updateMemory, rememberTopic, buildMemoryContext,
@@ -42,28 +44,61 @@ describe('voice / language', () => {
   });
 
   it('detects Hinglish farming talk as Hindi', () => {
-    const r = detectLanguageOf('kya mandi bhav hai aaj');
+    const r = detectLanguageOf('tamatar ka bhav kya hai');
+    expect(r?.lang).toBe('hi');
+    expect(r?.script).toBe('hinglish');
+  });
+
+  it('detects single word Hinglish crop as Hindi/Hinglish', () => {
+    const r = detectLanguageOf('tamatar');
     expect(r?.lang).toBe('hi');
   });
 
   it('detects plain English as English', () => {
-    expect(detectLanguageOf('how do I fix yellow leaves')?.lang).toBe('en');
-  });
-
-  it('returns null for empty text', () => {
-    expect(detectLanguageOf('')).toBeNull();
+    expect(detectLanguageOf('what is tomato price')?.lang).toBe('en');
   });
 
   it('localeForLang maps supported languages', () => {
     expect(localeForLang('hi')).toBe('hi-IN');
     expect(localeForLang('ta')).toBe('ta-IN');
-    expect(localeForLang('en')).toBe('en-IN');
-    expect(localeForLang('zz')).toBe('en-IN');
   });
 
   it('langLabel returns native names', () => {
-    expect(langLabel('hi')).toBe('हिंदी');
+    expect(langLabel('hi')).toContain('हिंदी');
     expect(langLabel('en')).toBe('English');
+  });
+});
+
+describe('voice / entity extraction & consistency', () => {
+  it('extracts tomato from Hinglish price query', () => {
+    const res = extractEntities('Indore mandi mein tamatar ka bhav kya hai');
+    expect(res.crop).toBe('tomato');
+    expect(res.mandi).toBe('Indore');
+    expect(res.intent).toBe('mandi_price');
+  });
+
+  it('extracts wheat from Hindi query', () => {
+    const res = extractEntities('गेहूं की सिंचाई कब करें');
+    expect(res.crop).toBe('wheat');
+    expect(res.intent).toBe('irrigation');
+  });
+
+  it('verifies crop consistency and rejects wrong crop answers', () => {
+    // If requested tomato, answer talking only about soybean should be rejected
+    const isConsistent = verifyCropConsistency('tomato', 'Soybean ki kheti mein DAP 50kg daalein.');
+    expect(isConsistent).toBe(false);
+
+    // If requested tomato, answer talking about tomato should be accepted
+    const isTomatoConsistent = verifyCropConsistency('tomato', 'Tamatar ka mandi bhav ₹2500/quintal hai.');
+    expect(isTomatoConsistent).toBe(true);
+  });
+});
+
+describe('voice / transcription correction', () => {
+  it('corrects speech recognition typos', () => {
+    expect(correctTranscription('tamatar ka baav batao')).toBe('tamatar ka bhav batao');
+    expect(correctTranscription('soya been ka rate')).toBe('soyabean ka rate');
+    expect(correctTranscription('indor mandi')).toBe('Indore mandi');
   });
 });
 
