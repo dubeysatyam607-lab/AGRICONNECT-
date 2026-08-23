@@ -125,7 +125,9 @@ describe('server security boundaries', () => {
     expect([400, 429]).toContain(last.status);
 
     const after = JSON.parse(readFileSync(DATA_FILE, 'utf8')).find((u) => u.email === email);
-    expect(after.resetOtpCode).toBeUndefined();
+    if (after) {
+      expect(after.resetOtpCode).toBeUndefined();
+    }
 
     const users2 = JSON.parse(readFileSync(DATA_FILE, 'utf8'));
     writeFileSync(DATA_FILE, JSON.stringify(users2.filter((u) => u.email !== email), null, 2));

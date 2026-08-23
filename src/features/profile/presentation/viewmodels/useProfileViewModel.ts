@@ -82,10 +82,11 @@ export function useProfileViewModel(initialUserId?: string): [IProfileViewModelS
     fetchProfile();
   }, [fetchProfile]);
 
-  const saveProfile = useCallback(async (updatedProfile: IFarmerProfile): Promise<boolean> => {
+  const saveProfile = useCallback(async (updatedProfile?: IFarmerProfile | null): Promise<boolean> => {
     setState((prev) => ({ ...prev, isSaving: true, error: null }));
     try {
-      const saved = await updateProfileUseCase.execute(updatedProfile);
+      const target = updatedProfile || state.profile || ({ id: initialUserId || 'anon' } as IFarmerProfile);
+      const saved = await updateProfileUseCase.execute(target);
       writeCache(initialUserId ? `profile:${initialUserId}` : 'profile:anon', saved);
       setState((prev) => ({ ...prev, profile: saved, isSaving: false }));
       snackbarService.success('Profile updated successfully! Synced across devices.');
@@ -96,7 +97,7 @@ export function useProfileViewModel(initialUserId?: string): [IProfileViewModelS
       snackbarService.error(appEx.toUserFriendlyMessage(), 'Profile Save Failed');
       return false;
     }
-  }, [updateProfileUseCase]);
+  }, [updateProfileUseCase, state.profile, initialUserId]);
 
   const updateProfileField = useCallback(<K extends keyof IFarmerProfile>(key: K, value: IFarmerProfile[K]) => {
     setState((prev) => {
@@ -114,12 +115,13 @@ export function useProfileViewModel(initialUserId?: string): [IProfileViewModelS
   const updateNestedField = useCallback((section: 'personal' | 'location' | 'farmSpecs' | 'livestock', field: string, value: any) => {
     setState((prev) => {
       if (!prev.profile) return prev;
+      const currentSection = prev.profile[section] || {};
       return {
         ...prev,
         profile: {
           ...prev.profile,
           [section]: {
-            ...prev.profile[section],
+            ...currentSection,
             [field]: value,
           },
         },

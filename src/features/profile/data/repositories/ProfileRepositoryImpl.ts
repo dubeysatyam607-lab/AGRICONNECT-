@@ -51,33 +51,76 @@ export class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   public async updateProfile(profile: IFarmerProfile): Promise<IFarmerProfile> {
-    profile.updatedAt = new Date().toISOString();
-    const activeId = profile.id || (await this.getActiveUserId()) || 'anon';
-    profile.id = activeId;
+    const activeId = profile?.id || (await this.getActiveUserId()) || 'anon';
+    const cleanProfile: IFarmerProfile = {
+      id: activeId,
+      personal: profile?.personal || {
+        fullName: '',
+        mobileNumber: '',
+        emailAddress: '',
+        gender: 'Prefer not to say',
+        dateOfBirth: '',
+        aadhaarNumber: '',
+        isAadhaarVerified: false,
+      },
+      location: profile?.location || {
+        villageOrTehsil: '',
+        district: '',
+        state: '',
+        pinCode: '',
+        gpsCoordinates: null,
+        isLocationPermissionGranted: false,
+        farmCentroidAddress: '',
+      },
+      farmSpecs: profile?.farmSpecs || {
+        totalArea: 0,
+        landUnit: 'Acres',
+        soilType: 'Alluvial',
+        irrigationType: 'Rainfed / Monsoon',
+        primaryWaterSource: '',
+      },
+      crops: Array.isArray(profile?.crops) ? profile.crops : [],
+      machineryOwned: Array.isArray(profile?.machineryOwned) ? profile.machineryOwned : [],
+      livestock: profile?.livestock || {
+        cows: 0,
+        buffaloes: 0,
+        bullocks: 0,
+        goatsOrSheep: 0,
+        poultry: 0,
+      },
+      preferredLanguage: profile?.preferredLanguage || 'en',
+      profilePictureUrl: profile?.profilePictureUrl || '',
+      updatedAt: new Date().toISOString(),
+      createdAt: profile?.createdAt || new Date().toISOString(),
+    };
 
     // 1. Save to SecureStorage immediately (optimistic offline update)
     try {
-      await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(profile));
+      await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(cleanProfile));
     } catch (err) {
       console.warn('[ProfileRepositoryImpl] SecureStorage write notice:', err);
     }
 
     // 2. Save to Remote Supabase
     try {
-      await this.remoteDataSource.saveRemoteProfile(profile);
+      await this.remoteDataSource.saveRemoteProfile(cleanProfile);
     } catch (remoteErr) {
       console.warn('[ProfileRepositoryImpl] Remote save notice:', remoteErr);
     }
 
     // 3. Telemetry Event
-    analyticsService.logEvent('profile_updated', {
-      userId: profile.id,
-      landArea: profile.farmSpecs.totalArea,
-      soilType: profile.farmSpecs.soilType,
-      cropsCount: profile.crops.length,
-    });
+    try {
+      analyticsService.logEvent('profile_updated', {
+        userId: cleanProfile.id,
+        landArea: cleanProfile.farmSpecs?.totalArea ?? 0,
+        soilType: cleanProfile.farmSpecs?.soilType || 'Unknown',
+        cropsCount: cleanProfile.crops?.length ?? 0,
+      });
+    } catch {
+      // Ignore telemetry error
+    }
 
-    return profile;
+    return cleanProfile;
   }
 
   public async updateProfilePicture(userId: string, avatarDataUrl: string): Promise<string> {
