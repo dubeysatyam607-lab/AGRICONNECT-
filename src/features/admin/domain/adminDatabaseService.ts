@@ -744,14 +744,7 @@ export async function fetchRealAdminRoles(): Promise<AdminRole[]> {
     /* fallback */
   }
 
-  return [
-    { id: 'role-super', name: 'Super Admin', description: 'Full unrestricted access across every module.', permissions: ['*'], memberCount: 1, protected: true },
-    { id: 'role-admin', name: 'Admin', description: 'Standard administrator with operations and user controls.', permissions: ['farmers.*', 'orders.*', 'rentals.*', 'content.*'], memberCount: 1, protected: true },
-    { id: 'role-finance', name: 'Finance Officer', description: 'Manages payments, subscriptions and wallet ledgers.', permissions: ['payments.*', 'subscriptions.*', 'wallet.*'], memberCount: 1, protected: true },
-    { id: 'role-content', name: 'Content Editor', description: 'Publishes schemes, news, knowledge and FAQs.', permissions: ['content.*', 'news.*', 'knowledge.*', 'schemes.*'], memberCount: 1, protected: true },
-    { id: 'role-support', name: 'Support Admin', description: 'Manages tickets, complaints and KYC verification.', permissions: ['support.*', 'reports.*', 'kyc.*'], memberCount: 1, protected: true },
-    { id: 'role-analyst', name: 'Analyst', description: 'Read-only analytics and metrics viewer.', permissions: ['analytics.read'], memberCount: 1, protected: true },
-  ];
+  return [];
 }
 
 export async function fetchRealAdminUsers(): Promise<AdminUser[]> {
@@ -778,30 +771,7 @@ export async function fetchRealAdminUsers(): Promise<AdminUser[]> {
     /* fallback */
   }
 
-  return [
-    {
-      id: 'admin-owner-01',
-      name: 'Satyam Dubey (Owner)',
-      email: 'dubeysatyam607@gmail.com',
-      phone: '+91 99999 88888',
-      roleId: 'role-super',
-      status: 'Active',
-      twoFactor: true,
-      lastLogin: new Date().toISOString(),
-      created: '2026-01-01T00:00:00.000Z',
-    },
-    {
-      id: 'admin-owner-02',
-      name: 'Satyam (Super Admin)',
-      email: 'satyamff124@gmail.com',
-      phone: '+91 99999 77777',
-      roleId: 'role-super',
-      status: 'Active',
-      twoFactor: true,
-      lastLogin: new Date().toISOString(),
-      created: '2026-01-01T00:00:00.000Z',
-    },
-  ];
+  return [];
 }
 
 /* ── User Account Actions (Real Database Mutations) ─────────────────────── */

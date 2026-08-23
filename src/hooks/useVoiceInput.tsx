@@ -70,7 +70,7 @@ export const useVoiceInput = (options: UseVoiceInputOptions = {}) => {
   }, [options]);
 
   const stopListening = useCallback(() => {
-    const final = transcript;
+    const final = transcriptRef.current;
     controllerRef.current?.stop();
     controllerRef.current = null;
     setIsListening(false);
