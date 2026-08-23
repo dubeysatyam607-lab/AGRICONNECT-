@@ -1,5 +1,6 @@
 import type { FarmProfile } from "@/contexts/FarmContext";
 import { MANDI_PRICES } from "./mock-data";
+import { extractEntities, CROP_DICTIONARY } from "@/core/voice/entities";
 
 export type LocalAnswerKind =
   | "mandi"
@@ -378,6 +379,9 @@ const FALLBACK_GENERAL: Record<string, string> = {
 };
 
 const detectCrop = (query: string): string | null => {
+  const entity = extractEntities(query);
+  if (entity.crop) return entity.crop;
+
   const q = query.toLowerCase();
   for (const [stem, guideKey] of Object.entries(MANDI_CROP_STEMS)) {
     if (q.includes(stem)) return guideKey;

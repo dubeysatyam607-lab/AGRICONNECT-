@@ -198,7 +198,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
                 active && payload?.length ? (
                   <div className="rounded-md border bg-background px-3 py-2 text-xs shadow">
                     <p className="font-medium">{label}</p>
-                    <p className="text-emerald-600 font-bold">{fmtNumber(payload[0].value)} total users</p>
+                    <p className="text-emerald-600 font-bold">{fmtNumber(payload[0]?.value ?? 0)} total users</p>
                     <p className="text-blue-600 font-bold">{fmtNumber(payload[1]?.value ?? 0)} new signups</p>
                   </div>
                 ) : null} />
@@ -227,7 +227,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
                 active && payload?.length ? (
                   <div className="rounded-md border bg-background px-3 py-2 text-xs shadow">
                     <p className="font-medium">{label}</p>
-                    <p className="text-sky-600 font-bold">{fmtNumber(payload[0].value)} requests</p>
+                    <p className="text-sky-600 font-bold">{fmtNumber(payload[0]?.value ?? 0)} requests</p>
                   </div>
                 ) : null} />
               <Bar dataKey="requests" name="Requests" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
