@@ -607,11 +607,7 @@ export async function fetchRealSubscriptionPlans(): Promise<SubscriptionPlan[]> 
     /* fallback */
   }
 
-  return [
-    { id: 'plan-free', name: 'Kisan Basic', price: 0, interval: 'monthly', subscribers: 0, features: ['Daily Mandi Bhav', 'Weather Forecast', 'Community Feed'], active: true },
-    { id: 'plan-pro', name: 'Kisan Pro', price: 199, interval: 'monthly', subscribers: 0, features: ['Unlimited AI Crop Doctor Scans', 'Priority Mandi Alerts', 'Zero Booking Fees'], active: true },
-    { id: 'plan-enterprise', name: 'Agri Business', price: 999, interval: 'monthly', subscribers: 0, features: ['Fleet Management', 'Cold Storage Booking', 'Dedicated Agronomist'], active: true },
-  ];
+  return [];
 }
 
 /* ── Real User Subscriptions ────────────────────────────────────────────── */

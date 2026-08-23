@@ -19,10 +19,7 @@ export class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   public async getProfile(userId?: string): Promise<IFarmerProfile> {
-    const activeId = userId || (await this.getActiveUserId());
-    if (!activeId) {
-      throw new Error('Profile unavailable — no authenticated user.');
-    }
+    const activeId = userId || (await this.getActiveUserId()) || 'anon';
 
     // 1. Try reading from SecureStorage cache first for instant 60 FPS loading
     try {
@@ -30,18 +27,22 @@ export class ProfileRepositoryImpl implements IProfileRepository {
       const cached = raw ? JSON.parse(raw) as IFarmerProfile : null;
       if (cached && cached.id) {
         // Asynchronously update cache from remote in background
-        this.syncRemoteBackground(activeId);
+        if (activeId !== 'anon') {
+          this.syncRemoteBackground(activeId);
+        }
         return cached;
       }
     } catch (e) {
       console.warn('[ProfileRepositoryImpl] Cache read failed:', e);
     }
 
-    // 2. Try remote Supabase fetch
-    const remote = await this.remoteDataSource.getRemoteProfile(activeId);
-    if (remote) {
-      await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(remote));
-      return remote;
+    // 2. Try remote Supabase fetch if authenticated
+    if (activeId !== 'anon') {
+      const remote = await this.remoteDataSource.getRemoteProfile(activeId);
+      if (remote) {
+        await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(remote));
+        return remote;
+      }
     }
 
     // 3. No remote row yet — return an empty profile scaffold for the user to complete.
@@ -51,12 +52,22 @@ export class ProfileRepositoryImpl implements IProfileRepository {
 
   public async updateProfile(profile: IFarmerProfile): Promise<IFarmerProfile> {
     profile.updatedAt = new Date().toISOString();
+    const activeId = profile.id || (await this.getActiveUserId()) || 'anon';
+    profile.id = activeId;
 
     // 1. Save to SecureStorage immediately (optimistic offline update)
-    await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${profile.id}`, JSON.stringify(profile));
+    try {
+      await secureStorage.setItem(`${PROFILE_CACHE_KEY}_${activeId}`, JSON.stringify(profile));
+    } catch (err) {
+      console.warn('[ProfileRepositoryImpl] SecureStorage write notice:', err);
+    }
 
     // 2. Save to Remote Supabase
-    await this.remoteDataSource.saveRemoteProfile(profile);
+    try {
+      await this.remoteDataSource.saveRemoteProfile(profile);
+    } catch (remoteErr) {
+      console.warn('[ProfileRepositoryImpl] Remote save notice:', remoteErr);
+    }
 
     // 3. Telemetry Event
     analyticsService.logEvent('profile_updated', {
