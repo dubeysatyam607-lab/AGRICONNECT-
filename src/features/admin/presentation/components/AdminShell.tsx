@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  Radio,
   RotateCcw,
   Sun,
   X,
@@ -32,6 +33,7 @@ import {
 import { useThemeManager } from '@/core/theme/ThemeManager';
 import { getAdminSession, resetAdminData } from '../../domain/adminStore';
 import { ADMIN_MODULES, ADMIN_MODULE_GROUPS, getAdminModule } from '../adminModules';
+import { RealtimeFeedPanel, RealtimeFeedBadge } from './RealtimeFeedPanel';
 
 interface AdminShellProps {
   current: string;
@@ -93,6 +95,7 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [displayRole, setDisplayRole] = useState('');
+  const [feedOpen, setFeedOpen] = useState(false);
   const { resolvedTheme, toggleTheme } = useThemeManager();
   const session = getAdminSession();
   const currentModule = getAdminModule(current);
@@ -141,7 +144,12 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r bg-card lg:flex">
         {Brand}
         <NavItems current={current} onNavigate={navigate} />
-        <div className="border-t p-3">
+        <div className="space-y-2 border-t p-3">
+          {/* Live Feed Toggle */}
+          <RealtimeFeedBadge onClick={() => setFeedOpen(!feedOpen)} />
+          {feedOpen && (
+            <RealtimeFeedPanel className="max-h-[400px]" onClose={() => setFeedOpen(false)} />
+          )}
           <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">

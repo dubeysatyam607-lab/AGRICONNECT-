@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Plus, UserCheck, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '../components/PageHeader';
@@ -11,6 +11,7 @@ import { FarmerDetailDrawer } from '../components/FarmerDetailDrawer';
 import { logAdminExport } from '../hooks/useAdminCrud';
 import { useSupabaseCollection } from '../hooks/useSupabaseCollection';
 import { fmtNumber, shortDate } from '../../domain/adminStore';
+import { supabase } from '@/integrations/supabase/client';
 import type { FarmerEntity } from '../../domain/adminTypes';
 
 type ProfileRow = Record<string, unknown>;
@@ -81,7 +82,49 @@ export function FarmersModule() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<FarmerEntity | null>(null);
 
-  const rows = useMemo(() => rawProfiles.map(mapProfileToFarmer), [rawProfiles]);
+  // ── Optimistic realtime: new signups appear instantly ─────────────────────
+  const [optimisticUsers, setOptimisticUsers] = useState<ProfileRow[]>([]);
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const channelRef = useRef<any>(null);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('farmers-optimistic')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
+        async (payload) => {
+          const newRow = payload.new as ProfileRow;
+          // Skip if already in the real rows (will be caught by useSupabaseCollection)
+          const id = String(newRow.id);
+          if (seenIdsRef.current.has(id)) return;
+          // Fetch full profile for the new row
+          const { data: full } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
+          if (full) {
+            seenIdsRef.current.add(id);
+            setOptimisticUsers((prev) => [full, ...prev]);
+          }
+        },
+      )
+      .subscribe();
+    channelRef.current = channel;
+    return () => {
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
+    };
+  }, []);
+
+  // Merge real rows with optimistic rows, deduplicate, mark optimistic ones
+  const rows = useMemo(() => {
+    const realIds = new Set(rawProfiles.map((p) => String(p.id)));
+    // Remove optimistic entries once real data arrives
+    const stillOptimistic = optimisticUsers.filter((u) => !realIds.has(String(u.id)));
+    const all = [...stillOptimistic, ...rawProfiles];
+    return all.map(mapProfileToFarmer);
+  }, [rawProfiles, optimisticUsers]);
 
   const bulkActions: BulkAction<FarmerEntity>[] = [
     { label: 'Activate', variant: 'default', onClick: () => refresh() },
@@ -89,8 +132,18 @@ export function FarmersModule() {
     { label: 'Export', variant: 'outline', onClick: (items) => { logAdminExport('Farmer', items.length); refresh(); } },
   ];
 
+  const optimisticCount = optimisticUsers.filter(
+    (u) => !rawProfiles.some((p) => String(p.id) === String(u.id)),
+  ).length;
+
   return (
     <div className="space-y-4">
+      {optimisticCount > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 animate-pulse">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          {optimisticCount} new farmer{optimisticCount > 1 ? 's' : ''} signed up — syncing…
+        </div>
+      )}
       <PageHeader
         title="Farmer Management"
         subtitle={loading ? 'Loading real farmer data from Supabase…' : `${fmtNumber(rows.length)} registered farmers from profiles table`}
