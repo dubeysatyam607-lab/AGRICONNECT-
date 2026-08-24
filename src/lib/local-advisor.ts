@@ -1,5 +1,5 @@
 import type { FarmProfile } from "@/contexts/FarmContext";
-import { MANDI_PRICES } from "./mock-data";
+import { getMandiPriceQuote } from "./mandi-api";
 import { extractEntities, CROP_DICTIONARY } from "@/core/voice/entities";
 
 export type LocalAnswerKind =
@@ -409,28 +409,45 @@ const findDisease = (q: string): DiseaseInfo | null => {
 const hasMandiIntent = (q: string) =>
   ["mandi", "price", "rate", "bhav", "भाव", "मंडी", "दाम", "दर"].some((k) => q.includes(k));
 
-const cropFromMandiPrices = (stem: string) => {
-  const s = stem.toLowerCase().trim();
-  return MANDI_PRICES.find((m) => {
-    const c = m.crop.toLowerCase();
-    const cleanCrop = c.split("(")[0].trim();
-    return c.includes(s) || s.includes(cleanCrop) || cleanCrop.includes(s);
-  });
+const KNOWN_MANDIS = [
+  "indore", "ujjain", "dewas", "bhopal", "mandsaur", "neemuch", "kota", "jaipur",
+  "bikaner", "bharatpur", "lasalgaon", "nashik", "pune", "mumbai", "solapur",
+  "jalgaon", "ratnagiri", "latur", "karnal", "ludhiana", "amritsar", "delhi",
+  "azadpur", "agra", "varanasi", "meerut", "nizamabad", "guntur", "kolar",
+  "rajkot", "gondal", "mehsana", "unjha", "shimla", "kozhikode", "kochi", "kolkata"
+];
+
+const extractMandiLocation = (q: string): string | null => {
+  const norm = q.toLowerCase();
+  for (const m of KNOWN_MANDIS) {
+    if (norm.includes(m)) return m;
+  }
+  return null;
 };
 
-const mandiAnswer = (crop: string, hi: boolean): LocalAnswer => {
-  const stem = crop.toLowerCase().split("(")[0].trim();
-  const entry = cropFromMandiPrices(stem);
-  if (entry) {
-    const text = hi
-      ? `📍 **${entry.crop}** — संदर्भ मंडी दर (अनुमानित)\n\n- बाज़ार: ${entry.market}, ${entry.state}\n- दर: **₹${entry.price.toLocaleString("en-IN")}/क्विंटल**\n- सीमा: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nआज की लाइव दरें **Mandi Bhav** टैब में देखें।`
-      : `📍 **${entry.crop}** — reference mandi rate (estimate)\n\n- Market: ${entry.market}, ${entry.state}\n- Rate: **₹${entry.price.toLocaleString("en-IN")}/quintal**\n- Range: ₹${entry.minPrice.toLocaleString("en-IN")} – ₹${entry.maxPrice.toLocaleString("en-IN")}\n\nFor today's live rates, open the **Mandi Bhav** tab.`;
-    return { text, matched: true, kind: "mandi" };
+const mandiAnswer = (crop: string, hi: boolean, isHinglish = false, rawQuery = ""): LocalAnswer => {
+  const mandi = extractMandiLocation(rawQuery);
+  const quote = getMandiPriceQuote({ crop, mandi });
+
+  if (!quote.found) {
+    const fallbackText = hi
+      ? `अभी **${crop}** का लाइव मंडी भाव उपलब्ध नहीं है। कृपया Mandi Bhav टैब में चेक करें।`
+      : `Live mandi price for **${crop}** is currently unavailable. Please check the Mandi Bhav tab.`;
+    return { text: fallbackText, matched: true, kind: "mandi" };
   }
-  const text = hi
-    ? `मेरे पास **${crop}** के लिए संदर्भ मंडी दर नहीं है। आज की लाइव दरें **Mandi Bhav** टैब में देखें।`
-    : `I don't have a reference rate for **${crop}** yet. Check today's live rates in the **Mandi Bhav** tab.`;
-  return { text, matched: true, kind: "mandi" };
+
+  if (quote.needsMandiClarification) {
+    const clarifyText = hi
+      ? (isHinglish ? quote.messageHinglish : quote.messageHi)
+      : quote.messageEn;
+    return { text: clarifyText, matched: true, kind: "mandi" };
+  }
+
+  const resultText = hi
+    ? (isHinglish ? quote.messageHinglish : quote.messageHi)
+    : quote.messageEn;
+
+  return { text: resultText, matched: true, kind: "mandi" };
 };
 
 const fertilizerAnswer = (crop: string | null, profile: FarmProfile, hi: boolean): LocalAnswer => {
@@ -607,15 +624,17 @@ export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: strin
 
   const crop = detectCrop(q);
 
+  const hinglishMode = isHinglish(query) || isHinglish(q);
+
   // 2. Mandi price inquiry — strict crop clarification if not specified
   if (hasMandiIntent(q)) {
     if (!crop) {
       const text = hi
-        ? "Kaunsi fasal ka mandi bhav chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Soyabean, Sarson, Pyaz)."
+        ? (hinglishMode ? "Kaunsi fasal ka mandi bhav chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Soyabean, Sarson, Pyaz)." : "किस फसल का मंडी भाव चाहिए? कृपया फसल का नाम बताएं (जैसे: टमाटर, गेहूं, सोयाबीन, सरसों, प्याज)।")
         : "Which crop's mandi price do you need? Please specify the crop (e.g. Tomato, Wheat, Soybean, Mustard, Onion).";
       return { text, matched: true, kind: "mandi" };
     }
-    return mandiAnswer(crop, hi);
+    return mandiAnswer(crop, hi, hinglishMode, q);
   }
 
   // 3. Pest diagnosis & remedies (check specific pest first)
