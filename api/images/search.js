@@ -10,9 +10,7 @@
  * - Implements HTTP CDN caching headers.
  */
 
-const PEXELS_API_KEY =
-  process.env.PEXELS_API_KEY ||
-  "mXrkYO63IBrFxZssu12QmnQNPVoxBdzyacNLcYAedDKh2Wu9n29npl34";
+const PEXELS_API_KEY = (process.env.PEXELS_API_KEY || "").trim();
 
 const AGRI_KEYWORDS = [
   "agriculture", "farming", "farm", "crop", "field", "harvest",
