@@ -97,4 +97,29 @@ describe("Kisan AI Local Advisor — Knowledge & Intent Accuracy", () => {
     expect(resWeather.matched).toBe(true);
     expect(resWeather.text).toContain("मौसम");
   });
+
+  it("handles 'tamatar ka bhav' by asking for mandi clarification in Hindi/Hinglish without reference rate error", () => {
+    const res = getLocalAnswer("tamatar ka bhav", mockProfile, "hi");
+    expect(res.matched).toBe(true);
+    expect(res.text).not.toContain("I don't have a reference rate");
+    expect(res.text).toContain("mandi");
+    expect(res.text).toContain("Tamatar");
+  });
+
+  it("handles 'bhai indore mandi me tamatar ka kya rate hai' by returning real Indore Tomato rates", () => {
+    const res = getLocalAnswer("bhai indore mandi me tamatar ka kya rate hai", mockProfile, "hi");
+    expect(res.matched).toBe(true);
+    expect(res.text).toContain("Indore Mandi");
+    expect(res.text).toContain("Tomato");
+    expect(res.text).toContain("₹");
+    expect(res.text).not.toContain("Soybean");
+  });
+
+  it("handles 'गेहूं का भाव क्या है' in Devanagari Hindi", () => {
+    const res = getLocalAnswer("गेहूं का भाव क्या है", mockProfile, "hi");
+    expect(res.matched).toBe(true);
+    expect(res.text).toContain("मंडी");
+    expect(res.text).toContain("गेहूं");
+  });
 });
+
