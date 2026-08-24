@@ -155,7 +155,7 @@ export function useDigitalProfile() {
   /* ── Derived scores ─────────────────────────────────────────────────── */
 
   const computeCompletion = useCallback((): number => {
-    if (!profile) return 55;
+    if (!profile) return 0;
     const checks = [
       profile.personal.fullName.trim().length > 0,
       profile.personal.mobileNumber.trim().length > 0,
@@ -172,27 +172,26 @@ export function useDigitalProfile() {
   const completion = computeCompletion();
 
   const farmScore = useMemo(() => {
-    let score = 20;
-    if (profile) {
-      if (profile.farmSpecs.totalArea > 0) score += 20;
-      if (profile.crops.length > 0) score += 20;
-      if (profile.farmSpecs.soilType) score += 10;
-      if (profile.farmSpecs.irrigationType) score += 10;
-    }
-    if (onboarding.ownership) score += 10;
-    if (onboarding.waterSources.length > 0) score += 10;
+    if (!profile) return 0;
+    let score = 0;
+    if (profile.farmSpecs.totalArea > 0) score += 25;
+    if (profile.crops.length > 0) score += 25;
+    if (profile.farmSpecs.soilType) score += 15;
+    if (profile.farmSpecs.irrigationType) score += 15;
+    const completedTasks = tasks.filter((t) => t.done).length;
+    if (completedTasks > 0) score += Math.min(20, completedTasks * 5);
     return Math.min(100, score);
-  }, [profile, onboarding]);
+  }, [profile, tasks]);
 
   const aiReadiness = useMemo(() => {
-    let score = 15;
-    if (onboarding.primaryCrops.length > 0) score += 20;
-    if (onboarding.cropStage) score += 20;
-    if (onboarding.permissions.location) score += 15;
-    if (onboarding.permissions.notifications) score += 15;
-    if (onboarding.interests.length > 0) score += 15;
+    if (!profile) return 0;
+    let score = 0;
+    if (profile.crops.length > 0) score += 30;
+    if (profile.location.state) score += 25;
+    if (profile.farmSpecs.totalArea > 0) score += 25;
+    if (onboarding.interests.length > 0) score += 20;
     return Math.min(100, score);
-  }, [onboarding]);
+  }, [profile, onboarding]);
 
   const memberSince = useMemo(() => {
     const d = profile?.createdAt ? new Date(profile.createdAt) : new Date();
