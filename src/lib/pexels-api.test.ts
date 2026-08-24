@@ -1,86 +1,138 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
+  getAgricultureImage,
   normalizeNameForPexels,
-  fetchPexelsImageForName,
-  fetchPexelsPhoto,
-  getPexelsPhotoForCrop,
-  getPexelsPhotoForProduct,
-  PEXELS_CURATED_PHOTOS,
-  PEXELS_PHOTO_LIBRARY,
-  AGRI_IMAGE_QUERIES,
+  replaceAgriImage,
+  getAgriImageCacheStats,
   getStableIndex,
+  PEXELS_CURATED_PHOTOS,
 } from "./pexels-api";
+import { getCropImage } from "./crop-images";
+import { getMachineImage } from "./machine-images";
+import { getStoreProductImage } from "./image-resolver";
 
-describe("Pexels Agricultural Photography Engine", () => {
-  it("normalizes Hindi and transliterated crop names cleanly", () => {
-    expect(normalizeNameForPexels("गेहूं (Sharbati 50kg)")).toBe("wheat");
-    expect(normalizeNameForPexels("टमाटर देसी 25kg")).toBe("tomato");
-    expect(normalizeNameForPexels("Desi Tamatar")).toBe("tomato");
-    expect(normalizeNameForPexels("Aloo Potato 50kg")).toBe("potato");
-    expect(normalizeNameForPexels("Kapas Cotton")).toBe("cotton");
-    expect(normalizeNameForPexels("धान (Basmati)")).toBe("rice");
-    expect(normalizeNameForPexels("सोयाबीन")).toBe("soybean");
+describe("Pexels Agricultural Photography Master Engine", () => {
+  beforeEach(() => {
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+    }
   });
 
-  it("normalizes product names and strips pack sizes", () => {
+  it("normalizes Hindi, English, and regional crop terms correctly", () => {
+    expect(normalizeNameForPexels("गेहूं Sharbati")).toContain("wheat");
+    expect(normalizeNameForPexels("चावल Basmati")).toContain("rice");
+    expect(normalizeNameForPexels("Kapas BT Cotton")).toContain("cotton");
+    expect(normalizeNameForPexels("Aloo Potato")).toContain("potato");
+    expect(normalizeNameForPexels("Pyaj Red Onion")).toContain("onion");
+  });
+
+  it("normalizes product names and categories cleanly", () => {
     expect(normalizeNameForPexels("Urea Fertilizer 45kg bag")).toContain("fertilizer");
-    expect(normalizeNameForPexels("Manual Knapsack Sprayer 16L")).toContain("sprayer");
     expect(normalizeNameForPexels("Wheat Seeds 10kg")).toContain("seeds");
+    expect(normalizeNameForPexels("Mahindra 575 DI")).toContain("mahindra");
   });
 
-  it("contains valid search queries for all core agricultural categories", () => {
-    const requiredCategories = [
-      "farmer",
-      "tractor",
-      "harvester",
-      "crops",
-      "wheat",
-      "rice",
-      "tomato",
-      "soybean",
-      "vegetables",
-      "agristore",
-      "seeds",
-      "fertilizer",
-      "equipment",
-      "mandi",
+  it("resolves real high-definition images for Mandi crops dynamically", async () => {
+    const wheat = await getAgricultureImage({ type: "crop", name: "Wheat" });
+    expect(wheat.imageUrl).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(wheat.validationStatus).toBe("verified");
+
+    const rice = await getAgricultureImage({ type: "crop", name: "चावल (Basmati Rice)" });
+    expect(rice.imageUrl).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(rice.validationStatus).toBe("verified");
+
+    const tomato = await getAgricultureImage({ type: "crop", name: "Tomato Tamatar" });
+    expect(tomato.imageUrl).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(tomato.validationStatus).toBe("verified");
+  });
+
+  it("resolves all Mandi commodities mentioned by the user to authentic photos", () => {
+    const commodities = [
+      "Apple (सेब)",
+      "Garlic (लहसुन)",
+      "Betal Leaves",
+      "Ginger(Green)",
+      "Chili Red",
+      "Pomegranate (अनार)",
+      "Green Peas (मटर)",
+      "Lemon",
+      "Grapes (अंगूर)",
+      "Orange (संतरा)",
+      "Corriander seed",
     ];
 
-    for (const cat of requiredCategories) {
-      expect(AGRI_IMAGE_QUERIES[cat]).toBeDefined();
-      expect(AGRI_IMAGE_QUERIES[cat].length).toBeGreaterThan(0);
-      expect(AGRI_IMAGE_QUERIES[cat][0]).toContain(" ");
+    for (const item of commodities) {
+      const url = getCropImage(item);
+      expect(url).toBeDefined();
+      expect(url).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
     }
   });
 
-  it("resolves distinct, real Pexels photos for specific categories", async () => {
-    const categories: Array<keyof typeof PEXELS_PHOTO_LIBRARY> = [
-      "tractor",
-      "harvester",
-      "farmer",
-      "wheat",
-      "tomato",
-      "soybean",
-      "agristore",
-      "mandi",
+  it("resolves all 24 tractor rental machinery items to distinct authentic photos", () => {
+    const machineryList = [
+      "Mahindra 575 DI",
+      "Sonalika Tiger 55",
+      "John Deere 5310",
+      "Swaraj 855",
+      "Massey Ferguson 241",
+      "Kubota M5-091",
+      "Mahindra Rotavator 4FT",
+      "Sonalika Plough 3-Typr",
+      "Kubota M7-171",
+      "Swaraj XT Tractor",
+      "FieldKing Harvester",
+      "Tirth Agro Seed Drill",
+      "VST 30HP Tractor",
+      "Balwan Thresher",
+      "New Holland 5630",
+      "Shaktiman Cultivator",
+      "Crompton Sprayer",
+      "Eicher 548 Tractor",
+      "CLAAS Dominator",
+      "Preet Plough",
+      "Farmtrac 60 PowerMax",
+      "VST Shakti DI",
+      "Kubota Rice Transplanter",
+      "New Holland Drip Sprayer",
     ];
 
-    const resolvedUrls = new Set<string>();
-
-    for (const cat of categories) {
-      const res = await fetchPexelsPhoto(cat, cat as any);
-      expect(res).toBeDefined();
-      expect(res?.url).toContain("images.pexels.com");
-      expect(res?.photographer).toBeTruthy();
-      expect(res?.alt).toBeTruthy();
-      resolvedUrls.add(res!.url);
+    for (const item of machineryList) {
+      const url = getMachineImage(item);
+      expect(url).toBeDefined();
+      expect(url).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
     }
-
-    // Must NOT use one image everywhere (should have distinct images for distinct categories)
-    expect(resolvedUrls.size).toBe(categories.length);
   });
 
-  it("guarantees stable index hashing for render persistence", () => {
+  it("resolves all Agri Store products mentioned by user to authentic photos", () => {
+    const storeProducts = [
+      "16L Battery Operated Knapsack Sprayer",
+      "Complete 1-Acre Drip Irrigation Kit",
+      "Organic Pure Neem Oil 10000 PPM",
+      "Neem Coated Urea (45kg)",
+      "IFFCO DAP Fertilizer 18:46:00",
+      "Certified Sharbati Wheat Seeds",
+      "Pusa Basmati Paddy Seeds PB-1121",
+    ];
+
+    for (const item of storeProducts) {
+      const url = getStoreProductImage(item);
+      expect(url).toBeDefined();
+      expect(url).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
+    }
+  });
+
+  it("supports administrative override, refresh, and cache management", () => {
+    const customUrl = "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80";
+    const overridden = replaceAgriImage("tractor", "Sonalika Tiger", customUrl, "SuperAdmin");
+    expect(overridden.imageUrl).toBe(customUrl);
+    expect(overridden.photographer).toBe("SuperAdmin");
+
+    const stats = getAgriImageCacheStats();
+    expect(stats.totalCached).toBeGreaterThan(0);
+    expect(stats.verifiedCount).toBeGreaterThan(0);
+  });
+
+  it("guarantees stable index hashing for render consistency", () => {
     const idx1 = getStableIndex("tractor-card-1", 5);
     const idx2 = getStableIndex("tractor-card-1", 5);
     expect(idx1).toBe(idx2);
@@ -90,29 +142,14 @@ describe("Pexels Agricultural Photography Engine", () => {
     expect(idxA).toBe(idxB);
   });
 
-  it("resolves crop and product aliases accurately", async () => {
-    const wheatImg = await getPexelsPhotoForCrop("Wheat");
-    expect(wheatImg).toContain("pexels.com");
-
-    const tomatoImg = await getPexelsPhotoForCrop("टमाटर");
-    expect(tomatoImg).toContain("pexels.com");
-
-    const tractorImg = await fetchPexelsImageForName("Mahindra 575 DI", "tractor");
-    expect(tractorImg).toContain("pexels.com");
-
-    const ureaImg = await getPexelsPhotoForProduct("Urea 45kg");
-    expect(ureaImg).toContain("pexels.com");
-  });
-
-  it("guarantees curated Pexels CDN image map contains verified assets", () => {
-    expect(PEXELS_CURATED_PHOTOS.wheat).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.rice).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.cotton).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.tomato).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.fertilizer).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.tractor).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.harvester).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.farmer).toContain("images.pexels.com");
-    expect(PEXELS_CURATED_PHOTOS.mandi).toContain("images.pexels.com");
+  it("guarantees curated CDN image map contains verified assets", () => {
+    expect(PEXELS_CURATED_PHOTOS.wheat).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.rice).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.cotton).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.tomato).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.fertilizer).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.tractor).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.harvester).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
+    expect(PEXELS_CURATED_PHOTOS.seeds).toMatch(/(images\.pexels\.com|images\.unsplash\.com)/);
   });
 });

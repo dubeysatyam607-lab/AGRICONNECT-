@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 /**
  * useAssistantVoice — single voice brain for AgriConnect Assistant.
  *
- * Handles ElevenLabs neural voice playback, word/sentence progress for live subtitles,
+ * Handles Sarvam AI neural voice playback (Subh voice), word/sentence progress for live subtitles,
  * audio interruption, and STT microphone recognition with auto-commit.
  */
 export function useAssistantVoice() {

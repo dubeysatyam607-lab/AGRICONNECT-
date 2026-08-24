@@ -47,9 +47,23 @@ export function humanizeResponse(text: string): string {
 
 /** Warm conversational opening for the first reply of a session. */
 export function warmOpening(lang: string, farmerName?: string): string {
-  const hi = lang.toLowerCase().startsWith("hi");
-  if (farmerName) return hi ? `नमस्ते ${farmerName} जी! ` : `Good to hear from you, ${farmerName}! `;
-  return hi ? "नमस्ते! " : "Namaste! ";
+  const code = (lang || "en").toLowerCase().slice(0, 2);
+  const greetings: Record<string, { withName: string; withoutName: string }> = {
+    hi: { withName: `नमस्ते ${farmerName} जी! `, withoutName: "नमस्ते! " },
+    mr: { withName: `नमस्कार ${farmerName}! `, withoutName: "नमस्कार! " },
+    gu: { withName: `નમસ્તે ${farmerName}! `, withoutName: "નમસ્તે! " },
+    pa: { withName: `ਸਤ ਸ੍ਰੀ ਅਕਾਲ ${farmerName} ਜੀ! `, withoutName: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! " },
+    ta: { withName: `வணக்கம் ${farmerName}! `, withoutName: "வணக்கம்! " },
+    te: { withName: `నమస్కారం ${farmerName}! `, withoutName: "నమస్కారం! " },
+    kn: { withName: `ನಮಸ್ಕಾರ ${farmerName}! `, withoutName: "ನಮಸ್ಕಾರ! " },
+    ml: { withName: `നമസ്കാരം ${farmerName}! `, withoutName: "നമസ്കാരം! " },
+    bn: { withName: `নমস্কার ${farmerName}! `, withoutName: "নমস্কার! " },
+    or: { withName: `ନମସ୍କାର ${farmerName}! `, withoutName: "ନମସ୍କାର! " },
+    as: { withName: `নমস্কাৰ ${farmerName}! `, withoutName: "নমস্কাৰ! " },
+    en: { withName: `Good to hear from you, ${farmerName}! `, withoutName: "Namaste! " },
+  };
+  const g = greetings[code] || greetings.en;
+  return farmerName ? g.withName : g.withoutName;
 }
 
 /** Human-friendly number formatting for speech (e.g. "29 degrees"). */

@@ -1,16 +1,14 @@
 /**
  * VoiceEngine — Human-like Indian Natural Text-to-Speech Engine
+ * Powered by Sarvam AI Neural Voice (Subh Voice) with Seamless Indian Language Support.
  *
- * Replaces robotic voice output with natural conversational Indian Hindi / Hinglish voice.
- * Features:
- * 1. Natural Indian Hindi / Hinglish phonetics and accent selection.
- * 2. Instant sub-second chunk playback (latency < 1s).
- * 3. Conversational pacing with natural pauses.
- * 4. Immediate interruption (barge-in support).
- * 5. Full text normalization (no raw symbols or markdown spoken).
+ * Supported 12 Languages:
+ * English, Hindi, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada,
+ * Malayalam, Bengali, Odia, Assamese.
  */
 
 import { prepareTextForTTS } from './sanitize';
+import { getSarvamLanguageCode, getSarvamSpeaker } from './language';
 
 export interface TtsProgress {
   /** Global character index within the original full text. */
@@ -39,7 +37,10 @@ export interface TtsController {
 
 export const ttsSupported = (): boolean =>
   typeof window !== 'undefined' &&
-  (!!window.AudioContext || !!(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext || 'speechSynthesis' in window);
+  (!!window.AudioContext ||
+    !!(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext ||
+    'speechSynthesis' in window ||
+    typeof Audio !== 'undefined');
 
 /** Re-export prepareTextForTTS for convenience. */
 export function textForSpeech(text: string, lang: string = 'hi-IN'): string {
@@ -54,7 +55,7 @@ export function chunkForSpeech(text: string, lang: string = 'hi-IN'): string[] {
   const rawSentences = cleaned.split(/(?<=[.!?।…])\s+/).filter(Boolean);
   const out: string[] = [];
 
-  const MAX_CHUNK_LEN = 110;
+  const MAX_CHUNK_LEN = 120;
   for (const sentence of rawSentences) {
     if (sentence.length <= MAX_CHUNK_LEN) {
       out.push(sentence);
@@ -78,7 +79,7 @@ export function chunkForSpeech(text: string, lang: string = 'hi-IN'): string[] {
   return out.filter(Boolean);
 }
 
-// Global cache for Web Speech voices
+// Global cache for Web Speech voices (fallback)
 let cachedVoices: SpeechSynthesisVoice[] = [];
 
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -89,8 +90,7 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 }
 
 /**
- * Finds the most natural Indian human voice for the given language.
- * Prefers natural neural Indian voices over generic synthesizers.
+ * Fallback Web Speech Indian voice selector.
  */
 export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
@@ -100,7 +100,6 @@ export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   const targetLang = (lang || 'hi-IN').toLowerCase().replace('_', '-');
   const baseCode = targetLang.split('-')[0];
 
-  // 1. High-priority natural Indian neural voices (Hindi & Indian English)
   const preferredPatterns = [
     /google.*(hindi|हिन्दी|indian)/i,
     /microsoft.*(natural|swara|madhur|hemant|neerja|prabhat|heera|ravi|madhav|priya)/i,
@@ -109,177 +108,265 @@ export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   ];
 
   for (const pat of preferredPatterns) {
-    const match = voices.find(
-      (v) => pat.test(v.name) || pat.test(v.lang),
-    );
+    const match = voices.find((v) => pat.test(v.name) || pat.test(v.lang));
     if (match) return match;
   }
 
-  // 2. Exact language match
   const exactMatch = voices.find((v) => v.lang.toLowerCase() === targetLang);
   if (exactMatch) return exactMatch;
 
-  // 3. Base language match (e.g. 'hi' or 'en')
   const baseMatch = voices.find((v) => v.lang.toLowerCase().startsWith(baseCode));
   if (baseMatch) return baseMatch;
 
-  // 4. Any Indian English/Hindi voice fallback
   const anyIndian = voices.find(
     (v) => v.lang.toLowerCase().includes('in') || /india/i.test(v.name),
   );
   return anyIndian || voices[0] || null;
 }
 
+// Keep track of active audio elements to prevent overlapping audio
+let activeGlobalAudio: HTMLAudioElement | null = null;
+
 /**
- * Main TTS speaker with sentence streaming, sub-second latency, and barge-in support.
+ * Main TTS speaker with Sarvam AI (Subh voice) backend synthesis
+ * and graceful browser speech synthesis fallback.
  */
 export function speakText(
   text: string,
   lang: string = 'hi-IN',
   callbacks: TtsCallbacks = {},
 ): TtsController {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    callbacks.onError?.(new Error('Speech synthesis not supported in this browser'));
-    return {
-      pause: () => {},
-      resume: () => {},
-      stop: () => {},
-      replay: () => {},
-      setRate: () => {},
-      isSpeaking: () => false,
-      isPaused: () => false,
-      getRate: () => 1.0,
-    };
-  }
-
-  // Cancel any prior speech synthesis immediately
-  try {
-    window.speechSynthesis.cancel();
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-    }
-  } catch {
-    // noop
-  }
+  stopSpeaking();
 
   const sanitized = prepareTextForTTS(text, lang);
   const chunks = chunkForSpeech(sanitized, lang);
   const totalChunks = chunks.length > 0 ? chunks.length : [sanitized].length;
-  const sentenceList = chunks.length > 0 ? chunks : [sanitized];
 
-  let currentIdx = 0;
   let isPaused = false;
   let isStopped = false;
-  let rate = 0.94; // Conversational, warm, natural pace
-  let activeUtterance: SpeechSynthesisUtterance | null = null;
+  let currentPlaybackRate = 1.0;
+  let audioElement: HTMLAudioElement | null = null;
+  let audioUrl: string | null = null;
+  let fallbackUtterance: SpeechSynthesisUtterance | null = null;
 
   callbacks.onStart?.(totalChunks);
 
-  const speakChunk = (idx: number) => {
-    if (isStopped) return;
-    if (idx >= sentenceList.length) {
+  const sarvamCode = getSarvamLanguageCode(lang);
+  const sarvamSpeaker = getSarvamSpeaker(lang);
+
+  // Attempt Sarvam AI TTS via backend API
+  const startSarvamTts = async () => {
+    try {
+      let response: Response | null = null;
+
+      // Try /api/voice/tts first, fallback to /api/tts
+      try {
+        response = await fetch('/api/voice/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: sanitized,
+            languageCode: sarvamCode,
+            speaker: sarvamSpeaker,
+          }),
+        });
+      } catch {
+        // Retry secondary endpoint
+      }
+
+      if (!response || !response.ok) {
+        response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: sanitized,
+            languageCode: sarvamCode,
+            speaker: sarvamSpeaker,
+          }),
+        });
+      }
+
+      if (isStopped) return;
+
+      if (!response.ok) {
+        throw new Error(`Sarvam TTS API returned status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      if (isStopped) return;
+
+      audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      audioElement = audio;
+      activeGlobalAudio = audio;
+      audio.playbackRate = currentPlaybackRate;
+
+      audio.onplay = () => {
+        if (isStopped) return;
+        callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
+      };
+
+      audio.ontimeupdate = () => {
+        if (isStopped || !audio.duration) return;
+        const progress = audio.currentTime / audio.duration;
+        const currentSentenceIdx = Math.min(
+          totalChunks - 1,
+          Math.floor(progress * totalChunks),
+        );
+        callbacks.onProgress?.({
+          charIndex: Math.floor(progress * sanitized.length),
+          sentenceIndex: currentSentenceIdx,
+        });
+      };
+
+      audio.onended = () => {
+        if (isStopped) return;
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
+        activeGlobalAudio = null;
+        callbacks.onEnd?.();
+      };
+
+      audio.onerror = () => {
+        if (isStopped) return;
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
+        activeGlobalAudio = null;
+        startSpeechSynthesisFallback();
+      };
+
+      await audio.play();
+    } catch {
+      if (!isStopped) {
+        startSpeechSynthesisFallback();
+      }
+    }
+  };
+
+  // Graceful browser SpeechSynthesis fallback
+  const startSpeechSynthesisFallback = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || isStopped) {
       callbacks.onEnd?.();
       return;
     }
 
-    currentIdx = idx;
-    const chunkText = sentenceList[idx];
-    const utterance = new SpeechSynthesisUtterance(chunkText);
-    utterance.lang = lang || 'hi-IN';
-    utterance.rate = rate;
-    utterance.pitch = 1.02; // Warm, natural vocal tone
-
-    const voice = getBestIndianVoice(lang);
-    if (voice) {
-      utterance.voice = voice;
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // noop
     }
+
+    const utterance = new SpeechSynthesisUtterance(sanitized);
+    utterance.lang = sarvamCode || 'hi-IN';
+    utterance.rate = currentPlaybackRate * 0.95;
+    utterance.pitch = 1.02;
+
+    const voice = getBestIndianVoice(sarvamCode);
+    if (voice) utterance.voice = voice;
 
     utterance.onstart = () => {
       if (isStopped) return;
-      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: idx });
+      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
     };
 
     utterance.onend = () => {
       if (isStopped) return;
-      if (isPaused) return;
-      // Seamless low-latency transition to next chunk
-      setTimeout(() => {
-        if (!isStopped && !isPaused) {
-          speakChunk(idx + 1);
-        }
-      }, 30);
+      callbacks.onEnd?.();
     };
 
     utterance.onerror = (e) => {
       if (e.error === 'canceled' || e.error === 'interrupted') return;
-      if (!isStopped && idx + 1 < sentenceList.length) {
-        speakChunk(idx + 1);
-      } else {
-        callbacks.onEnd?.();
-      }
+      callbacks.onEnd?.();
     };
 
-    activeUtterance = utterance;
+    fallbackUtterance = utterance;
     window.speechSynthesis.speak(utterance);
   };
 
-  // Start playing the first chunk immediately without delay
-  speakChunk(0);
+  // Launch Sarvam TTS
+  startSarvamTts();
 
   return {
     pause: () => {
       isPaused = true;
-      try {
-        window.speechSynthesis.pause();
-      } catch {
-        // noop
+      if (audioElement) {
+        audioElement.pause();
+      } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.pause();
+        } catch {
+          // noop
+        }
       }
     },
     resume: () => {
       if (!isPaused) return;
       isPaused = false;
-      try {
-        if (window.speechSynthesis.paused) {
+      if (audioElement) {
+        audioElement.play().catch(() => {});
+      } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
           window.speechSynthesis.resume();
-        } else {
-          speakChunk(currentIdx);
+        } catch {
+          // noop
         }
-      } catch {
-        speakChunk(currentIdx);
       }
     },
     stop: () => {
       isStopped = true;
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        // noop
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+        audioElement = null;
+      }
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        audioUrl = null;
+      }
+      activeGlobalAudio = null;
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch {
+          // noop
+        }
       }
       callbacks.onEnd?.();
     },
     replay: () => {
       isStopped = false;
       isPaused = false;
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        // noop
+      if (audioElement) {
+        audioElement.currentTime = 0;
+        audioElement.play().catch(() => {});
+      } else {
+        startSarvamTts();
       }
-      speakChunk(0);
     },
     setRate: (r: number) => {
-      rate = Math.min(1.4, Math.max(0.7, r));
-      if (activeUtterance) {
-        activeUtterance.rate = rate;
+      currentPlaybackRate = Math.min(1.5, Math.max(0.7, r));
+      if (audioElement) {
+        audioElement.playbackRate = currentPlaybackRate;
+      }
+      if (fallbackUtterance) {
+        fallbackUtterance.rate = currentPlaybackRate * 0.95;
       }
     },
     isSpeaking: () => !isStopped && !isPaused,
     isPaused: () => isPaused,
-    getRate: () => rate,
+    getRate: () => currentPlaybackRate,
   };
 }
 
 export function stopSpeaking(): void {
+  if (activeGlobalAudio) {
+    try {
+      activeGlobalAudio.pause();
+      activeGlobalAudio.currentTime = 0;
+    } catch {
+      // noop
+    }
+    activeGlobalAudio = null;
+  }
+
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
       window.speechSynthesis.cancel();

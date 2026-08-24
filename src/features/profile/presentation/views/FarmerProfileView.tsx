@@ -73,7 +73,7 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
           {/* Avatar */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white/20 shadow-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-3xl font-extrabold shrink-0">
             {state.profile.profilePictureUrl ? (
-              <img src={state.profile.profilePictureUrl} alt={personal.fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=400"; }} className="w-full h-full object-cover" />
+              <img src={state.profile.profilePictureUrl} alt={personal.fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-full object-cover" />
             ) : (
               <span>{personal.fullName.slice(0, 2).toUpperCase()}</span>
             )}

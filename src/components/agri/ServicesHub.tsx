@@ -75,6 +75,7 @@ const GROUP_DATA: Group[] = [
     titleKey: "svc.hub.group.government",
     items: [
       { id: "schemes", icon: Landmark, labelKey: "svc.hub.government.schemes.label", subKey: "svc.hub.government.schemes.sub", tint: "bg-feature-schemes/12 text-feature-schemes" },
+      { id: "news", icon: Newspaper, labelKey: "svc.news", subKey: "svc.hub.learningCommunity.news.sub", tint: "bg-feature-news/12 text-feature-news" },
     ],
   },
   {
@@ -90,16 +91,6 @@ const GROUP_DATA: Group[] = [
     titleKey: "svc.hub.group.labour",
     items: [
       { id: "labor", icon: HardHat, labelKey: "svc.hub.labour.labor.label", subKey: "svc.hub.labour.labor.sub", tint: "bg-feature-labor/12 text-feature-labor" },
-    ],
-  },
-  {
-    emoji: "📚",
-    titleKey: "svc.hub.group.learningCommunity",
-    items: [
-      { id: "krishi-shorts", icon: GraduationCap, labelKey: "svc.hub.learningCommunity.krishiShorts.label", subKey: "svc.hub.learningCommunity.krishiShorts.sub", tint: "bg-feature-cattle/12 text-feature-cattle" },
-      { id: "news", icon: Newspaper, labelKey: "svc.hub.learningCommunity.news.label", subKey: "svc.hub.learningCommunity.news.sub", tint: "bg-feature-news/12 text-feature-news" },
-      { id: "community", icon: Users, labelKey: "svc.hub.learningCommunity.community.label", subKey: "svc.hub.learningCommunity.community.sub", tint: "bg-feature-community/12 text-feature-community" },
-      { id: "network", icon: Users2, labelKey: "svc.hub.learningCommunity.network.label", subKey: "svc.hub.learningCommunity.network.sub", tint: "bg-feature-community/12 text-feature-community" },
     ],
   },
 ];

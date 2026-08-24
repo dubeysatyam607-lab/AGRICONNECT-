@@ -7,7 +7,7 @@ describe("Mandi AI Selling Advisor Engine", () => {
     id: "wheat::jaipur::jaipur::rajasthan",
     crop: "Wheat",
     cropHi: "गेहूं",
-    cropImage: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b",
+    cropImage: "https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     category: "Cereals",
     price: 2550,
     market: "Jaipur Mandi",

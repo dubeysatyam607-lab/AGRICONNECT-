@@ -4,8 +4,8 @@ import {
   getBaselineMandiPrices,
   fetchMandiPrices,
   type MandiPrice,
-} from "./src/lib/mandi-api";
-import { getCropImage, getCropCategory } from "./src/lib/crop-images";
+} from "./mandi-api";
+import { getCropImage, getCropCategory } from "./crop-images";
 
 describe("Mandi Complete Crop Coverage & Search", () => {
   const samplePrices: MandiPrice[] = [

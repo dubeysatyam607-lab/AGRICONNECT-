@@ -260,16 +260,63 @@ const IndexInner: React.FC = () => {
   const getTabFromPath = (path: string) => {
     switch (path) {
       case "/dashboard": return "home";
-      case "/market": return "store";
-      case "/ai": return "ai-chat";
+      case "/market":
+      case "/agri-store":
+      case "/store": return "store";
+      case "/ai":
+      case "/kisan-ai":
+      case "/kisan-chat": return "ai-chat";
+      case "/crop-scan":
+      case "/crop-doctor": return "crop-doctor";
       case "/services": return "services";
-      case "/wallet": return "wallet";
-      case "/profile": return "profile";
-      case "/farm": return "farm-os";
-      case "/mandi": return "mandi";
-      case "/agri-store": return "store";
-      case "/machinery": return "tractors";
+      case "/wallet":
+      case "/payments": return "wallet";
+      case "/profile":
+      case "/settings": return "profile";
+      case "/farm":
+      case "/farm-os": return "farm-os";
+      case "/mandi":
+      case "/mandi-prices": return "mandi";
+      case "/machinery":
+      case "/machinery-rental":
+      case "/tractors":
+      case "/tractor-rental": return "tractors";
       case "/schemes": return "schemes";
+      case "/loans":
+      case "/loan-calculator": return "loans";
+      case "/labor":
+      case "/labour":
+      case "/labor-hire":
+      case "/labour-hire": return "labor";
+      case "/cattle":
+      case "/cattle-market":
+      case "/livestock": return "cattle";
+      case "/transport": return "transport";
+      case "/soil":
+      case "/soil-test": return "soil";
+      default:
+        if (path.startsWith("/soil-test/")) return "soil";
+        if (path.startsWith("/soil/")) return "soil";
+        break;
+    }
+    switch (path) {
+      case "/news":
+      case "/agri-news": return "news";
+      case "/mandi-finder": return "mandi-finder";
+      case "/cold-storage": return "cold-storage";
+      case "/community": return "community";
+      case "/krishi-shorts": return "krishi-shorts";
+      case "/farm-ledger":
+      case "/analytics": return "analytics";
+      case "/crop-insurance":
+      case "/fasal-bima":
+      case "/insurance": return "insurance";
+      case "/crop-calendar": return "crop-calendar";
+      case "/profit-calculator": return "profit-calculator";
+      case "/price-alerts": return "price-alerts";
+      case "/notifications": return "notifications";
+      case "/advisor": return "advisor";
+      case "/network": return "network";
       case "/admin": return "admin";
       default: return "home";
     }

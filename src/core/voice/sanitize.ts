@@ -1,7 +1,7 @@
 /**
  * VoiceEngine — Text Preprocessor for Speech Synthesis (TTS).
  *
- * Sanitizes raw AI response text before sending to ElevenLabs so that NOTHING
+ * Sanitizes raw AI response text before sending to Sarvam AI so that NOTHING
  * is ever read aloud except natural human speech:
  * 1. Strips code blocks, inline code, HTML tags, JSON snippets, raw URLs.
  * 2. Strips all Markdown formatting (#, **, *, __, _, ~~, >, ---, |, bullets).

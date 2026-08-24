@@ -29,6 +29,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { OverviewModule } from './modules/OverviewModule';
+import { SoilTestingModule } from './modules/SoilTestingModule';
 import { FarmersModule } from './modules/FarmersModule';
 import { EquipmentOwnersModule } from './modules/EquipmentOwnersModule';
 import { ProductsModule } from './modules/ProductsModule';
@@ -55,6 +56,8 @@ import { CrashModule } from './modules/CrashModule';
 import { AuditModule } from './modules/AuditModule';
 import { RolesModule } from './modules/RolesModule';
 import { AdminUsersModule } from './modules/AdminUsersModule';
+import { ImageManagementModule } from './modules/ImageManagementModule';
+import { Image as ImageIcon } from 'lucide-react';
 
 export interface AdminModule {
   key: string;
@@ -67,6 +70,7 @@ export interface AdminModule {
 export const ADMIN_MODULES: AdminModule[] = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard, group: 'Dashboard', component: OverviewModule },
 
+  { key: 'soilTesting', label: 'Soil Testing (Mitti Jaanch)', icon: Layers, group: 'Operations', component: SoilTestingModule },
   { key: 'farmers', label: 'Farmer Management', icon: Users, group: 'Users & Marketplace', component: FarmersModule },
   { key: 'equipmentOwners', label: 'Equipment Owners', icon: Tractor, group: 'Users & Marketplace', component: EquipmentOwnersModule },
   { key: 'products', label: 'Marketplace Products', icon: Package, group: 'Users & Marketplace', component: ProductsModule },
@@ -96,6 +100,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'appAnalytics', label: 'App Analytics', icon: BarChart3, group: 'Platform', component: AppAnalyticsModule },
   { key: 'crashes', label: 'Crash Reports', icon: Bug, group: 'Platform', component: CrashModule },
   { key: 'auditLogs', label: 'Audit Logs', icon: ClipboardList, group: 'Platform', component: AuditModule },
+  { key: 'images', label: 'Image System & Pexels Cache', icon: ImageIcon, group: 'Platform', component: ImageManagementModule },
   { key: 'roles', label: 'Roles & Permissions', icon: ShieldCheck, group: 'Platform', component: RolesModule },
   { key: 'adminUsers', label: 'Admin Users', icon: UserCog, group: 'Platform', component: AdminUsersModule },
 ];

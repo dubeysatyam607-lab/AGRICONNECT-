@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
-import { AgriImage } from "@/components/ui/agri-image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { postEdgeJson } from "@/lib/invoke-edge";
@@ -18,6 +18,7 @@ import {
   resolveImageUrl,
   normalizeApiProductImage,
   getStoreProductImage,
+  DEFAULT_STORE_PRODUCTS,
 } from "@/lib/image-resolver";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
@@ -62,7 +63,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   seeds: "#d97706", fertilizers: "#16a34a", pesticides: "#0891b2", tools: "#2563eb", machinery: "#7c3aed",
 };
 
-function storeProductToUI(r: Record<string, unknown>): Product {
+function storeProductToUI(r: Record<string, unknown>): ProductDetail {
   const category = STORE_CATEGORY_MAP[String(r.category || "")] || "tools";
   const name = String(r.name || "Product");
   const price = Number(r.price) || 0;
@@ -92,6 +93,10 @@ function storeProductToUI(r: Record<string, unknown>): Product {
     imageUrl,
     batchNo: r.batch_no ? String(r.batch_no) : undefined,
     descriptionText: r.description ? String(r.description) : undefined,
+    description: r.description ? String(r.description) : "Premium agricultural product.",
+    descriptionHi: r.description_hi ? String(r.description_hi) : "प्रीमियम कृषि उत्पाद।",
+    tags: Array.isArray(r.tags) ? r.tags : ["Premium", category],
+    weightKg: Number(r.weight_kg) || 1
   };
 }
 
@@ -167,21 +172,7 @@ function buildLocalTracking(orderId: string): Tracking {
   };
 }
 
-const LOCAL_PRODUCTS_CATALOG: ProductDetail[] = [
-  { id: "p-1", name: "Urea Fertilizer 45kg", nameHi: "यूरिया खाद 45 किग्रा", category: "fertilizers", price: 266, mrp: 290, unit: "45 kg Bag", brand: "IFFCO", rating: 4.6, reviews: 412, sold: 9800, stock: 200, description: "High-nitrogen granular urea for strong vegetative growth. Ideal for wheat, paddy and maize top dressing.", descriptionHi: "मजबूत वानस्पतिक वृद्धि के लिए उच्च नाइट्रोजन दानेदार यूरिया। गेहूं, धान और मक्का की टॉप ड्रेसिंग के लिए आदर्श।", tags: ["NPK 46-0-0", "Subsidy", "Top dressing"], offer: "MRP ₹290", freeDelivery: true, deliveryDays: "2-3 days", color: "#16a34a", inStock: true, discountPct: 8, weightKg: 45, imageUrl: getStoreProductImage("Urea Fertilizer", "fertilizers") },
-  { id: "p-2", name: "DAP Fertilizer 50kg", nameHi: "डीएपी खाद 50 किग्रा", category: "fertilizers", price: 1350, mrp: 1420, unit: "50 kg Bag", brand: "Coromandel", rating: 4.7, reviews: 356, sold: 7400, stock: 150, description: "Balanced N-P fertilizer for root development and flowering. Best applied at sowing time.", descriptionHi: "जड़ विकास और फूल के लिए संतुलित एन-पी उर्वरक। बुवाई के समय सर्वोत्तम।", tags: ["NPK 18-46-0", "Basal dose", "Certified"], offer: "5% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#2563eb", inStock: true, discountPct: 5, weightKg: 50, imageUrl: getStoreProductImage("DAP Fertilizer", "fertilizers") },
-  { id: "p-3", name: "NPK 19-19-19 Fertilizer", nameHi: "एनपीके 19-19-19 खाद", category: "fertilizers", price: 980, mrp: 1100, unit: "50 kg Bag", brand: "Aries", rating: 4.5, reviews: 288, sold: 5100, stock: 120, description: "Water-soluble NPK for drip and foliar application. Complete nutrition for all crops.", descriptionHi: "ड्रिप और पत्तेदार अनुप्रयोग के लिए पानी में घुलनशील एनपीके। सभी फसलों के लिए संपूर्ण पोषण।", tags: ["Water soluble", "Foliar", "Drip"], offer: "11% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 50, imageUrl: getStoreProductImage("NPK Fertilizer", "fertilizers") },
-  { id: "p-4", name: "Organic Compost Manure", nameHi: "जैविक कम्पोस्ट खाद", category: "fertilizers", price: 450, mrp: 520, unit: "25 kg Bag", brand: "GreenAgro", rating: 4.4, reviews: 198, sold: 3200, stock: 300, description: "Fully decomposed organic compost rich in humus and beneficial microbes.", descriptionHi: "ह्यूमस और लाभकारी सूक्ष्मजीवों से भरपूर पूर्णतः सड़ा हुआ जैविक कम्पोस्ट।", tags: ["Organic", "Soil health", "NPK 0.8-0.4-0.8"], offer: "13% OFF", freeDelivery: false, deliveryDays: "2-4 days", color: "#65a30d", inStock: true, discountPct: 13, weightKg: 25, imageUrl: getStoreProductImage("Organic Compost Manure", "fertilizers") },
-  { id: "p-7", name: "Hybrid Wheat Seeds HD-3086", nameHi: "हाइब्रिड गेहूं बीज HD-3086", category: "seeds", price: 850, mrp: 950, unit: "10 kg Pkt", brand: "Pioneer", rating: 4.8, reviews: 520, sold: 11200, stock: 140, description: "High-yielding HD-3086 variety with excellent rust resistance. Ideal for timely sown North-West India.", descriptionHi: "उच्च उपज वाली HD-3086 किस्म जिसमें उत्कृष्ट रतुआ प्रतिरोधक क्षमता है।", tags: ["Timely sown", "Rust resistant", "Certified"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#d97706", inStock: true, discountPct: 11, weightKg: 10, imageUrl: getStoreProductImage("Hybrid Wheat Seeds", "seeds") },
-  { id: "p-8", name: "Hybrid Cotton Seeds (Bt)", nameHi: "हाइब्रिड कपास बीज (बीटी)", category: "seeds", price: 750, mrp: 820, unit: "450 g Pkt", brand: "BioSeed", rating: 4.4, reviews: 340, sold: 6900, stock: 160, description: "Bt cotton hybrid with high boll retention and fiber quality. GMO certified.", descriptionHi: "उच्च गोला धारण और रेशा गुणवत्ता वाला बीटी कपास हाइब्रिड।", tags: ["Bt", "High yield", "Long staple"], offer: "9% OFF", freeDelivery: false, deliveryDays: "3-4 days", color: "#16a34a", inStock: true, discountPct: 9, weightKg: 1, imageUrl: getStoreProductImage("Cotton Seeds", "seeds") },
-  { id: "p-9", name: "Tomato Seeds Arka Rakshak", nameHi: "टमाटर बीज अर्का रक्षक", category: "seeds", price: 320, mrp: 360, unit: "100 g Pkt", brand: "ICAR", rating: 4.5, reviews: 190, sold: 3800, stock: 220, description: "Disease-resistant tomato hybrid, good for fresh market and processing.", descriptionHi: "रोग प्रतिरोधी टमाटर हाइब्रिड, ताजा बाजार और प्रसंस्करण के लिए उपयुक्त।", tags: ["Disease resistant", "High shelf life"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#dc2626", inStock: true, discountPct: 11, weightKg: 1, imageUrl: getStoreProductImage("Tomato Seeds", "seeds") },
-  { id: "p-13", name: "Imidacloprid 17.8 SL", nameHi: "इमिडाक्लोप्रिड 17.8 SL", category: "pesticides", price: 420, mrp: 470, unit: "250 ml", brand: "Bayer", rating: 4.6, reviews: 280, sold: 5600, stock: 170, description: "Systemic insecticide for sucking pests — jassids, aphids and whitefly control.", descriptionHi: "चूसने वाले कीट — जैसिड, एफिड और सफेद मक्खी नियंत्रण के लिए प्रणालीगत कीटनाशक।", tags: ["Systemic", "Sucking pests"], offer: "11% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#0891b2", inStock: true, discountPct: 11, weightKg: 1, imageUrl: getStoreProductImage("Imidacloprid", "pesticides") },
-  { id: "p-17", name: "Neem Oil Spray 1L", nameHi: "नीम तेल स्प्रे 1L", category: "pesticides", price: 380, mrp: 440, unit: "1 L", brand: "HerbalAgro", rating: 4.7, reviews: 310, sold: 6100, stock: 210, description: "Organic neem-based insect repellent. Safe for vegetables and organic farms.", descriptionHi: "जैविक नीम-आधारित कीट विकर्षक। सब्जियों और जैविक खेतों के लिए सुरक्षित।", tags: ["Organic", "Repellent"], offer: "14% OFF", freeDelivery: true, deliveryDays: "2-3 days", color: "#65a30d", inStock: true, discountPct: 14, weightKg: 1, imageUrl: getStoreProductImage("Neem Oil Spray", "pesticides") },
-  { id: "p-19", name: "Manual Pesticide Sprayer 16L", nameHi: "मैनुअल कीटनाशक स्प्रेयर 16L", category: "tools", price: 1200, mrp: 1400, unit: "1 Unit", brand: "Gala", rating: 4.5, reviews: 260, sold: 3800, stock: 80, description: "16-litre brass nozzle knapsack sprayer with adjustable lance.", descriptionHi: "16-लीटर पीतल नोजल नैपसैक स्प्रेयर समायोज्य लांस के साथ।", tags: ["16L", "Brass nozzle"], offer: "14% OFF", freeDelivery: false, deliveryDays: "3-5 days", color: "#16a34a", inStock: true, discountPct: 14, weightKg: 4, imageUrl: getStoreProductImage("Pesticide Sprayer", "tools") },
-  { id: "p-20", name: "Drip Irrigation Kit (1 Acre)", nameHi: "ड्रिप सिंचाई किट (1 एकड़)", category: "tools", price: 2500, mrp: 3000, unit: "1 Set", brand: "Jain Irrigation", rating: 4.8, reviews: 340, sold: 2900, stock: 45, description: "Complete drip kit with pipes, laterals, drippers and filter. Saves up to 70% water.", descriptionHi: "पाइप, लेटरल, ड्रिपर और फिल्टर के साथ संपूर्ण ड्रिप किट। 70% तक पानी बचाएं।", tags: ["Water saving", "Complete kit"], offer: "17% OFF", freeDelivery: true, deliveryDays: "4-6 days", color: "#0891b2", inStock: true, discountPct: 17, weightKg: 15, imageUrl: getStoreProductImage("Drip Irrigation Kit", "tools") },
-  { id: "p-23", name: "Water Pump 1.5 HP", nameHi: "जल पंप 1.5 HP", category: "machinery", price: 4200, mrp: 4800, unit: "1 Unit", brand: "Kirloskar", rating: 4.6, reviews: 220, sold: 1900, stock: 40, description: "Energy-efficient monoblock pump for irrigation and domestic use.", descriptionHi: "सिंचाई और घरेलू उपयोग के लिए ऊर्जा कुशल मोनोब्लॉक पंप।", tags: ["Monoblock", "ISI"], offer: "13% OFF", freeDelivery: true, deliveryDays: "5-7 days", color: "#2563eb", inStock: true, discountPct: 13, weightKg: 25, imageUrl: getStoreProductImage("Water Pump", "machinery") },
-  { id: "p-24", name: "Mini Power Tiller 5 HP", nameHi: "मिनी पावर टिलर 5 HP", category: "machinery", price: 18500, mrp: 21000, unit: "1 Unit", brand: "Greaves", rating: 4.7, reviews: 140, sold: 620, stock: 15, description: "5 HP diesel tiller for small and medium farms. Plough, intercultivate and haul.", descriptionHi: "छोटे और मध्यम खेतों के लिए 5 HP डीजल टिलर। जुताई, इंटरकल्टीवेट और ढुलाई।", tags: ["Diesel", "Compact"], offer: "12% OFF", freeDelivery: true, deliveryDays: "7-10 days", color: "#16a34a", inStock: true, discountPct: 12, weightKg: 90, imageUrl: getStoreProductImage("Mini Power Tiller", "machinery") },
-];
+
 
 function Stars({ rating, size = 12 }: { rating: number; size?: number }) {
   return (
@@ -268,11 +259,11 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
           {order.items.map((it, i) => (
             <div key={i} className="flex items-center gap-2.5 py-2 border-b border-border last:border-0">
               <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative">
-                <AgriImage
+                <SafeImage
                   src={it.imageUrl}
                   alt={it.name}
-                  type="product"
-                  contextName={it.name}
+                  resolveType="product"
+                  entityName={it.name}
                   containerClassName="w-full h-full"
                   className="w-full h-full object-cover"
                 />
@@ -478,42 +469,30 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
     let active = true;
     setLoading(true);
     setLoadError(null);
-    Promise.allSettled([
-      post({ action: "catalog", sort }),
-      supabase.from("store_inventory").select("*").order("created_at", { ascending: false }),
-    ])
-      .then(([resResult, invResult]) => {
+    supabase.from("store_inventory").select("*").order("created_at", { ascending: false })
+      .then(({ data, error }) => {
         if (!active) return;
-        const res = resResult.status === "fulfilled" ? resResult.value : null;
-        const inv = invResult.status === "fulfilled" ? invResult.value : null;
-
         let merged: Product[] = [];
-        if (res && Array.isArray(res.products) && res.products.length > 0) {
-          merged = [...res.products];
-        } else {
-          merged = [...LOCAL_PRODUCTS_CATALOG];
+        if (data && data.length > 0) {
+          merged = data.filter((r: any) => r.name).map((r: any) => storeProductToUI(r));
         }
 
-        const rows = inv?.data as Array<Record<string, unknown>> | null;
-        if (Array.isArray(rows)) {
-          const dbProducts = rows
-            .filter(r => r.name)
-            .map(r => storeProductToUI(r));
-          merged = [...dbProducts, ...merged];
+        // If no products in DB or error, populate with verified real store catalog
+        if (merged.length === 0) {
+          merged = DEFAULT_STORE_PRODUCTS.map((r: any) => storeProductToUI(r));
         }
 
-        if (merged.length) setProducts(merged);
-        if (res?.banners?.length) setBanners(res.banners);
-        if (res?.coupons?.length) {
-          setCoupons(res.coupons.map((c: { code: string; desc: string; descHi: string; min: number; expiry: string }) => ({ code: c.code, type: "flat", value: 0, cap: 0, min: c.min, desc: c.desc, descHi: c.descHi })));
-        }
-        if (res?.stats) setStats(res.stats);
-        else setStats({ total: merged.length, offers: merged.filter(p => p.discountPct > 0).length, brands: 12, avgRating: 4.6 });
+        setProducts(merged);
+        setBanners([
+          { id: "b1", title: "Kharif Sale", titleHi: "खरीफ सेल", sub: "Upto 20% off on seeds & fertilizers", subHi: "बीज और खाद पर 20% तक छूट", color: "#16a34a" },
+        ]);
+        setStats({ total: merged.length, offers: merged.filter(p => p.discountPct > 0).length, brands: 12, avgRating: 4.8 });
       })
       .catch(() => {
         if (!active) return;
-        setProducts(LOCAL_PRODUCTS_CATALOG);
-        setStats({ total: LOCAL_PRODUCTS_CATALOG.length, offers: LOCAL_PRODUCTS_CATALOG.filter(p => p.discountPct > 0).length, brands: 8, avgRating: 4.6 });
+        const fallbackList = DEFAULT_STORE_PRODUCTS.map((r: any) => storeProductToUI(r));
+        setProducts(fallbackList);
+        setStats({ total: fallbackList.length, offers: fallbackList.filter(p => p.discountPct > 0).length, brands: 8, avgRating: 4.8 });
       })
       .finally(() => active && setLoading(false));
     return () => { active = false; };
@@ -576,49 +555,31 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
     setDetailLoading(true);
     setSelected(null);
     try {
-      if (id.startsWith("db-")) {
-        const local = products.find(p => p.id === id);
-        if (local) {
-          setSelected({
-            ...local,
-            description: local.descriptionText || "",
-            descriptionHi: local.descriptionText || "",
-            tags: [],
-            weightKg: 0,
-          });
-          setRelated(products.filter(p => p.id !== id && p.category === local.category).slice(0, 4));
+      const local = products.find(p => p.id === id) as ProductDetail;
+      if (local) {
+        setSelected(local);
+        setRelated(products.filter(p => p.id !== id && p.category === local.category).slice(0, 4));
+        setDetailReviews([]);
+        setDetailError(null);
+      } else {
+        // Fallback: try fetching from supabase directly
+        const dbId = id.replace("db-", "");
+        const { data, error } = await supabase.from("store_inventory").select("*").eq("id", dbId).single();
+        if (data && !error) {
+          const product = storeProductToUI(data);
+          setSelected(product);
+          setRelated(products.filter(p => p.id !== id && p.category === product.category).slice(0, 4));
           setDetailReviews([]);
           setDetailError(null);
         } else {
           setDetailError(t("catalogLoadFailed"));
         }
-        return;
-      }
-      const res = await post({ action: "details", id });
-      if (res?.product) {
-        setSelected(res.product);
-        setRelated(res.related || []);
-        setDetailReviews(res.reviews || []);
-        setDetailError(null);
-        return;
       }
     } catch {
-      // fallback below
-    }
-
-    const fallback = LOCAL_PRODUCTS_CATALOG.find(p => p.id === id) || LOCAL_PRODUCTS_CATALOG[0];
-    if (fallback) {
-      setSelected(fallback);
-      setRelated(LOCAL_PRODUCTS_CATALOG.filter(p => p.id !== id && p.category === fallback.category).slice(0, 4));
-      setDetailReviews([
-        { user: "Sunil Kumar", rating: 5, comment: "High quality genuine product. Fast delivery!", when: "3d ago" },
-        { user: "Mahesh Gowda", rating: 4, comment: "Very good results in my wheat field.", when: "1w ago" },
-      ]);
-      setDetailError(null);
-    } else {
       setDetailError(t("catalogLoadFailed"));
+    } finally {
+      setDetailLoading(false);
     }
-    setDetailLoading(false);
   };
 
   const applyCoupon = () => {
@@ -681,11 +642,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
     return (
       <div key={p.id} className="bg-card rounded-2xl border border-border shadow-card overflow-hidden flex flex-col group">
         <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center cursor-pointer overflow-hidden" onClick={() => openDetails(p.id)}>
-          <AgriImage
+          <SafeImage
             src={p.imageUrl}
             alt={p.name}
-            type="product"
-            contextName={p.name}
+            resolveType="product"
+            entityName={p.name}
             containerClassName="absolute inset-0 w-full h-full"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -876,11 +837,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   <div className="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar">
                     {o.items.slice(0, 4).map((it, i) => (
                       <div key={i} className="shrink-0 w-8 h-8 rounded-lg overflow-hidden relative">
-                        <AgriImage
+                        <SafeImage
                           src={it.imageUrl}
                           alt={it.name}
-                          type="product"
-                          contextName={it.name}
+                          resolveType="product"
+                          entityName={it.name}
                           containerClassName="w-full h-full"
                           className="w-full h-full object-cover"
                         />
@@ -928,11 +889,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[88vh] flex flex-col">
             <div className="p-3.5 pb-0 overflow-y-auto flex-1">
               <div className="relative h-44 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center mb-3">
-                <AgriImage
+                <SafeImage
                   src={selected.imageUrl}
                   alt={selected.name}
-                  type="product"
-                  contextName={selected.name}
+                  resolveType="product"
+                  entityName={selected.name}
                   containerClassName="absolute inset-0 w-full h-full"
                   className="w-full h-full object-cover"
                 />
@@ -1013,11 +974,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                     {related.map(r => (
                       <button key={r.id} onClick={() => openDetails(r.id)} className="shrink-0 w-28 bg-muted rounded-xl p-2 text-left group">
                         <div className="w-16 h-16 mx-auto rounded-lg overflow-hidden relative">
-                          <AgriImage
+                          <SafeImage
                             src={r.imageUrl}
                             alt={r.name}
-                            type="product"
-                            contextName={r.name}
+                            resolveType="product"
+                            entityName={r.name}
                             containerClassName="w-full h-full"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
@@ -1062,11 +1023,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   {cart.map(l => (
                     <div key={l.productId} className="flex items-center gap-3 bg-muted rounded-xl p-2.5">
                       <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 relative">
-                        <AgriImage
+                        <SafeImage
                           src={l.imageUrl}
                           alt={l.name}
-                          type="product"
-                          contextName={l.name}
+                          resolveType="product"
+                          entityName={l.name}
                           containerClassName="w-full h-full"
                           className="w-full h-full object-cover"
                         />

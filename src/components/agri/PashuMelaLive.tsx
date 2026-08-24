@@ -441,10 +441,10 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
       <div className="space-y-4">
         {filteredListings.map((animal) => {
           const FALLBACK_IMAGES: Record<string, string> = {
-            'Buffalo': 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=800',
-            'Cow':     'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?auto=format&fit=crop&q=80&w=800',
-            'Goat':    'https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&q=80&w=800',
-            'Poultry': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
+            'Buffalo': 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+            'Cow':     'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+            'Goat':    'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+            'Poultry': 'https://images.pexels.com/photos/1405939/pexels-photo-1405939.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
           };
           const imgSrc = animal.image_url || FALLBACK_IMAGES[animal.type] || FALLBACK_IMAGES['Cow'];
           return (

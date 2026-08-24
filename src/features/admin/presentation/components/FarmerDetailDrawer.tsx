@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield,
   ShieldAlert,
@@ -20,6 +20,8 @@ import {
   ArrowUpRight,
   PlusCircle,
   MinusCircle,
+  CreditCard,
+  History,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +29,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AdminStatusBadge } from './StatusBadge';
 import { fmtINR, fmtNumber, shortDate, timeAgo } from '../../domain/adminStore';
-import { updateUserStatus, updateUserKyc, adjustUserWalletBalance } from '../../domain/adminDatabaseService';
+import {
+  updateUserStatus,
+  updateUserKyc,
+  adjustUserWalletBalance,
+  fetchUserWallet,
+  fetchUserWalletTransactions,
+} from '../../domain/adminDatabaseService';
+import { supabase } from '@/integrations/supabase/client';
 import type { FarmerEntity } from '../../domain/adminTypes';
 import {
   AlertDialog,
@@ -48,6 +57,14 @@ interface FarmerDetailDrawerProps {
   onRefresh: () => void;
 }
 
+interface WalletTx {
+  id: string;
+  amount: number;
+  type: string;
+  reason: string | null;
+  created_at: string;
+}
+
 export function FarmerDetailDrawer({
   farmer,
   open,
@@ -66,24 +83,83 @@ export function FarmerDetailDrawer({
   const [walletReason, setWalletReason] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Real data from DB
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [walletTxns, setWalletTxns] = useState<WalletTx[]>([]);
+  const [bookingCount, setBookingCount] = useState(0);
+  const [scanCount, setScanCount] = useState(0);
+  const [conversationCount, setConversationCount] = useState(0);
+  const [subscription, setSubscription] = useState<{ plan: string; status: string } | null>(null);
+
+  // Fetch real data when drawer opens
+  useEffect(() => {
+    if (!farmer || !open) return;
+    let cancelled = false;
+
+    (async () => {
+      // Wallet
+      const w = await fetchUserWallet(farmer.id);
+      const txns = await fetchUserWalletTransactions(farmer.id);
+      if (cancelled) return;
+      setWalletBalance(w.balance);
+      setWalletTxns(txns);
+
+      // Activity counts
+      const [bookingsRes, scansRes, convRes] = await Promise.allSettled([
+        supabase.from('tractor_bookings').select('id', { count: 'exact', head: true }).eq('user_name', farmer.name),
+        supabase.from('crop_scans').select('id', { count: 'exact', head: true }).eq('user_id', farmer.id),
+        supabase.from('ai_conversations').select('id', { count: 'exact', head: true }).eq('user_id', farmer.id),
+      ]);
+      if (cancelled) return;
+      setBookingCount(bookingsRes.status === 'fulfilled' ? (bookingsRes.value as any).count ?? 0 : 0);
+      setScanCount(scansRes.status === 'fulfilled' ? (scansRes.value as any).count ?? 0 : 0);
+      setConversationCount(convRes.status === 'fulfilled' ? (convRes.value as any).count ?? 0 : 0);
+
+      // Subscription
+      const { data: sub } = await supabase
+        .from('user_subscriptions')
+        .select('status, subscription_plans(name)')
+        .eq('user_id', farmer.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (sub) {
+        setSubscription({
+          plan: (sub as any).subscription_plans?.name || 'Unknown Plan',
+          status: sub.status || 'active',
+        });
+      } else {
+        setSubscription(null);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [farmer?.id, open]);
+
   if (!farmer) return null;
 
   const handleExecuteAction = async () => {
     if (!confirmAction) return;
     setIsProcessing(true);
     try {
+      let result: { ok: boolean; error?: string };
       if (confirmAction.type === 'suspend') {
-        const ok = await updateUserStatus(farmer.id, 'Suspended', 'Suspended by Administrator');
-        if (ok) toast.success(`User ${farmer.name} suspended`);
+        result = await updateUserStatus(farmer.id, 'Suspended', 'Suspended by Administrator');
+        if (result.ok) toast.success(`User ${farmer.name} suspended`);
+        else toast.error(`Failed: ${result.error}`);
       } else if (confirmAction.type === 'unsuspend') {
-        const ok = await updateUserStatus(farmer.id, 'Active', 'Reactivated by Administrator');
-        if (ok) toast.success(`User ${farmer.name} reactivated`);
+        result = await updateUserStatus(farmer.id, 'Active', 'Reactivated by Administrator');
+        if (result.ok) toast.success(`User ${farmer.name} reactivated`);
+        else toast.error(`Failed: ${result.error}`);
       } else if (confirmAction.type === 'verify_kyc') {
-        const ok = await updateUserKyc(farmer.id, true, 'Verified by Admin');
-        if (ok) toast.success(`KYC approved for ${farmer.name}`);
+        result = await updateUserKyc(farmer.id, true, 'Verified by Admin');
+        if (result.ok) toast.success(`KYC approved for ${farmer.name}`);
+        else toast.error(`Verification failed: ${result.error}`);
       } else if (confirmAction.type === 'reject_kyc') {
-        const ok = await updateUserKyc(farmer.id, false, 'Rejected by Admin');
-        if (ok) toast.success(`KYC rejected for ${farmer.name}`);
+        result = await updateUserKyc(farmer.id, false, 'Rejected by Admin');
+        if (result.ok) toast.success(`KYC rejected for ${farmer.name}`);
+        else toast.error(`Rejection failed: ${result.error}`);
       } else if (confirmAction.type === 'wallet_adjust') {
         const amt = parseFloat(walletAmount);
         if (isNaN(amt) || amt <= 0 || !walletReason.trim()) {
@@ -91,13 +167,24 @@ export function FarmerDetailDrawer({
           setIsProcessing(false);
           return;
         }
-        const ok = await adjustUserWalletBalance({
+        result = await adjustUserWalletBalance({
           userId: farmer.id,
           amount: amt,
           direction: walletDirection,
           reason: walletReason,
         });
-        if (ok) toast.success(`Wallet adjusted by ₹${amt}`);
+        if (result.ok) {
+          toast.success(`Wallet adjusted by ₹${amt}`);
+          // Refresh wallet data
+          const w = await fetchUserWallet(farmer.id);
+          const txns = await fetchUserWalletTransactions(farmer.id);
+          setWalletBalance(w.balance);
+          setWalletTxns(txns);
+          setWalletAmount('');
+          setWalletReason('');
+        } else {
+          toast.error(`Wallet adjustment failed: ${result.error}`);
+        }
       }
       onRefresh();
     } catch {
@@ -128,10 +215,11 @@ export function FarmerDetailDrawer({
           </SheetHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full h-9">
+            <TabsList className="grid grid-cols-5 w-full h-9">
               <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-              <TabsTrigger value="farm" className="text-xs">Farm & Crop</TabsTrigger>
-              <TabsTrigger value="finance" className="text-xs">Wallet & Subs</TabsTrigger>
+              <TabsTrigger value="farm" className="text-xs">Farm</TabsTrigger>
+              <TabsTrigger value="finance" className="text-xs">Wallet</TabsTrigger>
+              <TabsTrigger value="activity" className="text-xs">Activity</TabsTrigger>
               <TabsTrigger value="actions" className="text-xs text-red-500 dark:text-red-400 font-bold">Actions</TabsTrigger>
             </TabsList>
 
@@ -166,18 +254,22 @@ export function FarmerDetailDrawer({
 
               <div className="rounded-xl border p-4 bg-card space-y-3">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Platform Activity</p>
-                <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">{farmer.orders}</p>
-                    <p className="text-[10px] text-muted-foreground">Store Orders</p>
+                    <p className="text-lg font-black text-foreground">{bookingCount}</p>
+                    <p className="text-[10px] text-muted-foreground">Tractor Bookings</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">0</p>
-                    <p className="text-[10px] text-muted-foreground">Tractor Rentals</p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">0</p>
+                    <p className="text-lg font-black text-foreground">{scanCount}</p>
                     <p className="text-[10px] text-muted-foreground">Crop Scans</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2.5">
+                    <p className="text-lg font-black text-foreground">{conversationCount}</p>
+                    <p className="text-[10px] text-muted-foreground">AI Chats</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2.5">
+                    <p className="text-lg font-black text-foreground">{fmtINR(walletBalance)}</p>
+                    <p className="text-[10px] text-muted-foreground">Wallet</p>
                   </div>
                 </div>
               </div>
@@ -199,7 +291,7 @@ export function FarmerDetailDrawer({
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Primary Crop</p>
-                    <p className="text-sm font-bold text-foreground mt-0.5">{farmer.primaryCrop || 'Wheat'}</p>
+                    <p className="text-sm font-bold text-foreground mt-0.5">{farmer.primaryCrop || 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Village / Town</p>
@@ -213,7 +305,7 @@ export function FarmerDetailDrawer({
               </div>
             </TabsContent>
 
-            {/* TAB 3: FINANCE & WALLET */}
+            {/* TAB 3: WALLET & SUBSCRIPTION */}
             <TabsContent value="finance" className="space-y-4 pt-3">
               <div className="rounded-xl border p-4 bg-card space-y-3">
                 <div className="flex items-center justify-between">
@@ -221,7 +313,7 @@ export function FarmerDetailDrawer({
                     <Wallet className="h-5 w-5 text-emerald-600" />
                     <div>
                       <p className="text-xs text-muted-foreground">AgriPay Wallet Balance</p>
-                      <p className="text-xl font-black text-foreground">₹0</p>
+                      <p className="text-xl font-black text-foreground">{fmtINR(walletBalance)}</p>
                     </div>
                   </div>
                   <Button
@@ -240,24 +332,82 @@ export function FarmerDetailDrawer({
                 </div>
               </div>
 
+              {/* Wallet Transaction History */}
+              {walletTxns.length > 0 && (
+                <div className="rounded-xl border p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <History className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Transactions</p>
+                  </div>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {walletTxns.map((tx) => (
+                      <div key={tx.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-foreground">{tx.reason || tx.type}</p>
+                            <p className="text-muted-foreground">{timeAgo(tx.created_at)}</p>
+                          </div>
+                        </div>
+                        <span className={`font-bold ${tx.type === 'credit' || tx.type === 'in' ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {tx.type === 'credit' || tx.type === 'in' ? '+' : '-'}{fmtINR(tx.amount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription */}
               <div className="rounded-xl border p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <Layers className="h-5 w-5 text-purple-600" />
                   <p className="text-sm font-bold text-foreground">Subscription Status</p>
                 </div>
-                <div className="flex items-center justify-between pt-1">
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">Kisan Basic (Free)</p>
-                    <p className="text-[11px] text-muted-foreground">Active · Standard Farmer Plan</p>
+                {subscription ? (
+                  <div className="flex items-center justify-between pt-1">
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">{subscription.plan}</p>
+                      <p className="text-[11px] text-muted-foreground">Status: {subscription.status}</p>
+                    </div>
+                    <Badge variant="outline" className={`text-xs font-bold ${
+                      subscription.status === 'active' ? 'text-emerald-600 border-emerald-500/30' :
+                      subscription.status === 'cancelled' ? 'text-red-600 border-red-500/30' :
+                      'text-amber-600 border-amber-500/30'
+                    }`}>
+                      {subscription.status}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-xs font-bold text-emerald-600 border-emerald-500/30">
-                    Active
-                  </Badge>
+                ) : (
+                  <div className="pt-1">
+                    <p className="text-xs text-muted-foreground">No active subscription — using Free plan</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* TAB 4: ACTIVITY */}
+            <TabsContent value="activity" className="space-y-4 pt-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl border bg-muted/40 p-3 text-center">
+                  <Tractor className="mx-auto h-5 w-5 text-amber-600 mb-1" />
+                  <p className="text-lg font-black text-foreground">{bookingCount}</p>
+                  <p className="text-[10px] text-muted-foreground">Tractor Bookings</p>
+                </div>
+                <div className="rounded-xl border bg-muted/40 p-3 text-center">
+                  <ScanLine className="mx-auto h-5 w-5 text-green-600 mb-1" />
+                  <p className="text-lg font-black text-foreground">{scanCount}</p>
+                  <p className="text-[10px] text-muted-foreground">Crop Scans</p>
+                </div>
+                <div className="rounded-xl border bg-muted/40 p-3 text-center">
+                  <Bot className="mx-auto h-5 w-5 text-teal-600 mb-1" />
+                  <p className="text-lg font-black text-foreground">{conversationCount}</p>
+                  <p className="text-[10px] text-muted-foreground">AI Conversations</p>
                 </div>
               </div>
             </TabsContent>
 
-            {/* TAB 4: ACTIONS */}
+            {/* TAB 5: ACTIONS */}
             <TabsContent value="actions" className="space-y-3 pt-3">
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
@@ -368,7 +518,7 @@ export function FarmerDetailDrawer({
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Audit Reason</label>
+                <label className="text-xs font-semibold text-muted-foreground">Audit Reason (min 5 chars)</label>
                 <input
                   type="text"
                   value={walletReason}

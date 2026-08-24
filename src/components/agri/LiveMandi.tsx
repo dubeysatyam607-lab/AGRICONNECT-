@@ -167,10 +167,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     setPage(1);
   }, [searchTerm, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, sortOption]);
 
-  // Real crop photos (Pexels) keyed by normalized crop name
-  const [cropImages, setCropImages] = useState<Record<string, string>>({});
-  const loadingImages = useRef<Set<string>>(new Set());
-
   // Nearby state
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(false);
@@ -231,36 +227,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   useEffect(() => {
     fetchMandi();
   }, [fetchMandi]);
-
-  // Upgrade card images to real, verified Pexels photos (one per unique crop)
-  useEffect(() => {
-    const uniqueCrops = new Map<string, string>();
-    for (const c of data) {
-      const key = normalizeCropKey(c.crop);
-      if (!uniqueCrops.has(key)) uniqueCrops.set(key, c.crop);
-    }
-
-    let cancelled = false;
-    (async () => {
-      for (const [key, name] of uniqueCrops) {
-        if (cancelled || cropImages[key] || loadingImages.current.has(key)) continue;
-        loadingImages.current.add(key);
-        try {
-          const query = PEXELS_QUERY_ALIASES[key] || name;
-          const photos = await searchAgriImages(`${query} crop`, 1);
-          const photo = photos.find(p => p.photographer !== "AgriConnect Media");
-          if (!cancelled && photo && photo.src) {
-            const url = photo.src.medium || photo.src.large || photo.src.small;
-            if (url) setCropImages(prev => ({ ...prev, [key]: url }));
-          }
-        } catch {
-          // keep the curated fallback image
-        }
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [data]);
 
   const fetchNearby = useCallback(async () => {
     setNearbyLoading(true);
@@ -410,8 +376,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const renderCard = (c: MandiPrice, index: number) => {
     const fav = isFav(c);
     const mspDiff = c.msp ? c.price - c.msp : null;
-    const defaultImg = getCropImage(c.crop);
-    const imgSrc = cropImages[normalizeCropKey(c.crop)] || c.cropImage || defaultImg;
 
     return (
       <AgriCard

@@ -283,15 +283,48 @@ const App = () => (
                   <Route path="/dashboard" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/market" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/ai" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/kisan-ai" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/services" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/wallet" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/farm" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/farm-os" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/crop-scan" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/crop-doctor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/mandi" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/mandi-prices" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/agri-store" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/store" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/machinery" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/machinery/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/machinery-rental" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/tractors" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/tractors/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/tractor-rental" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
                   <Route path="/schemes" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/loans" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/loan-calculator" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/labor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/labour" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/labor-hire" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/labour-hire" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/cattle" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/transport" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/soil" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/soil-test" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/soil-test/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/news" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/cold-storage" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/community" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/krishi-shorts" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/farm-ledger" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/crop-insurance" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/crop-calendar" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/profit-calculator" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/price-alerts" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/advisor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/network" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />

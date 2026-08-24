@@ -1045,6 +1045,194 @@ export type Database = {
         }
         Relationships: []
       }
+      soil_test_orders: {
+        Row: {
+          id: string
+          order_number: string
+          user_id: string
+          farmer_name: string
+          mobile: string
+          email: string | null
+          farm_name: string | null
+          address: string
+          state: string
+          district: string
+          village: string | null
+          pincode: string | null
+          latitude: number | null
+          longitude: number | null
+          farm_size: number | null
+          farm_size_unit: string | null
+          crop: string | null
+          crop_stage: string | null
+          test_type: string
+          sample_quantity: string | null
+          pickup_required: boolean
+          pickup_fee: number
+          test_price: number
+          total_amount: number
+          payment_status: string
+          payment_method: string | null
+          payment_id: string | null
+          order_status: string
+          assigned_agent_id: string | null
+          assigned_agent_name: string | null
+          assigned_agent_phone: string | null
+          preferred_pickup_date: string | null
+          confirmed_pickup_date: string | null
+          pickup_time_slot: string | null
+          sample_collected_at: string | null
+          sample_received_at: string | null
+          lab_started_at: string | null
+          report_generated_at: string | null
+          report_url: string | null
+          report_file_path: string | null
+          lab_name: string | null
+          structured_results: Json | null
+          internal_notes: string | null
+          additional_notes: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          order_number?: string
+          user_id: string
+          farmer_name: string
+          mobile: string
+          email?: string | null
+          farm_name?: string | null
+          address: string
+          state: string
+          district: string
+          village?: string | null
+          pincode?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          farm_size?: number | null
+          farm_size_unit?: string | null
+          crop?: string | null
+          crop_stage?: string | null
+          test_type: string
+          sample_quantity?: string | null
+          pickup_required?: boolean
+          pickup_fee?: number
+          test_price?: number
+          total_amount?: number
+          payment_status?: string
+          payment_method?: string | null
+          payment_id?: string | null
+          order_status?: string
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
+          preferred_pickup_date?: string | null
+          confirmed_pickup_date?: string | null
+          pickup_time_slot?: string | null
+          sample_collected_at?: string | null
+          sample_received_at?: string | null
+          lab_started_at?: string | null
+          report_generated_at?: string | null
+          report_url?: string | null
+          report_file_path?: string | null
+          lab_name?: string | null
+          structured_results?: Json | null
+          internal_notes?: string | null
+          additional_notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          order_number?: string
+          user_id?: string
+          farmer_name?: string
+          mobile?: string
+          email?: string | null
+          farm_name?: string | null
+          address?: string
+          state?: string
+          district?: string
+          village?: string | null
+          pincode?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          farm_size?: number | null
+          farm_size_unit?: string | null
+          crop?: string | null
+          crop_stage?: string | null
+          test_type?: string
+          sample_quantity?: string | null
+          pickup_required?: boolean
+          pickup_fee?: number
+          test_price?: number
+          total_amount?: number
+          payment_status?: string
+          payment_method?: string | null
+          payment_id?: string | null
+          order_status?: string
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
+          preferred_pickup_date?: string | null
+          confirmed_pickup_date?: string | null
+          pickup_time_slot?: string | null
+          sample_collected_at?: string | null
+          sample_received_at?: string | null
+          lab_started_at?: string | null
+          report_generated_at?: string | null
+          report_url?: string | null
+          report_file_path?: string | null
+          lab_name?: string | null
+          structured_results?: Json | null
+          internal_notes?: string | null
+          additional_notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      soil_test_status_history: {
+        Row: {
+          id: string
+          soil_test_order_id: string
+          previous_status: string | null
+          new_status: string
+          changed_by: string | null
+          changed_by_name: string | null
+          note: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          soil_test_order_id: string
+          previous_status?: string | null
+          new_status: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          note?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          soil_test_order_id?: string
+          previous_status?: string | null
+          new_status?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          note?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soil_test_status_history_soil_test_order_id_fkey"
+            columns: ["soil_test_order_id"]
+            isOneToOne: false
+            referencedRelation: "soil_test_orders"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

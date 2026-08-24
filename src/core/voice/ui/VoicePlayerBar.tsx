@@ -11,6 +11,8 @@ import { Waveform } from "./Waveform";
  * sentence currently being spoken as a highlighted live subtitle, a progress
  * bar of the whole utterance, and transport controls (pause/resume/replay/
  * stop) plus a speech-speed toggle.
+ *
+ * Theme: AgriConnect white + green — matches the main app visual identity.
  */
 interface VoicePlayerBarProps {
   activeSentence: string;
@@ -39,11 +41,11 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
   const percent = Math.round(progress * 100);
 
   return (
-    <div className="bg-slate-900/95 border-t border-white/10 px-4 py-3 animate-in slide-in-from-bottom-3 duration-300">
+    <div className="bg-white border-t border-border px-4 py-3 animate-in slide-in-from-bottom-3 duration-300">
       <div className="flex items-center gap-3">
         <button
           onClick={onStop}
-          className="p-2 rounded-full bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 transition-colors shrink-0"
+          className="p-2 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors shrink-0"
           aria-label="Stop speaking"
         >
           <X size={15} />
@@ -58,22 +60,22 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
-            <span className={cn("w-1.5 h-1.5 rounded-full", paused ? "bg-amber-400" : "bg-emerald-400 animate-pulse")} />
+          <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-primary uppercase tracking-wider">
+            <span className={cn("w-1.5 h-1.5 rounded-full", paused ? "bg-amber-400" : "bg-primary animate-pulse")} />
             {paused ? "Paused" : "Speaking…"}
           </div>
           {activeSentence ? (
-            <p className="text-xs text-emerald-200/95 mt-0.5 line-clamp-2 leading-snug">
-              <span className="bg-emerald-500/15 text-emerald-200 px-1.5 py-0.5 rounded-md">
+            <p className="text-xs text-foreground mt-0.5 line-clamp-2 leading-snug">
+              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md">
                 {activeSentence}
               </span>
             </p>
           ) : (
-            <p className="text-xs text-slate-400 mt-0.5 italic">Preparing voice…</p>
+            <p className="text-xs text-muted-foreground mt-0.5 italic">Preparing voice…</p>
           )}
-          <div className="mt-1.5 h-1 rounded-full bg-white/10 overflow-hidden">
+          <div className="mt-1.5 h-1 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-200"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all duration-200"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -84,8 +86,8 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
           className={cn(
             "p-2.5 rounded-full transition-all shrink-0",
             paused
-              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-              : "bg-white/5 text-slate-200 hover:bg-white/15"
+              ? "bg-primary text-white shadow-lg shadow-primary/25"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
           )}
           aria-label={paused ? "Resume speaking" : "Pause speaking"}
         >
@@ -94,7 +96,7 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
 
         <button
           onClick={onReplay}
-          className="p-2.5 rounded-full bg-white/5 text-slate-200 hover:bg-white/15 transition-colors shrink-0"
+          className="p-2.5 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors shrink-0"
           aria-label="Replay message"
         >
           <RotateCcw size={15} />
@@ -102,10 +104,10 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] text-slate-500 font-bold">{percent}%</span>
+        <span className="text-[10px] text-muted-foreground font-bold">{percent}%</span>
         <button
           onClick={() => onRate(nextRate)}
-          className="text-[10px] font-bold text-slate-400 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-2.5 py-1 transition-colors"
+          className="text-[10px] font-bold text-muted-foreground bg-muted hover:bg-muted/80 border border-border rounded-full px-2.5 py-1 transition-colors"
           title="Speech speed"
         >
           {rate >= 1.15 ? "1.15×" : rate >= 1 ? "1.0×" : "0.8×"}

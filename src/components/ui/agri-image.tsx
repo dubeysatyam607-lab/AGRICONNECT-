@@ -5,8 +5,11 @@ import {
   PEXELS_PHOTO_LIBRARY,
   normalizeNameForPexels,
   getStableIndex,
+  getAgricultureImage,
 } from "@/lib/pexels-api";
 import { resolveImageUrl, isValidImageUrl } from "@/lib/image-resolver";
+import { MACHINE_IMG } from "@/lib/machine-images";
+import { getCropImage } from "@/lib/crop-images";
 import { cn } from "@/lib/utils";
 
 export interface AgriImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -69,6 +72,9 @@ export const AgriImage: React.FC<AgriImageProps> = ({
   // Immediate deterministic photo lookup for instant 0ms render
   const initialResolved = (() => {
     if (src && isValidImageUrl(src)) return src;
+    if (type === "tractor" && MACHINE_IMG[targetName]) return MACHINE_IMG[targetName];
+    if (type === "crop" && targetName) return getCropImage(targetName);
+    
     const norm = normalizeNameForPexels(targetName).toLowerCase();
     const stem = norm.split(/\s+/)[0];
     if (PEXELS_CURATED_PHOTOS[stem]) return PEXELS_CURATED_PHOTOS[stem];
@@ -92,18 +98,19 @@ export const AgriImage: React.FC<AgriImageProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-    // Build immediate fallback chain
+    // Build targeted candidate chain without universal cross-category bleeds
     const norm = normalizeNameForPexels(targetName).toLowerCase();
     const stem = norm.split(/\s+/)[0];
-    const curatedPhotos = PEXELS_PHOTO_LIBRARY[stem] || PEXELS_PHOTO_LIBRARY[type] || PEXELS_PHOTO_LIBRARY.crops;
+    const curatedPhotos = PEXELS_PHOTO_LIBRARY[stem] || PEXELS_PHOTO_LIBRARY[type];
 
     const list: string[] = [];
     if (src && isValidImageUrl(src)) list.push(src);
+    if (type === "tractor" && MACHINE_IMG[targetName]) list.push(MACHINE_IMG[targetName]);
+    if (type === "crop" && targetName) list.push(getCropImage(targetName));
     if (curatedPhotos) {
       curatedPhotos.forEach((p) => list.push(p.src.large, p.src.medium));
     }
     if (fallbackSrc && isValidImageUrl(fallbackSrc)) list.push(fallbackSrc);
-    if (PEXELS_CURATED_PHOTOS.wheat) list.push(PEXELS_CURATED_PHOTOS.wheat);
 
     candidateUrls.current = Array.from(new Set(list.filter(isValidImageUrl)));
     candidateIdx.current = 0;
@@ -114,25 +121,35 @@ export const AgriImage: React.FC<AgriImageProps> = ({
     setIsLoaded(false);
     setAllFailed(false);
 
-    // Asynchronously resolve tailored Pexels photo
-    fetchPexelsPhoto(targetName, type as any, stableId).then((res) => {
-      if (!isMounted || !res?.url) return;
-      if (res.alt) setAltText(res.alt);
-      if (res.photographer) setPhotographer(res.photographer);
+    // If entity has a deterministic verified photo, preserve it; otherwise fetch from service
+    const hasExactMatch = 
+      (type === "tractor" && MACHINE_IMG[targetName]) ||
+      (type === "crop" && targetName && getCropImage(targetName)) ||
+      (src && isValidImageUrl(src));
 
-      // Prepend the specific Pexels URL to candidates and update source
-      if (!candidateUrls.current.includes(res.url)) {
-        candidateUrls.current = [res.url, ...candidateUrls.current];
-      }
-      setCurrentSrc(res.url);
-    }).catch(() => {
-      // Retain curated list
-    });
+    if (!hasExactMatch) {
+      getAgricultureImage({
+        type: type as any,
+        name: targetName,
+        category,
+      }).then((res) => {
+        if (!isMounted || !res?.imageUrl) return;
+        if (res.entityName) setAltText(`${res.entityName} agriculture photograph`);
+        if (res.photographer) setPhotographer(res.photographer);
+
+        if (!candidateUrls.current.includes(res.imageUrl)) {
+          candidateUrls.current = [res.imageUrl, ...candidateUrls.current];
+        }
+        setCurrentSrc(res.imageUrl);
+      }).catch(() => {
+        // Retain candidates
+      });
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [src, targetName, type, fallbackSrc, stableId]);
+  }, [src, targetName, type, category, fallbackSrc, stableId]);
 
   const handleImgLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setIsLoaded(true);
@@ -206,6 +223,5 @@ export const AgriImage: React.FC<AgriImageProps> = ({
   );
 };
 
-// Aliases for comprehensive ergonomics
 export const AgricultureImage = AgriImage;
 export default AgriImage;

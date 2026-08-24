@@ -59,7 +59,6 @@ const SECONDARY_SERVICES = [
   { id: "news", icon: Newspaper, labelKey: "svc.news" },
   { id: "soil", icon: FlaskConical, labelKey: "svc.soil" },
   { id: "cold-storage", icon: Warehouse, labelKey: "svc.coldStorage" },
-  { id: "community", icon: Users, labelKey: "svc.community" },
 ] as const;
 
 const COND_EMOJI: Record<string, string> = {

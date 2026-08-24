@@ -34,7 +34,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '5 km',
     seller: 'Ramesh Kumar',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 2, 
@@ -47,7 +47,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '8 km',
     seller: 'Suresh Patel',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 3, 
@@ -60,7 +60,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '15 km',
     seller: 'Mohan Singh',
     verified: false,
-    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 4, 
@@ -73,7 +73,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '12 km',
     seller: 'Kishan Lal',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 5, 
@@ -86,7 +86,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '3 km',
     seller: 'Abdul Khan',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 6, 
@@ -99,7 +99,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '10 km',
     seller: 'Vikram Sharma',
     verified: false,
-    image: 'https://images.unsplash.com/photo-1593179357196-ea11a2e7c119?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 7, 
@@ -112,7 +112,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '20 km',
     seller: 'Lakhan Das',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/1405939/pexels-photo-1405939.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 8, 
@@ -125,7 +125,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '25 km',
     seller: 'Gopal Yadav',
     verified: true,
-    image: 'https://images.unsplash.com/photo-1533318087102-b3ad366ed041?auto=format&fit=crop&q=80&w=600'
+    image: 'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
 ];
 

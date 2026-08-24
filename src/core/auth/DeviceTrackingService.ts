@@ -54,11 +54,15 @@ export class DeviceTrackingService {
     const deviceName = this.getDeviceName();
     const now = new Date().toISOString();
 
+    // In a real app, this would be fetched securely from headers via an Edge Function
+    // For client-side simulation we just record the user agent
+    const fakeIp = 'client-side-ip-hidden';
+
     const currentSession: IDeviceSession = {
       id: `sess_${deviceId}`,
       deviceId,
       deviceName,
-      ipAddress: '192.168.29.72 (Local Network)',
+      ipAddress: fakeIp,
       lastActive: now,
       isCurrentDevice: true,
     };

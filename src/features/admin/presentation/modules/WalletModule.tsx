@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Loader2, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { Loader2, RefreshCw, SlidersHorizontal, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '../components/PageHeader';
 import { AdminStatusBadge } from '../components/StatusBadge';
-import { walletRepository } from '@/features/wallet/data/walletRepository';
+import { supabase } from '@/integrations/supabase/client';
+import { adjustUserWalletBalance } from '../../domain/adminDatabaseService';
 import type { AdminWalletRow } from '@/features/wallet/domain/walletTypes';
+import { toast } from 'sonner';
 
 const fmt = (n: number) => '₹' + (Number(n) || 0).toLocaleString('en-IN');
 
@@ -26,16 +28,51 @@ export function WalletModule() {
     setLoading(true);
     setError(null);
     try {
-      setRows(await walletRepository.adminList());
+      // Query real wallets joined with profiles from Supabase PostgreSQL
+      const { data: wallets, error: wErr } = await supabase
+        .from('wallets')
+        .select('*, profiles:user_id(full_name, phone)')
+        .order('updated_at', { ascending: false });
+
+      if (wErr) {
+        throw new Error(wErr.message);
+      }
+
+      const mapped: AdminWalletRow[] = (wallets || []).map((w: any) => ({
+        wallet_id: w.id,
+        user_id: w.user_id,
+        balance: Number(w.balance || 0),
+        status: (w.status || 'Active') as any,
+        full_name: w.profiles?.full_name || null,
+        phone: w.profiles?.phone || null,
+        updated_at: w.updated_at || w.created_at || new Date().toISOString(),
+      }));
+
+      setRows(mapped);
       setLoading(false);
     } catch (e: any) {
-      setError(e.message ?? 'Unable to load wallets');
+      setError(e.message ?? 'Unable to load wallets from database');
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     load();
+
+    // Subscribe to real-time wallet & transaction updates
+    const channel = supabase
+      .channel('admin-wallets-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets' }, () => {
+        load();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallet_transactions' }, () => {
+        load();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [load]);
 
   const totalBalance = rows.reduce((s, r) => s + Number(r.balance || 0), 0);
@@ -47,20 +84,33 @@ export function WalletModule() {
       setError('Enter a valid amount');
       return;
     }
-    if (reason.trim().length < 5) {
-      setError('Reason must be at least 5 characters');
+    if (reason.trim().length < 3) {
+      setError('Reason must be at least 3 characters');
       return;
     }
     setSaving(true);
     setError(null);
     try {
-      await walletRepository.adminAdjust(adjusting.user_id, amt, direction, reason.trim());
-      setAdjusting(null);
-      setAmount('');
-      setReason('');
-      await load();
+      const res = await adjustUserWalletBalance({
+        userId: adjusting.user_id,
+        amount: amt,
+        direction: direction === 'in' ? 'credit' : 'debit',
+        reason: reason.trim(),
+      });
+
+      if (res.ok) {
+        toast.success(`Wallet adjusted: ${direction === 'in' ? '+' : '-'}₹${amt}`);
+        setAdjusting(null);
+        setAmount('');
+        setReason('');
+        await load();
+      } else {
+        setError(res.error || 'Adjustment failed on server');
+        toast.error(`Adjustment failed: ${res.error || 'Database error'}`);
+      }
     } catch (e: any) {
       setError(e.message ?? 'Adjustment failed');
+      toast.error('Adjustment failed');
     } finally {
       setSaving(false);
     }

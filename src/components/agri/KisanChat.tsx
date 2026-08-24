@@ -72,7 +72,7 @@ interface NearbyFetchResult {
 
 const MAX_IMAGE_SIZE_MB = 8;
 
-// Stop all speaking utility using core ElevenLabs engine
+// Stop all speaking utility using core Sarvam AI engine
 const stopSpeaking = () => {
   stopSpeakingEngine();
 };
@@ -325,7 +325,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     };
   }, [user, greeting]);
 
-  // Stop any ongoing ElevenLabs speech when the chat unmounts. The engine's
+  // Stop any ongoing Sarvam AI speech when the chat unmounts. The engine's
   // onStart/onProgress/onEnd callbacks own the isSpeaking state (the Web Audio
   // engine is NOT tied to window.speechSynthesis).
   useEffect(() => {
@@ -832,28 +832,39 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           }
 
           if (!r) {
-            // Resilient Agronomy diagnosis fallback
-            const isHindiLang = selectedLanguage.toLowerCase().includes("hindi") || selectedLanguage.toLowerCase().includes("hi");
-            const textLower = (messageToSend || "").toLowerCase();
-            const isTomato = textLower.includes("tomato") || textLower.includes("tamatar") || textLower.includes("tamatr") || textLower.includes("टमाटर");
-            
-            r = {
-              possible_issue: isTomato
-                ? (isHindiLang ? "टमाटर का अगेती झुलसा एवं पर्ण कुंचन रोग (Early Blight & Leaf Curl)" : "Tomato Early Blight & Leaf Curl Disease")
-                : (isHindiLang ? "फफूंद जनित पत्ती धब्बा रोग (Foliar Leaf Blight)" : "Foliar Fungal Leaf Blight"),
-              health_status: "Possible Disease",
-              confidence: 86,
-              symptoms: isHindiLang
-                ? ["पत्तियों पर भूरे-काले छल्लेदार धब्बे", "पत्तियों का मुड़ना व पीला पड़ना"]
-                : ["Concentric brown/black leaf spots", "Curling and yellowing of margins"],
-              recommendations: isHindiLang
-                ? ["कॉपर ऑक्सीक्लोराइड (3g/L) या मैंकोजेब (2.5g/L) का छिड़काव करें", "नीम तेल 1500 PPM (4ml/L) का स्प्रे करें"]
-                : ["Foliar spray of Copper Oxychloride 50% WP (3g/L) or Mancozeb", "Apply Neem Oil 1500 PPM @ 4ml/L"],
-              urgency: "Medium",
-              next_steps_for_farmer: isHindiLang
-                ? ["संक्रमित पत्तियों को हटा दें", "ड्रिप सिंचाई का उपयोग करें"]
-                : ["Remove infected lower leaves", "Use drip irrigation to avoid leaf wetness"],
+            // Honest fallback — never fabricate a diagnosis
+            const langCode = selectedLanguage.toLowerCase().includes("hi") || selectedLanguage.toLowerCase().includes("hindi") ? "hi"
+              : selectedLanguage.toLowerCase().includes("mr") ? "mr"
+              : selectedLanguage.toLowerCase().includes("gu") ? "gu"
+              : selectedLanguage.toLowerCase().includes("pa") ? "pa"
+              : selectedLanguage.toLowerCase().includes("ta") ? "ta"
+              : selectedLanguage.toLowerCase().includes("te") ? "te"
+              : selectedLanguage.toLowerCase().includes("kn") ? "kn"
+              : selectedLanguage.toLowerCase().includes("ml") ? "ml"
+              : selectedLanguage.toLowerCase().includes("bn") ? "bn"
+              : selectedLanguage.toLowerCase().includes("or") ? "or"
+              : selectedLanguage.toLowerCase().includes("as") ? "as"
+              : "en";
+
+            const errorMessages: Record<string, { msg: string; suggestions: string[] }> = {
+              hi: { msg: "📸 फसल रोग जांच में समस्या आई। कृपया दोबारा प्रयास करें। अगर समस्या बनी रहे तो स्पष्ट फोटो के साथ फिर से भेजें।", suggestions: ["फसल रोग जांच दोबारा करें", "कीटनाशक की सलाह", "नजदीकी मंडी भाव"] },
+              mr: { msg: "📸 पिक रोग तपासणीत अडचण आली. कृपया पुन्हा प्रयत्न करा. स्पष्ट फोटोसह पुन्हा पाठवा.", suggestions: ["पिक रोग तपासणी पुन्हा करा", "कीटकनाशक सल्ला", "जवळच्या बाजाराचा भाव"] },
+              gu: { msg: "📸 પાક રોગ તપાસમાં સમસ્યા આવી. કૃપા કરીને ફરી પ્રયાસ કરો. સ્પષ્ટ ફોટો સાથે મોકલો.", suggestions: ["પાક રોગ તપાસ ફરી કરો", "જંતુનાશક સલાહ", "નજીકની મંડી ભાવ"] },
+              pa: { msg: "📸 ਫਸਲ ਰੋਗ ਜਾਂਚ ਵਿੱਚ ਸਮੱਸਿਆ ਆਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ। ਸਾਫ਼ ਫੋਟੋ ਨਾਲ ਭੇਜੋ।", suggestions: ["ਫਸਲ ਰੋਗ ਜਾਂਚ ਦੁਬਾਰਾ ਕਰੋ", "ਕੀਟਨਾਸ਼ਕ ਸਲਾਹ", "ਨੇੜੇ ਦੀ ਮੰਡੀ ਭਾਵ"] },
+              ta: { msg: "📸 பயிர் நோய் பரிசோதனையில் சிக்கல். மீண்டும் முயற்சிக்கவும். தெளிவான புகைப்படத்துடன் அனுப்பவும்.", suggestions: ["பயிர் நோய் பரிசோதனை மீண்டும்", "பூச்சிக்கொல்லி ஆலோசனை", "அருகிலுள்ள சந்தை விலை"] },
+              te: { msg: "📸 పంట వ్యాధి పరీక్షలో సమస్య వచ్చింది. దయచేసి మళ్ళీ ప్రయత్నించండి. స్పష్టమైన ఫోటోతో పంపండి.", suggestions: ["పంట వ్యాధి పరీక్ష మళ్ళీ", "పురుగుమందు సలహా", "సమీపంలోని మార్కెట్ ధర"] },
+              kn: { msg: "📸 ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆಯಲ್ಲಿ ಸಮಸ್ಯೆ ಬಂದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಸ್ಪಷ್ಟ ಫೋಟೊದೊಂದಿಗೆ ಕಳುಹಿಸಿ.", suggestions: ["ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆ ಮತ್ತೆ", "ಕೀಟನಾಶಕ ಸಲಹೆ", "ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ"] },
+              ml: { msg: "📸 വിള രോഗ പരിശോധനയിൽ പ്രശ്നം. ദയവായി വീണ്ടും ശ്രമിക്കുക. വ്യക്തമായ ഫോട്ടോയോടെ അയക്കുക.", suggestions: ["വിള രോഗ പരിശോധന വീണ്ടും", "കീടനാശിനി ഉപദേശം", "അടുത്തുള്ള മാർക്കറ്റ് വില"] },
+              bn: { msg: "📸 ফসল রোগ পরীক্ষায় সমস্যা। দয়া করে আবার চেষ্টা করুন। স্পষ্ট ছবি সহ পাঠান।", suggestions: ["ফসল রোগ পরীক্ষা আবার", "কীটনাশক পরামর্শ", "কাছের বাজারের দাম"] },
+              or: { msg: "📸 ଫସଲ ରୋଗ ପରୀକ୍ଷାରେ ସମସ୍ୟା। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ। ସ୍ପଷ୍ଟ ଫୋଟୋ ସହ ପଠାନ୍ତୁ।", suggestions: ["ଫସଲ ରୋଗ ପରୀକ୍ଷା ପୁଣି", "କୀଟନାଶକ ପରାମର୍ଶ", "ନିକଟତମ ବଜାର ମୂଲ୍ୟ"] },
+              as: { msg: "📸 ফসল ৰোগ পৰীক্ষাত সমস্যা আহিল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক। স্পষ্ট ফটোৰ লগত আকৌ।", suggestions: ["ফসল ৰোগ পৰীক্ষা পুনৰ কৰক", "কীটনাশক পৰামৰ্শ", "ওচৰৰ বজাৰৰ দাম"] },
+              en: { msg: "📸 Crop disease analysis encountered an issue. Please try again. If the problem persists, resubmit with a clear photo.", suggestions: ["Retry crop scan", "Pesticide advice", "Nearby mandi prices"] },
             };
+
+            const errData = errorMessages[langCode] || errorMessages.en;
+            r = { possible_issue: errData.msg, health_status: "Error", confidence: 0, symptoms: [], recommendations: [], urgency: "N/A", next_steps_for_farmer: [] };
+            assistantResponse = errData.msg;
+            suggestions = errData.suggestions;
           }
 
           const lines: string[] = [];
@@ -920,7 +931,20 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         }>("kisan-chat", {
           messages: nextHistory.map(m => ({ role: m.role, content: m.content })),
           language: selectedLanguage,
-          persona: personaInstruction(selectedLanguage.includes("Hindi") ? "hi" : "en"),
+          persona: personaInstruction(
+            selectedLanguage.toLowerCase().includes("hindi") || selectedLanguage.toLowerCase().includes("hi") ? "hi"
+            : selectedLanguage.toLowerCase().includes("marathi") || selectedLanguage.toLowerCase().includes("mr") ? "mr"
+            : selectedLanguage.toLowerCase().includes("gujarati") || selectedLanguage.toLowerCase().includes("gu") ? "gu"
+            : selectedLanguage.toLowerCase().includes("punjabi") || selectedLanguage.toLowerCase().includes("pa") ? "pa"
+            : selectedLanguage.toLowerCase().includes("tamil") || selectedLanguage.toLowerCase().includes("ta") ? "ta"
+            : selectedLanguage.toLowerCase().includes("telugu") || selectedLanguage.toLowerCase().includes("te") ? "te"
+            : selectedLanguage.toLowerCase().includes("kannada") || selectedLanguage.toLowerCase().includes("kn") ? "kn"
+            : selectedLanguage.toLowerCase().includes("malayalam") || selectedLanguage.toLowerCase().includes("ml") ? "ml"
+            : selectedLanguage.toLowerCase().includes("bengali") || selectedLanguage.toLowerCase().includes("bn") ? "bn"
+            : selectedLanguage.toLowerCase().includes("odia") || selectedLanguage.toLowerCase().includes("or") ? "or"
+            : selectedLanguage.toLowerCase().includes("assamese") || selectedLanguage.toLowerCase().includes("as") ? "as"
+            : "en"
+          ),
           memoryContext: scanContext ? `${scanContext}\n\n${memoryContext}` : memoryContext,
           conversationId: serverConversationId,
           userLocation: userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : undefined,
@@ -1432,7 +1456,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                       {/* Render attachment image if present */}
                       {msg.image && (
                         <div className="mb-3 max-w-[200px] rounded-xl overflow-hidden border border-white/20 shadow-sm">
-                          <img src={msg.image} alt="Attached crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=400"; }} className="w-full h-auto object-cover max-h-[150px]" />
+                          <img src={msg.image} alt="Attached crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-auto object-cover max-h-[150px]" />
                         </div>
                       )}
 
@@ -1549,7 +1573,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <div className="flex items-center justify-between p-2.5 bg-white/5 border border-white/10 rounded-2xl max-w-xs animate-in slide-in-from-bottom-2 duration-300">
                 <div className="flex items-center gap-2.5">
                   <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/20 shrink-0">
-                    <img src={imagePreview} alt="Attached upload" className="w-full h-full object-cover" />
+                    <img src={imagePreview} alt="Attached upload" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <span className="text-[10px] text-emerald-400 font-extrabold uppercase">{t('agr221')}</span>

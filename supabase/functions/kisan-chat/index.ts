@@ -509,10 +509,22 @@ Keep answers: Simple, Short, Practical, Clear, Action-oriented.
 Avoid unnecessary technical language. Use simple, farmer-friendly words.
 
 ==================================================
-9. HINDI & HINGLISH RESPONSE STYLE
+9. MULTILINGUAL RESPONSE STYLE
 ==================================================
-- For Hindi: Use simple Hindi, avoid overly Sanskritized Hindi.
-- For Hinglish: Respond naturally in conversational Hinglish. Do NOT suddenly switch to formal English.
+- For Hindi: Use simple, conversational Hindi (not overly Sanskritized).
+- For Hinglish: Respond naturally in conversational Hinglish. Do NOT switch to formal English.
+- For Marathi: Use simple, conversational Marathi (मराठी). Avoid overly formal language.
+- For Gujarati: Use simple, conversational Gujarati (ગુજરાતી).
+- For Punjabi: Use simple, conversational Punjabi (ਪੰਜਾਬੀ).
+- For Tamil: Use simple, conversational Tamil (தமிழ்).
+- For Telugu: Use simple, conversational Telugu (తెలుగు).
+- For Kannada: Use simple, conversational Kannada (ಕನ್ನಡ).
+- For Malayalam: Use simple, conversational Malayalam (മലയാളം).
+- For Bengali: Use simple, conversational Bengali (বাংলা).
+- For Odia: Use simple, conversational Odia (ଓଡ଼ିଆ).
+- For Assamese: Use simple, conversational Assamese (অসমীয়া).
+- For English: Use simple, clear English.
+ALWAYS match the farmer's language exactly. Never mix languages unless the farmer does.
 
 ==================================================
 10. VOICE & TTS COMPATIBILITY
@@ -525,7 +537,14 @@ Responses may be spoken aloud via Text-to-Speech (TTS).
 ==================================================
 11. SPEECH-TO-TEXT ERROR HANDLING
 ==================================================
-Infer obvious STT mistakes from context ("tamatr" -> "tamatar", "soyabeen ka bao" -> "soyabean ka bhav", "indor mandi" -> "Indore mandi"). If uncertain, confirm with the user.
+Infer obvious STT mistakes from context in ANY language:
+- Hindi: "tamatr" -> "tamatar", "soyabeen ka bao" -> "soyabean ka bhav"
+- Marathi: "soyabincya" -> "soyabean cha"
+- Gujarati: "kapas ni kheti" -> "kapas ni kheti"
+- Tamil: "nel payiril" -> "nel payiril"
+- Telugu: "vari pantalo" -> "vari pantalo"
+- Bengali: "dhansher patar" -> "dhansher pata"
+If uncertain, confirm with the user in their language.
 
 ==================================================
 12. CONTEXT MEMORY & STRICT RELEVANCE
@@ -595,7 +614,7 @@ serve(async (req) => {
 
   if (!rateLimitResult.allowed) {
     return new Response(
-      JSON.stringify({ error: "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।" }),
+      JSON.stringify({ error: "Too many requests. Please try again in a few seconds." }),
       {
         status: 429,
         headers: {
@@ -691,13 +710,15 @@ serve(async (req) => {
 
     if (error instanceof AiGatewayError) {
       const status = error.kind === "rate_limit" ? 429 : error.kind === "quota" ? 402 : error.kind === "timeout" ? 504 : error.kind === "config" ? 503 : 502;
-      const message = error.kind === "timeout"
-        ? "AI सेवा धीमी है। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
-        : error.kind === "quota"
-          ? "AI क्रेडिट समाप्त। कृपया क्रेडिट जोड़ें।"
-          : error.kind === "rate_limit"
-            ? "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।"
-            : "सेवा में अस्थायी समस्या। कृपया पुनः प्रयास करें।";
+      const errLang = detected?.lang || "en";
+      const errMsgs: Record<string, Record<string, string>> = {
+        timeout: { hi: "AI सेवा धीमी है। कृपया थोड़ी देर बाद पुनः प्रयास करें।", en: "AI service is slow. Please try again in a moment.", mr: "AI सेवा मंद आहे. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.", gu: "AI સેવા ધીમી છે. કૃપા કરીને થોડી વાર પછી ફરી પ્રયાસ કરો.", ta: "AI சேவை மெதுவாக உள்ளது. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.", te: "AI సేవ నెమ్మదిగా ఉంది. దయచేసి కొంత సేపటి తర్వాత మళ్ళీ ప్రయత్నించండి.", kn: "AI ಸೇವೆ ನಿಧಾನವಾಗಿದೆ. ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", ml: "AI സേവ മന്ദഗതിയിലാണ്. ദയവായി കുറച്ച് സമയം കഴിഞ്ഞ് വീണ്ടും ശ്രമിക്കുക.", bn: "AI সেবা ধীর গতিতে চলছে। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।", or: "AI ସେବା ଧୀର ଅଛି। ଦୟାକରି କିଛି ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।", pa: "AI ਸੇਵਾ ਹੌਲੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਕੁਝ ਸਮਾਂ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", as: "AI সেৱা লেহেমানে আছে। অনুগ্ৰহ কৰি কিছু সেকেণ্ড পিছত পুনৰ চেষ্টা কৰক।" },
+        quota: { hi: "AI क्रेडिट समाप्त। कृपया क्रेडिट जोड़ें।", en: "AI credits exhausted. Please add credits.", mr: "AI क्रेडिट संपले. कृपया क्रेडिट जोडा.", gu: "AI ક્રેડિટ સમાપ્ત. કૃપા કરીને ક્રેડિટ ઉમેરો.", ta: "AI கிரெடிட் தீர்ந்தது. கிரெடிட் சேர்க்கவும்.", te: "AI క్రెడిట్ అయిపోయింది. దయచేసి క్రెడిట్ జోడించండి.", kn: "AI ಕ್ರೆಡಿಟ್ ಮುಗಿದಿದೆ. ದಯವಿಟ್ಟು ಕ್ರೆಡಿಟ್ ಸೇರಿಸಿ.", ml: "AI ക്രെഡിറ്റ് തീർന്നു. ദയവായി ക്രെഡിറ്റ് ചേർക്കുക.", bn: "AI ক্রেডিট শেষ। অনুগ্রহ করে ক্রেডিট যোগ করুন।", or: "AI କ୍ରେଡିଟ୍ ସମାପ୍ତ। ଦୟାକରି କ୍ରେଡିଟ୍ ଯୋଗ କରନ୍ତୁ।", pa: "AI ਕ੍ਰੈਡਿਟ ਖਤਮ। ਕਿਰਪਾ ਕਰਕੇ ਕ੍ਰੈਡਿਟ ਜੋੜੋ।", as: "AI ক্ৰেডিট শেষ। অনুগ্ৰহ কৰি ক্ৰেডিট যোগ কৰক।" },
+        rate_limit: { hi: "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।", en: "Too many requests. Please try again in a few seconds.", mr: "खूप विनंत्या. कृपया काही सेकंदांनी पुन्हा प्रयत्न करा.", gu: "ઘણી બધી વિનંતીઓ. કૃપા કરીને થોડી સેકંડ પછી ફરી પ્રયાસ કરો.", ta: "அதிகமான கோரிக்கைகள். சில நொடிகளில் மீண்டும் முயற்சிக்கவும்.", te: "చాలా అభ్యర్థనలు. దయచేసి కొన్ని సెకన్లలో మళ్ళీ ప్రయత్నించండి.", kn: "ಹಲವಾರು ವಿನಂತಿಗಳು. ದಯವಿಟ್ಟು ಕೆಲವು ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", ml: "ധാരാളം അഭ്യർത്ഥനകൾ. ദയവായി കുറച്ച് സെക്കൻഡിൽ വീണ്ടും ശ്രമിക്കുക.", bn: "অনেক বেশি অনুরোধ। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।", or: "ଅନେକ ଅନୁରୋଧ। ଦୟାକରି କିଛି ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।", pa: "ਬਹੁਤ ਸਾਰੇ ਅਨੁਰੋਧ। ਕਿਰਪਾ ਕਰਕੇ ਕੁਝ ਸਕਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", as: "বহু বেশি অনুৰোধ। অনুগ্ৰহ কৰি কিছু সেকেণ্ড পিছত পুনৰ চেষ্টা কৰক।" },
+        default: { hi: "सेवा में अस्थायी समस्या। कृपया पुनः प्रयास करें।", en: "Temporary service issue. Please try again.", mr: "सेवेत तात्पुरती अडचण. कृपया पुन्हा प्रयत्न करा.", gu: "સેવામાં ક્ષણિક સમસ્યા. કૃપા કરીને ફરી પ્રયાસ કરો.", ta: "சேவையில் தற்காலிக சிக்கல். மீண்டும் முயற்சிக்கவும்.", te: "సేవలో తాత్కాలిక సమస్య. దయచేసి మళ్ళీ ప్రయత్నించండి.", kn: "ಸೇವೆಯಲ್ಲಿ ತಾತ್ಕಾಲಿಕ ಸಮಸ್ಯೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", ml: "സേവയിൽ താൽക്കാലിക പ്രശ്നം. ദയവായി വീണ്ടും ശ്രമിക്കുക.", bn: "সাময়িক সেবা সমস্যা। অনুগ্রহ করে আবার চেষ্টা করুন।", or: "ସେବାରେ ଅସ୍ଥାୟୀ ସମସ୍ୟା। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।", pa: "ਸੇਵਾ ਵਿੱਚ ਅਸਥਾਈ ਸਮੱਸਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।", as: "সেৱাত অস্থায়ী সমস্যা। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।" },
+      };
+      const getMsg = (kind: string, lang: string) => errMsgs[kind]?.[lang] || errMsgs.default[lang] || errMsgs.default.en;
+      const message = getMsg(error.kind, errLang);
       return new Response(
         JSON.stringify({ error: message }),
         { status, headers: { ...headers, "Content-Type": "application/json" } }
@@ -705,7 +726,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ error: "सेवा में समस्या। कृपया पुनः प्रयास करें।" }),
+      JSON.stringify({ error: detected?.lang === "hi" ? "सेवा में समस्या। कृपया पुनः प्रयास करें।" : "Service issue. Please try again." }),
       { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }

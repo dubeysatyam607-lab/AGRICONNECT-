@@ -46,9 +46,9 @@ export const ProfileAvatarUploader: React.FC<IProfileAvatarUploaderProps> = ({
   const handleSimulateCamera = () => {
     // Generate a clean agricultural farmer avatar SVG base64 or high-res Unsplash photo
     const sampleAvatars = [
-      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
+      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
     ];
     const randomAvatar = sampleAvatars[Math.floor(Math.random() * sampleAvatars.length)];
     onImageSelected(randomAvatar);
@@ -73,7 +73,7 @@ export const ProfileAvatarUploader: React.FC<IProfileAvatarUploaderProps> = ({
         onClick={() => fileInputRef.current?.click()}
       >
         {currentUrl ? (
-          <img src={currentUrl} alt={fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300" />
+          <img src={currentUrl} alt={fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300" />
         ) : (
           <span>{getInitials(fullName || 'Farmer')}</span>
         )}
