@@ -118,6 +118,8 @@ export class ProfileRemoteDataSource {
         },
         preferredLanguage: data.app_language || extended.preferredLanguage || 'en',
         profilePictureUrl: data.avatar_url || defaultProf.profilePictureUrl,
+        createdAt: data.created_at || defaultProf.createdAt,
+        updatedAt: data.updated_at || defaultProf.updatedAt,
       };
     } catch (e) {
       console.warn('[ProfileRemoteDataSource] Remote profile fetch failed, using local/seed fallback:', e);

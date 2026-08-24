@@ -88,22 +88,35 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data }) => {
         <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
           <Package size={16} className="text-orange-600" /> {t('prof.marketOrders')}
         </h3>
-        <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
-          {DEMO_ORDERS.map((o) => (
-            <div key={o.id} className="flex items-center justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-foreground truncate">{o.title}</p>
-                <p className="text-[11px] text-muted-foreground">{o.id} · {o.date}</p>
+        {data.invoices.filter((inv) => inv.category === 'Store' || inv.category === 'Market').length === 0 ? (
+          <EmptyState
+            compact
+            emoji="📦"
+            title="No store orders yet"
+            description="Explore the Agri Store to buy certified seeds, fertilizers, and tools."
+            action={{
+              label: "Explore Agri Store",
+              onClick: () => window.location.href = "#store",
+            }}
+          />
+        ) : (
+          <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+            {data.invoices.filter((inv) => inv.category === 'Store' || inv.category === 'Market').map((o) => (
+              <div key={o.id} className="flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground truncate">{o.title}</p>
+                  <p className="text-[11px] text-muted-foreground">{o.id} · {o.date}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-extrabold text-foreground tabular-nums">₹{o.amount.toLocaleString('en-IN')}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${o.paid ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
+                    {o.paid ? t('prof.bkCompleted') : t('prof.bkPlaced')}
+                  </span>
+                </div>
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-sm font-extrabold text-foreground tabular-nums">₹{o.total.toLocaleString('en-IN')}</p>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${o.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
-                  {o.status === 'delivered' ? t('prof.bkCompleted') : t('prof.bkPlaced')}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Payment history / invoices */}
