@@ -29,16 +29,8 @@ interface FenceNode {
 }
 
 // NOTE: Real moisture data is fetched from Supabase via moisture-service.
-// The mock data remains for development fallback but will be replaced on component mount.
+// Fence nodes are loaded from Supabase on mount (empty array until real data exists).
 
-
-const MOCK_FENCE_NODES: FenceNode[] = [
-  { id: "f1", name: "Gate 1 (Main)", lat: 26.85, lng: 80.95, active: true, battery: 78, signal: 92, lastPing: new Date() },
-  { id: "f2", name: "Corner Post NW", lat: 26.851, lng: 80.949, active: true, battery: 65, signal: 88, lastPing: new Date() },
-  { id: "f3", name: "Corner Post NE", lat: 26.851, lng: 80.951, active: false, battery: 12, signal: 30, lastPing: new Date(Date.now() - 3600000) },
-  { id: "f4", name: "Corner Post SW", lat: 26.849, lng: 80.949, active: true, battery: 82, signal: 95, lastPing: new Date() },
-  { id: "f5", name: "Corner Post SE", lat: 26.849, lng: 80.951, active: true, battery: 71, signal: 90, lastPing: new Date() },
-];
 
 const getMoistureColor = (level: number) => {
   if (level >= 60) return "text-primary";
@@ -69,7 +61,7 @@ const HardwareDashboard: React.FC = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [moistureData, setMoistureData] = useState<MoistureReading[]>([]);
-  const [fenceNodes, setFenceNodes] = useState<FenceNode[]>(MOCK_FENCE_NODES);
+  const [fenceNodes, setFenceNodes] = useState<FenceNode[]>([]);
   const [lastSync, setLastSync] = useState(new Date());
   const [isSyncing, setIsSyncing] = useState(false);
 
