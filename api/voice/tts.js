@@ -109,7 +109,8 @@ export default async function handler(req, res) {
 
   const targetLang = getTargetLanguageCode(rawLang);
 
-  const apiKey = process.env.SARVAM_API_KEY;
+  // Strip surrounding quotes and whitespace — common Vercel Dashboard mistake
+  const apiKey = (process.env.SARVAM_API_KEY || "").replace(/^["']|["']$/g, "").trim();
 
   if (!apiKey) {
     return res.status(503).json({ error: "Sarvam AI API key is missing" });
