@@ -277,7 +277,7 @@ async function invokeTool(fnName: string, body: unknown): Promise<unknown> {
 function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme"> {
   const t = text.toLowerCase();
   const needs: Array<"weather" | "mandi" | "scheme"> = [];
-  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya"];
+  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya", "daam", "dam", "दाम", "daam", "kmandi", "khaareed", "खरीद", "बेच", "bech", "forsale", "quintal", "क्विंटल", "qtl", "market", "bazaar", "arhat", "arhatiya", "आढ़त", "आढ़तिया", "trading", "trade", "moong", "moongfali", "chana", "masoor", "urmaad", "groundnut", "cotton", "kapas", "कपास", "sugarcane", "ganna", "गन्ना", "rice", "chawal", "चावल", "maize", "makka", "मक्का", "bajra", "बाजरा", "jowar", "ज्वार", "arhar", "अरहर", "urad", "उड़द", "maadh", "माठ", "mustard", "sarson", "सरसों", "potato", "aalu", "आलू", "pyaz", "प्याज", "mirch", "मिर्च", "adrak", "अदरक", "lehsun", "लहसुन", "palak", "पालक", "bhindi", "भिंडी", "baigan", "बैंगन", "gobi", "गोभी", "torai", "तोरई", "lauki", "लौकी", "kaddu", "कद्दू", "watermelon", "tarbooj", "तरबूज", "angoor", "अंगूर", "seb", "सेब", "kela", "केला", "aam", "आम", "nimbu", "नींबू", "nariyal", "नारियल", "papita", "पपीता"];
   const weatherWords = ["weather", "rain", "mausam", "मौसम", "बारिश", "बरसात", "temperature", "तापमान", "forecast"];
   const schemeWords = ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "kcc", "pmfby", "loan"];
   if (weatherWords.some((w) => t.includes(w))) needs.push("weather");
