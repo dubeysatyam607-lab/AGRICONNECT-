@@ -382,12 +382,15 @@ const detectCrop = (query: string): string | null => {
   const entity = extractEntities(query);
   if (entity.crop) return entity.crop;
 
-  const q = query.toLowerCase();
   for (const [stem, guideKey] of Object.entries(MANDI_CROP_STEMS)) {
-    if (q.includes(stem)) return guideKey;
+    const escaped = stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i');
+    if (regex.test(query)) return guideKey;
   }
   for (const [hiName, stem] of Object.entries(HINDI_CROP_ALIASES)) {
-    if (query.includes(hiName)) return stem;
+    const escaped = hiName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i');
+    if (regex.test(query)) return stem;
   }
   return null;
 };
@@ -606,6 +609,24 @@ export const getLocalAnswer = (
       ? "नमस्ते किसान भाई! 👋 मैं Kisan Sahayak (किसान सहायक) हूँ। आप मुझसे फसल प्रबंधन, मंडी भाव, मौसम, कीट-रोग नियंत्रण, खाद की मात्रा, सिंचाई या सरकारी योजनाओं के बारे में पूछ सकते हैं।"
       : "Hello! 👋 I am Kisan Sahayak — your farming assistant. You can ask me about crops, live mandi prices, weather alerts, pest & disease control, fertilizer doses, irrigation schedules, or government schemes.";
     return { text: greetingText, matched: true, kind: "general" };
+  }
+
+  // 1a. User identity / Name query ("mera naam kya hai", "who am i", "my name")
+  if (["mera naam", "mera name", "my name", "who am i", "who i am", "kaun hu", "kaun hoon", "मेरा नाम", "मैं कौन हूं", "मैं कौन हूँ"].some((w) => q.includes(w))) {
+    const name = profile.name || profile.fullName || "";
+    const loc = profile.village || profile.district || profile.state || "";
+    const crop = profile.crop || "";
+    if (name) {
+      const text = hi
+        ? `नमस्ते किसान साथी! 🙏 AgriConnect प्रोफाइल के अनुसार आपका नाम **${name}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${crop ? ` आपकी मुख्य फसल **${crop}** है।` : ""}`
+        : `Hello farmer friend! 🙏 According to your AgriConnect profile, your name is **${name}**.${loc ? ` Region: **${loc}**.` : ""}${crop ? ` Primary crop: **${crop}**.` : ""}`;
+      return { text, matched: true, kind: "general" };
+    } else {
+      const text = hi
+        ? "नमस्ते किसान भाई! 🙏 आपका नाम अभी प्रोफाइल में दर्ज नहीं है। आप प्रोफाइल (Profile) सेक्शन में जाकर अपना नाम जोड़ सकते हैं!"
+        : "Hello farmer friend! 🙏 Your name is not yet registered in your profile. You can add your name in the Profile section anytime!";
+      return { text, matched: true, kind: "general" };
+    }
   }
 
   // 1b. Appreciation / Thank you

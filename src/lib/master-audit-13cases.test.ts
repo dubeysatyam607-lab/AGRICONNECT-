@@ -138,4 +138,15 @@ describe("AgriConnect Master Audit — 13 Production Acceptance Tests", () => {
     const imgMachinery = resolveImage({ entityType: "machinery", entityName: "Shaktiman Cultivator" });
     expect(imgMachinery).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
   });
+
+  // CASE 14: Name and identity questions do NOT false-match mango ('aam')
+  it("CASE 14: User identity questions answer with name and never trigger mango", () => {
+    const entity = extractEntities("mera naam kya hai");
+    expect(entity.crop).toBeNull();
+
+    const ans = getLocalAnswer("mera naam kya hai", { name: "Ramesh Patel", village: "Sanwer", crop: "Soybean" }, "hi");
+    expect(ans.text).toContain("Ramesh Patel");
+    expect(ans.text.toLowerCase()).not.toContain("mango");
+    expect(ans.text.toLowerCase()).not.toContain("आम");
+  });
 });

@@ -198,8 +198,9 @@ export function extractMentionedCrop(text: string): { englishName: string; rawTe
   if (!text) return null;
   const lower = text.toLowerCase();
   for (const [key, val] of Object.entries(CROP_DICTIONARY)) {
-    const regex = new RegExp(`(^|\\s|[.,!?])${key}($|\\s|[.,!?])`, "i");
-    if (regex.test(lower) || text.includes(key)) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, "i");
+    if (regex.test(lower)) {
       return { englishName: val, rawTerm: key };
     }
   }
@@ -285,12 +286,31 @@ async function invokeTool(fnName: string, body: unknown): Promise<unknown> {
 function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme"> {
   const t = text.toLowerCase();
   const needs: Array<"weather" | "mandi" | "scheme"> = [];
-  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya", "daam", "dam", "दाम", "daam", "kmandi", "khaareed", "खरीद", "बेच", "bech", "forsale", "quintal", "क्विंटल", "qtl", "market", "bazaar", "arhat", "arhatiya", "आढ़त", "आढ़तिया", "trading", "trade", "moong", "moongfali", "chana", "masoor", "urmaad", "groundnut", "cotton", "kapas", "कपास", "sugarcane", "ganna", "गन्ना", "rice", "chawal", "चावल", "maize", "makka", "मक्का", "bajra", "बाजरा", "jowar", "ज्वार", "arhar", "अरहर", "urad", "उड़द", "maadh", "माठ", "mustard", "sarson", "सरसों", "potato", "aalu", "आलू", "pyaz", "प्याज", "mirch", "मिर्च", "adrak", "अदरक", "lehsun", "लहसुन", "palak", "पालक", "bhindi", "भिंडी", "baigan", "बैंगन", "gobi", "गोभी", "torai", "तोरई", "lauki", "लौकी", "kaddu", "कद्दू", "watermelon", "tarbooj", "तरबूज", "angoor", "अंगूर", "seb", "सेब", "kela", "केला", "aam", "आम", "nimbu", "नींबू", "nariyal", "नारियल", "papita", "पपीता"];
+  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya", "daam", "dam", "दाम", "khaareed", "खरीद", "बेच", "quintal", "क्विंटल", "qtl", "market", "bazaar", "arhat", "arhatiya", "आढ़त", "आढ़तिया", "moong", "moongfali", "chana", "masoor", "groundnut", "cotton", "kapas", "कपास", "sugarcane", "ganna", "गन्ना", "rice", "chawal", "चावल", "maize", "makka", "मक्का", "bajra", "बाजरा", "jowar", "ज्वार", "arhar", "अरहर", "urad", "उड़द", "mustard", "sarson", "सरसों", "potato", "aalu", "आलू", "pyaz", "प्याज", "mirch", "मिर्च", "adrak", "अदरक", "lehsun", "लहसुन", "palak", "पालक", "bhindi", "भिंडी", "baigan", "बैंगन", "gobi", "गोभी", "torai", "तोरई", "lauki", "लौकी", "kaddu", "कद्दू", "watermelon", "tarbooj", "तरबूज", "angoor", "अंगूर", "seb", "सेब", "kela", "केला", "nimbu", "नींबू", "nariyal", "नारियल", "papita", "पपीता"];
   const weatherWords = ["weather", "rain", "mausam", "मौसम", "बारिश", "बरसात", "temperature", "तापमान", "forecast"];
   const schemeWords = ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "kcc", "pmfby", "loan"];
-  if (weatherWords.some((w) => t.includes(w))) needs.push("weather");
-  if (mandiWords.some((w) => t.includes(w))) needs.push("mandi");
-  if (schemeWords.some((w) => t.includes(w))) needs.push("scheme");
+
+  for (const w of weatherWords) {
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
+      needs.push("weather");
+      break;
+    }
+  }
+  for (const w of mandiWords) {
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
+      needs.push("mandi");
+      break;
+    }
+  }
+  for (const w of schemeWords) {
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
+      needs.push("scheme");
+      break;
+    }
+  }
   return needs;
 }
 
