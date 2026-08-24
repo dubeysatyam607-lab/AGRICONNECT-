@@ -580,7 +580,9 @@ export const getLocalAnswer = (
   lang?: string,
   history?: Array<{ role: string; content: string }>
 ): LocalAnswer => {
-  const hi = lang === "hi" || (lang !== "en" && (hasDevanagari(query) || isHinglish(query)));
+  const isDevanagari = hasDevanagari(query);
+  const isHinglishQuery = isHinglish(query) || isHinglish(query.toLowerCase());
+  const hi = lang === "hi" || isDevanagari || isHinglishQuery;
   const q = query.toLowerCase().trim();
 
   // Multi-turn context resolution: If user specified a mandi (e.g. "Indore") or a follow-up answer
