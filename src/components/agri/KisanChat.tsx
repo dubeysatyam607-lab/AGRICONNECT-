@@ -786,7 +786,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
     // 1. Offline Mode Fallback — smart local advisor
     if (isOffline) {
-      const local = getLocalAnswer(messageToSend, profile, localLang);
+      const local = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
       window.setTimeout(() => {
         const finalHistory = [...nextHistory, {
           role: "assistant" as const,
@@ -969,7 +969,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         const entities = extractEntities(messageToSend);
         if (entities.crop && !verifyCropConsistency(entities.crop, assistantResponse)) {
           console.warn(`[KisanAI] Crop mismatch detected. Requested "${entities.crop}", regenerating with guaranteed crop advisor.`);
-          const localCropAnswer = getLocalAnswer(messageToSend, profile, localLang);
+          const localCropAnswer = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
           if (localCropAnswer.matched) {
             assistantResponse = localCropAnswer.text;
             if (localCropAnswer.kind) {
@@ -1007,7 +1007,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     } catch (err: any) {
       console.error("AI Assistant processing error:", err);
       // Smart local fallback with instant agricultural knowledge
-      const local = getLocalAnswer(messageToSend, profile, localLang);
+      const local = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
       const fallbackContent = local.matched ? local.text : (
         isHindi
           ? `🌾 **कृषि सलाह व सहायता**:\n\n` +

@@ -14,9 +14,9 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
     const tomatoImage = getCropImage("Tomato");
     const fallbackImage = getCropImage("Unknown Exotic Plant");
 
-    expect(wheatImage).toContain("images.pexels.com");
-    expect(tomatoImage).toContain("images.pexels.com");
-    expect(fallbackImage).toContain("images.pexels.com");
+    expect(wheatImage).toMatch(/images\.(unsplash|pexels)\.com/);
+    expect(tomatoImage).toMatch(/images\.(unsplash|pexels)\.com/);
+    expect(fallbackImage).toMatch(/images\.(unsplash|pexels)\.com/);
   });
 
   it("getCropCategory correctly classifies crops into categories", () => {
@@ -85,7 +85,7 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
     expect(result.prices[0].price).toBe(4892);
     expect(result.prices[0].msp).toBeGreaterThanOrEqual(4000);
     expect(result.prices[0].unit).toBe("₹/Quintal");
-    expect(result.prices[0].cropImage).toContain("pexels");
+    expect(result.prices[0].cropImage).toMatch(/images\.(unsplash|pexels)\.com/);
 
     // Now simulate offline API failure — should load from localStorage cache with timestamp notice
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Offline")));

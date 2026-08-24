@@ -185,3 +185,5 @@ export function prepareTextForTTS(text: string, lang: string = "hi-IN"): string 
 
   return out;
 }
+
+export const sanitizeForSpeech = prepareTextForTTS;

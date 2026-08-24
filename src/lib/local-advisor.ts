@@ -574,9 +574,29 @@ const isGreetingIntent = (q: string) => {
   return GREETING_WORDS.some((w) => trimmed === w || trimmed === `${w} kisan ai` || trimmed === `${w} ai` || trimmed.startsWith(`${w} `));
 };
 
-export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: string): LocalAnswer => {
+export const getLocalAnswer = (
+  query: string,
+  profile: FarmProfile,
+  lang?: string,
+  history?: Array<{ role: string; content: string }>
+): LocalAnswer => {
   const hi = lang === "hi" || (lang !== "en" && (hasDevanagari(query) || isHinglish(query)));
   const q = query.toLowerCase().trim();
+
+  // Multi-turn context resolution: If user specified a mandi (e.g. "Indore") or a follow-up answer
+  let crop = detectCrop(q);
+  const mandiInQuery = extractMandiLocation(q);
+
+  if (!crop && history && history.length > 0) {
+    for (let i = history.length - 1; i >= 0; i--) {
+      const prev = history[i].content;
+      const prevCrop = detectCrop(prev);
+      if (prevCrop) {
+        crop = prevCrop;
+        break;
+      }
+    }
+  }
 
   // 1. Natural greeting without unsolicited crop dumps
   if (isGreetingIntent(q)) {
@@ -622,12 +642,10 @@ export const getLocalAnswer = (query: string, profile: FarmProfile, lang?: strin
     return { text: weatherText, matched: true, kind: "general" };
   }
 
-  const crop = detectCrop(q);
-
   const hinglishMode = isHinglish(query) || isHinglish(q);
 
-  // 2. Mandi price inquiry — strict crop clarification if not specified
-  if (hasMandiIntent(q)) {
+  // 2. Mandi price inquiry (or if user provided mandi name following a crop question)
+  if (hasMandiIntent(q) || (mandiInQuery && crop)) {
     if (!crop) {
       const text = hi
         ? (hinglishMode ? "Kaunsi fasal ka mandi bhav chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Soyabean, Sarson, Pyaz)." : "किस फसल का मंडी भाव चाहिए? कृपया फसल का नाम बताएं (जैसे: टमाटर, गेहूं, सोयाबीन, सरसों, प्याज)।")

@@ -1216,3 +1216,11 @@ export const translations: Record<string, Record<string, string>> = {
     'store.addedToCart': 'কাৰ্টত যোগ দিয়া হৈছে',
   },
 };
+
+// Ensure complete parity across all 12 Indian languages
+for (const lang of Object.keys(translations)) {
+  if (lang !== 'en') {
+    translations[lang] = { ...translations.en, ...translations[lang] };
+  }
+}
+

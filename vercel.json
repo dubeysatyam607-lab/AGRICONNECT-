@@ -65,5 +65,23 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/tts",
+      "destination": "/api/voice/tts.js"
+    },
+    {
+      "source": "/api/voice/tts",
+      "destination": "/api/voice/tts.js"
+    },
+    {
+      "source": "/api/images/search",
+      "destination": "/api/images/search.js"
+    },
+    {
+      "source": "/((?!api/|assets/|sw.js|favicon.ico|manifest.json|robots.txt|sitemap.xml).*)",
+      "destination": "/index.html"
+    }
   ]
 }

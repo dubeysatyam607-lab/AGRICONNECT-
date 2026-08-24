@@ -69,6 +69,8 @@ const getRecognitionCtor = (): (new () => SpeechRecognitionLike) | null => {
 
 // ── Common Speech-to-Text Phonetic & Agricultural Corrections ──────────────
 const TRANSCRIPTION_CORRECTIONS: Array<{ pattern: RegExp; replacement: string }> = [
+  { pattern: /\btamatr\b/gi, replacement: 'tamatar' },
+  { pattern: /\b(baav|baw|bhaav|bhavv|bahv)\b/gi, replacement: 'bhav' },
   { pattern: /\b(tamatar|tomato)\s+(ka|ke)?\s*(baav|baw|bhavv|bahv)\b/gi, replacement: '$1 $2 bhav' },
   { pattern: /\bsoya\s+been\b/gi, replacement: 'soyabean' },
   { pattern: /\bsoya\s+bin\b/gi, replacement: 'soyabean' },
