@@ -70,6 +70,7 @@ $$;
 
 -- Enable RLS on the tracking table (admin-only reads)
 ALTER TABLE public.anonymous_rate_tracking ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "admin_read_rate_tracking" ON public.anonymous_rate_tracking;
 CREATE POLICY "admin_read_rate_tracking" ON public.anonymous_rate_tracking
   FOR SELECT USING (public.is_admin());
 
@@ -95,11 +96,13 @@ CREATE TRIGGER rate_limit_labor_requests
 -- ── 2. Catalog table write restrictions ────────────────────────────────────
 -- store_inventory: remove open authenticated INSERT, restrict to admin-only
 DROP POLICY IF EXISTS "store_inventory_user_insert" ON public.store_inventory;
+DROP POLICY IF EXISTS "store_inventory_admin_insert" ON public.store_inventory;
 CREATE POLICY "store_inventory_admin_insert" ON public.store_inventory
   FOR INSERT
   WITH CHECK (auth.role() = 'service_role' OR public.is_admin());
 
 DROP POLICY IF EXISTS "store_inventory_user_insert" ON public.soil_test_labs;
+DROP POLICY IF EXISTS "store_inventory_admin_insert" ON public.soil_test_labs;
 CREATE POLICY "store_inventory_admin_insert" ON public.soil_test_labs
   FOR INSERT
   WITH CHECK (auth.role() = 'service_role' OR public.is_admin());
@@ -107,6 +110,7 @@ CREATE POLICY "store_inventory_admin_insert" ON public.soil_test_labs
 -- transport_vehicles: restrict INSERT to admin-only (farmers used to list vehicles
 -- but this is a spam vector; admin-managed catalog is safer)
 DROP POLICY IF EXISTS "transport_vehicles_user_insert" ON public.transport_vehicles;
+DROP POLICY IF EXISTS "transport_vehicles_admin_insert" ON public.transport_vehicles;
 CREATE POLICY "transport_vehicles_admin_insert" ON public.transport_vehicles
   FOR INSERT
   WITH CHECK (auth.role() = 'service_role' OR public.is_admin());

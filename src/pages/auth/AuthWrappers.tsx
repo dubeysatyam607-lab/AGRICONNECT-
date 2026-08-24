@@ -24,6 +24,57 @@ function sanitizeRedirectPath(path: string | undefined): string {
   }
 }
 
+class AuthViewErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallbackTitle?: string },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode; fallbackTitle?: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('[AuthViewErrorBoundary] Auth view failed:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 text-center">
+          <div className="bg-white/90 backdrop-blur-md border border-emerald-100 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-4">
+            <span className="text-4xl">🌾</span>
+            <h2 className="text-xl font-extrabold text-foreground">
+              {this.props.fallbackTitle || 'AgriConnect Sign In'}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              A temporary issue occurred while loading this view. You can reload or proceed to the home dashboard.
+            </p>
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-colors"
+              >
+                Reload Sign In
+              </button>
+              <button
+                onClick={() => (window.location.href = '/')}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition-colors"
+              >
+                Explore Home Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 /** Wrapper page for Login */
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -50,12 +101,14 @@ export const LoginPage: React.FC = () => {
     navigate(safePath, { replace: true });
   };
   return (
-    <LoginView
-      onSwitchToSignUp={() => navigate('/auth/register')}
-      onSwitchToForgot={() => navigate('/auth/forgot')}
-      onSwitchToOtp={(target, type) => navigate('/auth/otp', { state: { target, type } })}
-      onSuccess={handleSuccess}
-    />
+    <AuthViewErrorBoundary fallbackTitle="Farmer Login">
+      <LoginView
+        onSwitchToSignUp={() => navigate('/auth/register')}
+        onSwitchToForgot={() => navigate('/auth/forgot')}
+        onSwitchToOtp={(target, type) => navigate('/auth/otp', { state: { target, type } })}
+        onSuccess={handleSuccess}
+      />
+    </AuthViewErrorBoundary>
   );
 };
 
