@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { container } from './Container';
+import './init';
 
 /**
  * Custom React Hook to inject an enterprise dependency cleanly into a ViewModel or Component.

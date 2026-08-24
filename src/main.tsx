@@ -42,14 +42,23 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   });
 }
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: ReactNode }) {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error | unknown;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: unknown, info: unknown) {
@@ -57,8 +66,27 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     crashLoggingService.logCrash(error, "RootErrorBoundary");
   }
 
+  handleClearAndReload = () => {
+    try {
+      sessionStorage.clear();
+      // Keep essential tokens if needed or clear corrupted cached keys
+      const keysToClear = ['agri_cache', 'weather:home', 'tractor_bookings_cache'];
+      keysToClear.forEach((k) => localStorage.removeItem(k));
+    } catch {
+      // ignore storage errors
+    }
+    window.location.href = '/';
+  };
+
   render() {
     if (this.state.hasError) {
+      const errMsg =
+        this.state.error instanceof Error
+          ? this.state.error.message
+          : typeof this.state.error === 'string'
+          ? this.state.error
+          : null;
+
       return (
         <div style={{
           minHeight: "100vh",
@@ -75,24 +103,47 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
         }}>
           <div style={{ fontSize: "40px" }}>🌱</div>
           <h1 style={{ fontSize: "20px", fontWeight: 700, margin: 0 }}>Something went wrong</h1>
-          <p style={{ fontSize: "14px", margin: 0, color: "#57534e" }}>
-            Please reload the page. If it keeps happening, check your connection.
+          <p style={{ fontSize: "14px", margin: 0, color: "#57534e", maxWidth: "400px" }}>
+            Please reload the page or return to the homepage. If it keeps happening, check your connection.
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              marginTop: "8px",
-              padding: "10px 20px",
-              border: "none",
-              borderRadius: "999px",
-              background: "#15803d",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Reload
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "10px 20px",
+                border: "none",
+                borderRadius: "999px",
+                background: "#15803d",
+                color: "#fff",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Reload
+            </button>
+            <button
+              onClick={this.handleClearAndReload}
+              style={{
+                padding: "10px 20px",
+                border: "1px solid #d6d3d1",
+                borderRadius: "999px",
+                background: "#ffffff",
+                color: "#1c1917",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Go to Home
+            </button>
+          </div>
+          {errMsg && (
+            <details style={{ marginTop: "16px", maxWidth: "500px", textAlign: "left", fontSize: "12px", color: "#78716c" }}>
+              <summary style={{ cursor: "pointer", marginBottom: "4px" }}>Error details</summary>
+              <pre style={{ background: "#f5f5f4", padding: "8px 12px", borderRadius: "8px", overflowX: "auto" }}>
+                {errMsg}
+              </pre>
+            </details>
+          )}
         </div>
       );
     }

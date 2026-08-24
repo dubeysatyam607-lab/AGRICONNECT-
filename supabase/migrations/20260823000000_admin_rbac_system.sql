@@ -271,37 +271,61 @@ ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_analytics ENABLE ROW LEVEL SECURITY;
 
 -- Admin tables: only authenticated admins can read
+DROP POLICY IF EXISTS "Admins can read admin_roles" ON public.admin_roles;
 CREATE POLICY "Admins can read admin_roles" ON public.admin_roles FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admins can read admin_users" ON public.admin_users;
 CREATE POLICY "Admins can read admin_users" ON public.admin_users FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Super admins can manage admin_users" ON public.admin_users;
 CREATE POLICY "Super admins can manage admin_users" ON public.admin_users FOR ALL TO authenticated USING (
   EXISTS (SELECT 1 FROM public.admin_users au JOIN public.admin_roles ar ON au.role_id = ar.id WHERE au.user_id = auth.uid() AND ar.name = 'Super Admin' AND au.status = 'Active')
 );
 
 -- Public read for schemes, news, knowledge, faq
+DROP POLICY IF EXISTS "Public read schemes" ON public.government_schemes;
 CREATE POLICY "Public read schemes" ON public.government_schemes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read news" ON public.news_articles;
 CREATE POLICY "Public read news" ON public.news_articles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read knowledge" ON public.knowledge_articles;
 CREATE POLICY "Public read knowledge" ON public.knowledge_articles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public read faq" ON public.faq_entries;
 CREATE POLICY "Public read faq" ON public.faq_entries FOR SELECT USING (true);
 
 -- Subscription plans: public read
+DROP POLICY IF EXISTS "Public read plans" ON public.subscription_plans;
 CREATE POLICY "Public read plans" ON public.subscription_plans FOR SELECT USING (true);
 
 -- User data: users can read their own, admins can read all
+DROP POLICY IF EXISTS "Users read own subscriptions" ON public.user_subscriptions;
 CREATE POLICY "Users read own subscriptions" ON public.user_subscriptions FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users read own payments" ON public.payments;
 CREATE POLICY "Users read own payments" ON public.payments FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users read own wallet" ON public.wallets;
 CREATE POLICY "Users read own wallet" ON public.wallets FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users read own wallet txns" ON public.wallet_transactions;
 CREATE POLICY "Users read own wallet txns" ON public.wallet_transactions FOR SELECT TO authenticated USING (user_id = auth.uid());
 
 -- Admins can manage all user data (checked via app-level RBAC)
+DROP POLICY IF EXISTS "Authenticated read subscriptions" ON public.user_subscriptions;
 CREATE POLICY "Authenticated read subscriptions" ON public.user_subscriptions FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read payments" ON public.payments;
 CREATE POLICY "Authenticated read payments" ON public.payments FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read wallets" ON public.wallets;
 CREATE POLICY "Authenticated read wallets" ON public.wallets FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read wallet txns" ON public.wallet_transactions;
 CREATE POLICY "Authenticated read wallet txns" ON public.wallet_transactions FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read support tickets" ON public.support_tickets;
 CREATE POLICY "Authenticated read support tickets" ON public.support_tickets FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated insert support tickets" ON public.support_tickets;
 CREATE POLICY "Authenticated insert support tickets" ON public.support_tickets FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Authenticated read crash reports" ON public.crash_reports;
 CREATE POLICY "Authenticated read crash reports" ON public.crash_reports FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read reports" ON public.reports;
 CREATE POLICY "Authenticated read reports" ON public.reports FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read ai_prompts" ON public.ai_prompts;
 CREATE POLICY "Authenticated read ai_prompts" ON public.ai_prompts FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read push campaigns" ON public.push_campaigns;
 CREATE POLICY "Authenticated read push campaigns" ON public.push_campaigns FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read ads" ON public.advertisements;
 CREATE POLICY "Authenticated read ads" ON public.advertisements FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated read analytics" ON public.app_analytics;
 CREATE POLICY "Authenticated read analytics" ON public.app_analytics FOR SELECT TO authenticated USING (true);

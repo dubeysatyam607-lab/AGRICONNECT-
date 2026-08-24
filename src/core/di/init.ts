@@ -59,3 +59,7 @@ export function initializeDIContainer(): void {
     console.log('[DIContainer] Enterprise dependencies initialized successfully.');
   }
 }
+
+// Auto-run bootstrap on module load to guarantee availability before any useCase resolves
+initializeDIContainer();
+
