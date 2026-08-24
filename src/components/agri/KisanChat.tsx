@@ -922,6 +922,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           // Scan context is best-effort.
         }
 
+        // Dynamic query language detection: If user types Hindi/Hinglish, enforce Hindi
+        const queryLang = detectLanguageOf(messageToSend);
+        const isQueryHindi = queryLang?.lang === "hi" || isHindi || isHinglish(messageToSend);
+        const resolvedLang = isQueryHindi
+          ? "Hindi (हिंदी)"
+          : (queryLang?.lang ? queryLang.display : selectedLanguage);
+
         const { data: chatData, error: chatErr } = await invokeEdgeWithTimeout<{
           message?: string;
           suggestions?: string[];
@@ -930,19 +937,19 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           toolsUsed?: string[];
         }>("kisan-chat", {
           messages: nextHistory.map(m => ({ role: m.role, content: m.content })),
-          language: selectedLanguage,
+          language: resolvedLang,
           persona: personaInstruction(
-            selectedLanguage.toLowerCase().includes("hindi") || selectedLanguage.toLowerCase().includes("hi") ? "hi"
-            : selectedLanguage.toLowerCase().includes("marathi") || selectedLanguage.toLowerCase().includes("mr") ? "mr"
-            : selectedLanguage.toLowerCase().includes("gujarati") || selectedLanguage.toLowerCase().includes("gu") ? "gu"
-            : selectedLanguage.toLowerCase().includes("punjabi") || selectedLanguage.toLowerCase().includes("pa") ? "pa"
-            : selectedLanguage.toLowerCase().includes("tamil") || selectedLanguage.toLowerCase().includes("ta") ? "ta"
-            : selectedLanguage.toLowerCase().includes("telugu") || selectedLanguage.toLowerCase().includes("te") ? "te"
-            : selectedLanguage.toLowerCase().includes("kannada") || selectedLanguage.toLowerCase().includes("kn") ? "kn"
-            : selectedLanguage.toLowerCase().includes("malayalam") || selectedLanguage.toLowerCase().includes("ml") ? "ml"
-            : selectedLanguage.toLowerCase().includes("bengali") || selectedLanguage.toLowerCase().includes("bn") ? "bn"
-            : selectedLanguage.toLowerCase().includes("odia") || selectedLanguage.toLowerCase().includes("or") ? "or"
-            : selectedLanguage.toLowerCase().includes("assamese") || selectedLanguage.toLowerCase().includes("as") ? "as"
+            isQueryHindi ? "hi"
+            : resolvedLang.toLowerCase().includes("marathi") || resolvedLang.toLowerCase().includes("mr") ? "mr"
+            : resolvedLang.toLowerCase().includes("gujarati") || resolvedLang.toLowerCase().includes("gu") ? "gu"
+            : resolvedLang.toLowerCase().includes("punjabi") || resolvedLang.toLowerCase().includes("pa") ? "pa"
+            : resolvedLang.toLowerCase().includes("tamil") || resolvedLang.toLowerCase().includes("ta") ? "ta"
+            : resolvedLang.toLowerCase().includes("telugu") || resolvedLang.toLowerCase().includes("te") ? "te"
+            : resolvedLang.toLowerCase().includes("kannada") || resolvedLang.toLowerCase().includes("kn") ? "kn"
+            : resolvedLang.toLowerCase().includes("malayalam") || resolvedLang.toLowerCase().includes("ml") ? "ml"
+            : resolvedLang.toLowerCase().includes("bengali") || resolvedLang.toLowerCase().includes("bn") ? "bn"
+            : resolvedLang.toLowerCase().includes("odia") || resolvedLang.toLowerCase().includes("or") ? "or"
+            : resolvedLang.toLowerCase().includes("assamese") || resolvedLang.toLowerCase().includes("as") ? "as"
             : "en"
           ),
           memoryContext: scanContext ? `${scanContext}\n\n${memoryContext}` : memoryContext,

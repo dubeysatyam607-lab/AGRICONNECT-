@@ -105,7 +105,10 @@ const HINGLISH_KEYWORDS = [
   "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi", "kab",
   "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
   "patta", "patti", "peela", "sukha", "kharif", "rabi", "mandi", "tamatr", "tamatar",
-  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch"
+  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch", "lahsun",
+  "ganna", "chawal", "dhan", "makka", "kisan", "spray", "jhulsa", "ilaj", "keede", "upay",
+  "yojana", "paisey", "paisa", "rupaye", "rupiya", "dost", "bhaiya", "madad", "help", "samasya",
+  "kharab", "bachav", "tarika", "kaise", "kab", "kyu", "kyon", "karen"
 ];
 
 export const CROP_DICTIONARY: Record<string, string> = {
@@ -206,6 +209,12 @@ export function extractMentionedCrop(text: string): { englishName: string; rawTe
 /** Detect the dominant language script or Roman-Hindi/Hinglish in a string. */
 function detectLanguage(text: string): { lang: string; display: string } | null {
   if (!text) return null;
+
+  // Direct Devanagari test
+  if (/[\u0900-\u097F]/.test(text)) {
+    return { lang: "hi", display: "Hindi (हिंदी)" };
+  }
+
   const counts = new Map<string, number>();
   for (const char of text) {
     const code = char.codePointAt(0)!;
@@ -222,10 +231,9 @@ function detectLanguage(text: string): { lang: string; display: string } | null 
     if (count > 0 && (!best || count > best.count)) best = { lang: s.lang, display: s.display, count };
   }
   if (best) {
-    // Bengali & Assamese share the same block — distinguish by common Assamese letters.
     if (best.lang === "bn") {
       const asLetters = (text.match(/[ৰৱ](?![ংঢ])/g) || []).length;
-      if (asLetters > 2) return { lang: "as", display: "Assamese (অসমीया)" };
+      if (asLetters > 2) return { lang: "as", display: "Assamese (অসমীয়া)" };
     }
     return { lang: best.lang, display: best.display };
   }
@@ -240,7 +248,7 @@ function detectLanguage(text: string): { lang: string; display: string } | null 
     }
   }
   if (hinglishHits >= 1) {
-    return { lang: "hi", display: "Hindi (हिंदी / Hinglish)" };
+    return { lang: "hi", display: "Hindi (हिंदी)" };
   }
 
   return null;
