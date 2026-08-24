@@ -180,10 +180,10 @@ export function extractEntities(query: string): ExtractedEntities {
 
   for (const def of Object.values(CROP_DICTIONARY)) {
     for (const alias of def.aliases) {
-      // Regex boundary or exact word match
+      // Strict regex boundary matching to prevent substring collisions (e.g. 'aam' in 'naam')
       const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i');
-      if (regex.test(normalized) || normalized.includes(alias)) {
+      if (regex.test(normalized)) {
         matchedCrop = def;
         break;
       }
