@@ -9,7 +9,7 @@ import {
 } from "./pexels-api";
 import { getCropImage } from "./crop-images";
 import { getMachineImage } from "./machine-images";
-import { getStoreProductImage } from "./image-resolver";
+import { getStoreProductImage, resolveImage } from "./image-resolver";
 
 describe("Pexels Agricultural Photography Master Engine", () => {
   beforeEach(() => {
@@ -119,6 +119,17 @@ describe("Pexels Agricultural Photography Master Engine", () => {
       expect(url).toBeDefined();
       expect(url).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
     }
+  });
+
+  it("resolves images via centralized resolveImage options API", () => {
+    const tomatoImg = resolveImage({ entityType: "crop", entityName: "Tomato" });
+    expect(tomatoImg).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
+
+    const mahindraImg = resolveImage({ entityType: "tractor", entityName: "Mahindra 575 DI" });
+    expect(mahindraImg).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
+
+    const ureaImg = resolveImage({ entityType: "product", entityName: "Neem Coated Urea (45kg)" });
+    expect(ureaImg).toMatch(/https:\/\/images\.(unsplash|pexels)\.com/);
   });
 
   it("supports administrative override, refresh, and cache management", () => {

@@ -4,10 +4,11 @@ import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck
 import { fetchLiveAgriNews, LiveAgriNewsArticle } from "@/lib/news-api";
 import { trackAgriEvent } from "@/lib/google-analytics";
 
+import { SafeImage } from "@/components/ui/SafeImage";
+
 const CATEGORIES = ["All", "Policy & MSP", "Weather & Monsoon", "Schemes & Subsidy", "Market & Mandi", "Agritech & Innovation"];
 
 const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: LiveAgriNewsArticle) => void }) => {
-  const [imgError, setImgError] = useState(false);
   return (
     <div
       onClick={() => onClick(news)}
@@ -18,19 +19,15 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
       className="bg-card p-0 rounded-2xl border border-border shadow-card hover:shadow-soft transition-all cursor-pointer overflow-hidden flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary group"
     >
       <div className="w-full h-44 relative bg-muted shrink-0 overflow-hidden">
-        {!imgError ? (
-          <img 
-            src={news.imageUrl} 
-            alt={news.title}
-            loading="lazy"
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground">
-            <ImageOff size={32} />
-          </div>
-        )}
+        <SafeImage 
+          src={news.imageUrl} 
+          alt={news.title}
+          category={news.category}
+          entityName={news.title}
+          resolveType="category"
+          loading="lazy"
+          className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-300"
+        />
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
           <span className="bg-primary text-primary-foreground shadow-xs text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             {news.category}
