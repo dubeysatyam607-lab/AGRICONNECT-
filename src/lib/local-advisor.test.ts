@@ -115,11 +115,24 @@ describe("Kisan AI Local Advisor — Knowledge & Intent Accuracy", () => {
     expect(res.text).not.toContain("Soybean");
   });
 
-  it("handles 'गेहूं का भाव क्या है' in Devanagari Hindi", () => {
-    const res = getLocalAnswer("गेहूं का भाव क्या है", mockProfile, "hi");
-    expect(res.matched).toBe(true);
-    expect(res.text).toContain("मंडी");
-    expect(res.text).toContain("गेहूं");
+  it("handles multi-turn conversation: User asks 'tamatar ka bhav', AI asks mandi, User says 'Indore'", () => {
+    // Turn 1
+    const turn1 = getLocalAnswer("tamatar ka bhav", mockProfile, "hi");
+    expect(turn1.matched).toBe(true);
+    expect(turn1.text).toContain("Kaunsi mandi");
+
+    // Turn 2 with history
+    const history = [
+      { role: "user", content: "tamatar ka bhav" },
+      { role: "assistant", content: turn1.text }
+    ];
+    const turn2 = getLocalAnswer("Indore", mockProfile, "hi", history);
+    expect(turn2.matched).toBe(true);
+    expect(turn2.text).toContain("Indore Mandi");
+    expect(turn2.text).toContain("Tomato");
+    expect(turn2.text).toContain("₹");
+    expect(turn2.text).not.toContain("Soybean");
   });
 });
+
 

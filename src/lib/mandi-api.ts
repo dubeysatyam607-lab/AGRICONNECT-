@@ -790,8 +790,8 @@ export function getMandiPriceQuote(req: MandiQuoteRequest): MandiQuoteResponse {
       msp: firstMatch.msp,
       arrivalDate: firstMatch.arrivalDate,
       arrivalQuantity: firstMatch.arrivalQuantity || 320,
-      messageHi: `किस मंडी का **${cropHi}** का भाव चाहिए? (जैसे: ${availableMarkets.join(", ")})`,
-      messageHinglish: `Kaunsi mandi ka **${cropHinglish}** ka bhav chahiye? (Jaise: ${availableMarkets.join(", ")})`,
+      messageHi: `किस मंडी का **${cropHi} (${cropEn})** का भाव चाहिए? (जैसे: ${availableMarkets.join(", ")})`,
+      messageHinglish: `Kaunsi mandi ka **${cropHinglish} (${cropEn})** ka bhav chahiye? (Jaise: ${availableMarkets.join(", ")})`,
       messageEn: `Which mandi's rate do you need for **${cropEn}**? (Options: ${availableMarkets.join(", ")})`,
     };
   }
