@@ -2,8 +2,13 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://yrebxnpilkfeaofykvhq.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_PMQ7FkMezMesBBJiVQsNUQ_Lu3I4n6A";
 
 const SUPABASE_MISCONFIG_MSG =
   'Supabase is not configured. Rebuild with VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY set.';
