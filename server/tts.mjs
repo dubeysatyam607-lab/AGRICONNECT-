@@ -127,7 +127,7 @@ const handleTtsRequest = async (req, res) => {
 
   const targetLang = getTargetLanguageCode(rawLang);
 
-  const apiKey = (process.env.SARVAM_API_KEY || "sk_l8wfj7sc_gRf1RBXOhiRA8pWAeVI7fCFa").replace(/^["']|["']$/g, "").trim();
+  const apiKey = (process.env.SARVAM_API_KEY || "").replace(/^["']|["']$/g, "").trim();
 
   if (!apiKey) {
     return res.status(503).json({ error: "Sarvam AI API key is missing" });
