@@ -439,3 +439,27 @@ export function normalizeApiProductImage(raw: Record<string, unknown>, category?
   const cat = String(raw.category || category || "");
   return getStoreProductImage(name, cat);
 }
+
+export interface ResolveImageOptions {
+  entityType?: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "scheme" | "general";
+  entityName?: string;
+  category?: string;
+  fallback?: string;
+  src?: unknown;
+}
+
+/**
+ * Standardized Unified Agricultural Image Resolution API.
+ * Priority:
+ * 1. Verified local/static/direct valid URL
+ * 2. Verified Database image URL
+ * 3. Master Verified Crop / Machinery / Product High-Resolution Photography
+ * 4. Safe Category-specific Fallback
+ * 5. Guaranteed Offline Neutral Agricultural SVG
+ */
+export function resolveImage(options: ResolveImageOptions): string {
+  const { entityType = "general", entityName, category, fallback, src } = options;
+  const resolved = resolveImageUrl(src, entityType, entityName || category);
+  return resolved || fallback || OFFLINE_AGRI_SVG;
+}
+
