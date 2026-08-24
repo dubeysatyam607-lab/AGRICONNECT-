@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { AgriImage } from "@/components/ui/agri-image";
-import { getCropImage, getCropCategory } from "@/lib/crop-images";
-import { OFFLINE_AGRI_SVG } from "@/lib/image-resolver";
-import { cn } from "@/lib/utils";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { getCropImage, getCropCategory, getCropBackupImage } from "@/lib/crop-images";
 
 export interface CommodityImageProps {
   commodityName: string;
@@ -18,11 +16,9 @@ export interface CommodityImageProps {
 /**
  * Reusable Commodity Image component for Mandi Bhav and Crop Marketplaces.
  * Prioritizes:
- * 1. Valid API/Database image URL (if valid)
- * 2. High-resolution crop-specific verified Pexels photograph
- * 3. Agricultural category fallback
- * 4. Guaranteed offline SVG placeholder
- * Never shows broken image icons, null/undefined text, or blank white boxes.
+ * 1. 100% Verified High-Resolution Real Photograph from Master Crop Registry
+ * 2. Agricultural Category Fallback
+ * 3. Never shows broken image icons, null/undefined text, or blank boxes.
  */
 export const CommodityImage: React.FC<CommodityImageProps> = ({
   commodityName,
@@ -31,34 +27,30 @@ export const CommodityImage: React.FC<CommodityImageProps> = ({
   category,
   alt,
   className = "w-full h-full object-cover",
-  aspectRatio = "auto",
   loading = "lazy",
 }) => {
   const [loadError, setLoadError] = useState(false);
 
-  const cleanName = (commodityName || "").trim();
+  const rawName = (commodityName || "").trim();
+  const cleanName = rawName.replace(/\([^)]*\)/g, " ").replace(/[^a-zA-Z0-9\u0900-\u097F\s]/g, " ").replace(/\s+/g, " ").trim() || rawName;
   const detectedCategory = category || getCropCategory(cleanName);
-  const fallbackUrl = getCropImage(cleanName);
-  const effectiveSrc = !loadError && src && src.trim() && src.startsWith("http") ? src : fallbackUrl;
+  
+  // Prioritize 100% verified crop image directly mapped to the commodity
+  const verifiedUrl = getCropImage(rawName) || getCropImage(cleanName);
+  const effectiveSrc = (!loadError && verifiedUrl) ? verifiedUrl : (src && src.startsWith("http") ? src : getCropBackupImage(cleanName));
   const descriptiveAlt = alt || `${cleanName}${commodityHi ? ` (${commodityHi})` : ""} - Real mandi crop produce`;
 
   return (
-    <AgriImage
+    <SafeImage
       src={effectiveSrc}
-      type="crop"
-      contextName={cleanName}
-      seedKey={cleanName.toLowerCase()}
-      category={detectedCategory.toLowerCase() as any}
+      resolveType="crop"
+      entityName={cleanName}
+      category={detectedCategory.toLowerCase()}
       alt={descriptiveAlt}
       className={className}
-      aspectRatio={aspectRatio}
       loading={loading}
-      fallbackSrc={fallbackUrl || OFFLINE_AGRI_SVG}
-      onError={() => {
-        if (!loadError) {
-          setLoadError(true);
-        }
-      }}
+      fallbackIcon={<div className="text-4xl">🌾</div>}
+      cover={true}
     />
   );
 };

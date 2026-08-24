@@ -74,10 +74,7 @@ const buildEmptyState = (): AdminState => ({
   appAnalytics: [],
   crashReports: [],
   auditLogs: [],
-  adminRoles: [
-    { id: 'role-super', name: 'Super Admin', description: 'Full unrestricted access', permissions: ['*'], memberCount: 0, protected: true },
-    { id: 'role-admin', name: 'Admin', description: 'Standard admin access', permissions: ['users.read', 'users.write', 'marketplace.read', 'marketplace.write', 'content.read', 'content.write', 'operations.read', 'operations.write', 'analytics.read'], memberCount: 0, protected: false },
-  ],
+  adminRoles: [],
   adminUsers: [],
 });
 

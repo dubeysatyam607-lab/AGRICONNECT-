@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-const FALLBACK_SRC = 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=400';
+const FALLBACK_SRC = 'https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;

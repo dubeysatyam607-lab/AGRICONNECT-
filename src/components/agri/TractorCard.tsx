@@ -6,15 +6,7 @@ import { AgriImage } from "@/components/ui/agri-image";
 import type { Tractor } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-const TRACTOR_IMAGES: Record<string, string> = {
-  "Mahindra 575 DI": "https://images.unsplash.com/photo-1622312674917-8a4db95c80ed?auto=format&fit=crop&q=80&w=600",
-  "Sonalika Tiger":  "https://images.unsplash.com/photo-1592860824422-0d19d6d02a93?auto=format&fit=crop&q=80&w=600",
-  "John Deere 5310": "https://images.unsplash.com/photo-1593978432039-b38e3f12b2ce?auto=format&fit=crop&q=80&w=600",
-  "Swaraj 855":      "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600",
-};
-
-const DEFAULT_TRACTOR_IMAGE =
-  "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?auto=format&fit=crop&q=80&w=600";
+import { MACHINE_IMG, DEFAULT_MACHINE_IMG } from "@/lib/machine-images";
 
 interface TractorCardProps {
   tractor: Tractor;
@@ -25,7 +17,7 @@ interface TractorCardProps {
 const TractorCard: React.FC<TractorCardProps> = ({ tractor, onBook, className }) => {
   const { t } = useLanguage();
   const [ripple, setRipple] = useState(false);
-  const imgSrc = TRACTOR_IMAGES[tractor.name] || DEFAULT_TRACTOR_IMAGE;
+  const resolvedImgSrc = MACHINE_IMG[tractor.name] || MACHINE_IMG[tractor.type] || DEFAULT_MACHINE_IMG;
 
   const handleBook = () => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {

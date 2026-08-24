@@ -135,7 +135,7 @@ const CattleMarket: React.FC = () => {
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden h-48 shadow-lg">
         <AgriImage
-          src="https://images.unsplash.com/photo-1557166983-5c50b4cb2b4a?auto=format&fit=crop&q=80&w=800"
+          src="https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
           alt="Livestock market"
           className="w-full h-full object-cover"
         />

@@ -121,9 +121,9 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
       {/* Hero Banner */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
         <img
-          src="https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80&w=800"
+          src="https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
           alt="Crop insurance"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=800"; }}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/85 to-primary/40" />

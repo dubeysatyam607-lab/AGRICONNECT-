@@ -26,14 +26,18 @@ beforeEach(() => {
   vi.stubGlobal("navigator", { ...navigator, geolocation: undefined });
 });
 
+import { MemoryRouter } from "react-router-dom";
+
 const Providers = ({ children }: { children: React.ReactNode }) => (
-  <AuthProvider>
-    <LanguageProvider>
-      <RoleProvider>
-        <LocationProvider>{children}</LocationProvider>
-      </RoleProvider>
-    </LanguageProvider>
-  </AuthProvider>
+  <MemoryRouter>
+    <AuthProvider>
+      <LanguageProvider>
+        <RoleProvider>
+          <LocationProvider>{children}</LocationProvider>
+        </RoleProvider>
+      </LanguageProvider>
+    </AuthProvider>
+  </MemoryRouter>
 );
 
 const tabs: Array<{ name: string; path: string; props?: Record<string, any> }> = [

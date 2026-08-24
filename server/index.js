@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const imageRoutes = require('./routes/imageRoutes');
 const chatController = require('./controllers/chatController');
 const voiceController = require('./controllers/voiceController');
 const whatsappController = require('./controllers/whatsappController');
@@ -101,6 +102,7 @@ app.use('/api/auth/reset-password', authLimiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/images', imageRoutes);
 app.use('/api/admin', protect, adminRoutes);
 app.post('/api/chat', protect, chatController.kisanChat);
 app.post('/api/voice/tts', protect, voiceController.textToSpeech);

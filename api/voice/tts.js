@@ -1,33 +1,34 @@
 /**
- * Vercel Serverless Function — ElevenLabs Neural Text-to-Speech
+ * Vercel Serverless Function — Sarvam AI Text-to-Speech
  *
- * Handles POST /api/voice/tts with { text, languageCode } body.
- * Streams MP3 audio back from ElevenLabs API.
- *
- * Required env var (set in Vercel Dashboard → Settings → Environment Variables):
- *   ELEVEN_LABS_API_KEY=sk_...
- *
- * Optional env vars:
- *   ELEVEN_LABS_VOICE_ID  (default: 21m00Tcm4TlvDq8ikWAM)
- *   ELEVEN_LABS_MODEL_ID  (default: eleven_v3_conversational)
+ * Handles POST /api/voice/tts and POST /api/tts
+ * Supports all 12 AgriConnect Indian Languages using the Subh speaker.
  */
 
-const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
-const OUTPUT_FORMAT = "mp3_44100_192";
 const MAX_TEXT_LENGTH = 1500;
+const DEFAULT_SPEAKER = process.env.SARVAM_SPEAKER || "shubh";
 
-const MODEL_CHAIN = [
-  process.env.ELEVEN_LABS_MODEL_ID || "eleven_v3_conversational",
-  "eleven_v3",
-  "eleven_multilingual_v2",
-];
-
-const VOICE_SETTINGS = {
-  stability: 0.6,
-  similarity_boost: 0.85,
-  style: 0.3,
-  use_speaker_boost: true,
+// Centralized Sarvam language mapping for all 12 AgriConnect languages
+const SARVAM_LANG_MAP = {
+  en: "en-IN",
+  hi: "hi-IN",
+  mr: "mr-IN",
+  gu: "gu-IN",
+  pa: "pa-IN",
+  ta: "ta-IN",
+  te: "te-IN",
+  kn: "kn-IN",
+  ml: "ml-IN",
+  bn: "bn-IN",
+  or: "od-IN",
+  od: "od-IN",
+  as: "as-IN",
 };
+
+function getTargetLanguageCode(lang = "hi") {
+  const clean = String(lang).toLowerCase().split("-")[0].trim();
+  return SARVAM_LANG_MAP[clean] || "hi-IN";
+}
 
 /** Strip markdown, symbols, emojis so TTS never reads them aloud. */
 function sanitizeForSpeech(text) {
@@ -81,125 +82,79 @@ function sanitizeForSpeech(text) {
 export default async function handler(req, res) {
   // CORS headers
   const origin = req.headers.origin || "";
-  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Origin", origin || "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Max-Age", "86400");
 
-  // Handle preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // Only POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Parse body
   const raw = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-  const text = sanitizeForSpeech(raw);
+  const rawLang = req.body?.language || req.body?.languageCode || "hi";
+  const speaker = req.body?.speaker || DEFAULT_SPEAKER;
 
+  const text = sanitizeForSpeech(raw);
   if (!text) {
     return res.status(400).json({ error: "Text is required" });
   }
   if (text.length > MAX_TEXT_LENGTH) {
-    return res.status(413).json({ error: "Text exceeds maximum allowed length" });
+    return res.status(413).json({ error: "Text exceeds maximum allowed length of 1500 characters" });
   }
 
-  // Check API key
-  const apiKey = process.env.ELEVEN_LABS_API_KEY || process.env.ELEVENLABS_API_KEY;
+  const targetLang = getTargetLanguageCode(rawLang);
+
+  const apiKey = process.env.SARVAM_API_KEY;
+
   if (!apiKey) {
-    console.error("[tts] ELEVEN_LABS_API_KEY not set in environment variables");
-    return res.status(503).json({ error: "Voice service is not configured" });
+    return res.status(503).json({ error: "Sarvam AI API key is missing" });
   }
 
-  const voiceId = process.env.ELEVEN_LABS_VOICE_ID || DEFAULT_VOICE_ID;
-
-  // Try each model in the fallback chain
-  let lastResponse = null;
-  let lastError = null;
-
-  for (const modelId of MODEL_CHAIN) {
-    try {
-      const endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=${OUTPUT_FORMAT}`;
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "xi-api-key": apiKey,
-          Accept: "audio/mpeg",
-        },
-        body: JSON.stringify({
-          text,
-          model_id: modelId,
-          voice_settings: VOICE_SETTINGS,
-        }),
-      });
-
-      if (response.ok) {
-        lastResponse = response;
-        break;
-      }
-
-      const body = await response.text();
-      lastError = body;
-
-      // Only fall through for model-unavailable responses
-      if (response.status !== 400 && response.status !== 404 && response.status !== 422) {
-        lastResponse = response;
-        lastError = body;
-        break;
-      }
-      console.warn(`[tts] Model ${modelId} unavailable (${response.status}), trying next.`);
-    } catch (err) {
-      lastError = err;
-    }
-  }
-
-  // All models failed
-  if (!lastResponse) {
-    console.error("[tts] All models failed:", lastError);
-    return res.status(502).json({ error: "Voice service is temporarily unavailable" });
-  }
-
-  if (!lastResponse.ok) {
-    const body = typeof lastError === "string" ? lastError : "";
-    console.error("[tts] ElevenLabs API error:", lastResponse.status, body);
-
-    if (lastResponse.status === 401) {
-      return res.status(503).json({ error: "Voice service authentication failed" });
-    }
-    if (lastResponse.status === 429) {
-      return res.status(429).json({ error: "Voice service quota reached. Please try again later." });
-    }
-    return res.status(lastResponse.status).json({ error: "Voice service is temporarily unavailable" });
-  }
-
-  // Stream audio back to client
-  res.setHeader("Content-Type", "audio/mpeg");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-
-  const reader = lastResponse.body.getReader();
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(value);
+    const response = await fetch("https://api.sarvam.ai/text-to-speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-subscription-key": apiKey,
+      },
+      body: JSON.stringify({
+        inputs: [text],
+        target_language_code: targetLang,
+        speaker: speaker,
+        pace: 1.0,
+        speech_sample_rate: 22050,
+        enable_preprocessing: true,
+        model: "bulbul:v3",
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`[Sarvam TTS Vercel] API error (${response.status}):`, errText);
+      return res.status(response.status).json({
+        error: "Sarvam AI TTS generation failed",
+        status: response.status,
+      });
     }
+
+    const data = await response.json();
+    const base64Audio = data.audios && data.audios[0];
+
+    if (!base64Audio) {
+      return res.status(502).json({ error: "No audio data received from Sarvam AI" });
+    }
+
+    const audioBuffer = Buffer.from(base64Audio, "base64");
+    res.setHeader("Content-Type", "audio/wav");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.send(audioBuffer);
   } catch (err) {
-    console.error("[tts] Stream error:", err);
-  } finally {
-    res.end();
+    console.error("[Sarvam TTS Vercel] Exception:", err);
+    return res.status(500).json({ error: "Internal server error during TTS synthesis" });
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "50kb",
-    },
-  },
-};

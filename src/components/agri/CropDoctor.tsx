@@ -51,6 +51,33 @@ const CropDoctor: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const speakResultText = useCallback(() => {
+    if (!result) return;
+    const parts = [
+      result.possible_issue,
+      result.symptoms?.join(". "),
+      result.recommendations?.join(". "),
+    ].filter(Boolean);
+    const text = parts.join(". ");
+    if (!text) return;
+    setIsSpeaking(true);
+    const lang = detectLanguageOf(text).lang;
+    const controller = speakText(textForSpeech(text, lang), `${lang}-IN`, {
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+    return () => controller.stop();
+  }, [result]);
+
+  const handleSpeakResponse = useCallback(() => {
+    if (isSpeaking) {
+      stopSpeaking();
+      setIsSpeaking(false);
+    } else {
+      speakResultText();
+    }
+  }, [isSpeaking, speakResultText]);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<StoredScan[]>([]);
@@ -218,43 +245,19 @@ const CropDoctor: React.FC = () => {
       return {
         crop: isHindi ? "टमाटर (Tomato)" : "Tomato",
         plant_part: isHindi ? "पत्ती एवं तना" : "Leaves & Stems",
-        health_status: "possible disease",
+        health_status: "offline_limited",
         possible_issue: isHindi
-          ? "टमाटर का अगेती झुलसा रोग (Tomato Early Blight - Alternaria solani)"
-          : "Tomato Early Blight (Alternaria solani)",
-        confidence: 87,
-        symptoms: isHindi
-          ? [
-              "निचली पत्तियों पर गहरे भूरे-काले गोल छल्लेदार धब्बे (Target spots)",
-              "धब्बों के चारों ओर पीला घेरा बनना",
-              "अधिक प्रकोप होने पर पत्तियां सूखकर गिर जाना"
-            ]
-          : [
-              "Concentric dark brown/black target-like spots on lower leaves",
-              "Yellow halo surrounding the fungal spots",
-              "Premature defoliation in warm, humid weather"
-            ],
+          ? "टमाटर — विशिष्ट लक्षण पहचान नहीं हो सके। कृपया ऑनलाइन होकर दोबारा जांच करें।"
+          : "Tomato — specific symptoms not identified. Please retry when online for accurate AI diagnosis.",
+        confidence: 0,
+        symptoms: [],
         recommendations: isHindi
-          ? [
-              "कॉपर ऑक्सीक्लोराइड 50% WP (3 ग्राम/लीटर) या मैंकोजेब 75% WP (2.5 ग्राम/लीटर) का छिड़काव करें",
-              "जैविक उपचार: ट्राइकोडर्मा विरिडी (Trichoderma viride) 5 ग्राम/लीटर का छिड़काव करें",
-              "खेत में जलभराव न होने दें और नीचे की संक्रमित पत्तियों को हटा दें"
-            ]
-          : [
-              "Foliar spray of Copper Oxychloride 50% WP (3g/L) or Mancozeb 75% WP (2.5g/L)",
-              "Bio-control: Spray Trichoderma viride @ 5g/L of water",
-              "Prune infected lower foliage and ensure proper drainage to lower humidity"
-            ],
-        urgency: "medium",
+          ? ["कृपया ऑनलाइन होकर तस्वीर दोबारा अपलोड करें", "स्पष्ट फोटो भेजें ताकि सही निदान हो सके"]
+          : ["Please go online and re-upload a photo", "Send a clear photo for accurate diagnosis"],
+        urgency: "N/A",
         next_steps_for_farmer: isHindi
-          ? [
-              "7 से 10 दिन के अंतराल पर दोबारा छिड़काव करें यदि मौसम में नमी बनी रहे",
-              "सिंचाई हमेशा ड्रिप द्वारा करें, पत्तियों पर पानी छिड़कने से बचें"
-            ]
-          : [
-              "Repeat fungicide application in 7-10 days if humidity persists",
-              "Use drip irrigation to avoid wetting foliage directly"
-            ],
+          ? ["इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें"]
+          : ["Connect to internet and retry in Crop Doctor"],
       };
     }
 
@@ -287,49 +290,23 @@ const CropDoctor: React.FC = () => {
       };
     }
 
-    // 3. General Crop Diagnosis Engine
+    // 3. General Crop Diagnosis Engine — honest offline message
     return {
-      crop: isHindi ? "कृषि फसल (Field Crop)" : "Field Crop",
+      crop: isHindi ? "फसल (Crop)" : "Crop",
       plant_part: isHindi ? "पत्ती व वानस्पतिक भाग" : "Leaf & Foliage",
-      health_status: "possible disease",
+      health_status: "offline_limited",
       possible_issue: isHindi
-        ? "फफूंद जनित पत्ती धब्बा / झुलसा रोग (Fungal Foliar Blight & Nutrient Stress)"
-        : "Fungal Foliar Leaf Spot & Nutrient Stress",
-      confidence: 85,
-      symptoms: isHindi
-        ? [
-            "पत्तियों पर पीले व भूरे रंग के धब्बे उभरना",
-            "पत्तियों के किनारों का सूखना व क्लोरोफिल की कमी",
-            "मौसम में नमी के कारण फफूंद का फैलाव"
-          ]
-        : [
-            "Irregular necrotic brown and yellow spots on leaf lamina",
-            "Marginal yellowing (chlorosis) indicating nutrient depletion",
-            "Fungal mycelial proliferation under humid canopy"
-          ],
+        ? "ऑफलाइन मोड — विशिष्ट रोग पहचान उपलब्ध नहीं। कृपया ऑनलाइन होकर दोबारा जांच करें।"
+        : "Offline mode — specific disease identification not available. Please retry online.",
+      confidence: 0,
+      symptoms: [],
       recommendations: isHindi
-        ? [
-            "मैंकोजेब 75% WP (2.5 ग्राम/लीटर) या साफ (कार्बेन्डाजिम 12% + मैंकोजेब 63%) 2 ग्राम/लीटर का छिड़काव करें",
-            "नीम तेल 1500 PPM (4 मिली/लीटर) मिलाकर कीटनाशक नियंत्रण करें",
-            "19:19:19 (NPK) घुलनशील खाद 5 ग्राम/लीटर का पर्णीय छिड़काव कर पौधे की रोग प्रतिरोधक क्षमता बढ़ाएं"
-          ]
-        : [
-            "Foliar application of Mancozeb 75% WP (2.5g/L) or Carbendazim + Mancozeb (2g/L)",
-            "Neem Oil 1500 PPM (4ml/L) as natural preventive deterrent",
-            "Apply NPK 19:19:19 @ 5g/L foliar spray to boost plant immunity and vigor"
-          ],
-      urgency: "medium",
+        ? ["कृपया इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें", "स्पष्ट फोटो भेजें ताकि सही निदान हो सके"]
+        : ["Please connect to internet and retry in Crop Doctor", "Send a clear photo for accurate diagnosis"],
+      urgency: "N/A",
       next_steps_for_farmer: isHindi
-        ? [
-            "संक्रमित पत्तियों को खेत से बाहर निकालकर नष्ट करें",
-            "जलभराव से बचें और खेत में उचित वायु संचार बनाए रखें",
-            "अधिक जानकारी के लिए किसान कॉल सेंटर 1800-180-1551 पर कॉल करें"
-          ]
-        : [
-            "Collect and destroy heavily infected leaves",
-            "Ensure balanced watering and proper air circulation in field",
-            "Contact Kisan Call Centre 1800-180-1551 for local agronomy support"
-          ],
+        ? ["इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें"]
+        : ["Connect to internet and retry in Crop Doctor"],
     };
   };
 
@@ -425,7 +402,7 @@ const CropDoctor: React.FC = () => {
         </div>
 
         {imagePreview && (
-          <img src={imagePreview} alt="Analyzed crop" className="w-full h-32 object-cover rounded-lg mb-4 border border-border" />
+          <img src={imagePreview} alt="Analyzed crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-32 object-cover rounded-lg mb-4 border border-border" />
         )}
 
         {clarityWarning && (
@@ -608,7 +585,7 @@ const CropDoctor: React.FC = () => {
 
             {imagePreview ? (
               <div className="relative">
-                <img src={imagePreview} alt="Crop preview" className="w-full h-40 object-cover rounded-xl border border-border" />
+                <img src={imagePreview} alt="Crop preview" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-40 object-cover rounded-xl border border-border" />
                 <button
                   onClick={() => { setImagePreview(null); setImageBase64(null); }}
                   className="absolute top-2 right-2 bg-background/80 p-2 rounded-full"

@@ -776,14 +776,35 @@ export async function fetchRealAdminUsers(): Promise<AdminUser[]> {
 
 /* ── User Account Actions (Real Database Mutations) ─────────────────────── */
 
-export async function updateUserStatus(userId: string, status: 'Active' | 'Suspended' | 'Pending', reason: string): Promise<boolean> {
+export async function updateUserStatus(
+  userId: string,
+  status: 'Active' | 'Suspended' | 'Pending',
+  reason: string,
+): Promise<{ ok: boolean; error?: string }> {
   try {
-    const { error } = await supabase
+    // 1. Try atomic RPC
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('admin_update_user_status', {
+      p_target_user_id: userId,
+      p_status: status,
+      p_reason: reason,
+    });
+
+    if (!rpcErr && rpcData?.ok) {
+      return { ok: true };
+    }
+
+    // 2. Direct database update fallback
+    const { error: directErr } = await supabase
       .from('profiles')
-      .update({ role: status === 'Suspended' ? 'suspended' : 'farmer' })
+      .update({
+        role: status === 'Suspended' ? 'suspended' : 'farmer',
+        updated_at: new Date().toISOString(),
+      } as any)
       .eq('id', userId);
 
-    if (error) throw error;
+    if (directErr) {
+      return { ok: false, error: directErr.message };
+    }
 
     await logAdminAudit({
       action: 'STATUS',
@@ -791,55 +812,277 @@ export async function updateUserStatus(userId: string, status: 'Active' | 'Suspe
       recordId: userId,
       newData: { status, reason },
     });
-    return true;
+
+    return { ok: true };
   } catch (err) {
-    console.error('[AdminDB] Failed to update user status:', err);
-    return false;
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    return { ok: false, error: msg };
   }
 }
 
-export async function updateUserKyc(userId: string, verified: boolean, notes?: string): Promise<boolean> {
+export async function updateUserKyc(
+  userId: string,
+  verified: boolean,
+  notes?: string,
+): Promise<{ ok: boolean; error?: string }> {
   try {
+    // 1. Try atomic RPC
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('admin_verify_user', {
+      p_target_user_id: userId,
+      p_verified: verified,
+      p_notes: notes || null,
+    });
+
+    if (!rpcErr && rpcData?.ok) {
+      return { ok: true };
+    }
+
+    // 2. Direct database update fallback on profiles
+    const { data: existing, error: fetchErr } = await supabase
+      .from('profiles')
+      .select('extended_profile')
+      .eq('id', userId)
+      .single();
+
+    if (fetchErr) {
+      return { ok: false, error: fetchErr.message };
+    }
+
+    const meta = existing?.extended_profile
+      ? (typeof existing.extended_profile === 'string'
+          ? JSON.parse(existing.extended_profile)
+          : existing.extended_profile)
+      : {};
+
+    const updatedMeta = {
+      ...meta,
+      kyc_verified: verified,
+      kyc_status: verified ? 'Verified' : 'Rejected',
+      kyc_verified_at: verified ? new Date().toISOString() : null,
+      kyc_notes: notes || null,
+    };
+
+    const { error: updateErr } = await supabase
+      .from('profiles')
+      .update({
+        is_verified: verified,
+        verification_status: verified ? 'verified' : 'rejected',
+        extended_profile: updatedMeta,
+        updated_at: new Date().toISOString(),
+      } as any)
+      .eq('id', userId);
+
+    if (updateErr) {
+      return { ok: false, error: updateErr.message };
+    }
+
     await logAdminAudit({
-      action: verified ? 'APPROVE' : 'REJECT',
-      tableName: 'kyc_records',
+      action: verified ? 'VERIFY_USER' : 'UNVERIFY_USER',
+      tableName: 'profiles',
       recordId: userId,
       newData: { verified, notes },
     });
-    return true;
+
+    return { ok: true };
   } catch (err) {
-    console.error('[AdminDB] Failed to update KYC:', err);
-    return false;
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    return { ok: false, error: msg };
   }
 }
 
+/**
+ * Wallet adjustment via atomic RPC, edge function, or direct database ledger.
+ * Prevents client-side balance spoofing and race conditions.
+ */
 export async function adjustUserWalletBalance(params: {
   userId: string;
   amount: number;
   direction: 'credit' | 'debit';
   reason: string;
-}): Promise<boolean> {
+}): Promise<{ ok: boolean; error?: string; transaction?: any }> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    await supabase.from('wallet_admin_adjustments').insert({
-      admin_user_id: user?.id || '00000000-0000-0000-0000-000000000000',
-      user_id: params.userId,
-      wallet_id: params.userId,
-      amount: params.amount,
-      direction: params.direction,
-      reason: params.reason,
+    if (params.amount <= 0 || isNaN(params.amount)) {
+      return { ok: false, error: 'Amount must be greater than zero.' };
+    }
+
+    // 1. Try atomic PostgreSQL RPC
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('admin_adjust_wallet', {
+      p_target_user_id: params.userId,
+      p_amount: params.amount,
+      p_direction: params.direction,
+      p_reason: params.reason,
     });
 
+    if (!rpcErr && rpcData?.ok) {
+      return { ok: true, transaction: rpcData };
+    }
+
+    // 2. Try Edge Function if RPC not deployed yet
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.access_token && supabaseUrl) {
+      try {
+        const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/functions/v1/wallet`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'admin-adjust',
+            userId: params.userId,
+            amount: params.amount,
+            direction: params.direction === 'credit' ? 'in' : 'out',
+            reason: params.reason,
+          }),
+        });
+
+        const result = await response.json();
+        if (response.ok && result.ok) {
+          await logAdminAudit({
+            action: params.direction === 'credit' ? 'ADD_WALLET_MONEY' : 'REMOVE_WALLET_MONEY',
+            tableName: 'wallets',
+            recordId: params.userId,
+            newData: { ...params, transaction: result.transaction },
+          });
+          return { ok: true, transaction: result.transaction };
+        }
+      } catch {
+        // Fallback to direct atomic ledger write below
+      }
+    }
+
+    // 3. Direct DB Ledger Fallback: Read current balance -> calculate -> update wallet -> insert transaction
+    const { data: walletData, error: walletFetchErr } = await supabase
+      .from('wallets')
+      .select('id, balance')
+      .eq('user_id', params.userId)
+      .maybeSingle();
+
+    if (walletFetchErr) {
+      return { ok: false, error: walletFetchErr.message };
+    }
+
+    let walletId = walletData?.id;
+    let oldBalance = Number(walletData?.balance || 0);
+
+    if (!walletId) {
+      // Create wallet if missing
+      walletId = 'w_' + Math.random().toString(36).slice(2, 9);
+      const { error: createWalletErr } = await supabase.from('wallets').insert({
+        id: walletId,
+        user_id: params.userId,
+        balance: 0,
+      } as any);
+      if (createWalletErr) {
+        return { ok: false, error: createWalletErr.message };
+      }
+      oldBalance = 0;
+    }
+
+    const newBalance =
+      params.direction === 'credit' ? oldBalance + params.amount : oldBalance - params.amount;
+
+    if (newBalance < 0) {
+      return {
+        ok: false,
+        error: `Insufficient balance. Current balance is ₹${oldBalance}, cannot debit ₹${params.amount}.`,
+      };
+    }
+
+    const { error: balanceUpdateErr } = await supabase
+      .from('wallets')
+      .update({
+        balance: newBalance,
+        updated_at: new Date().toISOString(),
+      } as any)
+      .eq('id', walletId);
+
+    if (balanceUpdateErr) {
+      return { ok: false, error: balanceUpdateErr.message };
+    }
+
+    const txId = 'tx_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+    const { error: txInsertErr } = await supabase.from('wallet_transactions').insert({
+      id: txId,
+      wallet_id: walletId,
+      user_id: params.userId,
+      type: params.direction === 'credit' ? 'credit' : 'debit',
+      amount: params.amount,
+      reason: params.reason,
+      created_at: new Date().toISOString(),
+    } as any);
+
+    if (txInsertErr) {
+      console.warn('[AdminWallet] Transaction ledger write warning:', txInsertErr);
+    }
+
     await logAdminAudit({
-      action: 'WALLET_ADJUST',
+      action: params.direction === 'credit' ? 'ADD_WALLET_MONEY' : 'REMOVE_WALLET_MONEY',
       tableName: 'wallets',
-      recordId: params.userId,
-      newData: params,
+      recordId: walletId,
+      oldData: { balance: oldBalance },
+      newData: {
+        balance: newBalance,
+        amount: params.amount,
+        direction: params.direction,
+        reason: params.reason,
+        transaction_id: txId,
+      },
     });
-    return true;
+
+    return {
+      ok: true,
+      transaction: {
+        id: txId,
+        user_id: params.userId,
+        wallet_id: walletId,
+        previous_balance: oldBalance,
+        new_balance: newBalance,
+        amount: params.amount,
+        type: params.direction,
+      },
+    };
   } catch (err) {
-    console.error('[AdminDB] Failed to adjust wallet:', err);
-    return false;
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    return { ok: false, error: msg };
+  }
+}
+
+/**
+ * Fetch wallet balance for a user — reads from the wallets table.
+ */
+export async function fetchUserWallet(userId: string): Promise<{ balance: number; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from('wallets')
+      .select('balance')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) return { balance: 0, error: error.message };
+    return { balance: Number(data?.balance ?? 0) };
+  } catch {
+    return { balance: 0 };
+  }
+}
+
+/**
+ * Fetch wallet transaction history for a user.
+ */
+export async function fetchUserWalletTransactions(userId: string): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
   }
 }

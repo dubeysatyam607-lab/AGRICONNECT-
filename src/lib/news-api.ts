@@ -88,75 +88,7 @@ export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
       return cachedArticles;
     }
     
-    // Return verified baseline agriculture news
-    return BASELINE_AGRI_NEWS;
+    // Return empty array instead of fake data
+    return [];
   }
 }
-
-export const BASELINE_AGRI_NEWS: LiveAgriNewsArticle[] = [
-  {
-    id: "news-1",
-    title: "Centre Announces New Kharif Minimum Support Price (MSP) Rates for 2026-27 Season",
-    description: "The Cabinet Committee on Economic Affairs has approved higher MSP rates for key Kharif crops including Paddy, Cotton, Soybean, and Maize to ensure remunerative prices for farmers.",
-    source: "PIB Agriculture",
-    author: "Ministry of Agriculture",
-    publishedAt: new Date().toISOString(),
-    formattedTime: "2 hrs ago",
-    category: "Policy & MSP",
-    url: "https://pib.gov.in",
-    imageUrl: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80",
-    isAgricultureVerified: true,
-  },
-  {
-    id: "news-2",
-    title: "IMD Issues Monsoon Progress and Sowing Advisory for North and Central India",
-    description: "Monsoon advances across Central and North-Western states with adequate rainfall forecasted. Farmers are advised to initiate sowing of soybean, pulses, and groundnut.",
-    source: "IMD Weather Advisory",
-    author: "Agromet Advisory Service",
-    publishedAt: new Date(Date.now() - 4 * 3600000).toISOString(),
-    formattedTime: "4 hrs ago",
-    category: "Weather & Monsoon",
-    url: "https://mausam.imd.gov.in",
-    imageUrl: "https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=600&auto=format&fit=crop&q=80",
-    isAgricultureVerified: true,
-  },
-  {
-    id: "news-3",
-    title: "PM-Kisan 18th Installment Transferred to 9.5 Crore Farmer Bank Accounts",
-    description: "Direct benefit transfer of ₹2,000 per farmer credited via Aadhaar-linked bank accounts under PM-KISAN Samman Nidhi scheme.",
-    source: "Kisan Portal",
-    author: "National Informatics Centre",
-    publishedAt: new Date(Date.now() - 8 * 3600000).toISOString(),
-    formattedTime: "8 hrs ago",
-    category: "Schemes & Subsidy",
-    url: "https://pmkisan.gov.in",
-    imageUrl: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=600&auto=format&fit=crop&q=80",
-    isAgricultureVerified: true,
-  },
-  {
-    id: "news-4",
-    title: "Mandi Arrivals Surge: Record High Trading in Mustard and Wheat Across APMCs",
-    description: "Major mandis in Rajasthan, Haryana, and Madhya Pradesh report smooth electronic auctions under e-NAM with steady modal price realizations.",
-    source: "e-NAM Portal",
-    author: "Agmarknet Desk",
-    publishedAt: new Date(Date.now() - 14 * 3600000).toISOString(),
-    formattedTime: "14 hrs ago",
-    category: "Market & Mandi",
-    url: "https://enam.gov.in",
-    imageUrl: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=600&auto=format&fit=crop&q=80",
-    isAgricultureVerified: true,
-  },
-  {
-    id: "news-5",
-    title: "Solar Drone Spraying and Soil Sensor Subsidies Expanded under Sub-Mission on Agri Mechanization",
-    description: "State agriculture departments announce 50% to 75% financial subsidy for farmer producer organizations (FPOs) and custom hiring centres purchasing certified agricultural drones.",
-    source: "AgriTech India",
-    author: "SMAM Division",
-    publishedAt: new Date(Date.now() - 22 * 3600000).toISOString(),
-    formattedTime: "1 day ago",
-    category: "Agritech & Innovation",
-    url: "https://agricoop.nic.in",
-    imageUrl: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80",
-    isAgricultureVerified: true,
-  },
-];

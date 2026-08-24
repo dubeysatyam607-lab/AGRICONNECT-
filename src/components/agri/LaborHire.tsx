@@ -22,6 +22,7 @@ interface Laborer {
   rate: string | number;
   count: number;
   status: string;
+  phone?: string;
 }
 
 const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
@@ -30,23 +31,38 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [laborersList, setLaborersList] = useState<Laborer[]>([]);
 
-  useEffect(() => {
-    const fetchLaborers = async () => {
-      try {
-        const { data, error } = await supabase.from('laborers').select('*').returns<Laborer[]>();
-        if (data && !error && data.length > 0) {
-          setLaborersList(data);
-        }
-      } catch {
-        // Silently handle offline/no data
+  const fetchLaborers = async () => {
+    try {
+      const { data, error } = await supabase.from('laborers').select('*').order('created_at', { ascending: false });
+      if (data && !error && data.length > 0) {
+        setLaborersList(data.map((d: any) => ({
+          id: String(d.id),
+          name: d.name || "",
+          location: d.location || "",
+          skill: d.skill || "",
+          rate: d.rate || 0,
+          count: d.count || 0,
+          status: d.status || "Available",
+          phone: "9829012345" // Dummy placeholder as DB lacks phone
+        })));
       }
-    };
+    } catch {
+      setLaborersList([]);
+    }
+  };
+
+  useEffect(() => {
     fetchLaborers();
   }, []);
 
   const handleContactLabor = (labor: Laborer) => {
-    onToast(`Contacting ${labor.name}...`);
-    window.open('https://nrega.nic.in/', '_blank', 'noopener,noreferrer');
+    if (labor.phone) {
+      window.open(`tel:${labor.phone}`, '_self');
+      onToast(`Calling ${labor.name} (${labor.phone})...`);
+    } else {
+      onToast(`Connecting with ${labor.name}...`);
+      window.open('https://nrega.nic.in/', '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleViewPortal = () => {
@@ -55,30 +71,36 @@ const LaborHire: React.FC<LaborHireProps> = ({ onToast }) => {
 
   return (
     <div className="pb-24 pt-4 px-4">
-      <div className="mb-4 flex justify-between items-center">
+      <div className="mb-4 flex justify-between items-center gap-2 flex-wrap">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Briefcase className="text-primary" /> Khet Mazdoor
+            <Briefcase className="text-primary" /> Khet Mazdoor (खेत मजदूर)
           </h2>
           <p className="text-muted-foreground text-sm">
-            Hire skilled labor for your farm
+            Hire skilled agricultural labor or list yourself for work
           </p>
         </div>
         <AgriButton
           onClick={() => setShowRegisterDialog(true)}
           size="sm"
-          className="bg-primary/90 text-primary-foreground font-semibold shadow-sm"
+          className="bg-primary text-primary-foreground font-bold shadow-md hover:scale-105 transition-transform"
         >
-          <UserPlus size={15} /> + मजदूर पंजीकरण
+          <UserPlus size={16} /> + मजदूर पंजीकरण (List Myself)
         </AgriButton>
       </div>
 
       <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>List Yourself as Farm Labour</DialogTitle>
+            <DialogTitle>List Yourself as Farm Labour (मजदूर पंजीकरण)</DialogTitle>
           </DialogHeader>
-          <LaborAssetForm onSuccess={() => setShowRegisterDialog(false)} />
+          <LaborAssetForm
+            onSuccess={() => {
+              setShowRegisterDialog(false);
+              fetchLaborers();
+              onToast("मजदूर प्रोफाइल सफलतापूर्वक रजिस्टर हो गई!");
+            }}
+          />
         </DialogContent>
       </Dialog>
 

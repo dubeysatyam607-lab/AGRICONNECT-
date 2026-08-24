@@ -1,354 +1,56 @@
-export const INITIAL_TRACTORS = [
-  {
-    id: 1,
-    name: 'Mahindra 575 DI',
-    owner: 'Ramesh Kumar',
-    hp: 45,
-    implement: 'Rotavator',
-    distance: '2.5 km',
-    rating: 4.8,
-    ratePerHour: 800,
-    ratePerAcre: 1200,
-    image: 'green' as const,
-    status: 'Available' as const,
-  },
-  {
-    id: 2,
-    name: 'Sonalika Tiger',
-    owner: 'Suresh Singh',
-    hp: 55,
-    implement: 'Cultivator',
-    distance: '4.0 km',
-    rating: 4.5,
-    ratePerHour: 900,
-    ratePerAcre: 1400,
-    image: 'blue' as const,
-    status: 'Busy' as const,
-  },
-  {
-    id: 3,
-    name: 'John Deere 5310',
-    owner: 'Vikram Jat',
-    hp: 55,
-    implement: 'Plough',
-    distance: '1.2 km',
-    rating: 4.9,
-    ratePerHour: 1100,
-    ratePerAcre: 1600,
-    image: 'green' as const,
-    status: 'Available' as const,
-  },
-  {
-    id: 4,
-    name: 'Swaraj 855',
-    owner: 'Amit Patel',
-    hp: 52,
-    implement: 'Seeder',
-    distance: '5.5 km',
-    rating: 4.6,
-    ratePerHour: 850,
-    ratePerAcre: 1300,
-    image: 'red' as const,
-    status: 'Available' as const,
-  },
-];
-
-export const WEATHER_DATA = {
-  temp: 32,
-  condition: 'Sunny',
-  humidity: 45,
-  wind: '12 km/h',
-  forecast: [
-    { day: 'Tue', temp: 31, icon: 'cloud' },
-    { day: 'Wed', temp: 29, icon: 'rain' },
-    { day: 'Thu', temp: 30, icon: 'cloud' },
-  ],
+export type Tractor = {
+  id: number | string;
+  name: string;
+  owner: string;
+  hp: number;
+  implement: string;
+  distance: string;
+  rating: number;
+  ratePerHour: number;
+  ratePerAcre: number;
+  image: "green" | "blue" | "red";
+  status: "Available" | "Busy";
 };
 
-export const MANDI_PRICES = [
-  { crop: 'Wheat (गेहूं)', market: 'Jaipur Mandi', state: 'Rajasthan', minPrice: 2214, maxPrice: 2598, price: 2406, change: '+2.4%', status: 'up' as const },
-  { crop: 'Rice (Basmati)', market: 'Karnal Mandi', state: 'Haryana', minPrice: 3842, maxPrice: 4510, price: 4176, change: '-0.6%', status: 'down' as const },
-  { crop: 'Maize (मक्का)', market: 'Gulbarga Mandi', state: 'Karnataka', minPrice: 1980, maxPrice: 2324, price: 2152, change: '-1.3%', status: 'down' as const },
-  { crop: 'Soybean (सोयाबीन)', market: 'Indore Mandi', state: 'MP', minPrice: 4271, maxPrice: 5013, price: 4642, change: '+0.5%', status: 'up' as const },
-  { crop: 'Cotton (कपास)', market: 'Nagpur Mandi', state: 'Maharashtra', minPrice: 6571, maxPrice: 7713, price: 7142, change: '+2.8%', status: 'up' as const },
-  { crop: 'Mustard (सरसों)', market: 'Jaipur Mandi', state: 'Rajasthan', minPrice: 5028, maxPrice: 5902, price: 5465, change: '-0.3%', status: 'down' as const },
-  { crop: 'Gram (Chana)', market: 'Delhi Mandi', state: 'Delhi', minPrice: 4889, maxPrice: 5739, price: 5314, change: '+1.2%', status: 'up' as const },
-  { crop: 'Groundnut (मूंगफली)', market: 'Rajkot Mandi', state: 'Gujarat', minPrice: 5317, maxPrice: 6241, price: 5779, change: '-2.4%', status: 'down' as const },
-  { crop: 'Onion (प्याज)', market: 'Nashik Mandi', state: 'Maharashtra', minPrice: 1685, maxPrice: 1979, price: 1832, change: '-1.0%', status: 'down' as const },
-  { crop: 'Potato (आलू)', market: 'Agra Mandi', state: 'UP', minPrice: 1220, maxPrice: 1432, price: 1326, change: '+0.5%', status: 'up' as const },
-  { crop: 'Tomato (टमाटर)', market: 'Bangalore Mandi', state: 'Karnataka', minPrice: 2492, maxPrice: 2926, price: 2709, change: '+2.2%', status: 'up' as const },
-  { crop: 'Garlic (लहसुन)', market: 'Rajkot Mandi', state: 'Gujarat', minPrice: 8030, maxPrice: 9426, price: 8728, change: '-0.8%', status: 'down' as const },
-  { crop: 'Masoor Dal', market: 'Indore Mandi', state: 'MP', minPrice: 5819, maxPrice: 6831, price: 6325, change: '-1.2%', status: 'down' as const },
-  { crop: 'Sugarcane (गन्ना)', market: 'Muzaffarnagar', state: 'UP', minPrice: 347, maxPrice: 407, price: 377, change: '+1.9%', status: 'up' as const },
-  { crop: 'Cumin (जीरा)', market: 'Unjha Mandi', state: 'Gujarat', minPrice: 39451, maxPrice: 46313, price: 42882, change: '-1.4%', status: 'down' as const },
-  { crop: 'Turmeric (हल्दी)', market: 'Erode Mandi', state: 'Tamil Nadu', minPrice: 9449, maxPrice: 11093, price: 10271, change: '+0.7%', status: 'up' as const },
-  { crop: 'Red Chilli', market: 'Guntur Mandi', state: 'AP', minPrice: 11873, maxPrice: 13937, price: 12905, change: '-0.7%', status: 'down' as const },
-  { crop: 'Coriander (धनिया)', market: 'Kota Mandi', state: 'Rajasthan', minPrice: 7085, maxPrice: 8317, price: 7701, change: '-1.3%', status: 'down' as const },
-  { crop: 'Banana (केला)', market: 'Jalgaon Mandi', state: 'Maharashtra', minPrice: 2621, maxPrice: 3077, price: 2849, change: '-1.8%', status: 'down' as const },
-  { crop: 'Mango (Alphonso)', market: 'Ratnagiri', state: 'Maharashtra', minPrice: 4362, maxPrice: 5120, price: 4741, change: '-1.2%', status: 'down' as const },
-  { crop: 'Cabbage (पत्ता गोभी)', market: 'Nashik Mandi', state: 'Maharashtra', minPrice: 1439, maxPrice: 1689, price: 1564, change: '-2.3%', status: 'down' as const },
-  { crop: 'Cauliflower (फूलगोभी)', market: 'Pune Mandi', state: 'Maharashtra', minPrice: 2173, maxPrice: 2551, price: 2362, change: '+2.7%', status: 'up' as const },
-  { crop: 'Green Peas (मटर)', market: 'Shimla Mandi', state: 'HP', minPrice: 4538, maxPrice: 5328, price: 4933, change: '-0.3%', status: 'down' as const },
-  { crop: 'Carrot (गाजर)', market: 'Ooty Mandi', state: 'Tamil Nadu', minPrice: 1926, maxPrice: 2260, price: 2093, change: '-0.3%', status: 'down' as const },
-  { crop: 'Brinjal (बैंगन)', market: 'Varanasi Mandi', state: 'UP', minPrice: 1767, maxPrice: 2075, price: 1921, change: '+1.1%', status: 'up' as const },
-  { crop: 'Okra (Bhindi)', market: 'Ahmedabad Mandi', state: 'Gujarat', minPrice: 3039, maxPrice: 3567, price: 3303, change: '-1.4%', status: 'down' as const },
-  { crop: 'Spinach (पालक)', market: 'Delhi Mandi', state: 'Delhi', minPrice: 1475, maxPrice: 1731, price: 1603, change: '+0.2%', status: 'up' as const },
-  { crop: 'Bitter Gourd (करेला)', market: 'Lucknow Mandi', state: 'UP', minPrice: 2743, maxPrice: 3219, price: 2981, change: '+1.1%', status: 'up' as const },
-  { crop: 'Lentils (Moong)', market: 'Jaipur Mandi', state: 'Rajasthan', minPrice: 6731, maxPrice: 7901, price: 7316, change: '+1.6%', status: 'up' as const },
-  { crop: 'Arhar (Tur Dal)', market: 'Latur Mandi', state: 'Maharashtra', minPrice: 6405, maxPrice: 7519, price: 6962, change: '+1.2%', status: 'up' as const },
-];
+export const INITIAL_TRACTORS: Tractor[] = [];
 
-export const COMMUNITY_POSTS = [
-  {
-    id: 1,
-    user: 'Rajesh Verma',
-    role: 'Farmer',
-    time: '2 hrs ago',
-    content: 'My potato leaves are turning yellow with black spots. What should I spray?',
-    likes: 24,
-    comments: 8,
-    image: 'potato_blight',
-    crop: 'Potato',
-    region: 'Uttar Pradesh',
-    trend: 412,
-    helpWanted: true,
-    expertReply: {
-      user: 'Dr. Anita Sharma',
-      content: 'This looks like Early Blight. Spray Mancozeb 75% WP @ 2.5g/liter of water. Repeat after 10 days if spots persist.',
-    },
-  },
-  {
-    id: 2,
-    user: 'Gurpreet Singh',
-    role: 'Farmer',
-    time: '5 hrs ago',
-    content: 'Best time to sow wheat in Punjab region for maximum yield?',
-    likes: 45,
-    comments: 12,
-    image: null,
-    crop: 'Wheat',
-    region: 'Punjab',
-    trend: 890,
-    helpWanted: false,
-    expertReply: null,
-  },
-  {
-    id: 3,
-    user: 'Sunita Devi',
-    role: 'Farmer',
-    time: '1 hr ago',
-    content: 'Soybean leaves turning yellow from bottom after this week\'s rain. N deficiency or something else?',
-    likes: 18,
-    comments: 6,
-    image: null,
-    crop: 'Soybean',
-    region: 'Madhya Pradesh',
-    trend: 234,
-    helpWanted: true,
-    expertReply: {
-      user: 'Dr. Rajesh Kulkarni',
-      content: 'Likely nitrogen deficiency after heavy rain (leaching). Top-dress 20kg urea/acre and do a tissue test if it spreads.',
-    },
-  },
-  {
-    id: 4,
-    user: 'Dr. Anita Sharma',
-    role: 'Agri Expert',
-    time: '3 hrs ago',
-    content: 'Tip: Drip irrigation under PMKSY gives 55% subsidy (or 45% for small/marginal farmers). Apply before 15 Aug to get this quarter\'s window.',
-    likes: 132,
-    comments: 27,
-    image: null,
-    crop: 'Irrigation',
-    region: 'All India',
-    trend: 1560,
-    helpWanted: false,
-    verified: true,
-    expertReply: null,
-  },
-  {
-    id: 5,
-    user: 'Mahesh Patel',
-    role: 'Farmer',
-    time: '6 hrs ago',
-    content: 'Onion prices falling in Nashik. Should I hold stock in cold storage or sell now?',
-    likes: 76,
-    comments: 19,
-    image: null,
-    crop: 'Onion',
-    region: 'Maharashtra',
-    trend: 1240,
-    helpWanted: true,
-    expertReply: {
-      user: 'Dr. Rajesh Kulkarni',
-      content: 'Cold storage till festival demand (Aug end) usually fetches ₹200-300/qtl more. Check storage cost vs spread first — at current rates, storage wins.',
-    },
-  },
-  {
-    id: 6,
-    user: 'Lakshmi Iyer',
-    role: 'Agri Expert',
-    time: '8 hrs ago',
-    content: 'For tomato fruit borers, neem oil 1500ppm (5ml/ltr) works on early instars. For mature infestations, go for chlorantraniliprole 18.5% SC @ 0.3ml/ltr.',
-    likes: 98,
-    comments: 15,
-    image: null,
-    crop: 'Tomato',
-    region: 'Tamil Nadu',
-    trend: 730,
-    helpWanted: false,
-    verified: true,
-    expertReply: null,
-  },
-  {
-    id: 7,
-    user: 'Arvind Kumar',
-    role: 'Tractor Owner',
-    time: '10 hrs ago',
-    content: 'My 4-year-old Swaraj is giving low pulling power in wet fields. Air filter new, tyres ok. What else should I check?',
-    likes: 31,
-    comments: 9,
-    image: null,
-    crop: 'Machinery',
-    region: 'Rajasthan',
-    trend: 158,
-    helpWanted: true,
-    expertReply: {
-      user: 'Ravi Engineer',
-      content: 'Check fuel injector pressure and clutch plate wear. Wet-field power loss is often clutch slip — test under load.',
-    },
-  },
-  {
-    id: 8,
-    user: 'Geeta Bai',
-    role: 'Farmer',
-    time: '12 hrs ago',
-    content: 'Mustard sowing time in Rajasthan for late kharif. Is 15 Sep too late for rainfed fields?',
-    likes: 22,
-    comments: 5,
-    image: null,
-    crop: 'Mustard',
-    region: 'Rajasthan',
-    trend: 96,
-    helpWanted: true,
-    expertReply: null,
-  },
-];
+export const WEATHER_DATA = {
+  temp: 0,
+  condition: 'Unavailable',
+  humidity: 0,
+  wind: '0 km/h',
+  forecast: [],
+};
 
-export const COMMUNITY_GROUPS = [
-  {
-    id: 1,
-    name: 'Dairy Farmers Network',
-    nameHi: 'डेयरी किसान नेटवर्क',
-    members: 12500,
-    online: 640,
-    description: 'Connect with dairy farmers across India',
-    descriptionHi: 'भारत भर के डेयरी किसानों से जुड़ें',
-    image: 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=800',
-    category: 'Dairy',
-  },
-  {
-    id: 2,
-    name: 'Organic Growers Community',
-    nameHi: 'जैविक खेती समुदाय',
-    members: 8200,
-    online: 310,
-    description: 'Share organic farming tips and techniques',
-    descriptionHi: 'जैविक खेती की युक्तियाँ और तकनीकें साझा करें',
-    image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=800',
-    category: 'Organic',
-  },
-  {
-    id: 3,
-    name: 'Machinery Experts Hub',
-    nameHi: 'मशीनरी विशेषज्ञ केंद्र',
-    members: 15800,
-    online: 890,
-    description: 'Discuss tractors, equipment and maintenance',
-    descriptionHi: 'ट्रैक्टर, उपकरण और रखरखाव पर चर्चा करें',
-    image: 'https://images.unsplash.com/photo-1592919016382-74f056ec568b?auto=format&fit=crop&q=80&w=800',
-    category: 'Machinery',
-  },
-  {
-    id: 4,
-    name: 'Vegetable Growers Network',
-    nameHi: 'सब्जी उत्पादक नेटवर्क',
-    members: 22100,
-    online: 1204,
-    description: 'Connect with vegetable farmers and traders',
-    descriptionHi: 'सब्जी किसानों और व्यापारियों से जुड़ें',
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
-    category: 'Vegetables',
-  },
-  {
-    id: 5,
-    name: 'Fruit Orchard Owners',
-    nameHi: 'फल बागान मालिक',
-    members: 9500,
-    online: 415,
-    description: 'Share tips on fruit cultivation and marketing',
-    descriptionHi: 'फल की खेती और विपणन पर सुझाव साझा करें',
-    image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&q=80&w=800',
-    category: 'Fruits',
-  },
-  {
-    id: 6,
-    name: 'Transport & Logistics',
-    nameHi: 'परिवहन और लॉजिस्टिक्स',
-    members: 6800,
-    online: 190,
-    description: 'Find transport solutions for your produce',
-    descriptionHi: 'अपनी उपज के लिए परिवहन समाधान खोजें',
-    image: 'https://images.unsplash.com/photo-1586191582151-f73972d10737?auto=format&fit=crop&q=80&w=800',
-    category: 'Transport',
-  },
-];
+export const MANDI_PRICES: any[] = [];
 
-export const COMMUNITY_TOPICS = [
-  { tag: '#SoybeanRates', posts: 1240, up: true },
-  { tag: '#EarlyBlight', posts: 876, up: true },
-  { tag: '#PMKSY', posts: 2104, up: false },
-  { tag: '#OnionPrices', posts: 1530, up: true },
-  { tag: '#WheatSowing', posts: 980, up: true },
-  { tag: '#DripSubsidy', posts: 665, up: false },
-];
+export type CommunityPost = {
+  id: number;
+  user: string;
+  verified: boolean;
+  avatar: string;
+  crop: string;
+  region: string;
+  time: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  helpWanted: boolean;
+  tags: string[];
+  reply?: { user: string; content: string; time: string; verified?: boolean };
+};
 
-export const STORE_ITEMS = [
-  { id: 1, name: 'Urea Fertilizer', price: 266, unit: '45kg Bag', image: 'bag' as const },
-  { id: 2, name: 'Hybrid Wheat Seeds', price: 850, unit: '10kg Pkt', image: 'seed' as const },
-  { id: 3, name: 'Pesticide Sprayer', price: 1200, unit: '1 Unit', image: 'tool' as const },
-  { id: 4, name: 'DAP Fertilizer', price: 1350, unit: '50kg Bag', image: 'bag' as const },
-];
-
-export const SCHEMES = [
-  { id: 1, title: 'PM Kisan Samman Nidhi', benefit: '₹6,000/year', eligibility: 'Small/Marginal Farmers' },
-  { id: 2, title: 'Soil Health Card Scheme', benefit: 'Free Soil Test', eligibility: 'All Farmers' },
-  { id: 3, title: 'Kisan Credit Card (KCC)', benefit: 'Low Interest Loan', eligibility: 'All Farmers' },
-];
-
-export const LABORERS = [
-  { id: 1, name: 'Raju Team', count: 5, skill: 'Harvesting', rate: 450, location: '2 km away', status: 'Available' as const },
-  { id: 2, name: 'Mukesh Bhai', count: 1, skill: 'Spraying', rate: 600, location: '5 km away', status: 'Available' as const },
-  { id: 3, name: 'Sita Devi Group', count: 8, skill: 'Sowing/Weeding', rate: 400, location: '1.5 km away', status: 'Busy' as const },
-];
-
-export const CATTLE = [
-  { id: 1, type: 'Buffalo', breed: 'Murrah', milk: '12L/day', price: 65000, age: '2 Lactation', location: 'Rampura' },
-  { id: 2, type: 'Cow', breed: 'Gir', milk: '14L/day', price: 55000, age: '1 Lactation', location: 'Sanganer' },
-  { id: 3, type: 'Cow', breed: 'Jersey', milk: '18L/day', price: 45000, age: '3 Lactation', location: 'Chomu' },
-];
-
-export const TRANSPORT_VEHICLES = [
-  { id: 1, type: 'Tata Ace (Chota Hathi)', capacity: '750 kg', rate: '₹500', location: '2 km', status: 'Available' as const },
-  { id: 2, type: 'Bolero Pickup', capacity: '1.5 Ton', rate: '₹800', location: '5 km', status: 'Available' as const },
-  { id: 3, type: 'Tractor Trolley', capacity: '3 Ton', rate: '₹1200', location: '1 km', status: 'Busy' as const },
-];
-
-export const AGRI_NEWS = [
-  { id: 1, title: 'MSP Hike for Wheat announced by Central Govt', source: 'DD Kisan', time: '2 hrs ago', category: 'Policy' },
-  { id: 2, title: 'Heavy rains expected in Jaipur district next week', source: 'IMD', time: '5 hrs ago', category: 'Weather' },
-  { id: 3, title: 'New subsidy on Solar Pumps - Apply Now', source: 'Agri Dept', time: '1 day ago', category: 'Scheme' },
-];
+export const COMMUNITY_POSTS: CommunityPost[] = [];
+export const COMMUNITY_GROUPS: any[] = [];
+export const COMMUNITY_TOPICS: any[] = [];
+export const STORE_ITEMS: any[] = [];
+export const SCHEMES: any[] = [];
+export const LABORERS: any[] = [];
+export const CATTLE: any[] = [];
+export const TRANSPORT_VEHICLES: any[] = [];
+export const AGRI_NEWS: any[] = [];
 
 export const INDIAN_LANGUAGES = [
   "English (India)",
@@ -364,15 +66,3 @@ export const INDIAN_LANGUAGES = [
   "Odia (ଓଡ଼ିଆ)",
   "Assamese (অসমীয়া)",
 ];
-
-export type Tractor = typeof INITIAL_TRACTORS[number];
-export type MandiPrice = typeof MANDI_PRICES[number];
-export type CommunityPost = typeof COMMUNITY_POSTS[number];
-export type CommunityGroup = typeof COMMUNITY_GROUPS[number];
-export type CommunityTopic = typeof COMMUNITY_TOPICS[number];
-export type StoreItem = typeof STORE_ITEMS[number];
-export type Scheme = typeof SCHEMES[number];
-export type Laborer = typeof LABORERS[number];
-export type Cattle = typeof CATTLE[number];
-export type TransportVehicle = typeof TRANSPORT_VEHICLES[number];
-export type AgriNews = typeof AGRI_NEWS[number];

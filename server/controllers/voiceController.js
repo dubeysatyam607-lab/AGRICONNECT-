@@ -1,26 +1,34 @@
 const axios = require('axios');
 
 /**
- * ElevenLabs High Quality Neural Text-to-Speech Controller.
+ * Sarvam AI High Quality Neural Text-to-Speech Controller.
  *
- * Uses the best-available multilingual conversational model
- * (`eleven_v3_conversational`, with automatic fallback to `eleven_v3` then
- * `eleven_multilingual_v2`) so Indian Hindi sounds natural and human — never
- * robotic. Text is sanitised so no markdown/symbol is ever read aloud.
+ * Uses Sarvam AI (Subh speaker, bulbul:v1 model) for 12 Indian languages:
+ * English, Hindi, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada,
+ * Malayalam, Bengali, Odia, Assamese.
  */
-const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-const MODEL_CHAIN = [
-  process.env.ELEVEN_LABS_MODEL_ID || 'eleven_v3_conversational',
-  'eleven_v3',
-  'eleven_multilingual_v2',
-];
-const VOICE_SETTINGS = {
-  stability: 0.6,
-  similarity_boost: 0.85,
-  style: 0.3,
-  use_speaker_boost: true,
+const DEFAULT_SPEAKER = process.env.SARVAM_SPEAKER || 'shubh';
+
+const SARVAM_LANG_MAP = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
+  pa: 'pa-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  bn: 'bn-IN',
+  or: 'od-IN',
+  od: 'od-IN',
+  as: 'as-IN',
 };
-const OUTPUT_FORMAT = 'mp3_44100_192';
+
+function getTargetLanguageCode(lang = 'hi') {
+  const clean = String(lang).toLowerCase().split('-')[0].trim();
+  return SARVAM_LANG_MAP[clean] || 'hi-IN';
+}
 
 /** Remove markdown/formatting/symbols so TTS never reads them aloud. */
 function sanitizeForSpeech(text) {
@@ -69,73 +77,54 @@ function sanitizeForSpeech(text) {
 
 exports.textToSpeech = async (req, res) => {
   try {
-    const { text, languageCode = 'hi-IN' } = req.body;
+    const { text, languageCode = 'hi-IN', speaker = DEFAULT_SPEAKER } = req.body;
     const cleaned = sanitizeForSpeech(typeof text === 'string' ? text : '');
 
     if (!cleaned || !cleaned.trim()) {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    const apiKey = process.env.ELEVEN_LABS_API_KEY || process.env.ELEVENLABS_API_KEY;
+    const apiKey = process.env.SARVAM_API_KEY;
+
     if (!apiKey) {
-      console.error('ElevenLabs API Key is missing from environment variables.');
-      return res.status(503).json({ error: 'ElevenLabs API key is missing' });
+      console.error('Sarvam AI API Key is missing from environment variables.');
+      return res.status(503).json({ error: 'Sarvam AI API key is missing' });
     }
 
-    const voiceId = process.env.ELEVEN_LABS_VOICE_ID || DEFAULT_VOICE_ID;
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=${OUTPUT_FORMAT}`;
+    const targetLang = getTargetLanguageCode(languageCode);
 
-    let stream = null;
-    let lastStatus = 0;
-    let lastError = null;
-    for (const modelId of MODEL_CHAIN) {
-      try {
-        const response = await axios({
-          method: 'post',
-          url,
-          headers: {
-            Accept: 'audio/mpeg',
-            'xi-api-key': apiKey,
-            'Content-Type': 'application/json',
-          },
-          data: {
-            text: cleaned.trim(),
-            model_id: modelId,
-            voice_settings: VOICE_SETTINGS,
-          },
-          responseType: 'stream',
-          timeout: 20000,
-        });
-        stream = response;
-        lastStatus = response.status;
-        break;
-      } catch (error) {
-        const status = error?.response?.status || 0;
-        lastStatus = status;
-        lastError = error;
-        // Only fall through to the next model for model-unavailable responses.
-        if (!(status === 400 || status === 404 || status === 422)) break;
-        console.warn(`[voice] Model ${modelId} unavailable (${status}), trying next.`);
-      }
-    }
-
-    if (!stream) {
-      const details = lastError?.response?.data || lastError?.message;
-      console.error('ElevenLabs TTS Controller Error:', lastStatus, details);
-      return res.status(lastStatus || 502).json({ error: 'Failed to generate speech via ElevenLabs' });
-    }
-
-    res.set({
-      'Content-Type': 'audio/mpeg',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
+    const response = await axios({
+      method: 'post',
+      url: 'https://api.sarvam.ai/text-to-speech',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-subscription-key': apiKey,
+      },
+      data: {
+        inputs: [cleaned],
+        target_language_code: targetLang,
+        speaker: speaker,
+        pace: 1.0,
+        speech_sample_rate: 22050,
+        enable_preprocessing: true,
+        model: 'bulbul:v3',
+      },
     });
 
-    stream.data.pipe(res);
+    const base64Audio = response.data?.audios?.[0];
+    if (!base64Audio) {
+      return res.status(502).json({ error: 'No audio returned from Sarvam AI' });
+    }
+
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
+    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(audioBuffer);
   } catch (error) {
-    const status = error?.response?.status || 500;
-    const details = error?.response?.data || error.message;
-    console.error('ElevenLabs TTS Controller Error:', status, details);
-    res.status(status).json({ error: 'Failed to generate speech via ElevenLabs' });
+    console.error('Sarvam AI TTS Error:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: 'Sarvam AI TTS synthesis failed',
+      details: error.response?.data || error.message,
+    });
   }
 };

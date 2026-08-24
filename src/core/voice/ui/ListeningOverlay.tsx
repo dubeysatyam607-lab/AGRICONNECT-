@@ -9,6 +9,8 @@ import { langLabel } from "../language";
  * ListeningOverlay — full-screen layer shown while the assistant listens.
  * Displays the live transcript in real time, the detected language, and
  * clear "Done" / "Cancel" controls. Silence auto-commits after a pause.
+ *
+ * Theme: AgriConnect white + green — matches the main app visual identity.
  */
 interface ListeningOverlayProps {
   transcript: string;
@@ -25,25 +27,25 @@ export const ListeningOverlay: React.FC<ListeningOverlayProps> = ({
   onCommit,
   onCancel,
 }) => (
-  <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center px-6 text-white animate-in fade-in duration-300">
+  <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center px-6 text-foreground animate-in fade-in duration-300">
     <GlowOrb size={120}>
-      <MicOff size={34} className="animate-pulse" />
+      <MicOff size={34} className="animate-pulse text-white" />
     </GlowOrb>
 
-    <p className="text-white text-base font-extrabold mt-6 tracking-wide">
+    <p className="text-foreground text-base font-extrabold mt-6 tracking-wide">
       किसान सहायक सुन रहा है…
     </p>
-    <p className="text-slate-400 text-[11px] mt-1.5">
+    <p className="text-muted-foreground text-[11px] mt-1.5">
       {isFinal ? "Processing what you said…" : "Speak clearly — I stop automatically when you pause."}
     </p>
 
     {/* Live transcript card */}
     <div className="w-full max-w-md mt-6">
-      <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-4 min-h-[72px]">
+      <div className="bg-muted border border-border rounded-2xl p-4 min-h-[72px]">
         {transcript ? (
           <p className={cn(
             "text-sm leading-relaxed text-center",
-            isFinal ? "text-emerald-300" : "text-slate-100"
+            isFinal ? "text-primary font-semibold" : "text-foreground"
           )}>
             {transcript}
           </p>
@@ -53,7 +55,7 @@ export const ListeningOverlay: React.FC<ListeningOverlayProps> = ({
       </div>
 
       {transcript && (
-        <p className="text-center text-[10px] text-slate-500 mt-2">
+        <p className="text-center text-[10px] text-muted-foreground mt-2">
           Heard in {langLabel(lang)} — edit in the chat box before sending
         </p>
       )}
@@ -63,14 +65,14 @@ export const ListeningOverlay: React.FC<ListeningOverlayProps> = ({
     <div className="flex items-center gap-4 mt-8">
       <button
         onClick={onCancel}
-        className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full px-5 py-2.5 transition-colors active:scale-95"
+        className="flex items-center gap-2 text-xs font-bold text-muted-foreground bg-muted hover:bg-muted/80 border border-border rounded-full px-5 py-2.5 transition-colors active:scale-95"
       >
         <X size={14} /> Cancel
       </button>
       <button
         onClick={() => onCommit(transcript)}
         disabled={!transcript.trim()}
-        className="flex items-center gap-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 disabled:opacity-40 disabled:pointer-events-none rounded-full px-6 py-2.5 shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
+        className="flex items-center gap-2 text-xs font-bold text-white bg-primary disabled:opacity-40 disabled:pointer-events-none rounded-full px-6 py-2.5 shadow-lg shadow-primary/25 transition-all active:scale-95"
       >
         <Check size={14} /> Done
       </button>

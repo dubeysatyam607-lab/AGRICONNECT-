@@ -76,7 +76,17 @@ export function detectLanguageOf(text: string): DetectResult {
   // 1. Devanagari Hindi or other Indian Indic scripts
   if (best && best[0] !== 'latin') {
     const range = SCRIPT_RANGES.find((r) => r.script === best[0]);
-    if (range) return { lang: range.lang, script: range.script };
+    if (range) {
+      // Disambiguate Bengali vs Assamese (shared Unicode block 0x0980-0x09FF)
+      if (range.lang === 'bn') {
+        const assameseChars = text.match(/[ৰৱ]/g);
+        const bengaliOnlyChars = text.match(/[ৎংঃঁ়ািীুূৃেৈোৌ]/g);
+        if (assameseChars && assameseChars.length > 0 && (!bengaliOnlyChars || assameseChars.length >= bengaliOnlyChars.length)) {
+          return { lang: 'as', script: 'bengali' };
+        }
+      }
+      return { lang: range.lang, script: range.script };
+    }
   }
 
   // 2. Latin script — analyze if Hinglish vs pure English
@@ -131,6 +141,8 @@ export function localeForLang(lang: string): string {
       return 'ml-IN';
     case 'or':
       return 'or-IN';
+    case 'as':
+      return 'as-IN';
     default:
       return 'en-IN';
   }
@@ -159,7 +171,49 @@ export const langLabel = (lang: string): string => {
       return 'മലയാളം';
     case 'or':
       return 'ଓଡ଼ିଆ';
+    case 'as':
+      return 'অসমীয়া';
     default:
       return 'English';
   }
 };
+
+/**
+ * Sarvam AI Text-to-Speech Unified Configuration for all 12 Indian languages.
+ * Default voice: Subh (clear, warm, conversational, farmer-friendly).
+ */
+export interface SarvamLanguageConfig {
+  appLang: string;
+  sarvamCode: string;
+  displayName: string;
+  speaker: string;
+  fallbackLanguage: string;
+}
+
+export const SARVAM_LANGUAGE_MAP: Record<string, SarvamLanguageConfig> = {
+  en: { appLang: 'en', sarvamCode: 'en-IN', displayName: 'English (India)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  hi: { appLang: 'hi', sarvamCode: 'hi-IN', displayName: 'Hindi (हिंदी)', speaker: 'shubh', fallbackLanguage: 'en-IN' },
+  mr: { appLang: 'mr', sarvamCode: 'mr-IN', displayName: 'Marathi (मराठी)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  gu: { appLang: 'gu', sarvamCode: 'gu-IN', displayName: 'Gujarati (ગુજરાતી)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  pa: { appLang: 'pa', sarvamCode: 'pa-IN', displayName: 'Punjabi (ਪੰਜਾਬੀ)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  ta: { appLang: 'ta', sarvamCode: 'ta-IN', displayName: 'Tamil (தமிழ்)', speaker: 'shubh', fallbackLanguage: 'en-IN' },
+  te: { appLang: 'te', sarvamCode: 'te-IN', displayName: 'Telugu (తెలుగు)', speaker: 'shubh', fallbackLanguage: 'en-IN' },
+  kn: { appLang: 'kn', sarvamCode: 'kn-IN', displayName: 'Kannada (ಕನ್ನಡ)', speaker: 'shubh', fallbackLanguage: 'en-IN' },
+  ml: { appLang: 'ml', sarvamCode: 'ml-IN', displayName: 'Malayalam (മലയാളം)', speaker: 'shubh', fallbackLanguage: 'en-IN' },
+  bn: { appLang: 'bn', sarvamCode: 'bn-IN', displayName: 'Bengali (বাংলা)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  or: { appLang: 'or', sarvamCode: 'od-IN', displayName: 'Odia (ଓଡ଼ିଆ)', speaker: 'shubh', fallbackLanguage: 'hi-IN' },
+  as: { appLang: 'as', sarvamCode: 'as-IN', displayName: 'Assamese (অসমীয়া)', speaker: 'shubh', fallbackLanguage: 'bn-IN' },
+};
+
+export function getSarvamLanguageCode(lang: string = 'hi'): string {
+  if (!lang) return 'hi-IN';
+  const clean = lang.toLowerCase().split('-')[0].trim();
+  return SARVAM_LANGUAGE_MAP[clean]?.sarvamCode || 'hi-IN';
+}
+
+export function getSarvamSpeaker(lang: string = 'hi'): string {
+  if (!lang) return 'shubh';
+  const clean = lang.toLowerCase().split('-')[0].trim();
+  return SARVAM_LANGUAGE_MAP[clean]?.speaker || 'shubh';
+}
+

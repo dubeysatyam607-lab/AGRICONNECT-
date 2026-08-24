@@ -202,9 +202,9 @@ Keep it practical and farmer-friendly. Use simple language.`;
       {/* Header */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
         <img
-          src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=80&w=800"
+          src="https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
           alt="Soil testing"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.unsplash.com/photo-1592417817098-8f3d6eb18865?auto=format&fit=crop&q=80&w=800"; }}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40" />

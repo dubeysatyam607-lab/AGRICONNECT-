@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
  * Waveform — animated equaliser bars used to visualise live speech.
  * A deterministic pseudo-random bar pattern stays stable across renders
  * while the bounce animation conveys active input.
+ *
+ * Theme: AgriConnect green — matches the main app visual identity.
  */
 interface WaveformProps {
   bars?: number;
@@ -31,7 +33,7 @@ export const Waveform: React.FC<WaveformProps> = ({
           key={i}
           className={cn(
             "w-[4px] rounded-full",
-            active ? "bg-emerald-400 animate-wave" : "bg-slate-600"
+            active ? "bg-primary animate-wave" : "bg-muted-foreground/30"
           )}
           style={{
             height: `${h}%`,
