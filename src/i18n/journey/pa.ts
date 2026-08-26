@@ -2102,7 +2102,7 @@ export const pa: JourneyDict = {
   "profile.helpSupport.faqOfflineTroubleshooting": "Offline troubleshooting",
   "profile.helpSupport.faqTitle": "FAQ",
   "profile.helpSupport.helplineHours": "Mon-Sat, 8:00 AM to 8:00 PM.",
-  "profile.helpSupport.helplineNumber": "Dial 1800-XXX-XXXX (Toll-Free).",
+  "profile.helpSupport.helplineNumber": "Dial 1800-180-1551 (Toll-Free).",
   "profile.helpSupport.helplineTitle": "Call our Kisan Helpline",
   "profile.helpSupport.mobileNumberPlaceholder": "Mobile Number",
   "profile.helpSupport.requestButton": "Request",

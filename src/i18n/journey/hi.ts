@@ -2102,7 +2102,7 @@ export const hi: JourneyDict = {
   "profile.helpSupport.faqOfflineTroubleshooting": "ऑफलाइन समस्या निवारण",
   "profile.helpSupport.faqTitle": "FAQ",
   "profile.helpSupport.helplineHours": "सोम-शनि, सुबह 8 से रात 8",
-  "profile.helpSupport.helplineNumber": "1800-XXX-XXXX",
+  "profile.helpSupport.helplineNumber": "1800-180-1551",
   "profile.helpSupport.helplineTitle": "किसान हेल्पलाइन",
   "profile.helpSupport.mobileNumberPlaceholder": "मोबाइल नंबर",
   "profile.helpSupport.requestButton": "अनुरोध",

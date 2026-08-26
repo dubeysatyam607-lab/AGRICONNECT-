@@ -441,7 +441,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
             <div className="space-y-4 text-sm">
               <div className="p-3 bg-muted rounded-lg">
                 <h4 className="font-bold mb-1">Call our Kisan Helpline</h4>
-                <p>Dial 1800-XXX-XXXX (Toll-Free).</p>
+                <p>Dial 1800-180-1551 (Toll-Free).</p>
                 <p className="text-xs text-muted-foreground">Available Monday to Saturday, 8:00 AM to 8:00 PM.</p>
               </div>
               <div className="p-3 bg-green-50 dark:bg-green-950/40 rounded-lg text-green-900 dark:text-green-100">
