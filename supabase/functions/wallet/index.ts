@@ -14,13 +14,14 @@ function getCORSHeaders(origin: string | null): Record<string, string> {
       return origin.startsWith(prefix);
     }
     return o === origin;
-  }) ? origin : null;
-  return {
-    "Access-Control-Allow-Origin": allowed ?? "",
+  }) ? origin : undefined;
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, content-type, x-razorpay-signature",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "86400",
   };
+  if (allowed) headers["Access-Control-Allow-Origin"] = allowed;
+  return headers;
 }
 
 const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID");

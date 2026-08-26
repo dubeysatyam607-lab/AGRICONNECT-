@@ -8,7 +8,7 @@ const ALLOWED_ORIGINS = (
 ).split(",").map(o => o.trim());
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && ALLOWED_ORIGINS.some((o) => o === origin) ? origin : null;
+  const allowed = origin && ALLOWED_ORIGINS.some((o) => o === origin) ? origin : undefined;
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",

@@ -20,12 +20,13 @@ function isAllowedOrigin(origin: string | null): boolean {
 }
 
 function getCorsHeaders(origin: string | null) {
-  const allowed = isAllowedOrigin(origin) ? origin : null;
-  return {
-    'Access-Control-Allow-Origin': allowed,
+  const allowed = isAllowedOrigin(origin) ? origin : undefined;
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   };
+  if (allowed) headers['Access-Control-Allow-Origin'] = allowed;
+  return headers;
 }
 
 // Rate limit config: 60 requests per minute per IP
