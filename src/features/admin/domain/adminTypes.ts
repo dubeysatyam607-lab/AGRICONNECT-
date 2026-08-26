@@ -284,6 +284,38 @@ export interface UserSubscription {
   status: 'Active' | 'Expired' | 'Cancelled' | 'Trial';
 }
 
+/* ── 19b. Founding Farmer Config ─────────────────────────────────────── */
+
+export interface FoundingFarmerConfig {
+  is_active: boolean;
+  max_slots: number;
+  slots_taken: number;
+  remaining_slots: number;
+  offer_start: string;
+  offer_end: string;
+  plus_price: number;
+  pro_price: number;
+  offer_valid: boolean;
+}
+
+/* ── 19c. Founding Farmer Record ─────────────────────────────────────── */
+
+export interface FoundingFarmerRecord {
+  id: string;
+  user_id: string;
+  user_name: string;
+  phone: string;
+  location: string;
+  plan: string;
+  founding_farmer_number: number;
+  amount_paid: number;
+  normal_price: number;
+  payment_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string;
+}
+
 /* ── 20. Advertisement Management ─────────────────────────────────────── */
 
 export interface AdEntity {

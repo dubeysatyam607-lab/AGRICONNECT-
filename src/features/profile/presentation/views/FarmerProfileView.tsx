@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useProfileViewModel } from '../viewmodels/useProfileViewModel';
 import { AppButton } from '@/shared/widgets/AppButton';
 import { AppCard } from '@/shared/widgets/AppCard';
@@ -6,6 +6,8 @@ import { FadeIn } from '@/shared/widgets/AppAnimations';
 import { maskAadhaar } from '../../domain/models/ProfileValidations';
 import { LANGUAGE_NAMES, useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
+import { Sprout } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Enterprise Farmer Profile View.
@@ -20,6 +22,19 @@ interface IFarmerProfileViewProps {
 export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditProfile, onOpenKyc, onBack }) => {
   const { t } = useLanguage();
   const [state, { captureGpsLocation }] = useProfileViewModel();
+  const [ffInfo, setFfInfo] = useState<{ isFF: boolean; number?: number }>({ isFF: false });
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || !active) return;
+      supabase.from('profiles').select('founding_farmer, founding_farmer_number').eq('id', user.id).maybeSingle()
+        .then(({ data }) => {
+          if (active && data?.founding_farmer) setFfInfo({ isFF: true, number: data.founding_farmer_number });
+        });
+    });
+    return () => { active = false; };
+  }, []);
 
   if (state.isLoading || !state.profile) {
     return (
@@ -83,6 +98,11 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <h2 className="text-2xl font-extrabold text-white tracking-tight">{personal.fullName}</h2>
+              {ffInfo.isFF && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary-foreground text-[11px] font-bold border border-primary/40">
+                  <Sprout size={12} /> FOUNDING FARMER #{ffInfo.number}
+                </span>
+              )}
               {personal.isAadhaarVerified && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40">
                   <span>🛡️</span> {t('pdetail.aadhaarVerified')}

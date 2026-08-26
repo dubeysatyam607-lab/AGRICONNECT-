@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   graphql_public: {
     Tables: {
@@ -39,6 +39,351 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          permissions: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          permissions?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          permissions?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_login: string | null
+          role_id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_login?: string | null
+          role_id: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_login?: string | null
+          role_id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advertisements: {
+        Row: {
+          advertiser: string | null
+          budget: number | null
+          clicks: number | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          impressions: number | null
+          placement: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          advertiser?: string | null
+          budget?: number | null
+          clicks?: number | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          placement?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          advertiser?: string | null
+          budget?: number | null
+          clicks?: number | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          placement?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ai_conversations: {
+        Row: {
+          context: Json
+          created_at: string
+          deleted_at: string | null
+          id: string
+          language: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          language?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          language?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          language: string | null
+          role: string
+          tokens_in: number | null
+          tokens_out: number | null
+          tool_calls: Json
+          tool_data: Json
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          role: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_calls?: Json
+          tool_data?: Json
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          role?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_calls?: Json
+          tool_data?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_prompts: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          model: string | null
+          prompt: string
+          title: string
+          updated_at: string | null
+          usage_count: number | null
+          version: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          model?: string | null
+          prompt: string
+          title: string
+          updated_at?: string | null
+          usage_count?: number | null
+          version?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          model?: string | null
+          prompt?: string
+          title?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      ai_usage: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          feature: string
+          id: number
+          images: number
+          model: string | null
+          provider: string | null
+          tokens_in: number
+          tokens_out: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          feature: string
+          id?: never
+          images?: number
+          model?: string | null
+          provider?: string | null
+          tokens_in?: number
+          tokens_out?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          feature?: string
+          id?: never
+          images?: number
+          model?: string | null
+          provider?: string | null
+          tokens_in?: number
+          tokens_out?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anonymous_rate_tracking: {
+        Row: {
+          created_at: string
+          id: number
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          table_name?: string
+        }
+        Relationships: []
+      }
+      app_analytics: {
+        Row: {
+          active_users: number | null
+          created_at: string | null
+          date: string
+          id: string
+          new_signups: number | null
+          orders: number | null
+          retention: number | null
+          sessions: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          new_signups?: number | null
+          orders?: number | null
+          retention?: number | null
+          sessions?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          new_signups?: number | null
+          orders?: number | null
+          retention?: number | null
+          sessions?: number | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -91,7 +436,7 @@ export type Database = {
           location: string
           milk_yield: string | null
           price: number
-          seller_id: string
+          seller_id: string | null
           type: string
           updated_at: string
         }
@@ -107,7 +452,7 @@ export type Database = {
           location: string
           milk_yield?: string | null
           price: number
-          seller_id: string
+          seller_id?: string | null
           type: string
           updated_at?: string
         }
@@ -123,7 +468,7 @@ export type Database = {
           location?: string
           milk_yield?: string | null
           price?: number
-          seller_id?: string
+          seller_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -153,6 +498,344 @@ export type Database = {
           message?: string
           name?: string
           phone?: string
+        }
+        Relationships: []
+      }
+      crash_reports: {
+        Row: {
+          count: number | null
+          created_at: string | null
+          error: string
+          id: string
+          last_occurred: string | null
+          platform: string | null
+          stack_trace: string | null
+          status: string | null
+          users_affected: number | null
+          version: string | null
+        }
+        Insert: {
+          count?: number | null
+          created_at?: string | null
+          error: string
+          id?: string
+          last_occurred?: string | null
+          platform?: string | null
+          stack_trace?: string | null
+          status?: string | null
+          users_affected?: number | null
+          version?: string | null
+        }
+        Update: {
+          count?: number | null
+          created_at?: string | null
+          error?: string
+          id?: string
+          last_occurred?: string | null
+          platform?: string | null
+          stack_trace?: string | null
+          status?: string | null
+          users_affected?: number | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      crop_scans: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          crop: string | null
+          health_status: string | null
+          id: string
+          image_url: string | null
+          language: string | null
+          mime_type: string | null
+          plant_part: string | null
+          possible_issue: string | null
+          raw_result: Json | null
+          recommendations: Json
+          storage_path: string | null
+          symptoms: Json
+          urgency: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          crop?: string | null
+          health_status?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          mime_type?: string | null
+          plant_part?: string | null
+          possible_issue?: string | null
+          raw_result?: Json | null
+          recommendations?: Json
+          storage_path?: string | null
+          symptoms?: Json
+          urgency?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          crop?: string | null
+          health_status?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          mime_type?: string | null
+          plant_part?: string | null
+          possible_issue?: string | null
+          raw_result?: Json | null
+          recommendations?: Json
+          storage_path?: string | null
+          symptoms?: Json
+          urgency?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crop_scans_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faq_entries: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string | null
+          id: string
+          question: string
+          sort_order: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          question: string
+          sort_order?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          question?: string
+          sort_order?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      farm_locations: {
+        Row: {
+          area: number | null
+          country: string | null
+          created_at: string
+          crop: string | null
+          district: string | null
+          id: number
+          is_active: boolean
+          latitude: number | null
+          longitude: number | null
+          name: string
+          pincode: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+          village: string | null
+        }
+        Insert: {
+          area?: number | null
+          country?: string | null
+          created_at?: string
+          crop?: string | null
+          district?: string | null
+          id?: number
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          village?: string | null
+        }
+        Update: {
+          area?: number | null
+          country?: string | null
+          created_at?: string
+          crop?: string | null
+          district?: string | null
+          id?: number
+          is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          pincode?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      ff_analytics_events: {
+        Row: {
+          created_at: string | null
+          event_name: string
+          id: string
+          metadata: Json | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_name: string
+          id?: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_name?: string
+          id?: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      founding_farmer_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          max_slots: number
+          offer_end: string
+          offer_start: string
+          plus_price: number
+          pro_price: number
+          slots_taken: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_slots?: number
+          offer_end?: string
+          offer_start?: string
+          plus_price?: number
+          pro_price?: number
+          slots_taken?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_slots?: number
+          offer_end?: string
+          offer_start?: string
+          plus_price?: number
+          pro_price?: number
+          slots_taken?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      government_schemes: {
+        Row: {
+          benefit: string | null
+          created_at: string | null
+          deadline: string | null
+          eligibility: string | null
+          id: string
+          ministry: string | null
+          state: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          benefit?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          eligibility?: string | null
+          id?: string
+          ministry?: string | null
+          state?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          benefit?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          eligibility?: string | null
+          id?: string
+          ministry?: string | null
+          state?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      knowledge_articles: {
+        Row: {
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          language: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          views?: number | null
         }
         Relationships: []
       }
@@ -221,28 +904,139 @@ export type Database = {
       }
       livestock: {
         Row: {
+          age: string | null
           breed: string | null
+          distance: string | null
           id: number
+          image: string | null
           location: string | null
+          milk: string | null
           name: string
           price: number | null
+          seller: string | null
           status: string | null
+          type: string | null
+          verified: boolean | null
         }
         Insert: {
+          age?: string | null
           breed?: string | null
+          distance?: string | null
           id?: number
+          image?: string | null
           location?: string | null
+          milk?: string | null
           name: string
           price?: number | null
+          seller?: string | null
           status?: string | null
+          type?: string | null
+          verified?: boolean | null
         }
         Update: {
+          age?: string | null
           breed?: string | null
+          distance?: string | null
           id?: number
+          image?: string | null
           location?: string | null
+          milk?: string | null
           name?: string
           price?: number | null
+          seller?: string | null
           status?: string | null
+          type?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      news_articles: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          published_at: string | null
+          source: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          source?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          source?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          created_at: string | null
+          currency: string
+          id: string
+          order_id: string | null
+          payment_method: string | null
+          product_id: string | null
+          product_type: string | null
+          razorpay_order_id: string
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          order_id?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          product_type?: string | null
+          razorpay_order_id: string
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          order_id?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          product_type?: string | null
+          razorpay_order_id?: string
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -281,34 +1075,136 @@ export type Database = {
       }
       profiles: {
         Row: {
+          additional_crops: string[] | null
+          alternate_phone: string | null
+          app_language: string
           avatar_url: string | null
+          cookies_preferences: Json | null
           created_at: string
+          district: string | null
+          email: string | null
+          extended_profile: string | null
+          farm_location: string | null
+          farm_size: number | null
+          farming_experience: string | null
+          founding_farmer: boolean | null
+          founding_farmer_number: number | null
           full_name: string | null
           id: string
+          irrigation_type: string | null
           location: string | null
+          onboarding_completed: boolean
           phone: string | null
+          primary_crop: string | null
+          privacy_accepted_at: string | null
           role: string | null
+          soil_type: string | null
+          state: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
+          village: string | null
         }
         Insert: {
+          additional_crops?: string[] | null
+          alternate_phone?: string | null
+          app_language?: string
           avatar_url?: string | null
+          cookies_preferences?: Json | null
           created_at?: string
+          district?: string | null
+          email?: string | null
+          extended_profile?: string | null
+          farm_location?: string | null
+          farm_size?: number | null
+          farming_experience?: string | null
+          founding_farmer?: boolean | null
+          founding_farmer_number?: number | null
           full_name?: string | null
           id: string
+          irrigation_type?: string | null
           location?: string | null
+          onboarding_completed?: boolean
           phone?: string | null
+          primary_crop?: string | null
+          privacy_accepted_at?: string | null
           role?: string | null
+          soil_type?: string | null
+          state?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
+          village?: string | null
         }
         Update: {
+          additional_crops?: string[] | null
+          alternate_phone?: string | null
+          app_language?: string
           avatar_url?: string | null
+          cookies_preferences?: Json | null
           created_at?: string
+          district?: string | null
+          email?: string | null
+          extended_profile?: string | null
+          farm_location?: string | null
+          farm_size?: number | null
+          farming_experience?: string | null
+          founding_farmer?: boolean | null
+          founding_farmer_number?: number | null
           full_name?: string | null
           id?: string
+          irrigation_type?: string | null
           location?: string | null
+          onboarding_completed?: boolean
           phone?: string | null
+          primary_crop?: string | null
+          privacy_accepted_at?: string | null
           role?: string | null
+          soil_type?: string | null
+          state?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      push_campaigns: {
+        Row: {
+          audience: string | null
+          created_at: string | null
+          id: string
+          message: string
+          opened_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          audience?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          audience?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -372,215 +1268,44 @@ export type Database = {
         }
         Relationships: []
       }
-      ai_conversations: {
+      reports: {
         Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
           id: string
-          user_id: string
-          title: string
-          language: string
-          context: Record<string, unknown>
-          created_at: string
-          updated_at: string
-          deleted_at: string | null
+          priority: string | null
+          status: string | null
+          subject: string
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
           id?: string
-          user_id: string
-          title?: string
-          language?: string
-          context?: Record<string, unknown>
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
+          priority?: string | null
+          status?: string | null
+          subject: string
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
           id?: string
-          user_id?: string
-          title?: string
-          language?: string
-          context?: Record<string, unknown>
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
+          priority?: string | null
+          status?: string | null
+          subject?: string
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_conversations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      ai_messages: {
-        Row: {
-          id: string
-          conversation_id: string
-          user_id: string
-          role: string
-          content: string
-          language: string | null
-          tool_calls: unknown[] | null
-          tool_data: Record<string, unknown>
-          tokens_in: number | null
-          tokens_out: number | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          conversation_id: string
-          user_id: string
-          role: string
-          content: string
-          language?: string | null
-          tool_calls?: unknown[] | null
-          tool_data?: Record<string, unknown>
-          tokens_in?: number | null
-          tokens_out?: number | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          conversation_id?: string
-          user_id?: string
-          role?: string
-          content?: string
-          language?: string | null
-          tool_calls?: unknown[] | null
-          tool_data?: Record<string, unknown>
-          tokens_in?: number | null
-          tokens_out?: number | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "ai_conversations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ai_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      crop_scans: {
-        Row: {
-          id: string
-          user_id: string
-          image_url: string | null
-          storage_path: string | null
-          mime_type: string | null
-          language: string | null
-          crop: string | null
-          plant_part: string | null
-          health_status: string | null
-          possible_issue: string | null
-          confidence: number | null
-          symptoms: unknown[] | null
-          recommendations: unknown[] | null
-          urgency: string | null
-          raw_result: Record<string, unknown> | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          image_url?: string | null
-          storage_path?: string | null
-          mime_type?: string | null
-          language?: string | null
-          crop?: string | null
-          plant_part?: string | null
-          health_status?: string | null
-          possible_issue?: string | null
-          confidence?: number | null
-          symptoms?: unknown[] | null
-          recommendations?: unknown[] | null
-          urgency?: string | null
-          raw_result?: Record<string, unknown> | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          image_url?: string | null
-          storage_path?: string | null
-          mime_type?: string | null
-          language?: string | null
-          crop?: string | null
-          plant_part?: string | null
-          health_status?: string | null
-          possible_issue?: string | null
-          confidence?: number | null
-          symptoms?: unknown[] | null
-          recommendations?: unknown[] | null
-          urgency?: string | null
-          raw_result?: Record<string, unknown> | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crop_scans_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      ai_usage: {
-        Row: {
-          id: number
-          user_id: string
-          feature: string
-          provider: string | null
-          model: string | null
-          tokens_in: number
-          tokens_out: number
-          images: number
-          duration_ms: number
-          created_at: string
-        }
-        Insert: {
-          id?: number
-          user_id: string
-          feature: string
-          provider?: string | null
-          model?: string | null
-          tokens_in?: number
-          tokens_out?: number
-          images?: number
-          duration_ms?: number
-          created_at?: string
-        }
-        Update: {
-          id?: number
-          user_id?: string
-          feature?: string
-          provider?: string | null
-          model?: string | null
-          tokens_in?: number
-          tokens_out?: number
-          images?: number
-          duration_ms?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_usage_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       soil_test_labs: {
         Row: {
@@ -614,6 +1339,194 @@ export type Database = {
           turnaround?: string | null
         }
         Relationships: []
+      }
+      soil_test_orders: {
+        Row: {
+          additional_notes: string | null
+          address: string
+          assigned_agent_id: string | null
+          assigned_agent_name: string | null
+          assigned_agent_phone: string | null
+          confirmed_pickup_date: string | null
+          created_at: string | null
+          crop: string | null
+          crop_stage: string | null
+          district: string
+          email: string | null
+          farm_name: string | null
+          farm_size: number | null
+          farm_size_unit: string | null
+          farmer_name: string
+          id: string
+          internal_notes: string | null
+          lab_name: string | null
+          lab_started_at: string | null
+          latitude: number | null
+          longitude: number | null
+          mobile: string
+          order_number: string
+          order_status: string
+          payment_id: string | null
+          payment_method: string | null
+          payment_status: string
+          pickup_fee: number
+          pickup_required: boolean
+          pickup_time_slot: string | null
+          pincode: string | null
+          preferred_pickup_date: string | null
+          report_file_path: string | null
+          report_generated_at: string | null
+          report_url: string | null
+          sample_collected_at: string | null
+          sample_quantity: string | null
+          sample_received_at: string | null
+          state: string
+          structured_results: Json | null
+          test_price: number
+          test_type: string
+          total_amount: number
+          updated_at: string | null
+          user_id: string
+          village: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          address: string
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
+          confirmed_pickup_date?: string | null
+          created_at?: string | null
+          crop?: string | null
+          crop_stage?: string | null
+          district: string
+          email?: string | null
+          farm_name?: string | null
+          farm_size?: number | null
+          farm_size_unit?: string | null
+          farmer_name: string
+          id?: string
+          internal_notes?: string | null
+          lab_name?: string | null
+          lab_started_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          mobile: string
+          order_number: string
+          order_status?: string
+          payment_id?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          pickup_fee?: number
+          pickup_required?: boolean
+          pickup_time_slot?: string | null
+          pincode?: string | null
+          preferred_pickup_date?: string | null
+          report_file_path?: string | null
+          report_generated_at?: string | null
+          report_url?: string | null
+          sample_collected_at?: string | null
+          sample_quantity?: string | null
+          sample_received_at?: string | null
+          state: string
+          structured_results?: Json | null
+          test_price?: number
+          test_type: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id: string
+          village?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          address?: string
+          assigned_agent_id?: string | null
+          assigned_agent_name?: string | null
+          assigned_agent_phone?: string | null
+          confirmed_pickup_date?: string | null
+          created_at?: string | null
+          crop?: string | null
+          crop_stage?: string | null
+          district?: string
+          email?: string | null
+          farm_name?: string | null
+          farm_size?: number | null
+          farm_size_unit?: string | null
+          farmer_name?: string
+          id?: string
+          internal_notes?: string | null
+          lab_name?: string | null
+          lab_started_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          mobile?: string
+          order_number?: string
+          order_status?: string
+          payment_id?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          pickup_fee?: number
+          pickup_required?: boolean
+          pickup_time_slot?: string | null
+          pincode?: string | null
+          preferred_pickup_date?: string | null
+          report_file_path?: string | null
+          report_generated_at?: string | null
+          report_url?: string | null
+          sample_collected_at?: string | null
+          sample_quantity?: string | null
+          sample_received_at?: string | null
+          state?: string
+          structured_results?: Json | null
+          test_price?: number
+          test_type?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      soil_test_status_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_name: string | null
+          created_at: string | null
+          id: string
+          new_status: string
+          note: string | null
+          previous_status: string | null
+          soil_test_order_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string | null
+          id?: string
+          new_status: string
+          note?: string | null
+          previous_status?: string | null
+          soil_test_order_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          note?: string | null
+          previous_status?: string | null
+          soil_test_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soil_test_status_history_soil_test_order_id_fkey"
+            columns: ["soil_test_order_id"]
+            isOneToOne: false
+            referencedRelation: "soil_test_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       storage_facilities: {
         Row: {
@@ -696,6 +1609,87 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          interval: string
+          is_active: boolean | null
+          name: string
+          price: number
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean | null
+          name: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tractor_bookings: {
         Row: {
           acres: number | null
@@ -765,6 +1759,144 @@ export type Database = {
           user_id?: string | null
           user_name?: string | null
           with_driver?: boolean | null
+        }
+        Relationships: []
+      }
+      tractor_listings: {
+        Row: {
+          brand: string
+          cabin: boolean | null
+          category: string
+          city: string
+          color: string | null
+          created_at: string
+          deposit: number
+          description: string | null
+          engine: string | null
+          features: string[]
+          fuel: string | null
+          hp: number | null
+          id: string
+          implements: string[]
+          lat: number | null
+          lifting: string | null
+          lng: number | null
+          name: string
+          next_available: string | null
+          owner_avatar: string | null
+          owner_city: string | null
+          owner_id: string
+          owner_jobs: number | null
+          owner_joined: string | null
+          owner_lat: number | null
+          owner_lng: number | null
+          owner_name: string
+          owner_name_hi: string | null
+          owner_phone: string
+          owner_rating: number | null
+          owner_response: string | null
+          owner_state: string | null
+          owner_verified: boolean | null
+          owner_village: string | null
+          popular: boolean | null
+          rate_acre: number
+          rate_day: number
+          rate_hour: number
+          rating: number | null
+          reviews: number | null
+          state: string
+          status: string
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          cabin?: boolean | null
+          category: string
+          city: string
+          color?: string | null
+          created_at?: string
+          deposit: number
+          description?: string | null
+          engine?: string | null
+          features?: string[]
+          fuel?: string | null
+          hp?: number | null
+          id: string
+          implements?: string[]
+          lat?: number | null
+          lifting?: string | null
+          lng?: number | null
+          name: string
+          next_available?: string | null
+          owner_avatar?: string | null
+          owner_city?: string | null
+          owner_id: string
+          owner_jobs?: number | null
+          owner_joined?: string | null
+          owner_lat?: number | null
+          owner_lng?: number | null
+          owner_name: string
+          owner_name_hi?: string | null
+          owner_phone: string
+          owner_rating?: number | null
+          owner_response?: string | null
+          owner_state?: string | null
+          owner_verified?: boolean | null
+          owner_village?: string | null
+          popular?: boolean | null
+          rate_acre: number
+          rate_day: number
+          rate_hour: number
+          rating?: number | null
+          reviews?: number | null
+          state: string
+          status?: string
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          cabin?: boolean | null
+          category?: string
+          city?: string
+          color?: string | null
+          created_at?: string
+          deposit?: number
+          description?: string | null
+          engine?: string | null
+          features?: string[]
+          fuel?: string | null
+          hp?: number | null
+          id?: string
+          implements?: string[]
+          lat?: number | null
+          lifting?: string | null
+          lng?: number | null
+          name?: string
+          next_available?: string | null
+          owner_avatar?: string | null
+          owner_city?: string | null
+          owner_id?: string
+          owner_jobs?: number | null
+          owner_joined?: string | null
+          owner_lat?: number | null
+          owner_lng?: number | null
+          owner_name?: string
+          owner_name_hi?: string | null
+          owner_phone?: string
+          owner_rating?: number | null
+          owner_response?: string | null
+          owner_state?: string | null
+          owner_verified?: boolean | null
+          owner_village?: string | null
+          popular?: boolean | null
+          rate_acre?: number
+          rate_day?: number
+          rate_hour?: number
+          rating?: number | null
+          reviews?: number | null
+          state?: string
+          status?: string
+          year?: number | null
         }
         Relationships: []
       }
@@ -875,50 +2007,189 @@ export type Database = {
         }
         Relationships: []
       }
-      wallets: {
+      user_locations: {
         Row: {
-          balance: number
+          accuracy: number | null
+          city: string | null
+          country: string | null
           created_at: string
-          currency: string
-          id: string
-          status: string
+          district: string | null
+          formatted_address: string | null
+          id: number
+          is_default: boolean
+          latitude: number | null
+          location_source: string
+          longitude: number | null
+          pincode: string | null
+          source: string
+          state: string | null
           updated_at: string
+          user_id: string
+          village: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          district?: string | null
+          formatted_address?: string | null
+          id?: number
+          is_default?: boolean
+          latitude?: number | null
+          location_source?: string
+          longitude?: number | null
+          pincode?: string | null
+          source?: string
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          village?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          district?: string | null
+          formatted_address?: string | null
+          id?: number
+          is_default?: boolean
+          latitude?: number | null
+          location_source?: string
+          longitude?: number | null
+          pincode?: string | null
+          source?: string
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string | null
+          expires_at: string | null
+          founding_farmer: boolean | null
+          founding_farmer_joined_at: string | null
+          founding_farmer_number: number | null
+          founding_farmer_price: number | null
+          id: string
+          normal_price: number | null
+          payment_id: string | null
+          plan_id: string
+          started_at: string | null
+          status: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          balance?: number
-          created_at?: string
-          currency?: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          founding_farmer?: boolean | null
+          founding_farmer_joined_at?: string | null
+          founding_farmer_number?: number | null
+          founding_farmer_price?: number | null
           id?: string
+          normal_price?: number | null
+          payment_id?: string | null
+          plan_id: string
+          started_at?: string | null
           status?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          balance?: number
-          created_at?: string
-          currency?: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          founding_farmer?: boolean | null
+          founding_farmer_joined_at?: string | null
+          founding_farmer_number?: number | null
+          founding_farmer_price?: number | null
           id?: string
+          normal_price?: number | null
+          payment_id?: string | null
+          plan_id?: string
+          started_at?: string | null
           status?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
         ]
+      }
+      wallet_admin_adjustments: {
+        Row: {
+          admin_user_id: string
+          amount: number
+          created_at: string
+          direction: string
+          id: string
+          reason: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          amount: number
+          created_at?: string
+          direction: string
+          id?: string
+          reason: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          amount?: number
+          created_at?: string
+          direction?: string
+          id?: string
+          reason?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_admin_adjustments_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_limits: {
+        Row: {
+          key: string
+          unit: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          key: string
+          unit?: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          key?: string
+          unit?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
       }
       wallet_transactions: {
         Row: {
@@ -988,292 +2259,265 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "wallets"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
-      wallet_admin_adjustments: {
+      wallets: {
         Row: {
-          admin_user_id: string
-          amount: number
+          balance: number
           created_at: string
-          direction: string
+          currency: string
           id: string
-          reason: string
-          user_id: string
-          wallet_id: string
-        }
-        Insert: {
-          admin_user_id: string
-          amount: number
-          created_at?: string
-          direction: string
-          id?: string
-          reason: string
-          user_id: string
-          wallet_id: string
-        }
-        Update: {
-          admin_user_id?: string
-          amount?: number
-          created_at?: string
-          direction?: string
-          id?: string
-          reason?: string
-          user_id?: string
-          wallet_id?: string
-        }
-        Relationships: []
-      }
-      wallet_limits: {
-        Row: {
-          key: string
-          unit: string
+          status: string
           updated_at: string
-          value: number
+          user_id: string
         }
         Insert: {
-          key: string
-          unit?: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
           updated_at?: string
-          value: number
+          user_id: string
         }
         Update: {
-          key?: string
-          unit?: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
           updated_at?: string
-          value?: number
-        }
-        Relationships: []
-      }
-      soil_test_orders: {
-        Row: {
-          id: string
-          order_number: string
-          user_id: string
-          farmer_name: string
-          mobile: string
-          email: string | null
-          farm_name: string | null
-          address: string
-          state: string
-          district: string
-          village: string | null
-          pincode: string | null
-          latitude: number | null
-          longitude: number | null
-          farm_size: number | null
-          farm_size_unit: string | null
-          crop: string | null
-          crop_stage: string | null
-          test_type: string
-          sample_quantity: string | null
-          pickup_required: boolean
-          pickup_fee: number
-          test_price: number
-          total_amount: number
-          payment_status: string
-          payment_method: string | null
-          payment_id: string | null
-          order_status: string
-          assigned_agent_id: string | null
-          assigned_agent_name: string | null
-          assigned_agent_phone: string | null
-          preferred_pickup_date: string | null
-          confirmed_pickup_date: string | null
-          pickup_time_slot: string | null
-          sample_collected_at: string | null
-          sample_received_at: string | null
-          lab_started_at: string | null
-          report_generated_at: string | null
-          report_url: string | null
-          report_file_path: string | null
-          lab_name: string | null
-          structured_results: Json | null
-          internal_notes: string | null
-          additional_notes: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          order_number?: string
-          user_id: string
-          farmer_name: string
-          mobile: string
-          email?: string | null
-          farm_name?: string | null
-          address: string
-          state: string
-          district: string
-          village?: string | null
-          pincode?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          farm_size?: number | null
-          farm_size_unit?: string | null
-          crop?: string | null
-          crop_stage?: string | null
-          test_type: string
-          sample_quantity?: string | null
-          pickup_required?: boolean
-          pickup_fee?: number
-          test_price?: number
-          total_amount?: number
-          payment_status?: string
-          payment_method?: string | null
-          payment_id?: string | null
-          order_status?: string
-          assigned_agent_id?: string | null
-          assigned_agent_name?: string | null
-          assigned_agent_phone?: string | null
-          preferred_pickup_date?: string | null
-          confirmed_pickup_date?: string | null
-          pickup_time_slot?: string | null
-          sample_collected_at?: string | null
-          sample_received_at?: string | null
-          lab_started_at?: string | null
-          report_generated_at?: string | null
-          report_url?: string | null
-          report_file_path?: string | null
-          lab_name?: string | null
-          structured_results?: Json | null
-          internal_notes?: string | null
-          additional_notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          order_number?: string
           user_id?: string
-          farmer_name?: string
-          mobile?: string
-          email?: string | null
-          farm_name?: string | null
-          address?: string
-          state?: string
-          district?: string
-          village?: string | null
-          pincode?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          farm_size?: number | null
-          farm_size_unit?: string | null
-          crop?: string | null
-          crop_stage?: string | null
-          test_type?: string
-          sample_quantity?: string | null
-          pickup_required?: boolean
-          pickup_fee?: number
-          test_price?: number
-          total_amount?: number
-          payment_status?: string
-          payment_method?: string | null
-          payment_id?: string | null
-          order_status?: string
-          assigned_agent_id?: string | null
-          assigned_agent_name?: string | null
-          assigned_agent_phone?: string | null
-          preferred_pickup_date?: string | null
-          confirmed_pickup_date?: string | null
-          pickup_time_slot?: string | null
-          sample_collected_at?: string | null
-          sample_received_at?: string | null
-          lab_started_at?: string | null
-          report_generated_at?: string | null
-          report_url?: string | null
-          report_file_path?: string | null
-          lab_name?: string | null
-          structured_results?: Json | null
-          internal_notes?: string | null
-          additional_notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
-      soil_test_status_history: {
+      weather_cache: {
         Row: {
-          id: string
-          soil_test_order_id: string
-          previous_status: string | null
-          new_status: string
-          changed_by: string | null
-          changed_by_name: string | null
-          note: string | null
-          created_at: string | null
+          expires_at: string
+          fetched_at: string
+          id: number
+          latitude: number
+          longitude: number
+          weather_data: Json
         }
         Insert: {
-          id?: string
-          soil_test_order_id: string
-          previous_status?: string | null
-          new_status: string
-          changed_by?: string | null
-          changed_by_name?: string | null
-          note?: string | null
-          created_at?: string | null
+          expires_at?: string
+          fetched_at?: string
+          id?: number
+          latitude: number
+          longitude: number
+          weather_data: Json
         }
         Update: {
-          id?: string
-          soil_test_order_id?: string
-          previous_status?: string | null
-          new_status?: string
-          changed_by?: string | null
-          changed_by_name?: string | null
-          note?: string | null
-          created_at?: string | null
+          expires_at?: string
+          fetched_at?: string
+          id?: number
+          latitude?: number
+          longitude?: number
+          weather_data?: Json
         }
-        Relationships: [
-          {
-            foreignKeyName: "soil_test_status_history_soil_test_order_id_fkey"
-            columns: ["soil_test_order_id"]
-            isOneToOne: false
-            referencedRelation: "soil_test_orders"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      ai_log_usage: {
+      activate_founding_farmer: {
         Args: {
+          p_founding_farmer_number: number
+          p_normal_price: number
+          p_payment_id: string
+          p_plan: string
+          p_price: number
           p_user_id: string
-          p_feature: string
-          p_provider?: string
-          p_model?: string
-          p_tokens_in?: number
-          p_tokens_out?: number
-          p_images?: number
-          p_duration_ms?: number
+        }
+        Returns: Json
+      }
+      admin_adjust_wallet: {
+        Args: {
+          p_amount: number
+          p_direction: string
+          p_reason: string
+          p_target_user_id: string
         }
         Returns: Json
       }
       admin_get_dashboard_kpis: { Args: never; Returns: Json }
+      admin_update_user_status: {
+        Args: { p_reason?: string; p_status: string; p_target_user_id: string }
+        Returns: Json
+      }
+      admin_verify_user: {
+        Args: {
+          p_notes?: string
+          p_target_user_id: string
+          p_verified: boolean
+        }
+        Returns: Json
+      }
       admin_wallets_list: { Args: never; Returns: Json }
+      ai_log_usage: {
+        Args: {
+          p_duration_ms?: number
+          p_feature: string
+          p_images?: number
+          p_model?: string
+          p_provider?: string
+          p_tokens_in?: number
+          p_tokens_out?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      claim_founding_farmer_slot: {
+        Args: { p_plan: string; p_user_id: string }
+        Returns: Json
+      }
+      cleanup_anonymous_rate_tracking: { Args: never; Returns: undefined }
+      generate_soil_test_order_number: { Args: never; Returns: string }
+      get_founding_farmer_config: { Args: never; Returns: Json }
       get_seller_display_name: {
         Args: { seller_user_id: string }
         Returns: string
       }
+      handle_send_email: { Args: { event: Json }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
+      is_soil_admin: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
+      rate_limit_check: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_max_requests: number
+          p_window_ms: number
+        }
+        Returns: Json
+      }
+      request_throttle: {
+        Args: {
+          p_max?: number
+          p_phone: string
+          p_table: string
+          p_window_minutes?: number
+        }
+        Returns: undefined
+      }
       wallet_add_money_check: { Args: { p_amount: number }; Returns: Json }
       wallet_admin_adjust: {
-        Args: { p_amount: number; p_direction: string; p_reason: string; p_user_id: string }
-        Returns: Json
+        Args: {
+          p_amount: number
+          p_direction: string
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: {
+          amount: number
+          balance_after: number | null
+          created_at: string
+          credit_type: string | null
+          currency: string
+          description: string | null
+          direction: string
+          expiry: string | null
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          source: string | null
+          status: string
+          type: string
+          updated_at: string
+          usage_restrictions: string | null
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      wallet_apply_ledger: {
+        Args: {
+          p_amount: number
+          p_credit_type?: string
+          p_description: string
+          p_direction: string
+          p_expiry?: string
+          p_reference_id: string
+          p_reference_type: string
+          p_source?: string
+          p_status?: string
+          p_type: string
+          p_usage_restrictions?: string
+          p_user_id: string
+          p_wallet_id: string
+        }
+        Returns: {
+          amount: number
+          balance_after: number | null
+          created_at: string
+          credit_type: string | null
+          currency: string
+          description: string | null
+          direction: string
+          expiry: string | null
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          source: string | null
+          status: string
+          type: string
+          updated_at: string
+          usage_restrictions: string | null
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       wallet_credit_verified: {
         Args: {
+          p_amount: number
           p_credit_type?: string
           p_description?: string
-          p_amount: number
           p_reference_id: string
           p_reference_type: string
           p_source?: string
           p_user_id: string
         }
-        Returns: Json
+        Returns: {
+          amount: number
+          balance_after: number | null
+          created_at: string
+          credit_type: string | null
+          currency: string
+          description: string | null
+          direction: string
+          expiry: string | null
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          source: string | null
+          status: string
+          type: string
+          updated_at: string
+          usage_restrictions: string | null
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       wallet_get_summary: { Args: never; Returns: Json }
       wallet_transactions_page: {
