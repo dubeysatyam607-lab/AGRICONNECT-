@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { BadgeCheck, Check, Crown, RotateCcw, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { BadgeCheck, Check, Crown, RotateCcw, Sparkles, Sprout } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,8 @@ import { MethodPicker } from './MethodPicker';
 import { usePaymentStore } from '../hooks/usePaymentStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
+import { FoundingFarmerOffer } from './FoundingFarmerOffer';
+import { supabase } from '@/integrations/supabase/client';
 
 const STATUS_TONE: Record<string, string> = {
   Active: 'bg-emerald-100 text-emerald-700',
@@ -49,6 +51,26 @@ export function SubscriptionsPanel({
   const [coupon, setCoupon] = useState('');
   const [busy, setBusy] = useState(false);
   const [failMsg, setFailMsg] = useState('');
+  const [ffStatus, setFfStatus] = useState<{ isFF: boolean; ffNumber?: number; plan?: string }>({ isFF: false });
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || !active) return;
+      supabase.from('user_subscriptions')
+        .select('founding_farmer, founding_farmer_number, plan_id')
+        .eq('user_id', user.id)
+        .eq('founding_farmer', true)
+        .eq('status', 'active')
+        .maybeSingle()
+        .then(({ data }) => {
+          if (active && data?.founding_farmer) {
+            setFfStatus({ isFF: true, ffNumber: data.founding_farmer_number, plan: data.plan_id });
+          }
+        });
+    });
+    return () => { active = false; };
+  }, []);
 
   const active = store.subscriptions.find((s) => s.status === 'Active' || s.status === 'Trial' || s.status === 'PastDue');
   const plan = useMemo(() => (subscribePlan ? store.plans.find((p) => p.id === subscribePlan) : null), [subscribePlan, store.plans]);
@@ -93,6 +115,11 @@ export function SubscriptionsPanel({
               <div className="flex items-center gap-2">
                 <Crown className="h-4 w-4 text-primary" />
                 <span className="text-sm font-black text-foreground">{active.planName}</span>
+                {ffStatus.isFF && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">
+                    <Sprout size={10} /> FOUNDING FARMER #{ffStatus.ffNumber}
+                  </span>
+                )}
                 <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-extrabold', STATUS_TONE[active.status])}>
                   {STATUS_LABEL[active.status] ?? active.status}
                 </span>
@@ -133,6 +160,32 @@ export function SubscriptionsPanel({
             )}
           </div>
         </div>
+      )}
+
+      {/* Founding Farmer Offer */}
+      {!ffStatus.isFF && (
+        <FoundingFarmerOffer
+          currentPlanId={active?.planId}
+          isFoundingFarmer={ffStatus.isFF}
+          onToast={onToast}
+          onSubscriptionActivated={() => {
+            // Refresh FF status
+            supabase.auth.getUser().then(({ data: { user } }) => {
+              if (!user) return;
+              supabase.from('user_subscriptions')
+                .select('founding_farmer, founding_farmer_number, plan_id')
+                .eq('user_id', user.id)
+                .eq('founding_farmer', true)
+                .eq('status', 'active')
+                .maybeSingle()
+                .then(({ data }) => {
+                  if (data?.founding_farmer) {
+                    setFfStatus({ isFF: true, ffNumber: data.founding_farmer_number, plan: data.plan_id });
+                  }
+                });
+            });
+          }}
+        />
       )}
 
       {/* Plans */}

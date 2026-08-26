@@ -20,6 +20,7 @@ import {
   getStoreProductImage,
   DEFAULT_STORE_PRODUCTS,
 } from "@/lib/image-resolver";
+import { getDefaultGateway, isRazorpayConfigured } from "@/features/payments/domain/gateways";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
@@ -291,10 +292,36 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
 }) => {
   const [stage, setStage] = useState<"pick" | "paying" | "done">("pick");
   const [method, setMethod] = useState(order.paymentMethod || "upi");
+  const [payErr, setPayErr] = useState("");
 
-  const pay = () => {
+  const pay = async () => {
+    if (method === "cash") {
+      setStage("paying");
+      setTimeout(() => setStage("done"), 1200);
+      return;
+    }
     setStage("paying");
-    setTimeout(() => setStage("done"), 1800);
+    setPayErr("");
+    try {
+      const gw = getDefaultGateway();
+      const result = await gw.charge({
+        amount: order.total,
+        method: method as "upi" | "card" | "netbanking" | "wallet",
+        currency: "INR",
+        orderId: order.id,
+        description: `AgriConnect Order #${order.id.slice(0, 8).toUpperCase()}`,
+        customer: { name: order.userName, phone: order.phone },
+      });
+      if (result.success) {
+        setStage("done");
+      } else {
+        setStage("pick");
+        setPayErr(result.failureReason || t("payFailed"));
+      }
+    } catch {
+      setStage("pick");
+      setPayErr(t("payFailed"));
+    }
   };
 
   return (
@@ -347,7 +374,8 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
                   })}
                 </div>
                 <AgriButton className="w-full" onClick={pay}>{t("pay")} {fmt(order.total)}</AgriButton>
-                <p className="text-[11px] text-muted-foreground text-center mt-2">{t("secure")}</p>
+                {payErr && <p className="text-[11px] text-rose-500 text-center mt-2 font-semibold">{payErr}</p>}
+                <p className="text-[11px] text-muted-foreground text-center mt-2">{isRazorpayConfigured() ? t("secureLive") : t("secure")}</p>
               </>
             )}
           </>
@@ -458,6 +486,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
   const [checkoutForm, setCheckoutForm] = useState(() => read("agri_user", { name: "", phone: "", pincode: "", address: "", payment: "" }));
   const [placing, setPlacing] = useState(false);
   const [toast, setToast] = useState("");
+  const [addedId, setAddedId] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
 
   const showToast = (m: string) => {
     setToast(m);
@@ -506,6 +536,17 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
   };
   useEffect(persist, [cart, wishlist, orders]);
 
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || !active) return;
+      supabase.from("wallets").select("balance").eq("user_id", user.id).single()
+        .then(({ data }) => { if (active && data) setWalletBalance(Number(data.balance) || 0); })
+        .catch(() => {});
+    });
+    return () => { active = false; };
+  }, []);
+
   const visible = useMemo(() => {
     let list = products;
     if (category !== "All") list = list.filter(p => p.category === category);
@@ -532,7 +573,9 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       }
       return [...prev, { productId: p.id, name: p.name, nameHi: p.nameHi, price: p.price, unit: p.unit, qty, color: p.color, category: p.category, lineTotal: p.price * qty, imageUrl: p.imageUrl }];
     });
-    showToast(`${p.name} ${t("addedToCart")}`);
+    setAddedId(p.id);
+    setTimeout(() => setAddedId(null), 600);
+    showToast(`${hi ? p.nameHi || p.name : p.name} ${t("addedToCart")}`);
     if (open) setCartOpen(true);
   };
 
@@ -668,8 +711,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
               <p className="font-bold text-primary text-base leading-none">{fmt(p.price)}</p>
               <p className="text-[10px] text-muted-foreground line-through">{fmt(p.mrp)}</p>
             </div>
-            <button onClick={() => addToCart(p)} disabled={!p.inStock} className="gradient-hero text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110 active:scale-95 transition-all disabled:opacity-40">
-              <Plus size={16} />
+            <button onClick={() => addToCart(p)} disabled={!p.inStock} className={cn("gradient-hero text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110 active:scale-90 transition-all disabled:opacity-40", addedId === p.id && "animate-cart-pop")}>
+              {addedId === p.id ? <Check size={16} /> : <Plus size={16} />}
             </button>
           </div>
         </div>
@@ -1085,14 +1128,21 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             </div>
 
             {cart.length > 0 && (
-              <div className="p-4 border-t border-border flex items-center gap-3">
-                <div className="flex-1">
-                  <p className="text-[10px] text-muted-foreground">{t("total")}</p>
-                  <p className="font-extrabold text-lg text-primary leading-none">{fmt(totals.total)}</p>
+              <div className="p-4 border-t border-border">
+                {walletBalance > 0 && (
+                  <div className="flex items-center gap-2 mb-3 text-[11px] text-primary font-semibold">
+                    <Wallet size={13} /> {t("walletBal")}: {fmt(walletBalance)}
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-[10px] text-muted-foreground">{t("total")}</p>
+                    <p className="font-extrabold text-lg text-primary leading-none">{fmt(totals.total)}</p>
+                  </div>
+                  <AgriButton className="flex-[1.4]" size="lg" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>
+                    {t("checkout")} <ChevronRight size={16} />
+                  </AgriButton>
                 </div>
-                <AgriButton className="flex-[1.4]" size="lg" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>
-                  {t("checkout")} <ChevronRight size={16} />
-                </AgriButton>
               </div>
             )}
           </div>
@@ -1137,6 +1187,17 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   })}
                 </div>
               </div>
+
+              {walletBalance > 0 && (
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3">
+                  <Wallet size={18} className="text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground">{t("walletBal")}</p>
+                    <p className="text-[11px] text-muted-foreground">{t("walletHint")}</p>
+                  </div>
+                  <span className="text-sm font-bold text-primary">{fmt(walletBalance)}</span>
+                </div>
+              )}
 
               <div className="bg-muted rounded-xl p-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-muted-foreground"><span>{t("subtotal")}</span><span>{fmt(totals.subtotal)}</span></div>
@@ -1186,6 +1247,18 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             </AgriCard>
           </div>
         </div>
+      )}
+
+      {/* Floating cart FAB — visible when cart has items */}
+      {cartCount > 0 && !cartOpen && !checkoutOpen && !selected && (
+        <button
+          onClick={() => setCartOpen(true)}
+          className="fixed bottom-20 right-4 z-[55] w-14 h-14 rounded-full gradient-hero shadow-xl flex items-center justify-center active:scale-90 transition-transform animate-fade-up"
+          aria-label={`${t("cart")} (${cartCount})`}
+        >
+          <ShoppingCart size={22} className="text-primary-foreground" />
+          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-background animate-cart-pop">{cartCount}</span>
+        </button>
       )}
     </div>
   );
@@ -1258,6 +1331,10 @@ const STRINGS: Record<string, [string, string]> = {
   processing: ["Processing payment...", "भुगतान हो रहा है..."],
   pay: ["Pay", "भुगतान करें"],
   secure: ["256-bit secure payments", "256-बिट सुरक्षित भुगतान"],
+  secureLive: ["Powered by Razorpay · 256-bit secure", "Razorpay द्वारा संचालित · 256-बिट सुरक्षित"],
+  payFailed: ["Payment failed. Please try again.", "भुगतान असफल। कृपया पुनः प्रयास करें।"],
+  walletBal: ["Wallet Balance", "वॉलेट बैलेंस"],
+  walletHint: ["Pay from wallet to save on fees", "वॉलेट से भुगतान करें"],
   paySuccess: ["Payment Successful!", "भुगतान सफल!"],
   paidVia: ["paid via", "से भुगतान"],
   trackOrder: ["Track Order", "ऑर्डर ट्रैक करें"],
