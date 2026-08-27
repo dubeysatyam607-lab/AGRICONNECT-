@@ -144,10 +144,18 @@ export async function fetchProfileById(id: string): Promise<{ data: UserProfile 
 
 export async function searchProfiles(query: string): Promise<{ data: UserProfile[]; error: string | null }> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,id.ilike.%${query}%`)
+    const cleanQuery = query.trim();
+    if (!cleanQuery) {
+      return getProfiles({ limit: 50 });
+    }
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
+    let builder = supabase.from('profiles').select('*');
+    if (isUuid) {
+      builder = builder.or(`id.eq.${cleanQuery},full_name.ilike.%${cleanQuery}%,email.ilike.%${cleanQuery}%,phone.ilike.%${cleanQuery}%`);
+    } else {
+      builder = builder.or(`full_name.ilike.%${cleanQuery}%,email.ilike.%${cleanQuery}%,phone.ilike.%${cleanQuery}%`);
+    }
+    const { data, error } = await builder
       .order('created_at', { ascending: false })
       .limit(50);
     if (error) return { data: [], error: error.message };

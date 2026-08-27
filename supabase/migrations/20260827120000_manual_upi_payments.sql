@@ -340,7 +340,7 @@ BEGIN
      OR POSITION('..' IN p_proof_path) > 0
      OR POSITION('\' IN p_proof_path) > 0
      OR POSITION(chr(0) IN p_proof_path) > 0
-     OR p_proof_path !~ '^payment-proofs/' || v_user_id::TEXT || '/[A-Za-z0-9\-]+/proof\.(png|jpg|jpeg|webp)$' THEN
+     OR p_proof_path !~ ('^payment-proofs/' || v_user_id::TEXT || '/[A-Za-z0-9\-]+/proof\.(png|jpg|jpeg|webp)$') THEN
     RETURN json_build_object('ok', FALSE, 'error', 'Invalid proof file path.');
   END IF;
 
