@@ -35,8 +35,11 @@ CREATE TABLE IF NOT EXISTS public.payment_config (
 );
 
 INSERT INTO public.payment_config (id, upi_id, payee_name, currency, pending_expiry_hours, is_active, updated_at)
-VALUES ('default', 'agriconnect@upi', 'AgriConnect', 'INR', 72, TRUE, now())
-ON CONFLICT (id) DO NOTHING;
+VALUES ('default', '7067820256@ptyes', 'SATYAM DUBEY', 'INR', 72, TRUE, now())
+ON CONFLICT (id) DO UPDATE SET
+  upi_id = EXCLUDED.upi_id,
+  payee_name = EXCLUDED.payee_name,
+  updated_at = now();
 
 ALTER TABLE public.payment_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_config FORCE ROW LEVEL SECURITY;

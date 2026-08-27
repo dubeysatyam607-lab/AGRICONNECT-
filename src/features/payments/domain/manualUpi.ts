@@ -109,10 +109,25 @@ export function buildUpiUri(config: Pick<PaymentConfig, 'upi_id' | 'payee_name' 
   return `upi://pay?${pairs.join('&')}`;
 }
 
+export const DEFAULT_PAYMENT_CONFIG: PaymentConfig = {
+  ok: true,
+  upi_id: '7067820256@ptyes',
+  payee_name: 'SATYAM DUBEY',
+  currency: 'INR',
+  is_active: true,
+  pending_expiry_hours: 72,
+};
+
 export async function fetchPaymentConfig(): Promise<PaymentConfig | null> {
-  const { data, error } = await supabase.rpc('get_payment_config');
-  if (error || !data?.ok) return null;
-  return data as PaymentConfig;
+  try {
+    const { data, error } = await supabase.rpc('get_payment_config');
+    if (!error && data && (data as PaymentConfig).ok && (data as PaymentConfig).upi_id) {
+      return data as PaymentConfig;
+    }
+  } catch {
+    // Fallback to default
+  }
+  return DEFAULT_PAYMENT_CONFIG;
 }
 
 export async function fetchManualPlans(): Promise<ManualPlan[]> {
