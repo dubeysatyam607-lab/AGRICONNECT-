@@ -21,6 +21,7 @@ import {
   DEFAULT_STORE_PRODUCTS,
 } from "@/lib/image-resolver";
 import { getDefaultGateway, isRazorpayConfigured } from "@/features/payments/domain/gateways";
+import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co").replace(/\/$/, "");
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
@@ -356,7 +357,7 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
               <>
                 <div className="space-y-2 mb-4">
                   {([
-                    ["upi", "UPI / GPay / PhonePe", Smartphone],
+                    ["upi", "UPI / Official QR (GPay · PhonePe · Paytm)", Smartphone],
                     ["card", "Debit / Credit Card", CreditCard],
                     ["netbanking", "Net Banking", Wallet],
                     ["cash", "Cash on delivery", IndianRupee],
@@ -373,7 +374,17 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
                     );
                   })}
                 </div>
-                <AgriButton className="w-full" onClick={pay}>{t("pay")} {fmt(order.total)}</AgriButton>
+
+                {method === "upi" && (
+                  <div className="mb-4">
+                    <OfficialUpiQrCard amount={order.total} note={`AgriStore Order #${order.id.slice(0, 6)}`} />
+                  </div>
+                )}
+
+                <AgriButton className="w-full" onClick={pay}>
+                  {method === "upi" ? <Check size={16} /> : null}
+                  {method === "upi" ? `I Have Paid / Confirm Order (${fmt(order.total)})` : `${t("pay")} ${fmt(order.total)}`}
+                </AgriButton>
                 {payErr && <p className="text-[11px] text-rose-500 text-center mt-2 font-semibold">{payErr}</p>}
                 <p className="text-[11px] text-muted-foreground text-center mt-2">{isRazorpayConfigured() ? t("secureLive") : t("secure")}</p>
               </>

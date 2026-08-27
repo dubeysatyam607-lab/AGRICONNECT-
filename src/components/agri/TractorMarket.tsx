@@ -16,6 +16,7 @@ import { postEdgeJson } from "@/lib/invoke-edge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EquipmentAssetForm } from "./AssetForms";
 import { PlusCircle } from "lucide-react";
+import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/tractor-hire`;
@@ -673,7 +674,7 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
             ) : (
               <>
                 <div className="space-y-2 mb-4">
-                  {[["upi", "UPI / GPay / PhonePe"], ["card", "Debit / Credit Card"], ["netbanking", "Net Banking"], ["cash", "Cash on arrival"]].map(([id, label]) => (
+                  {[["upi", "UPI / Official QR (GPay · PhonePe · Paytm)"], ["card", "Debit / Credit Card"], ["netbanking", "Net Banking"], ["cash", "Cash on arrival"]].map(([id, label]) => (
                     <button key={id} onClick={() => setMethod(id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl border text-sm font-semibold", method === id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
                       <span className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", method === id ? "border-primary" : "border-muted-foreground/40")}>
                         {method === id && <span className="w-2 h-2 rounded-full bg-primary"></span>}
@@ -682,7 +683,16 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
                     </button>
                   ))}
                 </div>
-                <AgriButton className="w-full" onClick={pay}><LockIcon /> {t("pay")} {fmt(booking.total)}</AgriButton>
+
+                {method === "upi" && (
+                  <div className="mb-4">
+                    <OfficialUpiQrCard amount={booking.total} note={`Tractor Hire #${booking.id.slice(0, 6)}`} />
+                  </div>
+                )}
+
+                <AgriButton className="w-full" onClick={pay}>
+                  <Check size={16} /> I Have Paid / Complete Booking ({fmt(booking.total)})
+                </AgriButton>
                 <p className="text-[11px] text-muted-foreground text-center mt-2">{t("securePay")}</p>
               </>
             )}

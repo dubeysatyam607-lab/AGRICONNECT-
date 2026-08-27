@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, Sparkles, Sprout, ArrowRight, ShieldCheck, Zap, Loader2 } from 'lucide-react';
+import { Check, Sparkles, Sprout, ArrowRight, ShieldCheck, Zap, Loader2, QrCode } from 'lucide-react';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage } from '@/lib/seo-config';
 import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOptionalAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { trackFfEvent } from '@/features/payments/domain/ffAnalytics';
+import { ManualUpiPaymentDialog } from '@/features/payments/presentation/components/ManualUpiPaymentDialog';
+import type { ManualPlan } from '@/features/payments/domain/manualUpi';
 
 const FUNC_URL =
   ((import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co") as string).replace(/\/$/, '') +
@@ -104,6 +106,8 @@ const Pricing: React.FC = () => {
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [userFfStatus, setUserFfStatus] = useState<{ isFF: boolean; number?: number; plan?: string } | null>(null);
   const [purchasingPlan, setPurchasingPlan] = useState<'plus' | 'pro' | null>(null);
+  const [manualPlan, setManualPlan] = useState<ManualPlan | null>(null);
+  const [showManualDialog, setShowManualDialog] = useState(false);
 
   const { user } = useOptionalAuth();
   const { toast } = useToast();
@@ -469,23 +473,44 @@ const Pricing: React.FC = () => {
                     </ul>
                   </div>
 
-                  <button
-                    onClick={() => handlePurchaseFF('plus')}
-                    disabled={purchasingPlan !== null}
-                    className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
-                  >
-                    {purchasingPlan === 'plus' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Activating Founding Farmer...
-                      </>
-                    ) : (
-                      <>
-                        Become a Founding Farmer (Plus)
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                  <div className="space-y-2 mt-6">
+                    <button
+                      onClick={() => handlePurchaseFF('plus')}
+                      disabled={purchasingPlan !== null}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
+                    >
+                      {purchasingPlan === 'plus' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Activating Founding Farmer...
+                        </>
+                      ) : (
+                        <>
+                          Become a Founding Farmer (Plus)
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualPlan({
+                          id: 'founding_farmer_plus',
+                          name: 'Founding Farmer Plus',
+                          description: 'Early Access Founding Farmer Plus Plan',
+                          price: ffConfig?.plus_price ?? 29,
+                          currency: 'INR',
+                          interval: 'month',
+                          is_active: true,
+                          features: null,
+                        });
+                        setShowManualDialog(true);
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-bold py-2.5 text-xs transition"
+                    >
+                      <QrCode size={14} /> Pay via Official UPI QR (₹{ffConfig?.plus_price ?? 29})
+                    </button>
+                  </div>
                 </div>
 
                 {/* Founding Farmer Pro */}
@@ -532,23 +557,44 @@ const Pricing: React.FC = () => {
                     </ul>
                   </div>
 
-                  <button
-                    onClick={() => handlePurchaseFF('pro')}
-                    disabled={purchasingPlan !== null}
-                    className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
-                  >
-                    {purchasingPlan === 'pro' ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Activating Founding Farmer...
-                      </>
-                    ) : (
-                      <>
-                        Become a Founding Farmer (Pro)
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                  <div className="space-y-2 mt-6">
+                    <button
+                      onClick={() => handlePurchaseFF('pro')}
+                      disabled={purchasingPlan !== null}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
+                    >
+                      {purchasingPlan === 'pro' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Activating Founding Farmer...
+                        </>
+                      ) : (
+                        <>
+                          Become a Founding Farmer (Pro)
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualPlan({
+                          id: 'founding_farmer_pro',
+                          name: 'Founding Farmer Pro',
+                          description: 'Early Access Founding Farmer Pro Plan',
+                          price: ffConfig?.pro_price ?? 59,
+                          currency: 'INR',
+                          interval: 'month',
+                          is_active: true,
+                          features: null,
+                        });
+                        setShowManualDialog(true);
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-bold py-2.5 text-xs transition"
+                    >
+                      <QrCode size={14} /> Pay via Official UPI QR (₹{ffConfig?.pro_price ?? 59})
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -628,6 +674,24 @@ const Pricing: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* Manual Official UPI Payment Dialog */}
+      {manualPlan && (
+        <ManualUpiPaymentDialog
+          open={showManualDialog}
+          onOpenChange={setShowManualDialog}
+          plan={manualPlan}
+          userId={user?.id || ''}
+          onToast={(msg) => toast({ title: 'Payment Submitted', description: msg })}
+          onSubmitted={() => {
+            setShowManualDialog(false);
+            toast({
+              title: 'Verification in Progress',
+              description: 'Your payment proof has been submitted. Our team will verify and activate your plan.',
+            });
+          }}
+        />
+      )}
     </>
   );
 };
