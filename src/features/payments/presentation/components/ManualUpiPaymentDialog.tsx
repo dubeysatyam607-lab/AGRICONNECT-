@@ -228,23 +228,44 @@ export function ManualUpiPaymentDialog({
                   <span className="text-foreground">{config.payee_name}</span>
                 </div>
 
-                <div className="flex justify-center rounded-2xl border border-dashed border-primary/40 bg-white p-5">
-                  <div className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-black/5">
-                    <QRCode value={upiUri} size={190} />
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-b from-primary/5 to-transparent p-5 text-center">
+                  <div className="relative rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/10">
+                    <img
+                      src="/images/payment-qr.jpg"
+                      alt="Official Payment QR Code - SATYAM DUBEY"
+                      className="h-48 w-48 rounded-xl object-contain"
+                      onError={(e) => {
+                        // Fallback if image fails to render
+                        e.currentTarget.style.display = 'none';
+                        const fallback = document.getElementById('qr-svg-fallback');
+                        if (fallback) fallback.style.display = 'block';
+                      }}
+                    />
+                    <div id="qr-svg-fallback" style={{ display: 'none' }}>
+                      <QRCode value={upiUri} size={190} />
+                    </div>
                   </div>
+                  <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 size={13} />
+                    <span>Official Verified UPI QR (Satyam Dubey)</span>
+                  </div>
+                  <p className="mt-1 font-mono text-xs font-black text-foreground">
+                    UPI ID: <span className="text-primary">{config.upi_id || '7067820256@ptyes'}</span>
+                  </p>
                 </div>
                 <p className="text-center text-[11px] font-semibold leading-relaxed text-muted-foreground">{t('scanHint')}</p>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <Button onClick={() => window.open(upiUri, '_self')}>
+                  <Button onClick={() => window.open(upiUri, '_self')} className="gap-1.5 font-bold">
+                    <QrCode size={14} />
                     {t('openApp')}
                   </Button>
-                  <Button variant="outline" onClick={handleCopy}>
+                  <Button variant="outline" onClick={handleCopy} className="gap-1.5 font-bold">
                     {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
                     {copied ? t('copied') : t('copyUpi')}
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setStep('proof')}>
+                <Button variant="ghost" size="sm" className="w-full text-xs font-bold" onClick={() => setStep('proof')}>
                   {t('next')} →
                 </Button>
                 {failMsg && <p className="text-[11px] font-bold text-red-600">{failMsg}</p>}

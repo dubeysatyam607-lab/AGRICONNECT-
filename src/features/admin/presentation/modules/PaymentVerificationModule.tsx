@@ -73,8 +73,8 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
 
   const [acting, setActing] = useState(false);
 
-  const [upiId, setUpiId] = useState('');
-  const [payeeName, setPayeeName] = useState('');
+  const [upiId, setUpiId] = useState('7067820256@ptyes');
+  const [payeeName, setPayeeName] = useState('SATYAM DUBEY');
   const [savingConfig, setSavingConfig] = useState(false);
 
   const load = useCallback(async () => {
@@ -106,8 +106,8 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
   const loadConfig = useCallback(async () => {
     const { data } = await supabase.from('payment_config').select('upi_id, payee_name').eq('id', 'default').maybeSingle();
     if (data) {
-      setUpiId(data.upi_id || '');
-      setPayeeName(data.payee_name || 'AgriConnect');
+      setUpiId(data.upi_id || '7067820256@ptyes');
+      setPayeeName(data.payee_name || 'SATYAM DUBEY');
     }
   }, []);
 
