@@ -26,6 +26,7 @@ import { AgriButton } from '@/components/ui/agri-button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation as useGeoLocation } from '@/features/location/LocationContext';
+import { OfficialUpiQrCard } from '@/components/agri/OfficialUpiQrCard';
 import {
   SoilTestType,
   FarmSizeUnit,
@@ -621,7 +622,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: 'upi', label: 'UPI / QR Code', icon: Sparkles },
+                  { id: 'upi', label: 'UPI / Official QR', icon: Sparkles },
                   { id: 'card', label: 'Debit / Card', icon: CreditCard },
                   { id: 'wallet', label: 'Agri Wallet', icon: ShieldCheck },
                 ].map((pm) => (
@@ -641,6 +642,15 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                 ))}
               </div>
             </div>
+
+            {paymentMethod === 'upi' && (
+              <div className="pt-1">
+                <OfficialUpiQrCard
+                  amount={pricing.totalAmount}
+                  note={`Soil Test Booking (${soilTestType.toUpperCase()})`}
+                />
+              </div>
+            )}
 
             <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 rounded-xl p-3 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />

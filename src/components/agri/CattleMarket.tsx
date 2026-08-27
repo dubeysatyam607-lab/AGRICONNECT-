@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Milk, MapPin, Clock, Phone, ExternalLink, BadgeCheck, PlusCircle, Search, Filter } from "lucide-react";
+import { Milk, MapPin, Clock, Phone, ExternalLink, BadgeCheck, PlusCircle, Search, Filter, QrCode } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AgriImage } from "@/components/ui/agri-image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CattleAssetForm } from "./AssetForms";
+import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 import { cn } from "@/lib/utils";
 
 interface CattleItem {
@@ -29,6 +30,7 @@ const CattleMarket: React.FC = () => {
   const { toast } = useToast();
   const [selectedAnimal, setSelectedAnimal] = useState<CattleItem | null>(null);
   const [showContact, setShowContact] = useState(false);
+  const [showTokenQr, setShowTokenQr] = useState(false);
   const [showSellDialog, setShowSellDialog] = useState(false);
   const [cattleList, setCattleList] = useState<CattleItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -349,6 +351,34 @@ const CattleMarket: React.FC = () => {
                 >
                   💬 WhatsApp
                 </AgriButton>
+              </div>
+
+              {/* Official Token Advance QR Payment Option */}
+              <div className="border-t border-border pt-3">
+                {!showTokenQr ? (
+                  <AgriButton
+                    variant="outline"
+                    className="w-full text-xs font-bold border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                    onClick={() => setShowTokenQr(true)}
+                  >
+                    <QrCode size={14} /> Pay Token Advance via Official QR (₹500)
+                  </AgriButton>
+                ) : (
+                  <div className="space-y-2">
+                    <OfficialUpiQrCard
+                      amount={500}
+                      note={`Cattle Token Advance #${selectedAnimal.id} (${selectedAnimal.breed})`}
+                    />
+                    <AgriButton
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => setShowTokenQr(false)}
+                    >
+                      Hide QR Code
+                    </AgriButton>
+                  </div>
+                )}
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
