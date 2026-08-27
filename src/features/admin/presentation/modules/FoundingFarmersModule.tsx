@@ -177,7 +177,7 @@ export function FoundingFarmersModule({ onNavigate }: { onNavigate: (key: string
         title="Founding Farmers"
         subtitle={config ? `${records.length} members · ${config.remaining_slots} slots remaining · ${fmtINR(totalRevenue)} revenue` : 'Loading...'}
         actions={
-          <Button onClick={() => logAdminExport('Founding Farmers', records)} variant="outline" size="sm">
+          <Button onClick={() => logAdminExport('Founding Farmers', records.length)} variant="outline" size="sm">
             Export CSV
           </Button>
         }
