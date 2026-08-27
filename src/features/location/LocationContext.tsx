@@ -48,6 +48,16 @@ const LocationContext = createContext<LocationContextValue | undefined>(undefine
 
 const STORAGE_KEY = 'agriLocation';
 
+const DEFAULT_LOCATION: NormalizedLocation = {
+  latitude: 28.6139,
+  longitude: 77.2090,
+  city: 'New Delhi',
+  district: 'New Delhi',
+  state: 'Delhi',
+  country: 'India',
+  source: 'manual',
+};
+
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
@@ -56,12 +66,14 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as NormalizedLocation;
-        return { ...parsed, status: 'ready', source: 'saved' };
+        if (typeof parsed.latitude === 'number' && typeof parsed.longitude === 'number') {
+          return { ...parsed, status: 'ready', source: 'saved' };
+        }
       }
     } catch {
       // Storage can be unavailable in private browsing or constrained webviews.
     }
-    return { status: 'idle' };
+    return { ...DEFAULT_LOCATION, status: 'ready', source: 'manual' };
   });
 
   const [farms, setFarms] = useState<FarmLocation[]>([]);
@@ -166,7 +178,8 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
             default:
               msg = finalErr.message || 'Unable to detect location.';
           }
-          updateLocation({}, 'error', msg);
+          const fallbackLoc = location.latitude ? location : DEFAULT_LOCATION;
+          updateLocation(fallbackLoc, 'ready', msg);
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
       );
