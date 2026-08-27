@@ -80,7 +80,9 @@ export function detectLanguageOf(text: string): DetectResult {
       // Disambiguate Bengali vs Assamese (shared Unicode block 0x0980-0x09FF)
       if (range.lang === 'bn') {
         const assameseChars = text.match(/[ৰৱ]/g);
-        const bengaliOnlyChars = text.match(/[ৎংঃঁ়ািীুূৃেৈোৌ]/g);
+        // Bengali-specific chars incl. vowel signs (combining marks) — intentional
+        // eslint-disable-next-line no-misleading-character-class
+        const bengaliOnlyChars = text.match(/[\u09E7\u0982\u0983\u0981\u09BC\u09BE\u09BF\u09C0\u09C1\u09C2\u09C3\u09C7\u09C8\u09CB\u09CC]/g);
         if (assameseChars && assameseChars.length > 0 && (!bengaliOnlyChars || assameseChars.length >= bengaliOnlyChars.length)) {
           return { lang: 'as', script: 'bengali' };
         }

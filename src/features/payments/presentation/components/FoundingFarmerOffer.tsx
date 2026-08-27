@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { trackFfEvent } from '../../domain/ffAnalytics';
 
 const FUNC_URL =
-  (import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '') || '') +
+  ((import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co") as string).replace(/\/$/, '') +
   '/functions/v1/founding-farmer';
 
 interface FFConfig {
@@ -245,13 +245,13 @@ export function FoundingFarmerOffer({
             })}
           </span>
           <span className="text-[10px] font-bold text-primary">
-            {Math.round((config.slots_taken / config.max_slots) * 100)}% claimed
+            {config.max_slots > 0 ? `${Math.min(100, Math.round((config.slots_taken / config.max_slots) * 100))}% claimed` : 'Launching soon'}
           </span>
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: `${Math.min(100, (config.slots_taken / config.max_slots) * 100)}%` }}
+            style={{ width: `${config.max_slots > 0 ? Math.min(100, (config.slots_taken / config.max_slots) * 100) : 0}%` }}
           />
         </div>
       </div>

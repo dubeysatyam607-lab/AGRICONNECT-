@@ -247,9 +247,9 @@ serve(async (req) => {
     // ── Fetch from Open-Meteo (free, no key required, supports India) ─────
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation,pressure_msl,visibility` +
-      `&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m` +
-      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean` +
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation,pressure_msl,visibility,dew_point_2m,uv_index` +
+      `&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,dew_point_2m,relative_humidity_2m,pressure_msl` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean,sunrise,sunset,uv_index_max` +
       `&forecast_days=7&timezone=auto`;
 
     const response = await fetchWithTimeout(url);
@@ -313,6 +313,8 @@ serve(async (req) => {
       precipMm: Number(dailyRaw.precipitation_sum?.[i] ?? 0),
       windSpeed: Math.round(dailyRaw.wind_speed_10m_max?.[i] ?? 0),
       humidity: Math.round(dailyRaw.relative_humidity_2m_mean?.[i] ?? 0),
+      sunrise: dailyRaw.sunrise?.[i],
+      sunset: dailyRaw.sunset?.[i],
     }));
 
     const alerts = buildAlerts(
@@ -320,20 +322,41 @@ serve(async (req) => {
       hourly.map((h) => ({ rainProb: h.rainProbability, precipMm: h.precipMm, condition: h.condition }))
     );
 
+    const formatClockStr = (iso?: string) => {
+      if (!iso) return '';
+      try {
+        const d = new Date(iso);
+        let h = d.getHours();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        return `${h.toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ${ampm}`;
+      } catch {
+        return '';
+      }
+    };
+
+    const sunriseIso = dailyRaw.sunrise?.[0];
+    const sunsetIso = dailyRaw.sunset?.[0];
+
     const weatherData = {
       temp: Math.round(cur.temperature_2m ?? 0),
       feelsLike: Math.round(cur.apparent_temperature ?? cur.temperature_2m ?? 0),
       condition: currentCondition,
       humidity: Math.round(cur.relative_humidity_2m ?? 0),
+      dewPoint: typeof cur.dew_point_2m === 'number' ? Math.round(cur.dew_point_2m) : Math.round((cur.temperature_2m ?? 0) - ((100 - (cur.relative_humidity_2m ?? 50)) / 5)),
       wind: `${Math.round(cur.wind_speed_10m ?? 0)} km/h`,
       windSpeed: Math.round(cur.wind_speed_10m ?? 0),
       windDirection: compass(cur.wind_direction_10m ?? 0),
       windDegrees: Math.round(cur.wind_direction_10m ?? 0),
       precipMm: Number(cur.precipitation ?? 0),
-      pressureHpa: Math.round(cur.pressure_msl ?? 0),
-      visibilityKm: cur.visibility != null ? Math.round(cur.visibility / 1000) : null,
+      pressureHpa: Math.round(cur.pressure_msl ?? 1013),
+      visibilityKm: cur.visibility != null ? Math.round(cur.visibility / 1000) : 10,
       weatherCode: cur.weather_code ?? 0,
-      uv: null,
+      uv: cur.uv_index ?? dailyRaw.uv_index_max?.[0] ?? null,
+      uvIndex: Math.round(cur.uv_index ?? dailyRaw.uv_index_max?.[0] ?? 0),
+      sunriseTime: formatClockStr(sunriseIso) || '06:00 AM',
+      sunsetTime: formatClockStr(sunsetIso) || '06:30 PM',
       icon: "",
       hourly,
       daily,

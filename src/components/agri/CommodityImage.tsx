@@ -32,7 +32,7 @@ export const CommodityImage: React.FC<CommodityImageProps> = ({
   const [loadError, setLoadError] = useState(false);
 
   const rawName = (commodityName || "").trim();
-  const cleanName = rawName.replace(/\([^)]*\)/g, " ").replace(/[^a-zA-Z0-9\u0900-\u097F\s]/g, " ").replace(/\s+/g, " ").trim() || rawName;
+  const cleanName = rawName.replace(/\([^)]*\)/g, " ").replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim() || rawName;
   const detectedCategory = category || getCropCategory(cleanName);
   
   // Prioritize 100% verified crop image directly mapped to the commodity

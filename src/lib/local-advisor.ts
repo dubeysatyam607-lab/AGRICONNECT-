@@ -606,8 +606,8 @@ export const getLocalAnswer = (
   // 1. Natural greeting without unsolicited crop dumps
   if (isGreetingIntent(q)) {
     const greetingText = hi
-      ? "नमस्ते किसान भाई! 👋 मैं Kisan Sahayak (किसान सहायक) हूँ। आप मुझसे फसल प्रबंधन, मंडी भाव, मौसम, कीट-रोग नियंत्रण, खाद की मात्रा, सिंचाई या सरकारी योजनाओं के बारे में पूछ सकते हैं।"
-      : "Hello! 👋 I am Kisan Sahayak — your farming assistant. You can ask me about crops, live mandi prices, weather alerts, pest & disease control, fertilizer doses, irrigation schedules, or government schemes.";
+      ? "नमस्ते किसान भाई! 👋 मैं Kisan AI (किसान सहायक) हूँ। आप मुझसे फसल प्रबंधन, मंडी भाव, मौसम, कीट-रोग नियंत्रण, खाद की मात्रा, सिंचाई या सरकारी योजनाओं के बारे में पूछ सकते हैं।"
+      : "Hello! 👋 I am Kisan AI (Kisan Sahayak) — your farming assistant. You can ask me about crops, live mandi prices, weather alerts, pest & disease control, fertilizer doses, irrigation schedules, or government schemes.";
     return { text: greetingText, matched: true, kind: "general" };
   }
 

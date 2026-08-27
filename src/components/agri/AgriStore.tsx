@@ -22,7 +22,7 @@ import {
 } from "@/lib/image-resolver";
 import { getDefaultGateway, isRazorpayConfigured } from "@/features/payments/domain/gateways";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co").replace(/\/$/, "");
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
 
 function post(body: Record<string, unknown>) {
@@ -194,7 +194,7 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
     const load = async () => {
       try {
         const res = await post({ action: "track-order", orderId: order.id });
-        if (active) setTrack(res.tracking);
+        if (active && res.tracking) setTrack(res.tracking);
       } catch {
         if (active) setTrack(buildLocalTracking(order.id));
         setErr(err => err || "");
@@ -663,6 +663,9 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
     };
     try {
       const res = await post({ action: "place-order", ...payload });
+      if (!res.order) {
+        throw new Error(res.error || "Could not place your order. Please try again.");
+      }
       const o = res.order as Order;
       const local: Order = { ...o, items: cart, subtotal: totals.subtotal, discount: totals.discount, shipping: totals.shipping, total: totals.total, couponCode, couponDesc: totals.couponDesc, paymentMethod: checkoutForm.payment, paymentStatus: "pending", placedAt: new Date().toISOString() };
       const next = [local, ...orders];

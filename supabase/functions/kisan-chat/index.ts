@@ -332,10 +332,28 @@ async function runTools(
       payload.longitude = location.longitude;
     }
     const data = await invokeTool("weather", payload);
-    if (data && typeof data === "object" && "current" in data) {
-      blocks.push(`WEATHER_TOOL_RESULT: ${JSON.stringify({ current: data.current, daily: data.daily })}\n(Live weather data for the user's area — use it, do not invent your own.)`);
+    if (data && typeof data === "object" && (typeof (data as any).temp === "number" || "current" in (data as any))) {
+      const wData = data as any;
+      const weatherSummary = {
+        location: wData.location?.name || "Current Location",
+        temp: `${wData.temp ?? wData.current?.temp}°C`,
+        feelsLike: `${wData.feelsLike ?? wData.temp}°C`,
+        condition: wData.condition || wData.live?.condition,
+        humidity: `${wData.humidity ?? wData.live?.humidity}%`,
+        wind: wData.wind || `${wData.windSpeed ?? 0} km/h`,
+        rainChance: `${wData.daily?.[0]?.rainProbability ?? 0}%`,
+        dailyForecast: Array.isArray(wData.daily) ? wData.daily.slice(0, 3).map((d: any) => ({
+          day: d.dayName,
+          condition: d.condition,
+          tempMax: `${d.tempMax}°C`,
+          tempMin: `${d.tempMin}°C`,
+          rainProbability: `${d.rainProbability}%`,
+          advisory: d.agriAdvisory,
+        })) : [],
+      };
+      blocks.push(`WEATHER_TOOL_RESULT: ${JSON.stringify(weatherSummary)}\n(Live verified weather data for the user's area — use these exact values, do not invent or guess any weather values.)`);
     } else {
-      blocks.push(`WEATHER_TOOL_RESULT: UNAVAILABLE\n(Live weather data is currently unavailable — tell the user to try again, do NOT invent weather.)`);
+      blocks.push(`WEATHER_TOOL_RESULT: UNAVAILABLE\n(Live weather data is currently unavailable — tell the user to check the weather widget or try again, do NOT invent weather.)`);
     }
   }
 
