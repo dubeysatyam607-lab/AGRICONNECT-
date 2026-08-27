@@ -1109,47 +1109,47 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   const renderPlaceCard = (place: NearbyPlace) => (
     <div
       key={place.id}
-      className="rounded-2xl border border-white/10 bg-card/10 p-3.5 hover:bg-card/20 transition-colors"
+      className="rounded-2xl border border-emerald-500/20 bg-card p-3.5 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 shadow-xs transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className={cn(
             "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-            place.type === "market" ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
+            place.type === "market" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
           )}>
             {place.type === "market" ? <MapPin size={16} /> : <Store size={16} />}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-extrabold text-white truncate">{place.name}</p>
-            <p className="text-[10px] text-slate-400 truncate">
+            <p className="text-xs font-extrabold text-foreground truncate">{place.name}</p>
+            <p className="text-[10px] text-muted-foreground truncate">
               {isHindi && place.nameHi ? place.nameHi : place.city}
             </p>
           </div>
         </div>
         <div className="flex flex-col items-end shrink-0 gap-1">
           {place.distance && (
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full whitespace-nowrap">
               {place.distance}
             </span>
           )}
-          <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center gap-0.5">
             <Star size={10} fill="currentColor" /> {place.rating?.toFixed(1)}
           </span>
         </div>
       </div>
 
       {place.specialty && (
-        <p className="text-[10px] text-slate-300 mt-2">{place.specialty}</p>
+        <p className="text-[10px] text-foreground/80 mt-2">{place.specialty}</p>
       )}
 
-      <div className="flex flex-wrap gap-2.5 mt-2 text-[10px] text-slate-400">
+      <div className="flex flex-wrap gap-2.5 mt-2 text-[10px] text-muted-foreground font-medium">
         <span className="flex items-center gap-1"><Phone size={11} /> {place.phone}</span>
         <span className="flex items-center gap-1"><Clock size={11} /> {place.timings}</span>
       </div>
 
       <button
         onClick={() => openInMaps(place)}
-        className="mt-3 w-full flex items-center justify-center gap-1.5 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl py-2 transition-colors"
+        className="mt-3 w-full flex items-center justify-center gap-1.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl py-2 shadow-xs transition-colors"
       >
         <Navigation size={12} />
         {isHindi ? "दिशा दिखाएं" : "Get Directions"}
@@ -1163,7 +1163,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       const parts = raw.split(/\*\*(.+?)\*\*/g);
       if (parts.length === 1) return raw;
       return parts.map((p, i) =>
-        i % 2 === 1 ? <strong key={i} className="font-extrabold text-emerald-300">{p}</strong> : p
+        i % 2 === 1 ? <strong key={i} className="font-extrabold text-emerald-700 dark:text-emerald-400">{p}</strong> : p
       );
     };
 
@@ -1209,9 +1209,9 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     if (msg.structured?.kind === "nearby") {
       return (
         <div className="space-y-3">
-          <div className="whitespace-pre-wrap font-bold">{msg.content}</div>
+          <div className="whitespace-pre-wrap font-bold text-foreground">{msg.content}</div>
           {!msg.structured.hasLocation && (
-            <p className="text-[10px] text-slate-400 bg-card/10 border border-white/10 rounded-xl px-3 py-2">
+            <p className="text-[10px] text-muted-foreground bg-muted/50 border border-border rounded-xl px-3 py-2">
               {isHindi
                 ? "📍 स्थान की अनुमति नहीं मिली — देश के प्रमुख मंडी/दुकानें दिखा रहे हैं। सटीक नजदीकी परिणाम के लिए स्थान की अनुमति दें।"
                 : "📍 Location permission not available — showing popular places. Allow location access for accurate nearby results."}
@@ -1224,7 +1224,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => fetchNearby(msg.structured!.places[0]?.type === "market" ? "shops" : "markets")}
-                className="text-[10px] font-bold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-3 py-1.5 transition-colors"
+                className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-700 rounded-full px-3 py-1.5 transition-colors"
               >
                 {msg.structured!.places[0]?.type === "market"
                   ? isHindi ? "🏪 नजदीकी दुकानें" : "🏪 Nearby Shops"
@@ -1246,14 +1246,14 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       <div>
         {renderRichText(displayContent)}
         {showTyping && (
-          <span className="inline-block w-0.5 h-4 align-middle bg-emerald-400 ml-0.5 animate-pulse" />
+          <span className="inline-block w-0.5 h-4 align-middle bg-emerald-600 dark:bg-emerald-400 ml-0.5 animate-pulse" />
         )}
       </div>
     );
   };
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 text-white relative select-none">
+    <div className="h-full flex flex-col bg-gradient-to-b from-emerald-50/50 via-background to-emerald-50/30 dark:from-background dark:via-background dark:to-background text-foreground relative select-none">
 
       {/* VoiceEngine Listening Overlay — live transcript + silence auto-stop */}
       {isListening && (
@@ -1271,34 +1271,34 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         />
       )}
 
-      {/* Header */}
-      <div className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+      {/* Header — Clean Green & White Theme */}
+      <div className="bg-card/95 backdrop-blur-md border-b border-emerald-500/15 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-colors text-muted-foreground hover:text-foreground"
             aria-label="Close chat"
           >
-            <X size={20} className="text-slate-300 hover:text-white" />
+            <X size={20} />
           </button>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-300 hover:text-white"
+            className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-colors text-muted-foreground hover:text-foreground"
             title="View History Sessions"
             aria-label="Conversation history"
           >
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/10 relative">
-              <Bot size={20} className="text-white" />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-400 rounded-full border-2 border-slate-900 animate-pulse" />
+            <div className="w-10 h-10 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-full flex items-center justify-center shadow-md shadow-emerald-600/20 relative text-white">
+              <Bot size={20} />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-amber-400 rounded-full border-2 border-card animate-pulse" />
             </div>
             <div>
-              <h2 className="font-black text-sm tracking-tight flex items-center gap-1.5 text-white">
-                {t('chat.title')} <Sparkles size={13} className="text-emerald-400 animate-pulse" />
+              <h2 className="font-black text-sm tracking-tight flex items-center gap-1.5 text-foreground">
+                {t('chat.title')} <Sparkles size={13} className="text-emerald-600 dark:text-emerald-400 animate-pulse" />
               </h2>
-              <p className="text-[10px] text-slate-400 flex items-center gap-1">
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                 <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isOffline ? "bg-amber-500" : "bg-emerald-500")} />
                 {isOffline ? t('chat.statusOffline') : t('chat.statusOnline')}
               </p>
@@ -1309,7 +1309,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         <div className="flex items-center gap-2">
           <button
             onClick={handleNewSession}
-            className="p-2 bg-white/5 hover:bg-white/15 active:scale-95 text-emerald-400 rounded-xl transition-all border border-white/10 flex items-center gap-1 text-xs font-bold"
+            className="p-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 active:scale-95 rounded-xl transition-all border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 text-xs font-bold shadow-xs"
             title={t('chat.newChatTitle')}
           >
             <Plus size={14} />
@@ -1319,10 +1319,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           <button
             onClick={() => setAutoSpeak(!autoSpeak)}
             className={cn(
-              "p-2 rounded-xl transition-colors border",
+              "p-2 rounded-xl transition-colors border shadow-xs",
               autoSpeak
-                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                : "text-slate-400 hover:text-white hover:bg-white/5 border-white/10"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-emerald-600/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
             )}
             title={autoSpeak ? t('chat.autoVoiceOn') : t('chat.autoVoiceOff')}
           >
@@ -1336,7 +1336,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
         {/* Offline Banner alert */}
         {isOffline && (
-          <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-600/90 to-rose-700/90 text-center py-1.5 px-3 z-30 flex items-center justify-center gap-2 text-xs font-bold shadow-md border-b border-white/10">
+          <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-600/95 to-rose-700/95 text-white text-center py-1.5 px-3 z-30 flex items-center justify-center gap-2 text-xs font-bold shadow-md border-b border-border">
             <WifiOff size={14} className="text-white animate-bounce" />
             <span>{t('agr217')}</span>
           </div>
@@ -1345,15 +1345,15 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         {/* Sidebar history list node drawer */}
         <div
           className={cn(
-            "absolute inset-y-0 left-0 w-[250px] bg-slate-900 border-r border-white/15 z-40 transition-transform duration-300 transform",
+            "absolute inset-y-0 left-0 w-[260px] bg-card border-r border-border z-40 transition-transform duration-300 transform shadow-2xl",
             showHistory ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          <div className="p-3 border-b border-white/10 flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">{t('agr218')}</span>
+          <div className="p-3 border-b border-border flex items-center justify-between">
+            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">{t('agr218')}</span>
             <button
               onClick={() => setShowHistory(false)}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+              className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Close history"
             >
               <X size={16} />
@@ -1361,7 +1361,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           </div>
           <div className="p-2 space-y-1 overflow-y-auto max-h-[85vh] no-scrollbar">
             {sessions.length === 0 ? (
-              <p className="text-[11px] text-slate-500 italic p-3 text-center">{t('agr219')}</p>
+              <p className="text-[11px] text-muted-foreground italic p-3 text-center">{t('agr219')}</p>
             ) : (
               sessions.map(s => (
                 <div
@@ -1370,14 +1370,14 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   className={cn(
                     "flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all border text-xs font-medium",
                     currentSessionId === s.id
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-white"
-                      : "bg-white/5 border-transparent text-slate-300 hover:bg-white/10"
+                      ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500/40 text-emerald-900 dark:text-emerald-200 font-bold"
+                      : "bg-card border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   )}
                 >
                   <span className="truncate max-w-[155px]">{s.title}</span>
                   <button
                     onClick={(e) => handleDeleteSession(e, s.id)}
-                    className="hover:text-rose-400 p-2 hover:bg-white/10 rounded-md transition-all shrink-0 ml-1"
+                    className="hover:text-rose-500 p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all shrink-0 ml-1"
                     aria-label="Delete conversation"
                   >
                     <Trash2 size={12} />
@@ -1395,18 +1395,18 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
             {/* Show greeting prompt chips on empty threads */}
             {chatHistory.length <= 1 && (
-              <div className="py-6 flex flex-col items-center justify-center text-center space-y-4 max-w-sm mx-auto">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-3xl border border-emerald-500/20 shadow-inner animate-pulse">
+              <div className="py-6 flex flex-col items-center justify-center text-center space-y-4 max-w-sm mx-auto bg-card border border-emerald-500/25 p-6 rounded-3xl shadow-sm">
+                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl border border-emerald-500/25 shadow-inner animate-pulse">
                   🌱
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-white">{t('agr220')}</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  <h3 className="font-extrabold text-sm text-foreground">{t('agr220')}</h3>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                     {t('chat.emptyStateSubtitle')}
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-3 py-1.5 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 rounded-full px-3 py-1.5 flex items-center gap-1">
                     🌾 {t('chat.advisingFor', { crop: profile.crop, stage: profile.stage })}
                   </span>
                   {[
@@ -1418,7 +1418,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                     <button
                       key={prompt}
                       onClick={() => handleSend(prompt)}
-                      className="text-[10px] font-bold bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-slate-200 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300 transition-all active:scale-95"
+                      className="text-[10px] font-bold bg-background border border-emerald-500/30 rounded-full px-3 py-1.5 text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:border-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-300 transition-all active:scale-95 shadow-xs"
                     >
                       {prompt}
                     </button>
@@ -1429,7 +1429,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                     <button
                       key={id}
                       onClick={() => handleSend(chipPrompts[id])}
-                      className="text-[10px] font-bold bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-slate-200 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300 transition-all active:scale-95"
+                      className="text-[10px] font-bold bg-background border border-emerald-500/30 rounded-full px-3 py-1.5 text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:border-emerald-600 hover:text-emerald-700 dark:hover:text-emerald-300 transition-all active:scale-95 shadow-xs"
                     >
                       {chipLabels[id]}
                     </button>
@@ -1448,21 +1448,21 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                 >
                   <div className="flex items-start gap-2.5 max-w-[92%] sm:max-w-[85%]">
                     {msg.role === "assistant" && (
-                      <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 text-xs">
+                      <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center shrink-0 text-xs">
                         🤖
                       </div>
                     )}
                     <div
                       className={cn(
-                        "p-3.5 rounded-2xl text-xs sm:text-sm shadow-md transition-all font-medium leading-relaxed",
+                        "p-3.5 rounded-2xl text-xs sm:text-sm shadow-sm transition-all font-medium leading-relaxed",
                         msg.role === "user"
-                          ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-sm border border-primary/20"
-                          : "bg-slate-900 border border-white/10 text-slate-100 rounded-bl-sm"
+                          ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-xs shadow-md shadow-emerald-600/15"
+                          : "bg-card border border-emerald-500/20 text-foreground rounded-bl-xs ring-1 ring-emerald-500/5"
                       )}
                     >
                       {/* Render attachment image if present */}
                       {msg.image && (
-                        <div className="mb-3 max-w-[200px] rounded-xl overflow-hidden border border-white/20 shadow-sm">
+                        <div className="mb-3 max-w-[200px] rounded-xl overflow-hidden border border-border shadow-xs">
                           <img src={msg.image} alt="Attached crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-auto object-cover max-h-[150px]" />
                         </div>
                       )}
@@ -1470,16 +1470,16 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                       {renderAssistantContent(msg, isLast)}
 
                       {msg.role === "assistant" && !msg.structured && (
-                        <div className="flex items-center justify-between gap-3 mt-3.5 pt-2 border-t border-white/5 text-[10px] text-slate-500 font-extrabold uppercase">
+                        <div className="flex items-center justify-between gap-3 mt-3.5 pt-2 border-t border-border/50 text-[10px] text-muted-foreground font-extrabold uppercase">
                           <button
                             onClick={() => handleSpeakMessage(msg.content)}
-                            className="hover:text-emerald-400 flex items-center gap-1 transition-colors text-slate-500 dark:text-slate-300"
+                            className="hover:text-emerald-600 flex items-center gap-1 transition-colors text-emerald-700 dark:text-emerald-400"
                           >
                             <Volume2 size={13} />
                             {isSpeaking && isLast ? t('chat.stopSpeakingBtn') : t('chat.listenBtn')}
                           </button>
                           {msg.source === "local" && (
-                            <span className="flex items-center gap-1 text-[9px] font-bold text-amber-300/90 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
                               ⚡ {t('chat.badgeSmartOffline')}
                             </span>
                           )}
@@ -1488,12 +1488,12 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
                       {/* Suggestion chips for the latest assistant message */}
                       {msg.role === "assistant" && isLast && !msg.structured && msg.suggestions && msg.suggestions.length > 0 && typingWordIndex === null && !isLoading && (
-                        <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-white/5">
+                        <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-border/50">
                           {msg.suggestions.map((s, i) => (
                             <button
                               key={i}
                               onClick={() => handleSend(s)}
-                              className="text-[10px] font-bold text-slate-200 bg-white/5 hover:bg-emerald-500/15 hover:border-emerald-500/40 hover:text-emerald-300 border border-white/10 rounded-full px-3 py-1.5 transition-all active:scale-95"
+                              className="text-[10px] font-bold text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900 border border-emerald-500/25 rounded-full px-3 py-1.5 transition-all active:scale-95 shadow-xs"
                             >
                               {s}
                             </button>
@@ -1509,13 +1509,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             {/* Premium Typing Indicator */}
             {isLoading && (
               <div className="flex justify-start items-start gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-emerald-500/25 border border-emerald-500/35 flex items-center justify-center shrink-0 text-xs animate-pulse">
+                <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center shrink-0 text-xs animate-pulse">
                   🤖
                 </div>
-                <div className="bg-slate-900/90 border border-white/10 p-3.5 rounded-2xl rounded-bl-sm flex items-center gap-1.5 shadow-md">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-card border border-emerald-500/20 p-3.5 rounded-2xl rounded-bl-xs flex items-center gap-1.5 shadow-sm">
+                  <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             )}
@@ -1524,19 +1524,19 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           </div>
 
           {/* Quick Actions Toolbar */}
-          <div className="px-4 pb-1 bg-slate-900/80 backdrop-blur-md">
+          <div className="px-4 pb-1 bg-card/90 backdrop-blur-md border-t border-emerald-500/10">
             <div className="flex gap-2 overflow-x-auto no-scrollbar py-2">
               <button
                 onClick={() => fetchNearby("markets")}
                 disabled={isLoading}
-                className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40"
+                className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 border border-amber-300 dark:border-amber-700 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40 shadow-xs"
               >
                 <MapPin size={11} /> {t('chat.qaMandi')}
               </button>
               <button
                 onClick={() => fetchNearby("shops")}
                 disabled={isLoading}
-                className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40"
+                className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-700 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40 shadow-xs"
               >
                 <Store size={11} /> {t('chat.qaShops')}
               </button>
@@ -1545,7 +1545,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   key={action.id}
                   onClick={() => handleQuickAction(action.id)}
                   disabled={isLoading}
-                  className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40"
+                  className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-foreground bg-background hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-500/20 rounded-full px-3 py-1.5 transition-colors active:scale-95 disabled:opacity-40 shadow-xs"
                 >
                   {action.hint === "fertilizer" && "🧪"}
                   {action.hint === "irrigation" && "💧"}
@@ -1572,24 +1572,24 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             />
           )}
 
-          {/* Chat Form Area */}
-          <div className="p-4 bg-slate-900/80 backdrop-blur-md border-t border-white/10 space-y-3">
+          {/* Chat Form Area — Green & White Theme */}
+          <div className="p-4 bg-card/95 backdrop-blur-md border-t border-emerald-500/15 space-y-3 shadow-lg">
 
             {/* Image Preview attachment Card */}
             {imagePreview && (
-              <div className="flex items-center justify-between p-2.5 bg-white/5 border border-white/10 rounded-2xl max-w-xs animate-in slide-in-from-bottom-2 duration-300">
+              <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-2xl max-w-xs animate-in slide-in-from-bottom-2 duration-300 shadow-xs">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/20 shrink-0">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-emerald-300 shrink-0">
                     <img src={imagePreview} alt="Attached upload" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <span className="text-[10px] text-emerald-400 font-extrabold uppercase">{t('agr221')}</span>
-                    <p className="text-[10px] text-slate-400 truncate max-w-[120px]">{t('agr222')}</p>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-extrabold uppercase">{t('agr221')}</span>
+                    <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{t('agr222')}</p>
                   </div>
                 </div>
                 <button
                   onClick={clearAttachedImage}
-                  className="p-1.5 bg-white/10 hover:bg-rose-500/20 hover:text-rose-400 rounded-full transition-colors text-slate-300"
+                  className="p-1.5 bg-background hover:bg-rose-50 hover:text-rose-600 rounded-full transition-colors text-muted-foreground border border-border"
                   aria-label="Remove attached image"
                 >
                   <X size={14} />
@@ -1611,10 +1611,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <button
                 onClick={triggerImageSelect}
                 className={cn(
-                  "p-3 rounded-full transition-all border",
+                  "p-3 rounded-full transition-all border shadow-xs",
                   imagePreview
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                    : "bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20 active:scale-95"
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-400"
+                    : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border-emerald-300 dark:border-emerald-700 active:scale-95"
                 )}
                 title="Attach Crop Leaf Image for Diagnosis"
               >
@@ -1624,10 +1624,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <button
                 onClick={toggleListening}
                 className={cn(
-                  "p-3 rounded-full transition-all border",
+                  "p-3 rounded-full transition-all border shadow-xs",
                   isListening
                     ? "bg-rose-500 text-white border-rose-500 animate-pulse"
-                    : "bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20 active:scale-95"
+                    : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border-emerald-300 dark:border-emerald-700 active:scale-95"
                 )}
                 title={t("chat.voiceInputTitle")}
               >
@@ -1637,7 +1637,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <input
                 type="text"
                 placeholder={isOffline ? t('chat.placeholderOffline') : t('chat.placeholder')}
-                className="flex-1 p-3 bg-white/5 rounded-full text-base sm:text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder:text-slate-500 border border-white/15 hover:border-white/25 focus:border-emerald-500 transition-all"
+                className="flex-1 p-3 bg-background rounded-full text-base sm:text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 border-2 border-emerald-500/25 focus:border-emerald-600 text-foreground placeholder:text-muted-foreground transition-all shadow-inner"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -1652,7 +1652,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <button
                 onClick={() => handleSend()}
                 disabled={isLoading || (!input.trim() && !imageBase64)}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 rounded-full hover:brightness-110 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 shadow-md shadow-emerald-500/15"
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 rounded-full hover:brightness-105 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 shadow-md shadow-emerald-600/20"
                 aria-label="Send message"
               >
                 <Send size={18} />

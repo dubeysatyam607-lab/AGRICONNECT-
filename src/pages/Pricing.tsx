@@ -495,7 +495,7 @@ const Pricing: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setManualPlan({
-                          id: 'founding_farmer_plus',
+                          id: 'plan-plus',
                           name: 'Founding Farmer Plus',
                           description: 'Early Access Founding Farmer Plus Plan',
                           price: ffConfig?.plus_price ?? 29,
@@ -579,7 +579,7 @@ const Pricing: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setManualPlan({
-                          id: 'founding_farmer_pro',
+                          id: 'plan-pro',
                           name: 'Founding Farmer Pro',
                           description: 'Early Access Founding Farmer Pro Plan',
                           price: ffConfig?.pro_price ?? 59,
