@@ -59,6 +59,7 @@ import { RolesModule } from './modules/RolesModule';
 import { AdminUsersModule } from './modules/AdminUsersModule';
 import { ImageManagementModule } from './modules/ImageManagementModule';
 import { FoundingFarmersModule } from './modules/FoundingFarmersModule';
+import { PaymentVerificationModule } from './modules/PaymentVerificationModule';
 import { Image as ImageIcon } from 'lucide-react';
 
 export interface AdminModule {
@@ -93,6 +94,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'payments', label: 'Payments', icon: CreditCard, group: 'Finance', component: PaymentsModule },
   { key: 'subscriptions', label: 'Subscription Plans', icon: Layers, group: 'Finance', component: SubscriptionsModule },
   { key: 'foundingFarmers', label: 'Founding Farmers', icon: Sprout, group: 'Finance', component: FoundingFarmersModule },
+  { key: 'paymentVerification', label: 'Payment Verification', icon: ShieldCheck, group: 'Finance', component: PaymentVerificationModule },
   { key: 'wallets', label: 'Wallets', icon: Wallet, group: 'Finance', component: WalletModule },
 
   { key: 'verification', label: 'User Verification', icon: BadgeCheck, group: 'Compliance & Support', component: VerificationModule },

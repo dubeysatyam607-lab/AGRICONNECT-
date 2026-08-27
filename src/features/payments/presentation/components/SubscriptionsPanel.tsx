@@ -18,6 +18,9 @@ import { usePaymentStore } from '../hooks/usePaymentStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
 import { FoundingFarmerOffer } from './FoundingFarmerOffer';
+import { ManualUpiPaymentDialog } from './ManualUpiPaymentDialog';
+import { ManualPaymentHistory } from './ManualPaymentHistory';
+import { fetchManualPlans, type ManualPlan } from '../../domain/manualUpi';
 import { supabase } from '@/integrations/supabase/client';
 
 const STATUS_TONE: Record<string, string> = {
@@ -52,11 +55,18 @@ export function SubscriptionsPanel({
   const [busy, setBusy] = useState(false);
   const [failMsg, setFailMsg] = useState('');
   const [ffStatus, setFfStatus] = useState<{ isFF: boolean; ffNumber?: number; plan?: string }>({ isFF: false });
+  const [dbPlans, setDbPlans] = useState<ManualPlan[]>([]);
+  const [userId, setUserId] = useState<string>('');
+  const [manualPlan, setManualPlan] = useState<ManualPlan | null>(null);
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user || !active) return;
+    const load = async () => {
+      const [{ data: { user } }, plans] = await Promise.all([supabase.auth.getUser(), fetchManualPlans()]);
+      if (!active) return;
+      if (user) setUserId(user.id);
+      setDbPlans(plans);
+      if (!user) return;
       supabase.from('user_subscriptions')
         .select('founding_farmer, founding_farmer_number, plan_id')
         .eq('user_id', user.id)
@@ -68,7 +78,8 @@ export function SubscriptionsPanel({
             setFfStatus({ isFF: true, ffNumber: data.founding_farmer_number, plan: data.plan_id });
           }
         });
-    });
+    };
+    load();
     return () => { active = false; };
   }, []);
 
@@ -194,39 +205,53 @@ export function SubscriptionsPanel({
 
       {/* Plans */}
       <div className="grid gap-3 sm:grid-cols-3">
-        {store.plans.map((p) => {
-          const isCurrent = active?.planId === p.id && (active.status === 'Active' || active.status === 'Trial');
-          const Icon = p.popular ? Sparkles : p.priceMonthly === 0 ? BadgeCheck : Check;
+        {(dbPlans.length ? dbPlans : []).map((p) => {
+          const isFree = (p.price || 0) === 0;
+          const Icon = p.id === 'plan-pro' ? Sparkles : isFree ? BadgeCheck : Check;
           return (
             <button
               key={p.id}
-              onClick={() => setSubscribePlan(p.id)}
+              onClick={() => (isFree ? setSubscribePlan(p.id) : setManualPlan(p))}
               className={cn(
                 'relative rounded-3xl border-2 bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5',
-                subscribePlan === p.id ? 'border-primary shadow-glow' : p.popular ? 'border-primary/50' : 'border-border',
+                p.id === 'plan-pro' ? 'border-primary/50' : 'border-border',
               )}
             >
-              {p.popular && (
+              {p.id === 'plan-pro' && (
                 <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-primary-foreground">
                   {t('pay.popular')}
                 </span>
               )}
-              <span className={cn('flex h-9 w-9 items-center justify-center rounded-xl', p.popular ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+              <span className={cn('flex h-9 w-9 items-center justify-center rounded-xl', p.id === 'plan-pro' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                 <Icon size={16} />
               </span>
               <p className="mt-2.5 text-sm font-black text-foreground">{p.name}</p>
-              <p className="mt-0.5 text-[10px] font-semibold leading-tight text-muted-foreground">{p.tagline}</p>
+              <p className="mt-0.5 text-[10px] font-semibold leading-tight text-muted-foreground">{p.description || ''}</p>
               <p className="mt-2 text-lg font-black text-foreground">
-                {p.priceMonthly === 0 ? t('pay.free') : fmtMoney(p.priceMonthly)}
-                {p.priceMonthly > 0 && <span className="text-[10px] font-bold text-muted-foreground">/{t('pay.perMonth')}</span>}
+                {isFree ? t('pay.free') : fmtMoney(p.price)}
+                {!isFree && <span className="text-[10px] font-bold text-muted-foreground">/{t('pay.perMonth')}</span>}
               </p>
-              {isCurrent && <p className="mt-1 text-[10px] font-black text-emerald-600">✓ {t('pay.currentPlan')}</p>}
             </button>
           );
         })}
       </div>
 
-      {/* Subscribe dialog */}
+      {/* Manual UPI payment flow for paid plans */}
+      {manualPlan && userId && (
+        <ManualUpiPaymentDialog
+          open={!!manualPlan}
+          onOpenChange={(v) => { if (!v) setManualPlan(null); }}
+          plan={manualPlan}
+          userId={userId}
+          onToast={onToast}
+          onSubmitted={() => setManualPlan(null)}
+        />
+      )}
+
+      {/* Payment history + subscription status (server truth) */}
+      {userId && <ManualPaymentHistory userId={userId} />}
+
+      {/* Legacy subscribe dialog (free plan only) */}
       <Dialog open={!!subscribePlan} onOpenChange={(v) => { setSubscribePlan(v ? subscribePlan : null); setFailMsg(''); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
