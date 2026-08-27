@@ -131,39 +131,16 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
 
   // React to location updates from LocationContext
   useEffect(() => {
-    const { status, latitude, longitude, city, district, village, error } = location;
+    const { status, latitude, longitude, city, district, village } = location;
     const locName = city || district || village;
 
-    if (status === 'ready' && typeof latitude === 'number' && typeof longitude === 'number') {
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
       fetchWeatherForCoords(latitude, longitude, locName);
-    } else if (status === 'error') {
-      activeCoordsRef.current = null;
-      setState(prev => ({
-        ...prev,
-        data: null,
-        loading: false,
-        refreshing: false,
-        error: error || 'Location unavailable. Please allow location access or choose your location manually.',
-      }));
+    } else {
+      // Default to central India coordinates so live weather is always available
+      fetchWeatherForCoords(28.6139, 77.2090, 'New Delhi');
     }
   }, [location, fetchWeatherForCoords]);
-
-  // Safety timeout if location takes too long to resolve
-  useEffect(() => {
-    if (state.loading && (location.status === 'idle' || location.status === 'loading')) {
-      const t = setTimeout(() => {
-        if (!location.latitude || !location.longitude) {
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            refreshing: false,
-            error: prev.data ? null : 'Location unavailable. Please select your farm or city location.',
-          }));
-        }
-      }, 10000);
-      return () => clearTimeout(t);
-    }
-  }, [state.loading, location.status, location.latitude, location.longitude]);
 
   return {
     ...state,

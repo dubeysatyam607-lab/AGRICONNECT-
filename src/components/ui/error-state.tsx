@@ -5,9 +5,16 @@ import { cn } from "@/lib/utils";
 export function friendlyError(err: unknown, fallback: string): string {
   const msg = err instanceof Error ? err.message : String(err ?? "");
   const lowered = msg.toLowerCase();
+  const genuinelyOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
 
-  if (/offline|network|fetch failed|failed to fetch|temporary failure|no internet/i.test(msg)) {
+  if (genuinelyOffline) {
     return "You're offline. Showing the last saved data.";
+  }
+  if (/offline|no internet/i.test(msg)) {
+    return "No internet connection detected. Please connect to Wi-Fi or mobile data.";
+  }
+  if (/fetch failed|failed to fetch|temporary failure|network/i.test(msg)) {
+    return fallback || "Connecting to live service… Tap retry to refresh.";
   }
   if (/timeout|timed out|aborted/i.test(msg)) {
     return "This is taking too long. Please try again.";
