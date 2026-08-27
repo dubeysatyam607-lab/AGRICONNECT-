@@ -118,6 +118,8 @@ export class ProfileRemoteDataSource {
         },
         preferredLanguage: data.app_language || extended.preferredLanguage || 'en',
         profilePictureUrl: data.avatar_url || defaultProf.profilePictureUrl,
+        founding_farmer: data.founding_farmer ?? false,
+        founding_farmer_number: data.founding_farmer_number ?? undefined,
         createdAt: data.created_at || defaultProf.createdAt,
         updatedAt: data.updated_at || defaultProf.updatedAt,
       };

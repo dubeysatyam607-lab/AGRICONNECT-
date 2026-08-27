@@ -76,10 +76,18 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
         <div className="relative z-10 p-6 sm:p-7">
           <div className="flex items-start justify-between gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-200">
-              <ShieldCheck size={12} />
-              {t('prof.verified')}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-200">
+                <ShieldCheck size={12} />
+                {t('prof.verified')}
+              </span>
+              {profile.founding_farmer && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/25 border border-emerald-300/50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-200 shadow-sm animate-pulse">
+                  <Sprout size={13} className="text-emerald-300" />
+                  🌱 FOUNDING FARMER {profile.founding_farmer_number ? `#${profile.founding_farmer_number}` : ''}
+                </span>
+              )}
+            </div>
             <button
               onClick={onRefresh}
               aria-label="Refresh profile"

@@ -1,6 +1,7 @@
 import type { FarmProfile } from "@/contexts/FarmContext";
 import { getMandiPriceQuote } from "./mandi-api";
 import { extractEntities, CROP_DICTIONARY } from "@/core/voice/entities";
+import { detectLanguageOf, langLabel } from "@/core/voice/language";
 
 export type LocalAnswerKind =
   | "mandi"
@@ -178,8 +179,8 @@ const HINDI_CROP_ALIASES: Record<string, string> = {
   गेहूं: "wheat", गेहू: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
   टमाटर: "tomato", आलू: "potato", सरसों: "mustard", मक्का: "maize",
   चावल: "rice", धान: "rice", गन्ना: "sugarcane", मिर्च: "chilli",
-  मूंगफली: "groundnut", चना: "gram", लहसुन: "garlic", अदरक: "ginger",
-  हल्दी: "turmeric", जीरा: "cumin",
+  चना: "gram", मूंगफली: "groundnut", लहसुन: "garlic", हल्दी: "turmeric",
+  धनिया: "coriander", केला: "banana", आम: "mango", अरहर: "arhar", मूंग: "lentils"
 };
 
 const HINGLISH_WORDS = [
@@ -188,7 +189,8 @@ const HINGLISH_WORDS = [
   "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi", "kab",
   "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
   "patta", "patti", "peela", "sukha", "kharif", "rabi", "mandi", "tamatr", "tamatar",
-  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch"
+  "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch", "lahsun",
+  "bhaiya", "madad", "help", "samasya", "kharab", "bachav", "tarika", "kyu", "kyon", "karen"
 ];
 
 const isHinglish = (q: string) => {
@@ -229,134 +231,90 @@ const PEST_REMEDIES: Record<string, { en: string; hi: string }> = {
     en: "Organic: Remove and destroy infested leaves. Chemical: Spinosad 0.3 ml/L or abamectin 0.5 ml/L.",
     hi: "जैविक: संक्रमित पत्तियां तोड़कर नष्ट करें। रासायनिक: स्पिनोसैड 0.3 मिली/लीटर या एबामेक्टिन 0.5 मिली/लीटर।",
   },
+  termite: {
+    en: "Organic: Calotropis (aak) extract or neem cake 100 kg/acre. Chemical: Chlorpyrifos 20 EC @ 2.5 L/acre with irrigation water.",
+    hi: "जैविक: आक का अर्क या नीम की खली 100 किग्रा/एकड़। रासायनिक: क्लोरपायरीफॉस 20 EC 2.5 ली/एकड़ सिंचाई के साथ।",
+  },
 };
 
-const PEST_KEYWORDS: Record<string, { en: string; hi: string }[]> = {
-  aphid: [
-    { en: "aphid", hi: "एफिड" }, { en: "maand", hi: "" }, { en: "mallay", hi: "" },
-  ],
-  whitefly: [
-    { en: "whitefly", hi: "सफेद मक्खी" }, { en: "white fly", hi: "" },
-  ],
-  bollworm: [
-    { en: "bollworm", hi: "इल्ली" }, { en: "pink bollworm", hi: "" }, { en: "fruit borer", hi: "फल छेदक" },
-  ],
-  caterpillar: [
-    { en: "caterpillar", hi: "कैटरपिलर" }, { en: "larva", hi: "" },
-  ],
-  thrips: [
-    { en: "thrips", hi: "थ्रिप्स" },
-  ],
-  mite: [
-    { en: "mite", hi: "घुन" }, { en: "mites", hi: "" },
-  ],
-  "fall armyworm": [
-    { en: "armyworm", hi: "" }, { en: "army worm", hi: "" },
-  ],
-  leafminer: [
-    { en: "leaf miner", hi: "" }, { en: "leafminer", hi: "" },
-  ],
+const PEST_KEYWORDS: Record<string, Array<{ en?: string; hi?: string }>> = {
+  aphid: [{ en: "aphid" }, { hi: "माहू" }, { hi: "चेपा" }, { en: "mahu" }, { en: "chepa" }],
+  whitefly: [{ en: "whitefly" }, { hi: "सफेद मक्खी" }, { en: "safed makkhi" }, { en: "safed makhi" }],
+  bollworm: [{ en: "bollworm" }, { hi: "गुलाबी सुंडी" }, { en: "sundi" }, { en: "gulabi sundi" }],
+  caterpillar: [{ en: "caterpillar" }, { hi: "इल्ली" }, { hi: "सुंडी" }, { en: "illi" }],
+  thrips: [{ en: "thrips" }, { hi: "थ्रिप्स" }],
+  mite: [{ en: "mite" }, { hi: "मकड़ी" }, { en: "makdi" }],
+  "fall armyworm": [{ en: "armyworm" }, { en: "fall armyworm" }, { hi: "फॉल आर्मीवॉर्म" }, { hi: "लश्करी इल्ली" }],
+  leafminer: [{ en: "leafminer" }, { en: "leaf miner" }, { hi: "लीफमाइनर" }, { hi: "चित्रित इल्ली" }],
+  termite: [{ en: "termite" }, { hi: "दीमक" }, { en: "deemak" }, { en: "dimak" }],
 };
 
 interface DiseaseInfo {
-  symptoms: string[];
   title: string;
+  symptoms: string[];
   en: string;
   hi: string;
 }
 
 const DISEASES: DiseaseInfo[] = [
   {
-    symptoms: ["blight", "early blight", "late blight", "brown spot", "brownspot", "leaf spot", "dark spot", "blotch", "झुलसा", "अगेती झुलसा", "पछेती झुलसा", "धब्बे"],
-    title: "Leaf Blight / Leaf Spot (झुलसा व पत्ती धब्बा रोग)",
-    en: "Looks like a fungal leaf blight or leaf spot. Recommended spray: Mancozeb 75% WP @ 2.5 g/L or Copper Oxychloride 50% WP @ 3 g/L. For late blight, apply Metalaxyl 8% + Mancozeb 64% (Ridomil) @ 2 g/L. Avoid overhead irrigation and ensure good aeration.",
-    hi: "यह फंगल पत्ती झुलसा (अगेती/पछेती) या धब्बा रोग है। अनुशंसित उपचार: मैंकोजेब 75% WP (2.5 ग्रा/लीटर) या कॉपर ऑक्सीक्लोराइड 50% WP (3 ग्रा/लीटर) का छिड़काव करें। पछेती झुलसा के लिए मेटालैक्सिल + मैंकोजेब (रिडोमिल) 2 ग्रा/लीटर का छिड़काव करें।",
+    title: "Leaf Rust (पीला/भूरा रतुआ)",
+    symptoms: ["rust", "रतुआ", "yellow dust", "brown pustule", "ratua", "peela ratua"],
+    en: "Spray Propiconazole 25 EC (1 ml/L) or Tebuconazole (1 ml/L) at first sign. Avoid excess nitrogen.",
+    hi: "शुरुआती लक्षण दिखते ही प्रोपिकोनाजोल 25 EC (1 मिली/लीटर) या टेबुकोनाजोल (1 मिली/लीटर) का छिड़काव करें। अधिक यूरिया न दें।",
   },
   {
-    symptoms: ["powdery", "white powder", "white coating", "white patina", "सफेद चूर्ण", "चूर्ण", "पाउडरी"],
-    title: "Powdery Mildew (चूर्णिल आसिता / सफेद फफूंद)",
-    en: "Classic powdery mildew — a white powdery coating on leaves and stems. Spray Hexaconazole 5% EC @ 1 ml/L or Wettable Sulfur 80% WP @ 3 g/L. Apply in the morning for best results.",
-    hi: "यह पाउडरी मिल्ड्यू (सफेद चूर्ण रोग) है। उपचार: हेक्साकोनाज़ोल 5% EC (1 मिली/लीटर) या घुलनशील सल्फर 80% WP (3 ग्रा/लीटर) का छिड़काव करें। सुबह के समय छिड़काव अधिक असरदार रहता है।",
+    title: "Early/Late Blight (झुलसा रोग)",
+    symptoms: ["blight", "झुलसा", "black spots with rings", "water soaked", "jhulsa"],
+    en: "Foliar spray Mancozeb 75 WP (2 g/L) or Copper Oxychloride (2.5 g/L). For late blight, use Metalaxyl + Mancozeb (2 g/L).",
+    hi: "मैनकोजेब 75 WP (2 ग्राम/लीटर) या कॉपर ऑक्सीक्लोराइड (2.5 ग्राम/लीटर) का छिड़काव करें। पछेती झुलसा के लिए मेटालैक्सिल + मैनकोजेब (2 ग्राम/लीटर) दें।",
   },
   {
-    symptoms: ["downy", "purple underside", "purple under leaf", "मृदुरोमिल"],
-    title: "Downy Mildew (डाउनी मिल्ड्यू / मृदुरोमिल आसिता)",
-    en: "Downy mildew causes yellow angular patches on upper leaf surface with a purplish-grey mould underneath. Spray Metalaxyl + Mancozeb @ 2 g/L or Cymoxanil + Mancozeb @ 2 g/L at 10-day intervals.",
-    hi: "डाउनी मिल्ड्यू पत्तियों की ऊपरी सतह पर पीले कोणीय धब्बे और निचली सतह पर बैगनी-भूरी फफूंद बनाता है। उपचार: मेटालैक्सिल + मैंकोजेब 2 ग्रा/लीटर का 10 दिन के अंतर पर दो बार छिड़काव करें।",
+    title: "Powdery Mildew (चूर्णिल आसिता/सफेद फफूंद)",
+    symptoms: ["powdery", "mildew", "white powder", "सफेद पाउडर", "चूर्णिल", "safed fafund"],
+    en: "Spray Wettable Sulfur 80 WP (3 g/L) or Hexaconazole 5 EC (1 ml/L). Maintain good air circulation.",
+    hi: "घुलनशील सल्फर 80 WP (3 ग्राम/लीटर) या हेक्साकोनाजोल 5 EC (1 मिली/लीटर) का स्प्रे करें। पौधों के बीच हवा का संचार रखें।",
   },
   {
-    symptoms: ["rust", "yellow rust", "stripe rust", "orange pustule", "orange spots", "रतुआ", "पीला रतुआ", "गेरुआ"],
-    title: "Yellow / Stripe Rust (गेहूं का पीला रतुआ)",
-    en: "Yellow stripe rust shows linear yellow-orange spore pustules on leaves that leave yellow dust on fingers. Immediately spray Propiconazole 25% EC (Tilt) @ 1 ml/L of water. Repeat after 15 days if cloudy/cold weather persists.",
-    hi: "यह पीला रतुआ (Yellow Rust) रोग है — पत्तियों पर पीले रंग की धारियां व पाउडर बनता है। तुरंत प्रोपिकोनाजोल 25% EC (टिल्ट) 1 मिली प्रति लीटर पानी में मिलाकर छिड़काव करें। 15 दिन बाद आवश्यकतानुसार दोहराएं।",
+    title: "Wilting / Root Rot (उकठा/जड़ सड़न)",
+    symptoms: ["wilt", "root rot", "ukatha", "उकठा", "सूख रहा", "drooping", "stem rot"],
+    en: "Soil drench Trichoderma viride (10 g/L) organic, or Carbendazim (1 g/L) near root zone. Improve drainage.",
+    hi: "जड़ों के पास ट्राइकोडर्मा विरिडी (10 ग्राम/लीटर) जैविक या कार्बेन्डाजिम (1 ग्राम/लीटर) का घोल डालें। खेत से पानी की निकासी सुधारें।",
   },
   {
-    symptoms: ["wilt", "droop", "drying from base", "stem rot", "root rot", "मुरझा", "सूख", "उकठा", "जड़ सड़न"],
-    title: "Wilt & Root Rot (उकठा व जड़ सड़न रोग)",
-    en: "Wilt is caused by soil-borne Fusarium fungi. Drench the root zone with Carbendazim 12% + Mancozeb 63% (Saaf) @ 2 g/L or bio-control Trichoderma viride @ 10 g/L. Ensure field drainage to prevent water stagnation.",
-    hi: "उकठा (विल्ट) व जड़ सड़न मिट्टी जनित फंगस से होता है। उपचार: कार्बेन्डाजिम + मैंकोजेब (साफ) 2 ग्रा/लीटर या ट्राइकोडर्मा विरिडी 10 ग्रा/लीटर से पौधों की जड़ों के पास ड्रेंचिंग करें। खेत में जलभराव न होने दें।",
-  },
-  {
-    symptoms: ["blast", "neck blast", "leaf blast", "diamond shaped", "ब्लास्ट", "गर्दन तोड़"],
-    title: "Paddy Blast (धान का ब्लास्ट रोग)",
-    en: "Blast causes spindle/diamond-shaped lesions with ash-grey centers on rice leaves and panicle neck. Spray Tricyclazole 75% WP @ 0.6 g/L (Baan) or Isoprothiolane 40% EC @ 1.5 ml/L. Avoid excessive urea application.",
-    hi: "धान का ब्लास्ट रोग पत्तियों पर आंख/नाव जैसे धब्बे बनाता है। उपचार: ट्राइसाइक्लाजोल 75% WP (0.6 ग्रा/लीटर) या आइसोप्रोथियोलेन 40% EC (1.5 मिली/लीटर) का छिड़काव करें। यूरिया की अत्यधिक मात्रा से बचें।",
-  },
-  {
-    symptoms: ["yellow", "yellowing", "chlorosis", "mosaic", "leaf curl", "curling", "पीली", "पीलापन", "मुड़ी", "मरोड़िया", "पर्ण कुंचन"],
-    title: "Leaf Curl Virus & Vector Yellowing (पर्ण कुंचन व पीलापन)",
-    en: "Leaf curling and yellowing is transmitted by sucking pests (whiteflies/thrips). Spray Imidacloprid 17.8% SL @ 0.5 ml/L or Acetamiprid 20% SP @ 0.5 g/L to control the vectors. Apply foliar 19:19:19 @ 5 g/L to restore plant vigor.",
-    hi: "पत्तियों का मुड़ना और पीला पड़ना सफेद मक्खी व थ्रिप्स द्वारा फैलने वाले वायरस का लक्षण है। उपचार: इमिडाक्लोप्रिड 17.8% SL (0.5 मिली/लीटर) या एसिटामिप्रिड 20% SP का छिड़काव करें। पौधे में नई जान डालने हेतु 19:19:19 (5 ग्रा/लीटर) का स्प्रे करें।",
+    title: "Leaf Curl Virus (पत्ती मरोड़)",
+    symptoms: ["curl", "मरोड़", "churda", "leaf curl", "shrivelled", "curling"],
+    en: "Vector-borne viral disease spread by whiteflies. Spray Thiamethoxam 0.2 g/L to control vector + install yellow traps.",
+    hi: "यह सफेद मक्खी से फैलने वाला वायरस है। थियामेथोक्सम 0.2 ग्राम/लीटर का स्प्रे करें और पीले चिपचिपे कार्ड लगाएं।",
   },
 ];
 
-interface SchemeInfo {
-  name: string;
-  en: string;
-  hi: string;
-}
-
-const SCHEMES: SchemeInfo[] = [
+const SCHEMES = [
   {
-    name: "PM-Kisan Samman Nidhi (पीएम किसान सम्मान निधि)",
-    en: "₹6,000/year directly transferred to farmers' bank accounts in 3 installments of ₹2,000 every 4 months. Verify eKYC on pmkisan.gov.in using Aadhaar OTP or biometric CSC centers.",
-    hi: "किसानों को सालाना ₹6,000 सीधे बैंक खाते में (₹2000 की 3 किस्तों में)। pmkisan.gov.in पर आधार ओटीपी द्वारा ई-केवाईसी अवश्य पूर्ण करें।",
+    name: "PM-Kisan Samman Nidhi",
+    hi: "₹6,000 प्रति वर्ष (₹2,000 की 3 किस्तों में) सीधे बैंक खाते में।",
+    en: "₹6,000 per year (in 3 installments of ₹2,000) directly into Aadhaar-linked bank accounts.",
   },
   {
-    name: "Pradhan Mantri Krishi Sinchai Yojana (PMKSY - ड्रिप व फव्वारा सब्सिडी)",
-    en: "Provides up to 55% subsidy for small/marginal farmers and 45% for general farmers on Drip and Sprinkler irrigation systems. Apply through your state horticulture/agriculture portal.",
-    hi: "ड्रिप और स्प्रिंकलर सिंचाई लगाने पर लघु व सीमांत किसानों को 55% तथा अन्य किसानों को 45% तक सरकारी सब्सिडी मिलती है। राज्य उद्यानिकी विभाग के पोर्टल पर आवेदन करें।",
+    name: "Pradhan Mantri Fasal Bima Yojana (PMFBY)",
+    hi: "फसल क्षति (सूखा, बाढ़, ओलावृष्टि) पर 1.5%–2% प्रीमियम पर संपूर्ण बीमा कवरेज।",
+    en: "Comprehensive crop insurance against drought, floods, hail at just 1.5%–2% farmer premium.",
   },
   {
-    name: "Pradhan Mantri Fasal Bima Yojana (PMFBY - प्रधानमंत्री फसल बीमा)",
-    en: "Comprehensive risk coverage against droughts, floods, and unseasonal rains. Farmer premium is only 2% for Kharif crops, 1.5% for Rabi crops, and 5% for annual commercial/horticultural crops. Enroll on pmfby.gov.in before seasonal cut-off dates.",
-    hi: "सूखा, बाढ़ व बेमौसम बारिश से फसल सुरक्षा। किसान का प्रीमियम सिर्फ खरीफ में 2%, रबी में 1.5% और बागवानी में 5% है। बैंक या pmfby.gov.in पर कट-ऑफ तिथि से पूर्व आवेदन करें।",
+    name: "Kisan Credit Card (KCC)",
+    hi: "₹3 लाख तक का कृषि ऋण मात्र 4% ब्याज दर पर (समय पर भुगतान पर 3% की छूट)।",
+    en: "Low-interest agricultural loan up to ₹3 lakh at 4% effective interest rate (with 3% prompt repayment rebate).",
   },
   {
-    name: "Kisan Credit Card (KCC - किसान क्रेडिट कार्ड)",
-    en: "Concessional institutional crop loans up to ₹3 Lakhs at an effective interest rate of only 4% per annum (with prompt repayment subvention). Approach any rural/commercial bank with land 7/12 & Aadhaar.",
-    hi: "समय पर भुगतान करने पर मात्र 4% वार्षिक ब्याज पर ₹3 लाख तक का फसली ऋण। खतौनी/जमीन दस्तावेज व आधार कार्ड लेकर नजदीकी बैंक शाखा में संपर्क करें।",
-  },
-  {
-    name: "SMAM & Farm Mechanization Subsidy (कृषि यंत्र सब्सिडी)",
-    en: "Provides 40% to 50% subsidy on tractors, rotavators, power tillers, seed drills, and laser levellers under the Sub-Mission on Agricultural Mechanization (SMAM). Register on agrimachinery.nic.in.",
-    hi: "ट्रैक्टर, रोटावेटर, पावर टिलर और सीड ड्रिल पर 40% से 50% तक की सरकारी सब्सिडी। agrimachinery.nic.in या राज्य कृषि पोर्टल पर ऑनलाइन टोकन प्राप्त करें।",
-  },
-  {
-    name: "PM-KUSUM Solar Pump Scheme (पीएम कुसुम सोलर पंप)",
-    en: "Up to 60% subsidy for installing 3HP to 10HP stand-alone solar agriculture pumps, reducing electricity and diesel expenses to zero. Apply on state renewable energy development portals.",
-    hi: "खेतों में 3 से 10 हॉर्सपावर का सोलर पंप लगाने पर 60% तक सब्सिडी। बिजली व डीजल के खर्च से पूरी मुक्ति।",
-  },
-  {
-    name: "Soil Health Card (मृदा स्वास्थ्य कार्ड)",
-    en: "Free soil testing provided by Krishi Vigyan Kendras (KVK) with exact N-P-K, Zinc, and Sulfur fertilizer recommendations tailored to your soil pH and organic carbon content.",
-    hi: "हर 2 वर्ष में खेत की मिट्टी का निःशुल्क परीक्षण। मिट्टी के pH व पोषक तत्वों के आधार पर सटीक खाद डालने की सलाह।",
+    name: "PM Kusum Yojana",
+    hi: "खेतों में सोलर पंप लगाने पर 60% से 90% तक सरकारी सब्सिडी।",
+    en: "60% to 90% government subsidy for installing solar-powered irrigation agricultural pumps.",
   },
 ];
 
-export const CLIMATE_ADVISORIES = {
+const CLIMATE_ADVISORIES = {
   frost: {
-    en: "❄️ **Frost & Cold Wave Protection Advisory (पाला व ठंड से बचाव)**:\n\n1. **Evening Irrigation**: Give light irrigation in the evening. Moist soil retains heat and raises canopy temperature by 1–2°C.\n2. **Smoke Barrier**: Burn dried weed piles along the north/west boundary at night so smoke blankets the field.\n3. **Foliar Spray**: Spray 0.1% commercial Sulfuric acid (1 ml per 1 liter water) or Water-Soluble Sulfur 80% WP @ 3 g/L to prevent cellular freezing.\n4. **Polyhouse/Covering**: Cover tender nursery and vegetable beds with straw or polythene sheets.",
+    en: "❄️ **Frost & Cold Wave Crop Protection Advisory (पाला व ठंड से बचाव)**:\n\n1. **Evening Light Irrigation**: Irrigate fields lightly in the evening. Wet soil retains warmth and elevates field canopy temp by 1–2°C.\n2. **Smoke Cover**: Burn dry straw/weeds on the north-west field border at night to create an insulating smoke blanket.\n3. **Sulfur Spray**: Spray 0.1% commercial sulfuric acid (1 ml/L) or soluble Sulfur 80% WP (3 g/L) to build plant cold resistance.\n4. **Cover Nursery/Vegetables**: Cover tender vegetables and nursery seedlings with thatch or plastic sheets overnight.",
     hi: "❄️ **पाला व शीतलहर से फसल बचाव की सलाह**:\n\n1. **शाम को हल्की सिंचाई**: शाम के समय खेत में हल्की सिंचाई करें। नम मिट्टी गर्मी रोकती है और तापमान 1-2°C बढ़ा देती है।\n2. **धुआं करना**: रात के समय खेत की उत्तर-पश्चिम दिशा में सूखी घास-फूस जलाकर धुआं करें ताकि खेत पर सुरक्षा चादर बन जाए।\n3. **सल्फर/गंधक स्प्रे**: 0.1% गंधक का तेजाब (1 मिली प्रति लीटर पानी) या घुलनशील सल्फर 80% WP (3 ग्राम/लीटर) का छिड़काव करें।\n4. **सब्जियों को ढकना**: नर्सरी व सब्जी फसलों को पुआल या प्लास्टिक शीट से रात में ढकें।",
   },
   heatwave: {
@@ -373,9 +331,19 @@ export const CLIMATE_ADVISORIES = {
   }
 };
 
-const FALLBACK_GENERAL: Record<string, string> = {
-  en: "I can help with mandi rates, fertilizer doses, irrigation schedules, pest & disease control, and govt schemes. Try: \"Soybean mandi price\", \"Wheat fertilizer dose\", \"yellow leaves on tomato\", or \"irrigation schedule for maize\".",
-  hi: "मैं मंडी भाव, खाद की मात्रा, सिंचाई कार्यक्रम, कीट-रोग नियंत्रण और सरकारी योजनाओं में मदद कर सकता हूं। पूछें: \"सोयाबीन का मंडी भाव\", \"गेहूं की खाद मात्रा\", \"टमाटर की पत्तियां पीली\", या \"मक्का की सिंचाई\"।",
+const FALLBACK_MESSAGES: Record<string, string> = {
+  hi: "नमस्ते किसान भाई! 🙏 मैं Kisan AI (किसान सहायक) हूँ। आप मुझसे किसी भी फसल की खाद मात्रा, बुआई, सिंचाई, कीट व रोग उपचार, मंडी भाव, मौसम या सरकारी योजनाओं के बारे में पूछ सकते हैं। आप क्या जानना चाहते हैं?",
+  en: "Hello farmer friend! 🙏 I am Kisan AI (Kisan Sahayak). You can ask me about crop fertilizer doses, sowing, irrigation schedules, pest & disease control, live mandi prices, weather forecasts, or government schemes. How can I assist you today?",
+  mr: "नमस्कार शेतकरी बंधू! 🙏 मी किसान AI (किसान सहाय्यक) आहे. आपण मला खत व्यवस्थापन, पेरणी, पाणी व्यवस्थापन, कीड-रोग नियंत्रण, बाजार भाव, हवामान किंवा सरकारी योजनांबद्दल विचारू शकता.",
+  gu: "નમસ્તે ખેડૂત મિત્ર! 🙏 હું કિસાન AI (કિસાન સહાયક) છું. તમે મને ખાતર વ્યવસ્થાપન, વાવણી, સિંચાઈ, રોગ-જીવાત નિયંત્રણ, બજાર ભાવ, હવામાન અથવા સરકારી યોજનાઓ વિશે પૂછી શકો છો.",
+  pa: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਕਿਸਾਨ ਵੀਰੋ! 🙏 ਮੈਂ ਕਿਸਾਨ AI (ਕਿਸਾਨ ਸਹਾਇਕ) ਹਾਂ। ਤੁਸੀਂ ਮੈਨੂੰ ਖਾਦ ਦੀ ਮਾਤਰਾ, ਬਿਜਾਈ, ਸਿੰਚਾਈ, ਕੀੜੇ-ਮਕੌੜਿਆਂ ਦੀ ਰੋਕਥਾਮ, ਮੰਡੀ ਦੇ ਭਾਅ, ਮੌਸਮ ਜਾਂ ਸਰਕਾਰੀ ਸਕੀਮਾਂ ਬਾਰੇ ਪੁੱਛ ਸਕਦੇ ਹੋ।",
+  bn: "নমস্কার কৃষক বন্ধু! 👋 আমি কিষাণ AI (কিষাণ সহায়ক)। আপনি আমাকে ফসলের সার প্রয়োগ, বপন, সেচ, রোগ ও কীটনাশক, মান্ডি দর, আবহাওয়া বা সরকারি প্রকল্প সম্পর্কে জিজ্ঞাসা করতে পারেন।",
+  ta: "வணக்கம் விவசாய தோழரே! 🙏 நான் கிசான் AI (விவசாய உதவியாளர்). உரம், விதைப்பு, நீர்ப்பாசனம், பூச்சி நோய் மேலாண்மை, மண்டி விலை, வானிலை அல்லது அரசு திட்டங்கள் பற்றி என்னிடம் கேட்கலாம்.",
+  te: "నమస్కారం రైతు మిత్రమా! 🙏 నేను కిసాన్ AI (రైతు సహాయక్). ఎరువుల యాజమాన్యం, విత్తనం, సాగునీరు, తెగుళ్ల నివారణ, మార్కెట్ ధరలు, వాతావરણం లేదా ప్రభుత్వ పథకాల గురించి నన్ను అడగవచ్చు.",
+  kn: "ನಮಸ್ಕಾರ ರೈತ ಮಿತ್ರರೇ! 🙏 ನಾನು ಕಿಸಾನ್ AI (ಕಿಸಾನ್ ಸಹಾಯಕ). ಗೊಬ್ಬರ ನಿರ್ವಹಣೆ, ಬಿತ್ತನೆ, ನೀರಾವರಿ, ಕೀಟ-ರೋಗ ನಿಯಂತ್ರಣ, ಮಂಡಿ ದರ, ಹವಾಮಾನ ಅಥವಾ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಬಹುದು.",
+  ml: "നമസ്കാരം കർഷക സുഹൃത്തേ! 🙏 ഞാൻ കിസാൻ AI (കിസാൻ സഹായക്) ആണ്. വളപ്രയോഗം, വിതയ്ക്കൽ, നനയ്ക്കൽ, കീട-രോഗ നിയന്ത്രണം, വിപണി വില, കാലാവസ്ഥ, സർക്കാർ പദ്ധതികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കാം.",
+  or: "ନମସ୍କାର କୃଷକ ଭାଇ! 🙏 ମୁଁ କିଷାନ AI (କିଷାନ ସହାୟକ)। ଆପଣ ମୋତେ ସାର ପ୍ରୟୋଗ, ମଣ୍ଡି ଦର, ପାଣିପାଗ, ରୋଗ ପୋକ ନିୟନ୍ତ୍ରଣ କିମ୍ବା ସରକାରୀ ଯୋଜନା ବିଷୟରେ ପଚାରିପାରିବେ।",
+  as: "নমস্কাৰ কৃষক ভাই! 🙏 মই কিষাণ AI (কিষাণ সহায়ক)। আপুনি মোক সাৰ ব্যৱস্থাপনা, বজাৰৰ দৰ, বতৰ, কীট-পতংগ নিয়ন্ত্ৰণ বা চৰকাৰী আঁচনি সম্পৰ্কে সুধিব পাৰে।",
 };
 
 const detectCrop = (query: string): string | null => {
@@ -458,9 +426,9 @@ const fertilizerAnswer = (crop: string | null, profile: FarmProfile, hi: boolean
   const guide = CROP_GUIDES[name] || CROP_GUIDES[profile.crop.toLowerCase()];
   if (guide) {
     const text = hi
-      ? `🧪 **${name.charAt(0).toUpperCase() + name.slice(1)}** के लिए खाद कार्यक्रम\n\n- बुआई के समय (आधार): ${guide.basal}\n- उपराई खाद: ${guide.topDress}\n\nयह मानक सिफारिश है — सटीक मात्रा मिट्टी परीक्षण (Soil Health Card) पर निर्भर करती है।`
+      ? `🧪 **${name.charAt(0).toUpperCase() + name.slice(1)}** के लिए खाद कार्यक्रम\n\n- बुआई के समय (आधार/Basal): ${guide.basal}\n- उपराई खाद (Top dressing): ${guide.topDress}\n\nयह मानक सिफारिश है — सटीक मात्रा मिट्टी परीक्षण (Soil Health Card) पर निर्भर करती है।`
       : `🧪 Fertilizer program for **${name.charAt(0).toUpperCase() + name.slice(1)}**\n\n- Basal (at sowing): ${guide.basal}\n- Top dressing: ${guide.topDress}\n\nThis is a standard recommendation — for precise doses, use your Soil Health Card report.`;
-    return { text, matched: true, kind: "fertilizer" };
+    return { text: text, matched: true, kind: "fertilizer" };
   }
   return {
     text: hi
@@ -553,23 +521,34 @@ const cropAnswer = (crop: string, profile: FarmProfile, hi: boolean): LocalAnswe
 };
 
 const hasFertilizerIntent = (q: string) =>
-  ["fertilizer", "khād", "खाद", "npk", "urea", "यूरिया", "dose", "मात्रा", "आधार", "basal", "top dressing", "उपराई"].some((k) => q.includes(k));
+  ["fertilizer", "khād", "खाद", "npk", "urea", "यूरिया", "dose", "मात्रा", "आधार", "basal", "top dressing", "उपराई", "उर्वरक"].some((k) => q.includes(k));
 
 const hasIrrigationIntent = (q: string) =>
-  ["irrigat", "water", "सिंचाई", "पानी", "कब करूं"].some((k) => q.includes(k));
+  ["irrigat", "water", "सिंचाई", "पानी", "कब करूं", "pani"].some((k) => q.includes(k));
 
 const hasPestIntent = (q: string) =>
-  ["pest", "कीट", "insect", "इल्ली", "बग", "bug", "keet", "कीड़े"].some((k) => q.includes(k));
+  ["pest", "कीट", "insect", "इल्ली", "बग", "bug", "keet", "कीड़े", "कीड़ा", "kida", "keeda"].some((k) => q.includes(k));
 
 const hasDiseaseIntent = (q: string) =>
-  ["disease", "रोग", "leaf", "पत्ती", "yellow", "पीली", "spot", "धब्बे", "wilt", "रोगी", "black spot", "blight"].some((k) => q.includes(k));
+  ["disease", "रोग", "leaf", "पत्ती", "yellow", "पीली", "spot", "धब्बे", "wilt", "रोगी", "black spot", "blight", "झुलसा", "रतुआ"].some((k) => q.includes(k));
 
 const hasSchemeIntent = (q: string) =>
   ["scheme", "योजना", "subsidy", "सब्सिडी", "govt", "government", "pm-kisan", "pmkisan", "kcc", "loan", "कर्ज", "बीमा", "insurance", "yojana"].some((k) => q.includes(k));
 
+const hasCropGuideIntent = (q: string, directCrop: string | null) => {
+  if (!directCrop) return false;
+  const directCropLower = directCrop.toLowerCase();
+  const trimmed = q.trim().toLowerCase().replace(/[.,!?;:]/g, "");
+  // If the query is solely the crop name (e.g. "wheat", "गेहूं", "tamatar", "tomato")
+  if (trimmed === directCropLower || trimmed === `crop ${directCropLower}` || trimmed === `${directCropLower} crop`) return true;
+  // If the query asks for cultivation / guide / farming / details
+  return ["kheti", "खेती", "cultivation", "guide", "farming", "sowing", "care", "dekhbhal", "देखभाल", "jankari", "जानकारी", "samagri", "overview", "summary", "saransh", "सारांश", "tips", "kaise ugaye", "kaise kare", "growing", "production", "paidaavar", "पैदावार", "advice", "advise", "सलाह", "suggestion", "sujhav", "सुझाव"].some((k) => q.includes(k));
+};
+
 const GREETING_WORDS = [
   "namaste", "namaskar", "pranam", "hello", "hi", "hey", "hola",
-  "नमस्ते", "नमस्कार", "प्रणाम", "राम राम", "ram ram", "जय जवान", "जय किसान"
+  "नमस्ते", "नमस्कार", "प्रणाम", "राम राम", "ram ram", "जय जवान", "जय किसान",
+  "सत श्री अकाल", "வணக்கம்", "నమస్కారం", "ನಮಸ್ಕಾರ", "നമസ്കാരം", "নমস্কার", "ନମସ୍କାର", "নমস্কাৰ"
 ];
 
 const isGreetingIntent = (q: string) => {
@@ -583,16 +562,25 @@ export const getLocalAnswer = (
   lang?: string,
   history?: Array<{ role: string; content: string }>
 ): LocalAnswer => {
-  const isDevanagari = hasDevanagari(query);
-  const isHinglishQuery = isHinglish(query) || isHinglish(query.toLowerCase());
-  const hi = lang === "hi" || isDevanagari || isHinglishQuery;
   const q = query.toLowerCase().trim();
+  const detected = detectLanguageOf(query);
+  const isDevanagari = hasDevanagari(query);
+  const isHinglishQuery = isHinglish(query) || isHinglish(q);
 
-  // Multi-turn context resolution: If user specified a mandi (e.g. "Indore") or a follow-up answer
+  // Normalize effective target language code
+  const targetCode = (lang && lang.length >= 2)
+    ? lang.slice(0, 2).toLowerCase()
+    : (detected.lang || "en");
+
+  const hi = targetCode === "hi" || isDevanagari || isHinglishQuery;
+
+  // Multi-turn context resolution:
   let crop = detectCrop(q);
   const mandiInQuery = extractMandiLocation(q);
 
-  if (!crop && history && history.length > 0) {
+  // ONLY inherit crop from history if the user's current query has pronoun/follow-up intent or specifies a mandi location
+  const isFollowUpQuery = Boolean(mandiInQuery) || ["isme", "is me", "ismein", "ispe", "is par", "iska", "iski", "iske", "is fasal", "isse", "इसमे", "इसमें", "इसकी", "इसका", "इसके", "for this", "in this", "its"].some((w) => q.includes(w));
+  if (!crop && isFollowUpQuery && history && history.length > 0) {
     for (let i = history.length - 1; i >= 0; i--) {
       const prev = history[i].content;
       const prevCrop = detectCrop(prev);
@@ -605,21 +593,19 @@ export const getLocalAnswer = (
 
   // 1. Natural greeting without unsolicited crop dumps
   if (isGreetingIntent(q)) {
-    const greetingText = hi
-      ? "नमस्ते किसान भाई! 👋 मैं Kisan AI (किसान सहायक) हूँ। आप मुझसे फसल प्रबंधन, मंडी भाव, मौसम, कीट-रोग नियंत्रण, खाद की मात्रा, सिंचाई या सरकारी योजनाओं के बारे में पूछ सकते हैं।"
-      : "Hello! 👋 I am Kisan AI (Kisan Sahayak) — your farming assistant. You can ask me about crops, live mandi prices, weather alerts, pest & disease control, fertilizer doses, irrigation schedules, or government schemes.";
+    const greetingText = FALLBACK_MESSAGES[targetCode] || (hi ? FALLBACK_MESSAGES.hi : FALLBACK_MESSAGES.en);
     return { text: greetingText, matched: true, kind: "general" };
   }
 
   // 1a. User identity / Name query ("mera naam kya hai", "who am i", "my name")
   if (["mera naam", "mera name", "my name", "who am i", "who i am", "kaun hu", "kaun hoon", "मेरा नाम", "मैं कौन हूं", "मैं कौन हूँ"].some((w) => q.includes(w))) {
-    const name = profile.name || profile.fullName || "";
-    const loc = profile.village || profile.district || profile.state || "";
-    const crop = profile.crop || "";
+    const name = (profile as any).farmerName || profile.crop ? ((profile as any).farmerName || (profile as any).name || (profile as any).fullName || "") : "";
+    const loc = (profile as any).village || (profile as any).district || (profile as any).state || "";
+    const primaryCrop = profile.crop || "";
     if (name) {
       const text = hi
-        ? `नमस्ते किसान साथी! 🙏 AgriConnect प्रोफाइल के अनुसार आपका नाम **${name}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${crop ? ` आपकी मुख्य फसल **${crop}** है।` : ""}`
-        : `Hello farmer friend! 🙏 According to your AgriConnect profile, your name is **${name}**.${loc ? ` Region: **${loc}**.` : ""}${crop ? ` Primary crop: **${crop}**.` : ""}`;
+        ? `नमस्ते किसान साथी! 🙏 AgriConnect प्रोफाइल के अनुसार आपका नाम **${name}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${primaryCrop ? ` आपकी मुख्य फसल **${primaryCrop}** है।` : ""}`
+        : `Hello farmer friend! 🙏 According to your AgriConnect profile, your name is **${name}**.${loc ? ` Region: **${loc}**.` : ""}${primaryCrop ? ` Primary crop: **${primaryCrop}**.` : ""}`;
       return { text, matched: true, kind: "general" };
     } else {
       const text = hi
@@ -704,7 +690,13 @@ export const getLocalAnswer = (
   if (hasIrrigationIntent(q)) return irrigationAnswer(crop, profile, hi);
   if (hasPestIntent(q)) return pestAnswer(crop || "pest", hi);
   if (hasDiseaseIntent(q)) return diseaseAnswer(findDisease(q) || DISEASES[0], crop, hi);
-  if (crop) return cropAnswer(crop, profile, hi);
 
-  return { text: FALLBACK_GENERAL[hi ? "hi" : "en"], matched: false, kind: "general" };
+  // 7. Crop cultivation guide ONLY if user explicitly asked for crop guide
+  if (crop && hasCropGuideIntent(q, crop)) {
+    return cropAnswer(crop, profile, hi);
+  }
+
+  // 8. General conversational fallback (in user's detected / selected language)
+  const generalText = FALLBACK_MESSAGES[targetCode] || (hi ? FALLBACK_MESSAGES.hi : FALLBACK_MESSAGES.en);
+  return { text: generalText, matched: false, kind: "general" };
 };

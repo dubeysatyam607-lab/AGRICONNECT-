@@ -20,6 +20,12 @@ function getSessionId(): string {
   return _sessionId;
 }
 
+const _recentEvents: Array<{ event: FfEventName; metadata?: Record<string, unknown>; timestamp: string }> = [];
+
+export function getFfEvents() {
+  return [..._recentEvents];
+}
+
 /**
  * Track a Founding Farmer analytics event.
  * Non-blocking — fire-and-forget, never throws.
@@ -28,6 +34,7 @@ export async function trackFfEvent(
   eventName: FfEventName,
   metadata?: Record<string, unknown>,
 ): Promise<void> {
+  _recentEvents.push({ event: eventName, metadata, timestamp: new Date().toISOString() });
   try {
     const { data: { user } } = await supabase.auth.getUser();
     await supabase.from('ff_analytics_events').insert({

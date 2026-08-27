@@ -275,8 +275,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
         {/* ── First-day personalized board (after onboarding) ─── */}
         <FirstDayBoard onGo={go} />
 
-        {/* ── FIX 5: Profile completion prompt ─── */}
-        {user && typeof window !== 'undefined' && localStorage.getItem('agri_onboarding_seen') !== 'true' && (
+        {/* ── FIX 5: Profile completion prompt (only shown if farm is unconfigured) ─── */}
+        {user && typeof window !== 'undefined' && localStorage.getItem('agri_onboarding_seen') !== 'true' && localStorage.getItem('agri_profile_complete') !== 'true' && !farmProfile?.crop && (
           <section className="px-4 mt-4 animate-fade-in">
             <button
               onClick={() => go('profile')}
@@ -338,25 +338,36 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                   ))}
                 </div>
               </button>
+            ) : weather.loading ? (
+              <div className="w-full rounded-[28px] border border-border bg-card p-6 shadow-card">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-600 flex items-center justify-center">
+                    <CloudSun size={24} className="animate-pulse" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-foreground">{t('home.fetchingWeather') || 'Fetching live weather…'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t('home.weatherDetecting') || 'Getting hyperlocal temperature & rain forecast'}</p>
+                  </div>
+                </div>
+              </div>
             ) : (
-              /* FIX 3 + FIX 8: Replace empty skeleton with meaningful CTA */
-              <button
-                onClick={() => go('profile')}
-                className="w-full rounded-[28px] border border-border bg-card p-6 text-center shadow-card hover-lift"
-              >
-                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-                  <Sprout size={26} />
-                </span>
-                <h3 className="mt-3 text-[15px] font-bold text-foreground">{t('home.farmSummaryLoading') || 'Your farm summary is loading'}</h3>
-                <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
-                  {weather.error
-                    ? (t('home.setLocationHint') || '🌤 Set your location for hyperlocal weather')
-                    : (t('home.profilePersonalisedHint') || 'Complete your profile to get personalised insights for your crops')}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 text-white px-4 py-2 text-[12px] font-bold shadow-colorful">
-                  {t('home.setUpMyFarm') || 'Set Up My Farm'} <ArrowRight size={13} />
-                </span>
-              </button>
+              <div className="w-full rounded-[28px] border border-border bg-card p-6 shadow-card">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-muted/60 text-muted-foreground flex items-center justify-center">
+                    <CloudSun size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-foreground">{t('home.weatherUnavailable') || 'Live Weather Unavailable'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{weather.error || (t('home.setLocationHint') || '🌤 Set your location for hyperlocal weather')}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => weather.refreshLocation()}
+                  className="mt-3 w-full rounded-xl bg-forest px-3 py-2 text-xs font-bold text-white hover:brightness-110"
+                >
+                  {t('wth.retry') || 'Retry Weather'}
+                </button>
+              </div>
             )}
         </section>
         {/* ── AI Insight Card (heart of the home screen) ─── */}

@@ -125,46 +125,57 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     updateLocation(location, 'loading');
+
+    const handleSuccess = async (pos: GeolocationPosition) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      let revInfo = {};
+      try {
+        const rev = await import('./reverseGeocode');
+        revInfo = await rev.default(latitude, longitude);
+      } catch (e) {
+        console.warn('[LocationContext] Reverse geocoding fallback:', e);
+      }
+
+      const loc: NormalizedLocation = {
+        latitude,
+        longitude,
+        accuracy,
+        city: 'Current Location',
+        ...revInfo,
+        source: 'gps',
+      };
+      updateLocation(loc, 'ready');
+    };
+
+    const handleError = (err: GeolocationPositionError) => {
+      // If high accuracy failed, try standard accuracy once before reporting error
+      navigator.geolocation.getCurrentPosition(
+        handleSuccess,
+        (finalErr) => {
+          let msg = '';
+          switch (finalErr.code) {
+            case finalErr.PERMISSION_DENIED:
+              msg = 'Location permission denied. Please allow location access.';
+              break;
+            case finalErr.POSITION_UNAVAILABLE:
+              msg = 'Location unavailable. Turn on device GPS or choose city manually.';
+              break;
+            case finalErr.TIMEOUT:
+              msg = 'Location request timed out. Please try again.';
+              break;
+            default:
+              msg = finalErr.message || 'Unable to detect location.';
+          }
+          updateLocation({}, 'error', msg);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+      );
+    };
+
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
-        if (accuracy > 200) {
-          updateLocation({ latitude, longitude, accuracy, source: 'gps' }, 'error', 'Location accuracy is low. Try again.');
-          return;
-        }
-        try {
-          const rev = await import('./reverseGeocode');
-          const revInfo = await rev.default(latitude, longitude);
-          const loc: NormalizedLocation = {
-            latitude,
-            longitude,
-            accuracy,
-            ...revInfo,
-            source: 'gps',
-          };
-          updateLocation(loc, 'ready');
-        } catch (e: any) {
-          updateLocation({ latitude, longitude, accuracy, source: 'gps' }, 'error', e.message || 'Reverse geocoding failed');
-        }
-      },
-      (err) => {
-        let msg = '';
-        switch (err.code) {
-          case err.PERMISSION_DENIED:
-            msg = 'Location permission denied';
-            break;
-          case err.POSITION_UNAVAILABLE:
-            msg = 'Location unavailable';
-            break;
-          case err.TIMEOUT:
-            msg = 'Location request timed out';
-            break;
-          default:
-            msg = err.message;
-        }
-        updateLocation({}, 'error', msg);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      handleSuccess,
+      handleError,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
   };
 
