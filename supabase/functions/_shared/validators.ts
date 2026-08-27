@@ -25,7 +25,7 @@ export const kisanChatRequestSchema = z.object({
   language: z.string().max(50).optional(),
   persona: z.string().max(2000).optional(),
   memoryContext: z.string().max(4000).optional(),
-  conversationId: z.string().uuid().nullable().optional(),
+  conversationId: z.string().max(100).nullable().optional(),
   userLocation: z.object({
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),

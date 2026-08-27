@@ -18,7 +18,7 @@ import {
   type StoredConversation, type StoredChatMessage,
 } from "@/lib/ai-persistence";
 import {
-  listen, sttSupported, detectLanguageOf, localeForLang,
+  listen, sttSupported, detectLanguageOf, localeForLang, langLabel,
   rememberProfile, buildMemoryContext, extractFacts, rememberTopic,
   personaInstruction, speakText as engineSpeakText, stopSpeaking as stopSpeakingEngine,
   chunkForSpeech, textForSpeech, extractEntities, verifyCropConsistency,
@@ -789,13 +789,16 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
     // 1. Offline Mode Fallback — smart local advisor
     if (isOffline) {
-      const local = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
+      const qLang = detectLanguageOf(messageToSend);
+      const isQHindi = qLang?.lang === "hi" || isHindi || isHinglish(messageToSend);
+      const activeCode = isQHindi ? "hi" : (qLang?.lang || (isHindi ? "hi" : "en"));
+      const local = getLocalAnswer(messageToSend, profile, activeCode, chatHistory);
       window.setTimeout(() => {
         const finalHistory = [...nextHistory, {
           role: "assistant" as const,
-          content: local.matched ? local.text : getOfflineAdvisory(),
-          source: local.matched ? ("local" as const) : undefined,
-          suggestions: local.matched ? LOCAL_SUGGESTIONS[local.kind] : undefined,
+          content: local.matched ? local.text : local.text,
+          source: ("local" as const),
+          suggestions: local.kind ? (LOCAL_SUGGESTIONS[local.kind] || DEFAULT_SUGGESTIONS) : DEFAULT_SUGGESTIONS,
         }];
         setChatHistory(finalHistory);
         saveSession(finalHistory);
@@ -928,9 +931,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         // Dynamic query language detection: If user types Hindi/Hinglish, enforce Hindi
         const queryLang = detectLanguageOf(messageToSend);
         const isQueryHindi = queryLang?.lang === "hi" || isHindi || isHinglish(messageToSend);
+        const activeLangCode = isQueryHindi ? "hi" : (queryLang?.lang || (isHindi ? "hi" : "en"));
         const resolvedLang = isQueryHindi
           ? "Hindi (हिंदी)"
-          : (queryLang?.lang ? queryLang.display : selectedLanguage);
+          : (langLabel(queryLang?.lang) || selectedLanguage);
 
         const { data: chatData, error: chatErr } = await invokeEdgeWithTimeout<{
           message?: string;
@@ -956,7 +960,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             : "en"
           ),
           memoryContext: scanContext ? `${scanContext}\n\n${memoryContext}` : memoryContext,
-          conversationId: serverConversationId,
+          conversationId: (serverConversationId && serverConversationId !== "guest") ? serverConversationId : undefined,
           userLocation: (activeLocation?.status === 'ready' && typeof activeLocation.latitude === 'number' && typeof activeLocation.longitude === 'number')
             ? { latitude: activeLocation.latitude, longitude: activeLocation.longitude }
             : (userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : undefined),
@@ -981,7 +985,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         const entities = extractEntities(messageToSend);
         if (entities.crop && !verifyCropConsistency(entities.crop, assistantResponse)) {
           console.warn(`[KisanAI] Crop mismatch detected. Requested "${entities.crop}", regenerating with guaranteed crop advisor.`);
-          const localCropAnswer = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
+          const localCropAnswer = getLocalAnswer(messageToSend, profile, activeLangCode, chatHistory);
           if (localCropAnswer.matched) {
             assistantResponse = localCropAnswer.text;
             if (localCropAnswer.kind) {
@@ -1019,26 +1023,17 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     } catch (err: any) {
       console.error("AI Assistant processing error:", err);
       // Smart local fallback with instant agricultural knowledge
-      const local = getLocalAnswer(messageToSend, profile, localLang, chatHistory);
-      const fallbackContent = local.matched ? local.text : (
-        isHindi
-          ? `🌾 **कृषि सलाह व सहायता**:\n\n` +
-            `• **फसल सवाल**: आप किसी भी फसल की खाद मात्रा, बुआई, या सिंचाई पूछ सकते हैं।\n` +
-            `• **कीट व रोग**: पत्ती पर धब्बे या कीड़े के लक्षण बताएं (जैसे: 'टमाटर में झुलसा', 'गेहूं में पीला रतुआ')।\n` +
-            `• **मंडी भाव**: फसल का नाम लिखकर भाव पूछें (जैसे: 'सोयाबीन मंडी भाव')।\n\n` +
-            `पूछें: "${profile.crop || 'गेहूं'} खाद मात्रा", "कीटनाशक स्प्रे", या "मंडी भाव"।`
-          : `🌾 **Agricultural Advisor & Support**:\n\n` +
-            `• **Crop Guidance**: Ask about fertilizer schedules, sowing, or irrigation for any crop.\n` +
-            `• **Pest & Disease**: Describe leaf symptoms (e.g., 'Tomato early blight', 'Wheat yellow rust').\n` +
-            `• **Mandi Rates**: Type crop name for market prices (e.g., 'Soybean mandi price').\n\n` +
-            `Try asking: "${profile.crop || 'Wheat'} fertilizer dose", "Pesticide spray", or "Mandi prices".`
-      );
+      const qLang = detectLanguageOf(messageToSend);
+      const isQHindi = qLang?.lang === "hi" || isHindi || isHinglish(messageToSend);
+      const activeCode = isQHindi ? "hi" : (qLang?.lang || (isHindi ? "hi" : "en"));
+      const local = getLocalAnswer(messageToSend, profile, activeCode, chatHistory);
+      const fallbackContent = local.text;
 
       const finalHistory = [...nextHistory, {
         role: "assistant" as const,
         content: fallbackContent,
         source: "local" as const,
-        suggestions: local.matched ? (LOCAL_SUGGESTIONS[local.kind] || DEFAULT_SUGGESTIONS) : [
+        suggestions: local.kind ? (LOCAL_SUGGESTIONS[local.kind] || DEFAULT_SUGGESTIONS) : [
           `${profile.crop || 'Wheat'} fertilizer dose`,
           `${profile.crop || 'Wheat'} irrigation schedule`,
           `${profile.crop || 'Wheat'} mandi price`,

@@ -61,6 +61,8 @@ export interface IFarmerProfile {
   livestock: ILivestockInventory;
   preferredLanguage: string; // e.g. "en", "hi", "pa", "mr", "gu"
   profilePictureUrl?: string;
+  founding_farmer?: boolean;
+  founding_farmer_number?: number;
   updatedAt: string;
   createdAt: string;
 }

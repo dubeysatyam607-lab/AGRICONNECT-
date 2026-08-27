@@ -159,5 +159,45 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
       expect(res.live.temp).toBe(26);
       expect(mockDataSource.fetchRemoteWeather).toHaveBeenCalledWith(22.71, 75.85, 'Indore');
     });
+
+    it('handles locations across northern and southern India with realistic temperature gradients', async () => {
+      const mockDataSource = {
+        fetchRemoteWeather: vi.fn().mockImplementation(async (lat: number, lng: number, name?: string) => ({
+          location: { name: name || 'Location', district: name || 'District', state: 'India', latitude: lat, longitude: lng },
+          live: {
+            temp: lat > 30 ? 16 : 32, // Northern vs Southern India gradient
+            feelsLike: lat > 30 ? 15 : 36,
+            condition: lat > 30 ? 'Fog / Mist' : 'Sunny',
+            humidity: lat > 30 ? 85 : 60,
+            windSpeed: 12,
+            dewPoint: 14,
+            windDirection: 'N',
+            windDegrees: 0,
+            uvIndex: lat > 30 ? 3 : 9,
+            pressureHpa: 1015,
+            pressureTrend: 'Steady',
+            visibilityKm: 6,
+            aqi: { index: 2, pm25: 35, pm10: 60, status: 'Moderate' },
+            sunriseTime: '06:15 AM',
+            sunsetTime: '06:30 PM',
+            daylightProgressPercent: 50,
+          },
+          hourly: [],
+          daily: [],
+          lastUpdated: new Date().toISOString(),
+          isOfflineCached: false,
+        })),
+      };
+
+      const repo = new WeatherRepositoryImpl(mockDataSource as any);
+      const shimla = await repo.getWeatherForecast(31.10, 77.17, 'Shimla');
+      const chennai = await repo.getWeatherForecast(13.08, 80.27, 'Chennai');
+
+      expect(shimla.live.temp).toBe(16);
+      expect(shimla.live.condition).toBe('Fog / Mist');
+      expect(chennai.live.temp).toBe(32);
+      expect(chennai.live.condition).toBe('Sunny');
+      expect(chennai.live.uvIndex).toBe(9);
+    });
   });
 });
