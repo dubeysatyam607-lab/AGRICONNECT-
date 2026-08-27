@@ -89,6 +89,8 @@ export function SubscriptionsPanel({
         setSubscribePlan(null);
         setCoupon('');
       }
+    } catch (err: any) {
+      setFailMsg(err?.message || t('pay.failed') || 'Payment failed');
     } finally {
       setBusy(false);
     }
@@ -100,6 +102,8 @@ export function SubscriptionsPanel({
     try {
       const result = await renewSubscription(active.id);
       if (result?.txn.status === 'Success') onToast?.(t('pay.renewed'));
+    } catch (err: any) {
+      setFailMsg(err?.message || t('pay.failed') || 'Renewal failed');
     } finally {
       setBusy(false);
     }

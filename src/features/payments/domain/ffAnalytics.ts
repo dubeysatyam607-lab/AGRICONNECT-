@@ -13,7 +13,9 @@ let _sessionId: string | null = null;
 
 function getSessionId(): string {
   if (!_sessionId) {
-    _sessionId = crypto.randomUUID().slice(0, 12);
+    _sessionId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().slice(0, 12)
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
   }
   return _sessionId;
 }

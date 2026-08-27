@@ -328,7 +328,7 @@ export function getStoreProductImage(productName?: string, category?: string): s
   }
 
   // Token matching on product name
-  const tokens = lowerName.split(/[^a-z0-9\u0900-\u097F]+/u).filter(Boolean);
+  const tokens = lowerName.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
   for (const token of tokens) {
     if (token.length >= 3 && STORE_PRODUCT_IMAGES[token]) {
       return STORE_PRODUCT_IMAGES[token];

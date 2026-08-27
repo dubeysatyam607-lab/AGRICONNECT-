@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFarm } from "@/contexts/FarmContext";
+import { useLocation } from "@/features/location/LocationContext";
 import { getLocalAnswer, type LocalAnswerKind } from "@/lib/local-advisor";
 import { dialogService } from "@/core/services/DialogService";
 import {
@@ -171,6 +172,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile } = useFarm();
+  const { location: activeLocation } = useLocation();
   const localLang = isHindi ? "hi" : "en";
 
   const chipLabels: Record<string, string> = {
@@ -704,14 +706,15 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     }
 
     try {
-      // Try to get location
-      let lat: number | undefined;
-      let lng: number | undefined;
+      // Try to get location from active context, local state, or GPS
+      let lat: number | undefined = (activeLocation?.status === 'ready' && typeof activeLocation.latitude === 'number')
+        ? activeLocation.latitude
+        : userLocation?.lat;
+      let lng: number | undefined = (activeLocation?.status === 'ready' && typeof activeLocation.longitude === 'number')
+        ? activeLocation.longitude
+        : userLocation?.lng;
 
-      if (userLocation) {
-        lat = userLocation.lat;
-        lng = userLocation.lng;
-      } else if (navigator.geolocation) {
+      if (!lat && !lng && navigator.geolocation) {
         try {
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -954,7 +957,9 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           ),
           memoryContext: scanContext ? `${scanContext}\n\n${memoryContext}` : memoryContext,
           conversationId: serverConversationId,
-          userLocation: userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : undefined,
+          userLocation: (activeLocation?.status === 'ready' && typeof activeLocation.latitude === 'number' && typeof activeLocation.longitude === 'number')
+            ? { latitude: activeLocation.latitude, longitude: activeLocation.longitude }
+            : (userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng } : undefined),
           farmContext: {
             crop: profile.crop,
             variety: profile.variety,

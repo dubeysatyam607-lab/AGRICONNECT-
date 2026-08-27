@@ -4,10 +4,8 @@ import { DI_TOKENS } from '@/core/di/Container';
 import { IWeatherRepository } from '../../domain/repositories/IWeatherRepository';
 import { useLocation } from '@/features/location/LocationContext';
 import { IWeatherModuleData } from '../../domain/models/WeatherModels';
-import { readStaleCache, writeCache, isOnline } from '@/lib/offline-cache';
+import { isOnline } from '@/lib/offline-cache';
 import { friendlyError } from '@/components/ui/error-state';
-
-const CACHE_KEY = 'weather:home';
 
 export interface WeatherViewModelState {
   data: IWeatherModuleData | null;
@@ -26,7 +24,9 @@ export interface WeatherViewModelActions {
 
 /**
  * Enterprise Reactive Weather MVVM Hook.
- * Manages weather state, location tracking, unit conversions, and background sync.
+ * Strictly binds to active coordinates from LocationContext.
+ * Fetches verified live weather, handles coordinate switches without stale bleeding,
+ * and maintains accurate unit conversions.
  */
 export function useWeatherViewModel(repository?: IWeatherRepository): WeatherViewModelState & WeatherViewModelActions {
   const repo = useMemo(() => repository || inject<IWeatherRepository>(DI_TOKENS.WeatherRepository), [repository]);
@@ -50,55 +50,70 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     }
   }, []);
 
-  const didPreloadRef = useRef(false);
-  const fetchWeatherForCoords = useCallback(async (lat?: number, lng?: number, locName?: string, isRefresh = false) => {
-    // Serve cached forecast instantly on cold start (even when stale), once per mount
-    if (!didPreloadRef.current && !isRefresh) {
-      didPreloadRef.current = true;
-      const cached = readStaleCache<IWeatherModuleData>(CACHE_KEY);
-      if (cached) {
-        setState(prev => (prev.data ? prev : { ...prev, data: cached, loading: false, error: null }));
-      }
-    }
+  // Track active coordinates to prevent out-of-order responses on rapid location changes
+  const activeCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
+
+  const fetchWeatherForCoords = useCallback(async (lat: number, lng: number, locName?: string, isRefresh = false) => {
+    activeCoordsRef.current = { lat, lng };
 
     try {
-      setState(prev => ({ ...prev, loading: !prev.data && !isRefresh, refreshing: isRefresh, error: null }));
-      
-      const result = isRefresh 
-        ? await repo.refreshWeather(lat, lng) 
-        : await repo.getWeatherForecast(lat, lng, locName);
-
-      writeCache(CACHE_KEY, result);
       setState(prev => ({
         ...prev,
-        data: result,
-        loading: false,
-        refreshing: false,
+        loading: !prev.data || isRefresh ? prev.loading : true,
+        refreshing: isRefresh,
         error: null,
       }));
+
+      const result = isRefresh
+        ? await repo.refreshWeather(lat, lng, locName)
+        : await repo.getWeatherForecast(lat, lng, locName);
+
+      // Verify this response is still for the currently selected coordinates
+      if (
+        activeCoordsRef.current &&
+        Math.abs(activeCoordsRef.current.lat - lat) < 0.01 &&
+        Math.abs(activeCoordsRef.current.lng - lng) < 0.01
+      ) {
+        setState(prev => ({
+          ...prev,
+          data: result,
+          loading: false,
+          refreshing: false,
+          error: null,
+        }));
+      }
     } catch (err: any) {
-      console.error('[useWeatherViewModel] Error fetching weather:', err);
-      const stale = readStaleCache<IWeatherModuleData>(CACHE_KEY);
-      setState(prev => ({
-        ...prev,
-        data: prev.data || stale,
-        loading: false,
-        refreshing: false,
-        error: prev.data || stale
-          ? null
-          : isOnline()
-            ? friendlyError(err, "Couldn't fetch today's weather")
-            : "You're offline. Showing saved weather.",
-      }));
+      console.error('[useWeatherViewModel] Error fetching live weather:', err);
+      if (
+        activeCoordsRef.current &&
+        Math.abs(activeCoordsRef.current.lat - lat) < 0.01 &&
+        Math.abs(activeCoordsRef.current.lng - lng) < 0.01
+      ) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          refreshing: false,
+          error: isOnline()
+            ? friendlyError(err, 'Weather data temporarily unavailable. Please try again.')
+            : "You're offline. Please connect to the internet for live weather.",
+        }));
+      }
     }
   }, [repo]);
 
   const refreshLocation = useCallback(async () => {
     triggerHaptic();
-    setState(prev => ({ ...prev, refreshing: true }));
-    // Trigger GPS refresh via LocationContext; results handled in useEffect
-    refresh();
-  }, [refresh, triggerHaptic]);
+    const { latitude, longitude, city, district, village } = location;
+    const locName = city || district || village;
+
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
+      setState(prev => ({ ...prev, refreshing: true }));
+      await fetchWeatherForCoords(latitude, longitude, locName, true);
+    } else {
+      setState(prev => ({ ...prev, refreshing: true }));
+      refresh();
+    }
+  }, [location, fetchWeatherForCoords, refresh, triggerHaptic]);
 
   const toggleTemperatureUnit = useCallback(() => {
     triggerHaptic();
@@ -106,6 +121,7 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
   }, [triggerHaptic]);
 
   const formatTemp = useCallback((celsius: number): string => {
+    if (typeof celsius !== 'number' || isNaN(celsius)) return '--';
     if (state.isFahrenheit) {
       const f = Math.round((celsius * 9) / 5 + 32);
       return `${f}°F`;
@@ -115,13 +131,16 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
 
   // React to location updates from LocationContext
   useEffect(() => {
-    const { status, latitude, longitude, city, error } = location;
-    if (status === 'ready' && latitude && longitude) {
-      fetchWeatherForCoords(latitude, longitude, city);
+    const { status, latitude, longitude, city, district, village, error } = location;
+    const locName = city || district || village;
+
+    if (status === 'ready' && typeof latitude === 'number' && typeof longitude === 'number') {
+      fetchWeatherForCoords(latitude, longitude, locName);
     } else if (status === 'error') {
+      activeCoordsRef.current = null;
       setState(prev => ({
         ...prev,
-        data: prev.data || readStaleCache<IWeatherModuleData>(CACHE_KEY),
+        data: null,
         loading: false,
         refreshing: false,
         error: error || 'Location unavailable. Please allow location access or choose your location manually.',
@@ -129,24 +148,22 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     }
   }, [location, fetchWeatherForCoords]);
 
-  // Resolve the loading state if location never becomes available (GPS prompt
-  // denied/ignored, geolocation unsupported). Never leave an infinite spinner.
+  // Safety timeout if location takes too long to resolve
   useEffect(() => {
     if (state.loading && (location.status === 'idle' || location.status === 'loading')) {
       const t = setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          data: prev.data || readStaleCache<IWeatherModuleData>(CACHE_KEY),
-          loading: false,
-          refreshing: false,
-          error: prev.data || readStaleCache<IWeatherModuleData>(CACHE_KEY)
-            ? null
-            : 'Location unavailable. Please allow location access or choose your location manually.',
-        }));
-      }, 12000);
+        if (!location.latitude || !location.longitude) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            refreshing: false,
+            error: prev.data ? null : 'Location unavailable. Please select your farm or city location.',
+          }));
+        }
+      }, 10000);
       return () => clearTimeout(t);
     }
-  }, [state.loading, location.status]);
+  }, [state.loading, location.status, location.latitude, location.longitude]);
 
   return {
     ...state,

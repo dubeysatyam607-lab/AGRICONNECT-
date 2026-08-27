@@ -192,8 +192,12 @@ serve(async (req: Request): Promise<Response> => {
           return json({ error: "Payment amount mismatch" }, 400, cors);
         }
 
-        // Activate subscription (service_role RPC)
-        const { data: activateResult, error: activateError } = await supabase.rpc("activate_founding_farmer", {
+        // Activate subscription (service_role RPC — privileged, payment-verified)
+        const adminClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        );
+        const { data: activateResult, error: activateError } = await adminClient.rpc("activate_founding_farmer", {
           p_user_id: user.id,
           p_plan: plan,
           p_price: serverPrice,
