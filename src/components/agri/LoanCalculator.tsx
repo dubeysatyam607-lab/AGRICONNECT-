@@ -4,6 +4,8 @@ import { CreditCard, Calculator, ExternalLink, ImageOff } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
 
+import { SafeImage } from "@/components/ui/SafeImage";
+
 interface LoanScheme {
   id: number;
   title: string;
@@ -18,49 +20,44 @@ const LOAN_SCHEMES: LoanScheme[] = [
     title: 'PM Kisan Samman Nidhi', 
     eligibility: 'Small/Marginal Farmers',
     applyUrl: 'https://pmkisan.gov.in/',
-    imageUrl: 'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    imageUrl: 'https://images.unsplash.com/photo-1594488500669-e3bb970ef1f7?auto=format&fit=crop&w=900&q=80'
   },
   { 
     id: 2, 
     title: 'Kisan Credit Card (KCC)', 
     eligibility: 'All Farmers',
     applyUrl: 'https://pmkisan.gov.in/RegistrationFormKCC.aspx',
-    imageUrl: 'https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80'
   },
   { 
     id: 3, 
     title: 'Agriculture Infrastructure Fund', 
     eligibility: 'All Farmers',
     applyUrl: 'https://agriinfra.dac.gov.in/',
-    imageUrl: 'https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    imageUrl: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80'
   },
   { 
     id: 4, 
     title: 'PM-KISAN Credit Linked Subsidy', 
     eligibility: 'Registered Farmers',
     applyUrl: 'https://www.nabard.org/',
-    imageUrl: 'https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80'
   },
 ];
 
 const LoanSchemeCard = ({ scheme }: { scheme: LoanScheme }) => {
   const { t } = useLanguage();
-  const [imgError, setImgError] = useState(false);
   return (
     <div className="bg-card rounded-2xl border border-border shadow-card hover:shadow-soft transition-shadow overflow-hidden flex">
       <div className="w-24 h-full min-h-[100px] relative bg-muted shrink-0">
-        {!imgError ? (
-          <img 
-            src={scheme.imageUrl} 
-            alt={scheme.title}
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover absolute inset-0"
-          />
-        ) : (
-          <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground">
-            <ImageOff size={20} />
-          </div>
-        )}
+        <SafeImage 
+          src={scheme.imageUrl} 
+          alt={scheme.title}
+          entityName={scheme.title}
+          resolveType="scheme"
+          category="schemes"
+          className="w-full h-full object-cover absolute inset-0"
+        />
       </div>
       <div className="flex-1 p-3 flex flex-col justify-between">
         <div>

@@ -1242,7 +1242,6 @@ export const as: JourneyDict = {
   "home.rustRisk": "আপোনাৰ শস্যত পোক-পৰুৱা আৰু ৰোগ পৰীক্ষা কৰিবলৈ ক্ৰপ ডক্টৰ ব্যৱহাৰ কৰক",
   "home.sampleListings": "নমুনা তালিকা — কৃষকে যোগ কৰিলে ইয়াত প্ৰকৃত তালিকা দেখা যাব।",
   "home.scan": "স্কেন",
-  "home.setLocationHint": "🌤 সঠিক বতৰৰ বাবে আপোনাৰ স্থান বাছক",
   "home.setUpMyFarm": "মোৰ পথাৰ ছেট আপ কৰক",
   "home.todayMandi": "আজিৰ মণ্ডী",
   "home.trending": "চৰ্চিত শস্য",

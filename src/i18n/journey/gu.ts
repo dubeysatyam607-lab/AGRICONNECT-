@@ -1242,7 +1242,6 @@ export const gu: JourneyDict = {
   "home.rustRisk": "પાકમાં જીવાત અને રોગ તપાસવા ક્રોપ ડોક્ટરનો ઉપયોગ કરો",
   "home.sampleListings": "નમૂનો યાદી — ખેડૂતો ઉમેરે એટલે અહીં વાસ્તવિક યાદી દેખાશે.",
   "home.scan": "સ્કેન કરો",
-  "home.setLocationHint": "🌤 ચોક્કસ હવામાન માટે તમારું સ્થાન સેટ કરો",
   "home.setUpMyFarm": "મારું ખેતર સેટ કરો",
   "home.todayMandi": "આજની મંડી",
   "home.trending": "લોકપ્રિય પાક",

@@ -128,3 +128,33 @@ export function getMachineImage(name?: string, category?: string): string {
 
   return DEFAULT_MACHINE_IMG;
 }
+
+export function getMachineSvgFallback(name?: string, category?: string): string {
+  const raw = `${name || ""} ${category || ""}`.toLowerCase();
+  const isHarvester = raw.includes("harvester") || raw.includes("combine");
+  const isRotavator = raw.includes("rotavator") || raw.includes("tiller");
+  const isSeeder = raw.includes("seeder") || raw.includes("drill");
+  const isSprayer = raw.includes("sprayer");
+  const emoji = isHarvester ? "🌾" : isRotavator ? "⚙️" : isSeeder ? "🌱" : isSprayer ? "💧" : "🚜";
+  const title = name || category || "Agricultural Machinery";
+
+  return (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mach_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22" />
+      <stop offset="50%" stop-color="#064e3b" />
+      <stop offset="100%" stop-color="#065f46" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#mach_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.2" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">${emoji}</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0fdf4" text-anchor="middle">${title}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Equipment & Machinery</text>
+</svg>
+`)
+  );
+}

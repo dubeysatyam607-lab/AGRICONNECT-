@@ -184,8 +184,8 @@ const Pricing: React.FC = () => {
     });
   };
 
-  // Handle Founding Farmer Purchase with Server-side verification
-  const handlePurchaseFF = async (plan: 'plus' | 'pro') => {
+  // Handle Founding Farmer Purchase with Official UPI QR & App Launcher
+  const handlePurchaseFF = (plan: 'plus' | 'pro') => {
     if (!user) {
       navigate('/auth/login?redirect=/pricing');
       return;
@@ -199,133 +199,18 @@ const Pricing: React.FC = () => {
       return;
     }
 
-    try {
-      setPurchasingPlan(plan);
-      trackFfEvent('ff_plan_selected', { plan });
-
-      const loaded = await loadRazorpay();
-      if (!loaded) {
-        toast({
-          title: 'Payment Gateway Error',
-          description: 'Could not load payment checkout. Please check your internet connection.',
-          variant: 'destructive',
-        });
-        setPurchasingPlan(null);
-        return;
-      }
-
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) {
-        navigate('/auth/login?redirect=/pricing');
-        return;
-      }
-
-      // 1. Create order on server (price is computed server-side, never trusted from client)
-      const createRes = await fetch(FUNC_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ action: 'create-subscription', plan }),
-      });
-
-      const createData = await createRes.json();
-      if (!createRes.ok || !createData?.orderId) {
-        toast({
-          title: 'Slot Claim Failed',
-          description: createData?.error || 'Could not claim Founding Farmer slot. It may have expired or been filled.',
-          variant: 'destructive',
-        });
-        setPurchasingPlan(null);
-        return;
-      }
-
-      trackFfEvent('ff_payment_initiated', { plan, orderId: createData.orderId });
-
-      // 2. Open Razorpay Checkout
-      const options = {
-        key: createData.key || 'rzp_test_placeholder',
-        amount: createData.amount * 100,
-        currency: 'INR',
-        name: 'AgriConnect',
-        description: `Founding Farmer ${plan === 'pro' ? 'Pro' : 'Plus'} Subscription`,
-        order_id: createData.orderId,
-        notes: { purpose: 'founding_farmer', plan },
-        prefill: {
-          name: user.user_metadata?.full_name || '',
-          email: user.email || '',
-        },
-        theme: { color: '#059669' },
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          try {
-            // 3. Verify payment strictly server-side
-            const verifyRes = await fetch(FUNC_URL, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                action: 'verify-payment',
-                plan,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                founding_farmer_number: createData.foundingFarmerNumber,
-              }),
-            });
-
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok && verifyData.ok) {
-              trackFfEvent('ff_payment_success', { plan, number: createData.foundingFarmerNumber });
-              setUserFfStatus({ isFF: true, number: createData.foundingFarmerNumber, plan });
-              toast({
-                title: '🎉 Welcome, Founding Farmer!',
-                description: `You are officially Founding Farmer #${createData.foundingFarmerNumber}. Your ${plan.toUpperCase()} plan & badge are active!`,
-              });
-            } else {
-              trackFfEvent('ff_payment_failed', { plan, error: verifyData.error });
-              toast({
-                title: 'Activation Failed',
-                description: verifyData.error || 'Payment was received but server activation encountered an issue.',
-                variant: 'destructive',
-              });
-            }
-          } catch (err: any) {
-            toast({
-              title: 'Verification Error',
-              description: err?.message || 'Could not verify payment.',
-              variant: 'destructive',
-            });
-          } finally {
-            setPurchasingPlan(null);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setPurchasingPlan(null);
-            trackFfEvent('ff_payment_cancelled', { plan });
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err: any) {
-      console.error('Founding Farmer purchase flow error:', err);
-      toast({
-        title: 'Error',
-        description: err?.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-      setPurchasingPlan(null);
-    }
+    trackFfEvent('ff_plan_selected', { plan });
+    setManualPlan({
+      id: plan === 'plus' ? 'plan-plus' : 'plan-pro',
+      name: `Founding Farmer ${plan === 'plus' ? 'Plus' : 'Pro'}`,
+      description: `Early Access Founding Farmer ${plan === 'plus' ? 'Plus' : 'Pro'} Plan`,
+      price: plan === 'plus' ? (ffConfig?.plus_price ?? 29) : (ffConfig?.pro_price ?? 59),
+      currency: 'INR',
+      interval: 'month',
+      is_active: true,
+      features: null,
+    });
+    setShowManualDialog(true);
   };
 
   const isOfferAvailable =
@@ -645,16 +530,42 @@ const Pricing: React.FC = () => {
                   </ul>
                 </div>
 
-                <Link
-                  to={user ? (plan.id === 'free' ? '/' : '/payments') : plan.ctaLink}
-                  className={
-                    plan.highlight
-                      ? 'mt-6 block text-center rounded-xl bg-emerald-600 text-white px-4 py-3 font-bold hover:bg-emerald-700 transition shadow-sm'
-                      : 'mt-6 block text-center rounded-xl border border-border bg-background px-4 py-3 font-bold text-foreground hover:bg-muted transition'
-                  }
-                >
-                  {plan.cta}
-                </Link>
+                {plan.id === 'free' ? (
+                  <Link
+                    to={user ? '/' : plan.ctaLink}
+                    className="mt-6 block text-center rounded-xl border border-border bg-background px-4 py-3 font-bold text-foreground hover:bg-muted transition"
+                  >
+                    {plan.cta}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/auth/login?redirect=/pricing');
+                        return;
+                      }
+                      setManualPlan({
+                        id: plan.id === 'pro' ? 'plan-pro' : 'plan-plus',
+                        name: plan.name,
+                        description: `${plan.name} Monthly Subscription`,
+                        price: plan.monthlyPrice,
+                        currency: 'INR',
+                        interval: 'month',
+                        is_active: true,
+                        features: null,
+                      });
+                      setShowManualDialog(true);
+                    }}
+                    className={
+                      plan.highlight
+                        ? 'mt-6 block w-full text-center rounded-xl bg-emerald-600 text-white px-4 py-3 font-bold hover:bg-emerald-700 transition shadow-sm'
+                        : 'mt-6 block w-full text-center rounded-xl border border-border bg-background px-4 py-3 font-bold text-foreground hover:bg-muted transition'
+                    }
+                  >
+                    {plan.cta}
+                  </button>
+                )}
               </div>
             ))}
           </div>

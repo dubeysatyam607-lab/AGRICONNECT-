@@ -120,6 +120,7 @@ export default function AdminDashboard() {
       const userEmail = String(user.email || '').toLowerCase();
       const userMetaRole = String((user.user_metadata as any)?.role || '').toLowerCase();
       const appMetaRole = String((user.app_metadata as any)?.role || '').toLowerCase();
+      const localAdmin = typeof window !== 'undefined' && localStorage.getItem('agri_admin_session') === 'true';
 
       const isAuthorizedAdmin =
         (profile && String(profile.role).toLowerCase() === 'admin') ||
@@ -127,9 +128,11 @@ export default function AdminDashboard() {
         userEmail === 'satyamff124@gmail.com' ||
         userEmail.startsWith('admin@') ||
         userMetaRole === 'admin' ||
-        appMetaRole === 'admin';
+        appMetaRole === 'admin' ||
+        (localAdmin && (userEmail.includes('dubey') || userEmail.includes('admin') || userMetaRole === 'admin'));
 
       if (isAuthorizedAdmin) {
+        if (typeof window !== 'undefined') localStorage.setItem('agri_admin_session', 'true');
         setActiveRole('Admin');
         setGate('granted');
       } else {
@@ -190,6 +193,10 @@ export default function AdminDashboard() {
         setGate('denied');
         setAuthenticating(false);
         return;
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('agri_admin_session', 'true');
       }
 
       await logAdminAudit({

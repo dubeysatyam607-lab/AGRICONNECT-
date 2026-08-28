@@ -100,10 +100,16 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <div className="mt-4 flex flex-col sm:flex-row items-center sm:items-start gap-5">
             <div className="h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-full border-4 border-white/20 shadow-xl overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-3xl font-extrabold">
               {profile.profilePictureUrl ? (
-                <img src={profile.profilePictureUrl} alt={personal.fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-white">{initials || '🌾'}</span>
-              )}
+                <img
+                  src={profile.profilePictureUrl}
+                  alt={personal.fullName}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  className="h-full w-full object-cover"
+                />
+              ) : null}
+              <span className="text-white select-none">{initials || '🌾'}</span>
             </div>
 
             <div className="flex-1 text-center sm:text-left space-y-2 min-w-0">

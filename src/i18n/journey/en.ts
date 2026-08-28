@@ -1242,7 +1242,6 @@ export const en: JourneyDict = {
   "home.rustRisk": "Use Crop Doctor to check your crop for pests & disease",
   "home.sampleListings": "Sample listings — real listings appear here once farmers add them.",
   "home.scan": "Scan",
-  "home.setLocationHint": "🌤 Set your location for hyperlocal weather",
   "home.setUpMyFarm": "Set Up My Farm",
   "home.todayMandi": "Today's Mandi",
   "home.trending": "Trending Crops",

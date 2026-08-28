@@ -1242,7 +1242,6 @@ export const kn: JourneyDict = {
   "home.rustRisk": "ನಿಮ್ಮ ಬೆಳೆಯಲ್ಲಿ ಕೀಟಗಳು & ರೋಗಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಕ್ರಾಪ್ ಡಾಕ್ಟರ್ ಬಳಸಿ",
   "home.sampleListings": "ಮಾದರಿ ಪಟ್ಟಿ — ರೈತರು ಸೇರಿಸಿದಾಗ ನಿಜವಾದ ಪಟ್ಟಿ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
   "home.scan": "ಸ್ಕ್ಯಾನ್",
-  "home.setLocationHint": "🌤 ನಿಖರ ಹವಾಮಾನಕ್ಕಾಗಿ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ",
   "home.setUpMyFarm": "ನನ್ನ ಜಮೀನು ಹೊಂದಿಸಿ",
   "home.todayMandi": "ಇಂದಿನ ಮಂಡಿ",
   "home.trending": "ಜನಪ್ರಿಯ ಬೆಳೆಗಳು",

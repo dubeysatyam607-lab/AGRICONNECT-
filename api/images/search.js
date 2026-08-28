@@ -1,55 +1,81 @@
 /**
  * Vercel Serverless Function — Secure Pexels Image Search API for AgriConnect.
  *
- * Handles GET /api/images/search?query=...&perPage=...&type=...
+ * GET /api/images/search?query=...&perPage=...&type=...
  *
  * Security:
  * - Keeps PEXELS_API_KEY secure on the server side.
  * - Sanitizes user query to prevent SSRF and injection.
- * - Scores candidates for agricultural relevance.
- * - Implements HTTP CDN caching headers.
+ * - Exact-entity precision search (e.g., "coconut fruit", "garlic bulb", "Mahindra tractor").
+ * - In-memory cache + HTTP CDN edge caching (24h).
  */
 
 const PEXELS_API_KEY = (process.env.PEXELS_API_KEY || "").trim();
 
-const AGRI_KEYWORDS = [
-  "agriculture", "farming", "farm", "crop", "field", "harvest",
-  "produce", "tractor", "soil", "plant", "seed", "fertilizer",
-  "pesticide", "grain", "vegetable", "fruit", "irrigation", "cultivation"
-];
+const memoryCache = new Map();
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-function sanitizeQuery(q) {
-  if (typeof q !== "string") return "agriculture farming";
-  let clean = q.replace(/[^a-zA-Z0-9\s\u0900-\u097F-]/gu, " ").trim();
-  clean = clean.replace(/\s+/g, " ");
-  return clean.slice(0, 100) || "agriculture farming";
+function getCached(key) {
+  const item = memoryCache.get(key);
+  if (item && Date.now() - item.timestamp < CACHE_TTL_MS) {
+    return item.data;
+  }
+  return null;
 }
 
-function scoreRelevance(photo, entityName, type) {
-  let score = 0;
-  const textToScan = `${photo.alt || ""} ${photo.url || ""}`.toLowerCase();
-  const entityTerms = entityName.toLowerCase().split(/\s+/).filter(Boolean);
+function setCached(key, data) {
+  memoryCache.set(key, { timestamp: Date.now(), data });
+  if (memoryCache.size > 1000) {
+    const oldestKey = memoryCache.keys().next().value;
+    memoryCache.delete(oldestKey);
+  }
+}
 
-  // Exact entity term matches
-  for (const term of entityTerms) {
-    if (term.length >= 3 && textToScan.includes(term)) {
-      score += 40;
-    }
+function sanitizeQuery(q) {
+  if (typeof q !== "string") return "agriculture";
+  let clean = q.replace(/[^a-zA-Z0-9\s\u0900-\u097F-]/gu, " ").trim();
+  clean = clean.replace(/\s+/g, " ");
+  return clean.slice(0, 80) || "agriculture";
+}
+
+function buildSearchQuery(query, type) {
+  const q = query.toLowerCase();
+
+  if (type === "crop" || type === "fruit" || type === "vegetable" || type === "spice") {
+    if (q.includes("coconut") || q.includes("nariyal")) return "coconut fruit";
+    if (q.includes("lemon") || q.includes("nimbu")) return "lemon fruit";
+    if (q.includes("garlic") || q.includes("lahsun")) return "garlic bulb";
+    if (q.includes("ginger") || q.includes("adrak")) return "ginger root";
+    if (q.includes("apple") || q.includes("seb")) return "red apple fruit";
+    if (q.includes("tomato") || q.includes("tamatar")) return "ripe tomato";
+    if (q.includes("potato") || q.includes("aloo")) return "fresh potato";
+    if (q.includes("onion") || q.includes("pyaj")) return "red onion";
+    if (q.includes("mustard") || q.includes("sarson")) return "mustard seeds agriculture";
+    if (q.includes("soybean") || q.includes("soya")) return "soybean crop agriculture";
+    if (q.includes("wheat") || q.includes("gehu")) return "wheat grain field";
+    if (q.includes("rice") || q.includes("paddy") || q.includes("dhan")) return "paddy rice crop";
+    if (q.includes("cotton") || q.includes("kapas")) return "cotton plant field";
+    if (q.includes("sugarcane") || q.includes("ganna")) return "sugarcane crop field";
+    return `${query} crop agriculture`;
   }
 
-  // Agriculture context matches
-  for (const kw of AGRI_KEYWORDS) {
-    if (textToScan.includes(kw)) {
-      score += 10;
-    }
+  if (type === "tractor" || type === "machinery" || type === "equipment") {
+    if (q.includes("rotavator")) return "rotavator tractor implement agriculture";
+    if (q.includes("harvester") || q.includes("combine")) return "combine harvester agriculture";
+    if (q.includes("seeder") || q.includes("seed drill")) return "seed drill planter agriculture";
+    if (q.includes("cultivator") || q.includes("plough")) return "tractor cultivator plough agriculture";
+    if (q.includes("sprayer")) return "agricultural sprayer pump";
+    return `${query} farm tractor agriculture`;
   }
 
-  // Dimension & orientation suitability (prefer landscape/high resolution)
-  if (photo.width >= 1200 && photo.height >= 800) {
-    score += 10;
+  if (type === "cattle" || type === "cow" || type === "buffalo") {
+    if (q.includes("buffalo") || q.includes("bhains") || q.includes("murrah")) return "water buffalo farm cattle";
+    if (q.includes("cow") || q.includes("gai") || q.includes("gir") || q.includes("sahiwal")) return "dairy cow farm cattle";
+    if (q.includes("goat") || q.includes("bakri")) return "goat farm livestock";
+    return `${query} livestock cattle`;
   }
 
-  return score;
+  return `${query} agriculture`;
 }
 
 export default async function handler(req, res) {
@@ -74,11 +100,18 @@ export default async function handler(req, res) {
   const perPage = Math.min(Math.max(parseInt(req.query.perPage || req.query.limit || "5", 10), 1), 15);
 
   const cleanQuery = sanitizeQuery(rawQuery);
-  const searchQuery = `${cleanQuery} agriculture farming`;
+  const cacheKey = `${cleanQuery.toLowerCase()}_${entityType}_${perPage}`;
+
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return res.status(200).json({ ...cached, cached: true });
+  }
 
   if (!PEXELS_API_KEY) {
     return res.status(503).json({ error: "Pexels API Key is not configured on server" });
   }
+
+  const searchQuery = buildSearchQuery(cleanQuery, entityType);
 
   try {
     const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=${Math.max(perPage, 5)}&orientation=landscape`;
@@ -89,35 +122,33 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      console.error(`[Pexels API] HTTP ${response.status} for query: "${searchQuery}"`);
       return res.status(response.status).json({ error: "Failed to fetch images from Pexels" });
     }
 
     const data = await response.json();
     const rawPhotos = data.photos || [];
 
-    // Score & sort candidates by agricultural relevance
-    const scoredPhotos = rawPhotos.map((p) => ({
+    const photos = rawPhotos.map((p) => ({
       id: p.id,
       width: p.width,
       height: p.height,
       url: p.url,
       photographer: p.photographer,
-      photographer_url: p.photographer_url,
       src: p.src,
       alt: p.alt || `${cleanQuery} agricultural photograph`,
-      relevanceScore: scoreRelevance(p, cleanQuery, entityType),
     }));
 
-    scoredPhotos.sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-    return res.status(200).json({
+    const result = {
       query: cleanQuery,
+      searchQuery,
       type: entityType,
-      total: scoredPhotos.length,
-      photos: scoredPhotos.slice(0, perPage),
-      bestMatch: scoredPhotos[0] || null,
-    });
+      total: photos.length,
+      photos: photos.slice(0, perPage),
+      bestMatch: photos[0] || null,
+    };
+
+    setCached(cacheKey, result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error("[Pexels API Error]:", error);
     return res.status(500).json({ error: "Internal server error searching images" });

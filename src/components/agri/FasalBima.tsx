@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { AgriButton } from "@/components/ui/agri-button";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Shield, ArrowLeft, ChevronDown, ExternalLink, Calculator, IndianRupee, Info } from "lucide-react";
 
 interface FasalBimaProps {
@@ -120,10 +121,12 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
     <div className="pb-24 pt-4 min-h-screen">
       {/* Hero Banner */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
-        <img
-          src="https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+        <SafeImage
+          src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80"
           alt="Crop insurance"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }}
+          entityName="Fasal Bima Crop Insurance"
+          resolveType="scheme"
+          category="insurance"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/85 to-primary/40" />

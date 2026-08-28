@@ -1242,7 +1242,6 @@ export const bn: JourneyDict = {
   "home.rustRisk": "আপনার ফসলে কীটপতঙ্গ ও রোগ পরীক্ষা করতে ক্রপ ডাক্তার ব্যবহার করুন",
   "home.sampleListings": "নমুনা তালিকা — কৃষকরা যোগ করলে এখানে আসল তালিকা দেখা যাবে।",
   "home.scan": "স্ক্যান",
-  "home.setLocationHint": "🌤 সঠিক আবহাওয়ার জন্য আপনার অবস্থান নির্বাচন করুন",
   "home.setUpMyFarm": "আমার খামার সেট আপ করুন",
   "home.todayMandi": "আজকের মন্ডি",
   "home.trending": "চাহিদার ফসল",

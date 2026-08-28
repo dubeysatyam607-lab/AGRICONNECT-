@@ -132,11 +132,22 @@ export function ManualUpiPaymentDialog({
   const canSubmit = Boolean(file) && !utrError && step === 'proof';
 
   const handleSubmit = async () => {
-    if (!file || !config || !userId) return;
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+      const { data: userData } = await supabase.auth.getUser();
+      effectiveUserId = userData.user?.id || '';
+    }
+
+    if (!effectiveUserId) {
+      setFailMsg(hi ? 'कृपया भुगतान प्रमाण भेजने से पहले लॉगिन करें।' : 'Please log in before submitting payment proof.');
+      return;
+    }
+
+    if (!file || !config) return;
     setBusy(true);
     setFailMsg('');
     try {
-      const up = await uploadProof(userId, file, (file.name.split('.').pop() || 'png').replace('jpg', 'jpeg'));
+      const up = await uploadProof(effectiveUserId, file, (file.name.split('.').pop() || 'png').replace('jpg', 'jpeg'));
       if (!up.ok) {
         setFailMsg(up.error);
         return;
@@ -250,7 +261,7 @@ export function ManualUpiPaymentDialog({
                     <span>Official Verified UPI QR (Satyam Dubey)</span>
                   </div>
                   <p className="mt-1 font-mono text-xs font-black text-foreground">
-                    UPI ID: <span className="text-primary">{config.upi_id || '7067820256@ptyes'}</span>
+                    UPI ID: <span className="text-primary">{config.upi_id || '7067820256@airtel'}</span>
                   </p>
                 </div>
                 <p className="text-center text-[11px] font-semibold leading-relaxed text-muted-foreground">{t('scanHint')}</p>

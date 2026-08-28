@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { AgriButton } from "@/components/ui/agri-button";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Sprout, Zap, Droplets, FlaskConical, CheckCircle, AlertTriangle, ArrowLeft, Loader2, Leaf } from "lucide-react";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 
@@ -201,10 +202,12 @@ Keep it practical and farmer-friendly. Use simple language.`;
     <div className="pb-24 pt-4 min-h-screen">
       {/* Header */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
-        <img
-          src="https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+        <SafeImage
+          src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=900&q=80"
           alt="Soil testing"
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/2252584/pexels-photo-2252584.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }}
+          entityName="Soil Health Testing"
+          resolveType="general"
+          category="soil"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40" />

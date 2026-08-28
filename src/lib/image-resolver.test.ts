@@ -1,13 +1,18 @@
 import { describe, it, expect } from "vitest";
 import {
   resolveImageUrl,
+  resolveImage,
   isValidImageUrl,
   sanitizeImageUrl,
   getStoreProductImage,
   normalizeApiProductImage,
+  getExactCategoryFallbackSvg,
   OFFLINE_AGRI_SVG,
   CATEGORY_FALLBACK_IMAGES,
 } from "./image-resolver";
+import { getCropEmoji, getCropSvgFallback, getCropImage } from "./crop-images";
+import { getMachineImage, getMachineSvgFallback } from "./machine-images";
+import { getCattleImage, getCattleSvgFallback } from "./cattle-images";
 
 describe("Image Resolver — URL Validation & Sanitization", () => {
   it("validates correct HTTPS URLs", () => {
@@ -38,14 +43,65 @@ describe("Image Resolver — URL Validation & Sanitization", () => {
   });
 });
 
-describe("Image Resolver — Context-Aware Fallbacks", () => {
-  it("resolves specific Mandi crop photos by name", () => {
-    const tomatoImg = resolveImageUrl(undefined, "crop", "Tomato");
-    expect(tomatoImg).toContain("https://");
-    expect(tomatoImg).not.toContain("undefined");
+describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, Store)", () => {
+  it("resolves specific Mandi crop photos and SVGs by name", () => {
+    const crops = ["Coconut", "Lemon", "Apple", "Garlic", "Ginger", "Wheat", "Soybean", "Mustard", "Potato", "Onion", "Tomato"];
+    for (const crop of crops) {
+      const url = resolveImageUrl(undefined, "crop", crop);
+      expect(url).toContain("https://");
+      expect(url).not.toContain("undefined");
 
-    const gehuImg = resolveImageUrl(undefined, "crop", "गेहूं");
-    expect(gehuImg).toContain("https://");
+      const svg = getCropSvgFallback(crop);
+      expect(svg).toContain("data:image/svg+xml");
+    }
+  });
+
+  it("assigns accurate emojis for crops", () => {
+    expect(getCropEmoji("Coconut")).toBe("🥥");
+    expect(getCropEmoji("नारियल")).toBe("🥥");
+    expect(getCropEmoji("Lemon")).toBe("🍋");
+    expect(getCropEmoji("नींबू")).toBe("🍋");
+    expect(getCropEmoji("Apple")).toBe("🍎");
+    expect(getCropEmoji("Garlic")).toBe("🧄");
+    expect(getCropEmoji("Ginger")).toBe("🫚");
+    expect(getCropEmoji("Tomato")).toBe("🍅");
+    expect(getCropEmoji("Potato")).toBe("🥔");
+    expect(getCropEmoji("Onion")).toBe("🧅");
+  });
+
+  it("resolves specific Machinery photos by brand and implement", () => {
+    const mahindra = resolveImageUrl(undefined, "tractor", "Mahindra 575 DI");
+    expect(mahindra).toContain("https://");
+
+    const johnDeere = resolveImageUrl(undefined, "tractor", "John Deere 5310");
+    expect(johnDeere).toContain("https://");
+
+    const harvester = resolveImageUrl(undefined, "harvester", "FieldKing Harvester");
+    expect(harvester).toContain("https://");
+
+    const rotavator = resolveImageUrl(undefined, "machinery", "Mahindra Rotavator 4FT");
+    expect(rotavator).toContain("https://");
+
+    const machSvg = getMachineSvgFallback("Harvester", "machinery");
+    expect(machSvg).toContain("data:image/svg+xml");
+  });
+
+  it("resolves Cattle & Livestock without cross-category pollution", () => {
+    const cow = resolveImageUrl(undefined, "cattle", "Gir Cow");
+    expect(cow).toContain("https://");
+
+    const buffalo = resolveImageUrl(undefined, "cattle", "Murrah Buffalo");
+    expect(buffalo).toContain("https://");
+
+    const bull = getCattleImage("Desi Bull / Saand");
+    expect(bull).toContain("https://");
+
+    const calf = getCattleImage("Gir Calf / Bachhda");
+    expect(calf).toContain("https://");
+
+    const cattleSvg = getCattleSvgFallback("Murrah Buffalo");
+    expect(cattleSvg).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(cattleSvg)).toContain("🐃");
   });
 
   it("resolves specific Agri Store product photos by name", () => {
@@ -72,6 +128,14 @@ describe("Image Resolver — Context-Aware Fallbacks", () => {
     const res2 = resolveImageUrl(null, "crop", "Soybean");
     expect(res2).not.toBeNull();
     expect(res2).toContain("https://");
+  });
+
+  it("resolveImage returns exact SVG fallback when no photo found", () => {
+    const fallbackRes = resolveImage({
+      entityType: "crop",
+      entityName: "Exotic Dragon Fruit",
+    });
+    expect(fallbackRes).toContain("https://");
   });
 });
 

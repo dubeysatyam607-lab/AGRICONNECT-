@@ -380,9 +380,13 @@ export const CompleteProfile: React.FC = () => {
                   <img
                     src={avatarUrl}
                     alt={fullName || 'Farmer'}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                     className="w-12 h-12 rounded-full border-2 border-emerald-600 object-cover shadow-sm"
                   />
-                ) : (
+                ) : null}
+                {!avatarUrl && (
                   <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
                     {fullName ? fullName.charAt(0).toUpperCase() : '👨‍🌾'}
                   </div>

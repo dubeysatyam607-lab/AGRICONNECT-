@@ -1242,7 +1242,6 @@ export const or: JourneyDict = {
   "home.rustRisk": "ଫସଲରେ ପୋକ ଓ ରୋଗ ଯାଞ୍ଚ କରିବାକୁ କ୍ରପ ଡକ୍ଟର ବ୍ୟବହାର କରନ୍ତୁ",
   "home.sampleListings": "ନମୁନା ତାଲିକା — ଚାଷୀମାନେ ଯୋଡ଼ିଲେ ଏଠାରେ ପ୍ରକୃତ ତାଲିକା ଦେଖାଯିବ।",
   "home.scan": "ସ୍କାନ",
-  "home.setLocationHint": "🌤 ସଠିକ୍ ପାଣିପାଗ ପାଇଁ ଆପଣଙ୍କ ସ୍ଥାନ ବାଛନ୍ତୁ",
   "home.setUpMyFarm": "ମୋ କ୍ଷେତ ସେଟ୍ କରନ୍ତୁ",
   "home.todayMandi": "ଆଜିର ମଣ୍ଡି",
   "home.trending": "ଲୋକପ୍ରିୟ ଫସଲ",

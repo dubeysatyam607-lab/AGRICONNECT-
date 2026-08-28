@@ -11,11 +11,13 @@ import { supabase } from '@/integrations/supabase/client';
  * If either check fails, the user is redirected to the home page.
  */
 export const RequireAdmin = ({ children }: { children: ReactNode }) => {
-  const { user, session } = useAuth();
+  const { user, session, loading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
     let mounted = true;
+
+    if (loading) return;
 
     const checkAdmin = async () => {
       if (!user) {
@@ -64,10 +66,17 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
     return () => {
       mounted = false;
     };
-  }, [user, session]);
+  }, [user, session, loading]);
 
-  if (isAdmin === null) {
-    return <div className="flex h-screen items-center justify-center">Loading…</div>;
+  if (loading || isAdmin === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 p-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+          <p className="text-xs font-medium text-slate-400">Verifying secure admin credentials…</p>
+        </div>
+      </div>
+    );
   }
 
   return isAdmin ? <>{children}</> : <Navigate to="/" replace />;

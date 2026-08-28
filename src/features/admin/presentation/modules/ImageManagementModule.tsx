@@ -23,6 +23,7 @@ import {
   type PexelsPhoto,
 } from '@/lib/pexels-api';
 import { useToast } from '@/hooks/use-toast';
+import { SafeImage } from '@/components/ui/SafeImage';
 
 export const ImageManagementModule: React.FC = () => {
   const { toast } = useToast();
@@ -241,7 +242,7 @@ export const ImageManagementModule: React.FC = () => {
               {searchResults.map((photo, i) => (
                 <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-white/10 bg-slate-950/60 flex flex-col">
                   <div className="h-28 w-full overflow-hidden">
-                    <img
+                    <SafeImage
                       src={photo.src.medium || photo.src.large}
                       alt={photo.alt}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -314,9 +315,11 @@ export const ImageManagementModule: React.FC = () => {
               className="bg-slate-950/70 border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-emerald-500/40 transition-colors"
             >
               <div className="h-36 w-full relative overflow-hidden bg-slate-900">
-                <img
+                <SafeImage
                   src={item.imageUrl}
                   alt={item.entityName}
+                  entityName={item.entityName}
+                  resolveType={item.entityType as any}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-bold text-white uppercase">

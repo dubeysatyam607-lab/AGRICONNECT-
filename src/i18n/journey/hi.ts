@@ -1242,7 +1242,6 @@ export const hi: JourneyDict = {
   "home.rustRisk": "फसल में कीट व बीमारी जांचने के लिए क्रॉप डॉक्टर का उपयोग करें",
   "home.sampleListings": "नमूना सूची — वास्तविक सूची तब दिखेगी जब किसान इन्हें जोड़ेंगे।",
   "home.scan": "स्कैन",
-  "home.setLocationHint": "🌤 सटीक मौसम पूर्वानुमान के लिए अपना स्थान चुनें",
   "home.setUpMyFarm": "मेरा खेत सेट करें",
   "home.todayMandi": "आज का मंडी भाव",
   "home.trending": "लोकप्रिय फसलें",
