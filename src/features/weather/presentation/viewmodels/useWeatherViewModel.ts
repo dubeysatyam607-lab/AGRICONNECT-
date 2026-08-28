@@ -48,7 +48,7 @@ export function weatherErrorCopy(err: unknown): string {
   if (lower.includes('500') || lower.includes('502') || lower.includes('503') || lower.includes('unavailable')) {
     return 'Weather service is temporarily unavailable.';
   }
-  if (lower.includes('location required') || lower.includes('invalid coordinates') || lower.includes('valid latitude')) {
+  if (lower.includes('location required') || lower.includes('location coordinates') || lower.includes('invalid coordinates') || lower.includes('valid latitude')) {
     return 'Location required. Please allow location access or choose your location manually.';
   }
   if (lower.includes('400') || lower.includes('bad request')) {

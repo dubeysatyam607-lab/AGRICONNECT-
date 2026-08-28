@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeatherRemoteDataSource } from './data/datasources/WeatherRemoteDataSource';
 import { WeatherRepositoryImpl } from './data/repositories/WeatherRepositoryImpl';
+import { weatherErrorCopy } from './presentation/viewmodels/useWeatherViewModel';
 import { IWeatherModuleData } from './domain/models/WeatherModels';
 import { geocodeLocation } from '@/features/location/geocodingService';
 
@@ -235,6 +236,37 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
       expect(chennai.live.temp).toBe(32);
       expect(chennai.live.condition).toBe('Sunny');
       expect(chennai.live.uvIndex).toBe(9);
+    });
+  });
+
+  describe('weatherErrorCopy — differentiated, non-technical error copy', () => {
+    it('maps connectivity failures to a clear offline message', () => {
+      expect(weatherErrorCopy(new Error('Failed to fetch'))).toContain('connect to the weather service');
+      expect(weatherErrorCopy(new Error('NetworkError when attempting to fetch resource'))).toContain('connect to the weather service');
+      expect(weatherErrorCopy('Offline. Check your connection.')).toContain('connect to the weather service');
+    });
+
+    it('maps timeouts and rate limits distinctly', () => {
+      expect(weatherErrorCopy(new Error('The request timed out'))).toContain('taking too long');
+      expect(weatherErrorCopy(new Error('Rate limit reached'))).toContain('rate limit');
+      expect(weatherErrorCopy(new Error('Too many requests'))).toContain('rate limit');
+    });
+
+    it('maps auth, not-found, and server outages distinctly', () => {
+      expect(weatherErrorCopy(new Error('401 Unauthorized'))).toContain('authentication failed');
+      expect(weatherErrorCopy(new Error('404 Not Found'))).toContain('could not be found');
+      expect(weatherErrorCopy(new Error('503 Service Unavailable'))).toContain('temporarily unavailable');
+    });
+
+    it('maps location-required and bad-request cases to actionable guidance', () => {
+      expect(weatherErrorCopy(new Error('Location coordinates required'))).toContain('Location required');
+      expect(weatherErrorCopy(new Error('Invalid coordinates provided'))).toContain('Location required');
+      expect(weatherErrorCopy(new Error('400 Bad Request'))).toContain('rejected the request');
+    });
+
+    it('falls back to a stable generic message for unknown failures', () => {
+      expect(weatherErrorCopy(new Error('something unexpected'))).toBe('Weather data temporarily unavailable. Please try again.');
+      expect(weatherErrorCopy(null)).toBe('Weather data temporarily unavailable. Please try again.');
     });
   });
 });
