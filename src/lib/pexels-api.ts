@@ -242,6 +242,26 @@ export const PEXELS_PHOTO_LIBRARY: Record<string, PexelsPhoto[]> = {
       }
     }
   ],
+  mustard: [
+    {
+      id: 1099680,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/1099680/",
+      photographer: "Inzmam Khan",
+      alt: "Yellow blooming mustard flowers in agricultural fields",
+      src: {
+        original: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg",
+        large2x: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
   tractor: [
     {
       id: 18135422,
@@ -357,6 +377,204 @@ export const PEXELS_PHOTO_LIBRARY: Record<string, PexelsPhoto[]> = {
         portrait: "https://images.pexels.com/photos/34921704/pexels-photo-34921704.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
         landscape: "https://images.pexels.com/photos/34921704/pexels-photo-34921704.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
         tiny: "https://images.pexels.com/photos/34921704/pexels-photo-34921704.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    },
+    {
+      id: 2255801,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/2255801/",
+      photographer: "Tom Fisk",
+      alt: "Vibrant traditional Indian Mandi market with fresh produce and traders",
+      src: {
+        original: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg",
+        large2x: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/2255801/pexels-photo-2255801.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  chilli: [
+    {
+      id: 1435735,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/1435735/",
+      photographer: "Engin Akyurt",
+      alt: "Fresh spicy red and green chilli peppers",
+      src: {
+        original: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg",
+        large2x: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  potato: [
+    {
+      id: 144248,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/144248/",
+      photographer: "Pixabay",
+      alt: "Fresh harvest potatoes in rural mandi market",
+      src: {
+        original: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg",
+        large2x: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  onion: [
+    {
+      id: 533342,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/533342/",
+      photographer: "Pixabay",
+      alt: "Fresh red onions for market sale",
+      src: {
+        original: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg",
+        large2x: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  tomato: [
+    {
+      id: 1327838,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/1327838/",
+      photographer: "Julia Sakelli",
+      alt: "Ripe red tomatoes at vegetable market",
+      src: {
+        original: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg",
+        large2x: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  garlic: [
+    {
+      id: 928251,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/928251/",
+      photographer: "Pixabay",
+      alt: "Garlic bulbs and cloves fresh produce",
+      src: {
+        original: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg",
+        large2x: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  ginger: [
+    {
+      id: 1340116,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/1340116/",
+      photographer: "Chokniti Khongchum",
+      alt: "Fresh spicy ginger root",
+      src: {
+        original: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg",
+        large2x: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/1340116/pexels-photo-1340116.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  coconut: [
+    {
+      id: 2291599,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/2291599/",
+      photographer: "Jane Doan",
+      alt: "Fresh whole coconuts",
+      src: {
+        original: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg",
+        large2x: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  lemon: [
+    {
+      id: 1414110,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/1414110/",
+      photographer: "Dominika Roseclay",
+      alt: "Fresh bright yellow lemons",
+      src: {
+        original: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg",
+        large2x: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/1414110/pexels-photo-1414110.jpeg?auto=compress&cs=tinysrgb&h=100",
+      }
+    }
+  ],
+  apple: [
+    {
+      id: 102104,
+      width: 1920,
+      height: 1080,
+      url: "https://www.pexels.com/photo/102104/",
+      photographer: "Mali Maeder",
+      alt: "Crisp fresh red apples",
+      src: {
+        original: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg",
+        large2x: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
+        large: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        medium: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&h=350",
+        small: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&h=200",
+        portrait: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+        landscape: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+        tiny: "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&h=100",
       }
     }
   ]
