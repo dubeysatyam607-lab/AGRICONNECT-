@@ -84,9 +84,14 @@ BEGIN
   -- Proof path must be namespaced under the user's own folder.
   IF p_proof_path IS NULL
      OR POSITION('..' IN p_proof_path) > 0
-     OR POSITION('\' IN p_proof_path) > 0
+     OR POSITION(chr(92) IN p_proof_path) > 0
      OR POSITION(chr(0) IN p_proof_path) > 0
-     OR p_proof_path !~ ('^payment-proofs/' || v_user_id::TEXT || '/[A-Za-z0-9\-]+/proof\.(png|jpg|jpeg|webp)$') THEN
+     OR (
+       p_proof_path !~ ('^payment-proofs/' || v_user_id::TEXT || '/[A-Za-z0-9\-_.]+/proof\.(png|jpg|jpeg|webp)$')
+       AND p_proof_path !~ ('^' || v_user_id::TEXT || '/[A-Za-z0-9\-_.]+/proof\.(png|jpg|jpeg|webp)$')
+       AND p_proof_path !~ ('^payment-proofs/' || v_user_id::TEXT || '/[A-Za-z0-9\-_.]+\.(png|jpg|jpeg|webp)$')
+       AND p_proof_path !~ ('^' || v_user_id::TEXT || '/[A-Za-z0-9\-_.]+\.(png|jpg|jpeg|webp)$')
+     ) THEN
     RETURN json_build_object('ok', FALSE, 'error', 'Invalid proof file path.');
   END IF;
 
