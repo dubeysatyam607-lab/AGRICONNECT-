@@ -33,7 +33,7 @@ export function weatherErrorCopy(err: unknown): string {
   if (lower.includes('offline') || lower.includes('network') || lower.includes('failed to fetch') || lower.includes('fetch failed')) {
     return 'Unable to connect to the weather service.';
   }
-  if (lower.includes('taking too long') || lower.includes('timed out') || lower.includes('timeout')) {
+  if (lower.includes('taking too long') || lower.includes('timed out') || lower.includes('timeout') || lower.includes('aborted') || lower.includes('operation was aborted')) {
     return 'Weather service is taking too long to respond. Please try again.';
   }
   if (lower.includes('rate limit') || lower.includes('too many requests')) {
