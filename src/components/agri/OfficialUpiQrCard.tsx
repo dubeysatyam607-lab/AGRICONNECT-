@@ -11,7 +11,7 @@ export interface OfficialUpiQrCardProps {
 }
 
 export const OFFICIAL_UPI_CONFIG = {
-  upiId: '7067820256@ptyes',
+  upiId: '7067820256@airtel',
   payeeName: 'SATYAM DUBEY',
   currency: 'INR',
   qrImagePath: '/images/payment-qr.jpg',

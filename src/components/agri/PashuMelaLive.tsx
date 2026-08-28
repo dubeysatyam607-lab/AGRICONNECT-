@@ -3,7 +3,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Milk, MapPin, Filter, Search, Plus, LogIn, Trash2 } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriCard } from "@/components/ui/agri-card";
-import { LazyImage } from "@/components/ui/lazy-image";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { getCattleImage } from "@/lib/cattle-images";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useCattleListings, CattleListing } from "@/hooks/useCattleListings";
@@ -440,26 +441,18 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
       {/* Listings — vertical full-width cards */}
       <div className="space-y-4">
         {filteredListings.map((animal) => {
-          const FALLBACK_IMAGES: Record<string, string> = {
-            'Buffalo': 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-            'Cow':     'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-            'Goat':    'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-            'Poultry': 'https://images.pexels.com/photos/1405939/pexels-photo-1405939.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-          };
-          const imgSrc = animal.image_url || FALLBACK_IMAGES[animal.type] || FALLBACK_IMAGES['Cow'];
+          const cattleName = `${animal.breed} ${animal.type}`;
           return (
             <div key={animal.id} className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
               {/* Full-width image */}
-              <div className="relative h-52 overflow-hidden">
-                <LazyImage
-                  src={imgSrc}
+              <div className="relative h-52 overflow-hidden bg-slate-900/40">
+                <SafeImage
+                  src={animal.image_url}
+                  entityName={cattleName}
+                  category={animal.type}
+                  resolveType="cattle"
                   alt={`${animal.breed} ${animal.type}`}
                   className="w-full h-full object-cover"
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                      <Milk size={48} className="text-primary/40" />
-                    </div>
-                  }
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 {animal.is_verified && (

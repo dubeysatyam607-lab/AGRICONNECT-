@@ -26,6 +26,7 @@ import {
 import type { SttController, TtsController, MicState } from "@/core/voice";
 import { ListeningOverlay } from "@/core/voice/ui/ListeningOverlay";
 import { VoicePlayerBar } from "@/core/voice/ui/VoicePlayerBar";
+import { SafeImage } from "@/components/ui/SafeImage";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -1463,7 +1464,12 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                       {/* Render attachment image if present */}
                       {msg.image && (
                         <div className="mb-3 max-w-[200px] rounded-xl overflow-hidden border border-border shadow-xs">
-                          <img src={msg.image} alt="Attached crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-auto object-cover max-h-[150px]" />
+                          <SafeImage
+                            src={msg.image}
+                            alt="Attached crop"
+                            resolveType="crop"
+                            className="w-full h-auto object-cover max-h-[150px]"
+                          />
                         </div>
                       )}
 
@@ -1580,7 +1586,12 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-2xl max-w-xs animate-in slide-in-from-bottom-2 duration-300 shadow-xs">
                 <div className="flex items-center gap-2.5">
                   <div className="w-12 h-12 rounded-lg overflow-hidden border border-emerald-300 shrink-0">
-                    <img src={imagePreview} alt="Attached upload" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover" />
+                    <SafeImage
+                      src={imagePreview}
+                      alt="Attached upload"
+                      resolveType="crop"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-extrabold uppercase">{t('agr221')}</span>

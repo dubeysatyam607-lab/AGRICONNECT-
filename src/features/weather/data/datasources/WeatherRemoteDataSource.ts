@@ -6,14 +6,30 @@ import {
   IDailyForecast,
   WeatherConditionType,
 } from '../../domain/models/WeatherModels';
+import { reverseGeocodeCoords } from '@/features/location/geocodingService';
+
+/**
+ * Safe fetch with standard AbortController timeout.
+ * Eliminates browser/WebView incompatibility issues with AbortSignal.timeout.
+ */
+async function safeFetch(url: string, init: RequestInit = {}, timeoutMs = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Weather Remote Data Source.
  *
- * Single source of truth for live weather. All data comes from the Supabase
- * `weather` edge function (server-side), which reads from Open-Meteo (free,
- * keyless) or directly from Open-Meteo client-side.
- * No API keys are ever exposed to the browser. No synthetic or mock weather is generated.
+ * Single source of truth for live weather. All data comes from verified weather services
+ * (Vercel Serverless /api/weather -> Supabase weather edge function -> Open-Meteo API).
+ *
+ * Never returns synthetic or fabricated weather data (such as 27°C).
+ * Throws explicit descriptive errors on failure so the UI can prompt retry.
  */
 export class WeatherRemoteDataSource {
   /** Maps an Open-Meteo WMO condition label or code to the domain condition type. */
@@ -101,44 +117,59 @@ export class WeatherRemoteDataSource {
   }
 
   /**
-   * Maps the edge function response to the domain weather model with strict verification.
+   * Maps the edge/backend response to the domain weather model with strict verification.
    */
-  private static mapEdgeResponse(raw: any): IWeatherModuleData {
-    if (!raw || typeof raw.temp !== 'number' || isNaN(raw.temp) || !raw.location) {
-      throw new Error('Live weather response was invalid.');
+  public static mapEdgeResponse(raw: any, reqLat?: number, reqLon?: number, defaultLocName?: string): IWeatherModuleData {
+    if (!raw) {
+      throw new Error('Live weather response was empty.');
     }
 
-    const cond = WeatherRemoteDataSource.conditionOf(raw.condition || 'Clear');
+    const liveRaw = raw.live || raw;
+    const temp = typeof liveRaw.temp === 'number' ? liveRaw.temp : Number(liveRaw.temp);
+
+    if (isNaN(temp)) {
+      throw new Error('Live weather response did not contain a valid temperature reading.');
+    }
+
+    const cond = WeatherRemoteDataSource.conditionOf(liveRaw.condition || 'Clear');
     const now = new Date();
 
+    const locationName = raw.location?.name || defaultLocName || 'Your Location';
+    const districtName = raw.location?.district || raw.location?.name || defaultLocName || 'Your Location';
+    const stateName = raw.location?.state || raw.location?.region || 'India';
+    const finalLat = raw.location?.latitude ?? reqLat ?? 0;
+    const finalLon = raw.location?.longitude ?? reqLon ?? 0;
+
     const live: ILiveWeather = {
-      temp: Math.round(raw.temp),
-      feelsLike: typeof raw.feelsLike === 'number' && !isNaN(raw.feelsLike) ? Math.round(raw.feelsLike) : Math.round(raw.temp),
+      temp: Math.round(temp),
+      feelsLike: typeof liveRaw.feelsLike === 'number' && !isNaN(liveRaw.feelsLike) ? Math.round(liveRaw.feelsLike) : Math.round(temp),
       condition: cond,
-      conditionDescription: raw.conditionDescription || raw.condition || cond,
-      humidity: typeof raw.humidity === 'number' && !isNaN(raw.humidity) ? Math.round(raw.humidity) : 0,
-      dewPoint: typeof raw.dewPoint === 'number' && !isNaN(raw.dewPoint) ? Math.round(raw.dewPoint) : Math.round(raw.temp - ((100 - (raw.humidity || 50)) / 5)),
-      windSpeed: typeof raw.windSpeed === 'number' && !isNaN(raw.windSpeed) ? Math.round(raw.windSpeed) : 0,
-      windDirection: raw.windDirection || WeatherRemoteDataSource.compass(raw.windDegrees || 0),
-      windDegrees: typeof raw.windDegrees === 'number' && !isNaN(raw.windDegrees) ? Math.round(raw.windDegrees) : 0,
-      uvIndex: typeof raw.uvIndex === 'number' && !isNaN(raw.uvIndex) ? Math.round(raw.uvIndex) : typeof raw.uv === 'number' && !isNaN(raw.uv) ? Math.round(raw.uv) : 0,
-      pressureHpa: typeof raw.pressureHpa === 'number' && !isNaN(raw.pressureHpa) ? Math.round(raw.pressureHpa) : 1013,
-      pressureTrend: raw.pressureTrend === 'Rising' || raw.pressureTrend === 'Falling' ? raw.pressureTrend : 'Steady',
-      visibilityKm: typeof raw.visibilityKm === 'number' && !isNaN(raw.visibilityKm) ? Math.round(raw.visibilityKm) : 10,
-      aqi: raw.aqi || { index: 1, pm25: 0, pm10: 0, status: 'Good' },
-      sunriseTime: raw.sunriseTime || (raw.daily?.[0]?.sunrise ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunrise) : '06:00 AM'),
-      sunsetTime: raw.sunsetTime || (raw.daily?.[0]?.sunset ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunset) : '06:30 PM'),
-      daylightProgressPercent: typeof raw.daylightProgressPercent === 'number'
-        ? raw.daylightProgressPercent
+      conditionDescription: liveRaw.conditionDescription || liveRaw.condition || cond,
+      humidity: typeof liveRaw.humidity === 'number' && !isNaN(liveRaw.humidity) ? Math.round(liveRaw.humidity) : 0,
+      dewPoint: typeof liveRaw.dewPoint === 'number' && !isNaN(liveRaw.dewPoint) ? Math.round(liveRaw.dewPoint) : Math.round(temp - ((100 - (liveRaw.humidity || 50)) / 5)),
+      windSpeed: typeof liveRaw.windSpeed === 'number' && !isNaN(liveRaw.windSpeed) ? Math.round(liveRaw.windSpeed) : 0,
+      windDirection: liveRaw.windDirection || WeatherRemoteDataSource.compass(liveRaw.windDegrees || 0),
+      windDegrees: typeof liveRaw.windDegrees === 'number' && !isNaN(liveRaw.windDegrees) ? Math.round(liveRaw.windDegrees) : 0,
+      uvIndex: typeof liveRaw.uvIndex === 'number' && !isNaN(liveRaw.uvIndex) ? Math.round(liveRaw.uvIndex) : typeof liveRaw.uv === 'number' && !isNaN(liveRaw.uv) ? Math.round(liveRaw.uv) : 0,
+      pressureHpa: typeof liveRaw.pressureHpa === 'number' && !isNaN(liveRaw.pressureHpa) ? Math.round(liveRaw.pressureHpa) : 1013,
+      pressureTrend: liveRaw.pressureTrend === 'Rising' || liveRaw.pressureTrend === 'Falling' ? liveRaw.pressureTrend : 'Steady',
+      visibilityKm: typeof liveRaw.visibilityKm === 'number' && !isNaN(liveRaw.visibilityKm) ? Math.round(liveRaw.visibilityKm) : 10,
+      aqi: liveRaw.aqi || { index: 1, pm25: 0, pm10: 0, status: 'Good' },
+      sunriseTime: liveRaw.sunriseTime || (raw.daily?.[0]?.sunrise ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunrise) : '06:00 AM'),
+      sunsetTime: liveRaw.sunsetTime || (raw.daily?.[0]?.sunset ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunset) : '06:30 PM'),
+      daylightProgressPercent: typeof liveRaw.daylightProgressPercent === 'number'
+        ? liveRaw.daylightProgressPercent
         : WeatherRemoteDataSource.calculateDaylightProgress(raw.daily?.[0]?.sunrise, raw.daily?.[0]?.sunset),
-      iconUrl: raw.icon ? `https:${raw.icon}` : undefined,
+      iconUrl: liveRaw.icon ? `https:${liveRaw.icon}` : undefined,
     };
 
     const hourly: IHourlyForecast[] = Array.isArray(raw.hourly)
       ? raw.hourly.slice(0, 24).map((h: any, i: number) => ({
           time: i === 0
             ? 'Now'
-            : new Date(h.time || h.timestamp).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true }),
+            : typeof h.time === 'string' && h.time.length > 5
+              ? new Date(h.time).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true })
+              : h.time || 'Now',
           timestamp: h.timestamp || (h.time ? new Date(h.time).getTime() : Date.now() + i * 3600000),
           temp: typeof h.temp === 'number' && !isNaN(h.temp) ? Math.round(h.temp) : live.temp,
           condition: WeatherRemoteDataSource.conditionOf(h.condition || 'Clear'),
@@ -151,8 +182,8 @@ export class WeatherRemoteDataSource {
       ? raw.daily.slice(0, 7).map((d: any, idx: number) => {
           const dayCond = WeatherRemoteDataSource.conditionOf(d.condition || 'Clear');
           const rainProb = Math.round(d.rainProbability ?? 0);
-          const tMin = typeof d.tempMin === 'number' ? Math.round(d.tempMin) : Math.round(d.minTemp ?? live.temp);
-          const tMax = typeof d.tempMax === 'number' ? Math.round(d.tempMax) : Math.round(d.maxTemp ?? live.temp);
+          const tMin = typeof d.minTemp === 'number' ? Math.round(d.minTemp) : typeof d.tempMin === 'number' ? Math.round(d.tempMin) : Math.round(live.temp);
+          const tMax = typeof d.maxTemp === 'number' ? Math.round(d.maxTemp) : typeof d.tempMax === 'number' ? Math.round(d.tempMax) : Math.round(live.temp);
           return {
             dayName: idx === 0 ? 'Today' : d.dayName || new Date(d.date).toLocaleDateString('en-IN', { weekday: 'short' }),
             date: d.date ? new Date(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
@@ -167,41 +198,46 @@ export class WeatherRemoteDataSource {
         })
       : [];
 
-    const criticalAlert = Array.isArray(raw.agriAlerts)
-      ? raw.agriAlerts.find((a: any) => a.level === 'critical') || null
-      : null;
+    const isCritical = (daily[0]?.rainProbability ?? 0) >= 60;
 
     return {
       location: {
-        name: raw.location.name || 'Your Location',
-        district: raw.location.district || raw.location.name || '',
-        state: raw.location.region || raw.location.state || 'India',
-        latitude: raw.requestedLat ?? raw.location.latitude ?? 0,
-        longitude: raw.requestedLon ?? raw.location.longitude ?? 0,
+        name: locationName,
+        district: districtName,
+        state: stateName,
+        latitude: finalLat,
+        longitude: finalLon,
       },
       live,
       hourly,
       daily,
-      lastUpdated: raw.last_updated || now.toISOString(),
+      lastUpdated: raw.lastUpdated || raw.last_updated || now.toISOString(),
       isOfflineCached: false,
-      advisoryAlert: criticalAlert
-        ? {
-            isCritical: true,
-            title: 'Severe weather alert',
-            message: criticalAlert.message,
-          }
-        : Array.isArray(raw.agriAlerts) && raw.agriAlerts.length > 0
-          ? {
-              isCritical: false,
-              title: 'Farm weather guidance',
-              message: raw.agriAlerts[0].message,
-            }
-          : {
-              isCritical: false,
-              title: 'Farm weather guidance',
-              message: daily[0]?.agriAdvisory || 'Ideal conditions for most routine farm work.',
-            },
+      advisoryAlert: raw.advisoryAlert || {
+        isCritical,
+        title: isCritical ? 'Severe weather alert' : 'Farm weather guidance',
+        message: daily[0]?.agriAdvisory || 'Ideal conditions for most routine farm work.',
+      },
     };
+  }
+
+  /**
+   * Fetches verified weather from first-party Vercel serverless /api/weather endpoint.
+   */
+  public static async fetchVercelBackend(lat: number, lng: number, locationName?: string): Promise<IWeatherModuleData> {
+    const url = `/api/weather?lat=${lat}&lon=${lng}${locationName ? `&city=${encodeURIComponent(locationName)}` : ''}`;
+    const res = await safeFetch(url, {}, 6500);
+
+    if (!res.ok) {
+      throw new Error(`Backend /api/weather returned status ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (!data || data.error) {
+      throw new Error(data?.error || 'Weather data unavailable from backend proxy');
+    }
+
+    return WeatherRemoteDataSource.mapEdgeResponse(data, lat, lng, locationName);
   }
 
   /**
@@ -220,7 +256,7 @@ export class WeatherRemoteDataSource {
       `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean,sunrise,sunset,uv_index_max` +
       `&forecast_days=7&timezone=auto`;
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const res = await safeFetch(url, {}, 8500);
     if (!res.ok) {
       throw new Error(`Weather service responded with status ${res.status}`);
     }
@@ -234,7 +270,6 @@ export class WeatherRemoteDataSource {
     const hourlyRaw = data.hourly || {};
     const dailyRaw = data.daily || {};
 
-    // Validate hourly and daily arrays
     if (!Array.isArray(hourlyRaw.time) || !Array.isArray(dailyRaw.time) || dailyRaw.time.length === 0) {
       throw new Error('Incomplete forecast data returned from weather service.');
     }
@@ -252,7 +287,6 @@ export class WeatherRemoteDataSource {
       : (dailyRaw.uv_index_max?.[0] ?? 0);
     const curPressure = typeof cur.pressure_msl === 'number' && !isNaN(cur.pressure_msl) ? cur.pressure_msl : 1013;
 
-    // Calculate pressure trend by comparing with 3 hours ago if available
     let pressureTrend: 'Rising' | 'Falling' | 'Steady' = 'Steady';
     if (Array.isArray(hourlyRaw.pressure_msl) && hourlyRaw.pressure_msl.length >= 4) {
       const pastP = hourlyRaw.pressure_msl[0];
@@ -336,31 +370,26 @@ export class WeatherRemoteDataSource {
     let districtName = locationName || '';
     let stateName = 'India';
 
-    if (!displayName || displayName === 'Your Location') {
+    if (!displayName || displayName === 'Your Location' || displayName === 'Current Location') {
       try {
-        const geoUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10&accept-language=en`;
-        const geoRes = await fetch(geoUrl, {
-          headers: { 'User-Agent': 'AgriConnect-App/1.0' },
-          signal: AbortSignal.timeout(3000),
-        });
-        if (geoRes.ok) {
-          const geoData = await geoRes.json();
-          const addr = geoData.address || {};
-          displayName = addr.city || addr.town || addr.village || addr.county || 'Your Location';
-          districtName = addr.county || addr.state_district || displayName;
-          stateName = addr.state || 'India';
+        const rev = await reverseGeocodeCoords(lat, lng);
+        if (rev) {
+          displayName = rev.name;
+          districtName = rev.district;
+          stateName = rev.state;
         }
       } catch {
-        // Geocoding non-critical fallback to coordinates or provided name
         displayName = displayName || 'Your Location';
       }
     }
 
+    const isCritical = (daily[0]?.rainProbability ?? 0) >= 60;
+
     return {
       location: {
-        name: displayName,
-        district: districtName,
-        state: stateName,
+        name: displayName || 'Your Location',
+        district: districtName || displayName || 'Your Location',
+        state: stateName || 'India',
         latitude: lat,
         longitude: lng,
       },
@@ -370,35 +399,50 @@ export class WeatherRemoteDataSource {
       lastUpdated: new Date().toISOString(),
       isOfflineCached: false,
       advisoryAlert: {
-        isCritical: (daily[0]?.rainProbability ?? 0) >= 60,
-        title: (daily[0]?.rainProbability ?? 0) >= 60 ? 'Severe weather alert' : 'Farm weather guidance',
+        isCritical,
+        title: isCritical ? 'Severe weather alert' : 'Farm weather guidance',
         message: daily[0]?.agriAdvisory || 'Ideal conditions for most routine farm work.',
       },
     };
   }
 
   /**
-   * Fetches live weather + hourly + daily forecast from the Supabase edge
-   * function, with transparent fallback to Open-Meteo directly.
+   * Fetches live weather + hourly + daily forecast with multi-tier fallback:
+   * Tier 1: First-party Vercel serverless /api/weather
+   * Tier 2: Supabase weather edge function
+   * Tier 3: Direct Open-Meteo API
    */
   public async fetchRemoteWeather(lat?: number, lng?: number, locationName?: string): Promise<IWeatherModuleData> {
     if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-      throw new Error('Location required. Please allow location access or choose your location manually.');
+      throw new Error('Location coordinates required. Please allow location access or choose your location manually.');
     }
 
+    // Tier 1: First-party /api/weather backend proxy (Vercel Serverless)
+    try {
+      if (typeof window !== 'undefined') {
+        const backendData = await WeatherRemoteDataSource.fetchVercelBackend(lat, lng, locationName);
+        if (backendData && backendData.live && typeof backendData.live.temp === 'number') {
+          return backendData;
+        }
+      }
+    } catch (backendErr) {
+      console.warn('[WeatherRemoteDataSource] Backend proxy /api/weather unavailable, trying Supabase Edge Function:', backendErr);
+    }
+
+    // Tier 2: Supabase Edge Function
     try {
       const { data, error } = await invokeEdgeWithTimeout<{ error?: string; message?: string; code?: string; [key: string]: unknown }>('weather', {
         latitude: lat, longitude: lng, city: locationName || undefined, checkAlerts: true,
-      });
+      }, 7000);
 
       if (!error && data && !data.error && data.code !== 'LOCATION_REQUIRED' && data.code !== 'WEATHER_UNAVAILABLE') {
-        return WeatherRemoteDataSource.mapEdgeResponse(data);
+        return WeatherRemoteDataSource.mapEdgeResponse(data, lat, lng, locationName);
       }
     } catch (edgeErr) {
       console.warn('[WeatherRemoteDataSource] Edge function invocation failed, falling back to direct Open-Meteo:', edgeErr);
     }
 
-    // Direct Open-Meteo fallback (free, public, no key needed)
+    // Tier 3: Direct Open-Meteo API fallback (free, public, no key needed)
     return WeatherRemoteDataSource.fetchOpenMeteoDirect(lat, lng, locationName);
   }
 }

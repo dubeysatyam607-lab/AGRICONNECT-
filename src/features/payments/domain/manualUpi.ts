@@ -111,7 +111,7 @@ export function buildUpiUri(config: Pick<PaymentConfig, 'upi_id' | 'payee_name' 
 
 export const DEFAULT_PAYMENT_CONFIG: PaymentConfig = {
   ok: true,
-  upi_id: '7067820256@ptyes',
+  upi_id: '7067820256@airtel',
   payee_name: 'SATYAM DUBEY',
   currency: 'INR',
   is_active: true,
@@ -163,11 +163,43 @@ export async function submitManualPayment(input: SubmitPaymentInput): Promise<{ 
 }
 
 export async function uploadProof(userId: string, blob: Blob, ext: string): Promise<{ ok: true; path: string } | { ok: false; error: string }> {
+  let uid = userId;
+  if (!uid) {
+    const { data: userData } = await supabase.auth.getUser();
+    uid = userData.user?.id || '';
+  }
+  if (!uid) {
+    return { ok: false, error: 'Authentication required to upload proof' };
+  }
+
   const folder = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const path = `payment-proofs/${userId}/${folder}/proof.${ext}`;
-  const { error } = await supabase.storage.from('payment-proofs').upload(path, blob, { contentType: `image/${ext === 'jpeg' ? 'jpeg' : ext}` });
-  if (error) return { ok: false, error: error.message };
-  return { ok: true, path };
+  const cleanExt = (ext || 'png').toLowerCase().replace('jpg', 'jpeg');
+  const contentType = `image/${cleanExt === 'jpeg' ? 'jpeg' : cleanExt}`;
+
+  // First try bucket-relative path: `${uid}/${folder}/proof.${cleanExt}`
+  const relPath = `${uid}/${folder}/proof.${cleanExt}`;
+  const fullPath = `payment-proofs/${relPath}`;
+
+  const res1 = await supabase.storage.from('payment-proofs').upload(relPath, blob, {
+    contentType,
+    upsert: true,
+  });
+
+  if (!res1.error) {
+    return { ok: true, path: fullPath };
+  }
+
+  // If relPath had an RLS constraint on bucket prefix, try fullPath
+  const res2 = await supabase.storage.from('payment-proofs').upload(fullPath, blob, {
+    contentType,
+    upsert: true,
+  });
+
+  if (!res2.error) {
+    return { ok: true, path: fullPath };
+  }
+
+  return { ok: false, error: res1.error.message || res2.error.message || 'Upload failed' };
 }
 
 export async function adminApprovePayment(id: string, note?: string) {

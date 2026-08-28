@@ -348,9 +348,9 @@ const App = () => (
                   <Route path="/weather/:slug" element={<SafeLazy><MarketingLayout><StateLanding /></MarketingLayout></SafeLazy>} />
                   <Route path="/tractor-rental/:slug" element={<SafeLazy><MarketingLayout><StateLanding /></MarketingLayout></SafeLazy>} />
 
-                  {/* ── Admin Console (RequireAdmin guard) ─────────────── */}
-                  <Route path="/admin" element={<SafeLazy><RequireAdmin><AdminDashboard /></RequireAdmin></SafeLazy>} />
-                  <Route path="/admin/*" element={<SafeLazy><RequireAdmin><AdminDashboard /></RequireAdmin></SafeLazy>} />
+                  {/* ── Admin Console (Self-gated executive dashboard) ─────────────── */}
+                  <Route path="/admin" element={<SafeLazy><AdminDashboard /></SafeLazy>} />
+                  <Route path="/admin/*" element={<SafeLazy><AdminDashboard /></SafeLazy>} />
                   <Route path="/profile/admin" element={<Navigate to="/admin" replace />} />
                   <Route path="/profile/admin/*" element={<Navigate to="/admin" replace />} />
 

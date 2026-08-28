@@ -421,3 +421,63 @@ export function getCropImage(cropName?: string): string {
 export function getCropBackupImage(cropName?: string): string {
   return getCropImage(cropName);
 }
+
+export function getCropEmoji(cropName?: string): string {
+  if (!cropName) return "🌾";
+  const name = cropName.toLowerCase().trim();
+
+  if (name.includes("coconut") || name.includes("nariyal") || name.includes("नारियल")) return "🥥";
+  if (name.includes("lemon") || name.includes("nimbu") || name.includes("नींबू")) return "🍋";
+  if (name.includes("apple") || name.includes("seb") || name.includes("सेब")) return "🍎";
+  if (name.includes("garlic") || name.includes("lahsun") || name.includes("lasun") || name.includes("लहसुन")) return "🧄";
+  if (name.includes("ginger") || name.includes("adrak") || name.includes("अदरक")) return "🫚";
+  if (name.includes("tomato") || name.includes("tamatar") || name.includes("टमाटर")) return "🍅";
+  if (name.includes("potato") || name.includes("aloo") || name.includes("alu") || name.includes("आलू")) return "🥔";
+  if (name.includes("onion") || name.includes("pyaj") || name.includes("pyaaz") || name.includes("kanda") || name.includes("प्याज")) return "🧅";
+  if (name.includes("chilli") || name.includes("mirch") || name.includes("mirchi") || name.includes("मिर्च")) return "🌶️";
+  if (name.includes("corn") || name.includes("maize") || name.includes("makka") || name.includes("मक्का")) return "🌽";
+  if (name.includes("banana") || name.includes("kela") || name.includes("केला")) return "🍌";
+  if (name.includes("mango") || name.includes("aam") || name.includes("आम")) return "🥭";
+  if (name.includes("orange") || name.includes("santra") || name.includes("संतरा")) return "🍊";
+  if (name.includes("grape") || name.includes("angoor") || name.includes("अंगूर")) return "🍇";
+  if (name.includes("watermelon") || name.includes("tarbooj") || name.includes("तरबूज")) return "🍉";
+  if (name.includes("carrot") || name.includes("gajar") || name.includes("गाजर")) return "🥕";
+  if (name.includes("pea") || name.includes("matar") || name.includes("मटर")) return "🫛";
+  if (name.includes("rice") || name.includes("paddy") || name.includes("dhan") || name.includes("chawal") || name.includes("धान") || name.includes("चावल")) return "🍚";
+  if (name.includes("wheat") || name.includes("gehu") || name.includes("gehun") || name.includes("गेहूं") || name.includes("गेहू")) return "🌾";
+  if (name.includes("soybean") || name.includes("mustard") || name.includes("sarson") || name.includes("सोयाबीन") || name.includes("सरसों")) return "🌱";
+
+  const cat = getCropCategory(name);
+  if (cat === "Fruits") return "🍎";
+  if (cat === "Vegetables") return "🥬";
+  if (cat === "Spices") return "🌿";
+  if (cat === "Pulses") return "🫘";
+  if (cat === "Oilseeds") return "🌻";
+  return "🌾";
+}
+
+export function getCropSvgFallback(cropName?: string): string {
+  const emoji = getCropEmoji(cropName);
+  const title = cropName || "Mandi Commodity";
+  const cat = getCropCategory(cropName);
+
+  return (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="crop_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22" />
+      <stop offset="50%" stop-color="#064e3b" />
+      <stop offset="100%" stop-color="#065f46" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#crop_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">${emoji}</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#f0fdf4" text-anchor="middle">${title}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Mandi · ${cat}</text>
+</svg>
+`)
+  );
+}

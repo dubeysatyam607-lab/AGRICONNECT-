@@ -1242,7 +1242,6 @@ export const mr: JourneyDict = {
   "home.rustRisk": "पिकात कीड व रोग तपासण्यासाठी क्रॉप डॉक्टर वापरा",
   "home.sampleListings": "नमुना सूची — किसान जोडल्यावर येथे वास्तविक सूची दिसेल.",
   "home.scan": "स्कॅन करा",
-  "home.setLocationHint": "🌤 अचूक हवामानासाठी आपले स्थान निवडा",
   "home.setUpMyFarm": "माझे शेत सेट करा",
   "home.todayMandi": "आजची मंडी",
   "home.trending": "चर्चेत असलेली पिके",

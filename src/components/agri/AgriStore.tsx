@@ -355,38 +355,20 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
               </div>
             ) : (
               <>
-                <div className="space-y-2 mb-4">
-                  {([
-                    ["upi", "UPI / Official QR (GPay · PhonePe · Paytm)", Smartphone],
-                    ["card", "Debit / Credit Card", CreditCard],
-                    ["netbanking", "Net Banking", Wallet],
-                    ["cash", "Cash on delivery", IndianRupee],
-                  ] as Array<[string, string, typeof Smartphone]>).map(([id, label, IconC]) => {
-                    const Icon = IconC as typeof Smartphone;
-                    return (
-                      <button key={id} onClick={() => setMethod(id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl border text-sm font-semibold", method === id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
-                        <span className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", method === id ? "border-primary" : "border-muted-foreground/40")}>
-                          {method === id && <span className="w-2 h-2 rounded-full bg-primary"></span>}
-                        </span>
-                        <Icon size={15} className={method === id ? "text-primary" : "text-muted-foreground"} />
-                        {label}
-                      </button>
-                    );
-                  })}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 p-3 rounded-xl border bg-primary/10 border-primary/50 text-sm font-bold text-foreground mb-3">
+                    <Smartphone size={16} className="text-primary" />
+                    <span>Official UPI & Instant QR Payment</span>
+                  </div>
+                  <OfficialUpiQrCard amount={order.total} note={`AgriStore Order #${order.id.slice(0, 6)}`} />
                 </div>
 
-                {method === "upi" && (
-                  <div className="mb-4">
-                    <OfficialUpiQrCard amount={order.total} note={`AgriStore Order #${order.id.slice(0, 6)}`} />
-                  </div>
-                )}
-
                 <AgriButton className="w-full" onClick={pay}>
-                  {method === "upi" ? <Check size={16} /> : null}
-                  {method === "upi" ? `I Have Paid / Confirm Order (${fmt(order.total)})` : `${t("pay")} ${fmt(order.total)}`}
+                  <Check size={16} />
+                  {`I Have Paid / Confirm Order (${fmt(order.total)})`}
                 </AgriButton>
                 {payErr && <p className="text-[11px] text-rose-500 text-center mt-2 font-semibold">{payErr}</p>}
-                <p className="text-[11px] text-muted-foreground text-center mt-2">{isRazorpayConfigured() ? t("secureLive") : t("secure")}</p>
+                <p className="text-[11px] text-muted-foreground text-center mt-2">Verified Direct UPI Payment · Satyam Dubey (7067820256@airtel)</p>
               </>
             )}
           </>

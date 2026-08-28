@@ -73,7 +73,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, onError, buc
         <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
           <img
             src={value}
-            alt="Uploaded"
+            alt="Uploaded image preview"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-full object-cover"
           />
           <button

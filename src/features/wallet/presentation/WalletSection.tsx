@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { walletRepository } from '../data/walletRepository';
 import type { WalletSummary, WalletTransaction } from '../domain/walletTypes';
+import { OfficialUpiQrCard } from '@/components/agri/OfficialUpiQrCard';
 
 interface WalletSectionProps {
   onToast?: (message: string) => void;
@@ -315,12 +316,16 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
                 />
               </div>
             </div>
-            <Button className="w-full gap-1.5" disabled={adding} onClick={handleAddMoney}>
-              {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus size={15} />}
-              {t('wallet.proceed')}
-            </Button>
+            {Number(amount) > 0 && (
+              <div className="my-2">
+                <OfficialUpiQrCard
+                  amount={Number(amount)}
+                  note={`AgriConnect Wallet Top-up (User #${user.id.slice(0, 6)})`}
+                />
+              </div>
+            )}
             {!adding && (
-              <button onClick={() => setShowAdd(false)} className="mx-auto flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+              <button onClick={() => setShowAdd(false)} className="mx-auto flex items-center gap-1 text-[11px] font-bold text-muted-foreground mt-2">
                 <X size={12} /> {t('wallet.cancel')}
               </button>
             )}

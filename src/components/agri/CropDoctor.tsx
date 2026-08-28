@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX, History, RotateCcw, AlertTriangle } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { useToast } from "@/hooks/use-toast";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -402,7 +403,13 @@ const CropDoctor: React.FC = () => {
         </div>
 
         {imagePreview && (
-          <img src={imagePreview} alt="Analyzed crop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-32 object-cover rounded-lg mb-4 border border-border" />
+          <SafeImage
+            src={imagePreview}
+            alt="Analyzed crop"
+            resolveType="crop"
+            containerClassName="w-full h-32 rounded-lg mb-4 border border-border"
+            className="w-full h-full object-cover"
+          />
         )}
 
         {clarityWarning && (
@@ -585,7 +592,13 @@ const CropDoctor: React.FC = () => {
 
             {imagePreview ? (
               <div className="relative">
-                <img src={imagePreview} alt="Crop preview" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-40 object-cover rounded-xl border border-border" />
+                <SafeImage
+                  src={imagePreview}
+                  alt="Crop preview"
+                  resolveType="crop"
+                  containerClassName="w-full h-40 rounded-xl border border-border"
+                  className="w-full h-full object-cover"
+                />
                 <button
                   onClick={() => { setImagePreview(null); setImageBase64(null); }}
                   className="absolute top-2 right-2 bg-background/80 p-2 rounded-full"

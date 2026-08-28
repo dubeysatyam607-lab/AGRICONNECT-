@@ -73,10 +73,16 @@ export const ProfileAvatarUploader: React.FC<IProfileAvatarUploaderProps> = ({
         onClick={() => fileInputRef.current?.click()}
       >
         {currentUrl ? (
-          <img src={currentUrl} alt={fullName} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"; }} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300" />
-        ) : (
-          <span>{getInitials(fullName || 'Farmer')}</span>
-        )}
+          <img
+            src={currentUrl}
+            alt={fullName}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+            className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
+          />
+        ) : null}
+        <span className="select-none">{getInitials(fullName || 'Farmer')}</span>
 
         <div
           className={`absolute inset-0 bg-black/50 flex flex-col items-center justify-center transition-opacity duration-200 ${

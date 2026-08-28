@@ -3,10 +3,22 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts";
 import { weatherRequestSchema, parseAndValidate } from "../_shared/validators.ts";
 
-const ALLOWED_ORIGINS = (
-  Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
-).split(",").map(o => o.trim());
+// Production domains are always allowed regardless of the configured secret so a
+// stale/misconfigured ALLOWED_ORIGINS can never silently break live weather.
+// The env secret (if present) is unioned with these safe defaults for dev/tools.
+const DEFAULT_ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:8000",
+  "https://agriconnect-navy-six.vercel.app",
+  "https://agriconnect-navy-six-*.vercel.app",
+];
+const ALLOWED_ORIGINS = Array.from(
+  new Set([
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(Deno.env.get("ALLOWED_ORIGINS") || "").split(",").map(o => o.trim()).filter(Boolean),
+  ])
+);
 
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;

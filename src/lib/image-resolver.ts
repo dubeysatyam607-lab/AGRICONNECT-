@@ -3,11 +3,39 @@
  * 100% Photo-Accurate real photography for Mandi crops, Agri Store products, Machinery, and Schemes.
  */
 
-import { getCropImage, getCropBackupImage, CATEGORY_CROP_IMAGES } from "./crop-images";
-import { MACHINE_IMG, getMachineImage } from "./machine-images";
+import { getCropImage, getCropBackupImage, getCropSvgFallback, CATEGORY_CROP_IMAGES } from "./crop-images";
+import { MACHINE_IMG, getMachineImage, getMachineSvgFallback } from "./machine-images";
+import { CATTLE_IMAGE_MAP, getCattleImage, getCattleSvgFallback } from "./cattle-images";
 
 // In-memory cache for resolved URLs
 const RESOLVE_CACHE = new Map<string, string>();
+const FAILED_URLS = new Set<string>();
+
+export function clearResolveCache(): void {
+  RESOLVE_CACHE.clear();
+  FAILED_URLS.clear();
+}
+
+export function markImageUrlFailed(url: string): void {
+  if (url && typeof url === "string" && !url.startsWith("data:")) {
+    FAILED_URLS.add(url.trim());
+    RESOLVE_CACHE.delete(url.trim());
+  }
+}
+
+export function isImageUrlFailed(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  return FAILED_URLS.has(url.trim());
+}
+
+export function invalidateImageUrl(urlOrKey: string): void {
+  markImageUrlFailed(urlOrKey);
+  for (const [k, v] of RESOLVE_CACHE.entries()) {
+    if (v === urlOrKey || k.includes(urlOrKey)) {
+      RESOLVE_CACHE.delete(k);
+    }
+  }
+}
 
 /**
  * High-quality, verified agricultural product images for Indian Agri Store items.
@@ -285,7 +313,8 @@ export const OFFLINE_AGRI_SVG =
 export function isValidImageUrl(url: unknown): url is string {
   if (typeof url !== "string") return false;
   const trimmed = url.trim();
-  if (!trimmed) return false;
+  if (!trimmed || trimmed.length < 5) return false;
+  if (FAILED_URLS.has(trimmed)) return false;
   if (
     trimmed === "undefined" ||
     trimmed === "null" ||
@@ -348,7 +377,7 @@ export function getStoreProductBackupImage(productName?: string, category?: stri
 }
 
 export function getRealFallbackImage(
-  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "scheme" | "general" = "general",
+  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
   contextName?: string,
   category?: string
 ): string {
@@ -361,6 +390,9 @@ export function getRealFallbackImage(
   if (type === "tractor" || type === "harvester" || type === "equipment" || type === "machinery") {
     return getMachineImage(contextName, category || type);
   }
+  if (type === "cattle" || type === "cow" || type === "buffalo") {
+    return getCattleImage(contextName);
+  }
   if (type === "category") {
     const cat = (category || contextName || "").toLowerCase();
     return CATEGORY_FALLBACK_IMAGES[cat] || CATEGORY_FALLBACK_IMAGES.default;
@@ -368,9 +400,46 @@ export function getRealFallbackImage(
   return CATEGORY_FALLBACK_IMAGES.default;
 }
 
+export function getExactCategoryFallbackSvg(
+  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
+  contextName?: string,
+  category?: string
+): string {
+  if (type === "crop") {
+    return getCropSvgFallback(contextName);
+  }
+  if (type === "tractor" || type === "harvester" || type === "equipment" || type === "machinery") {
+    return getMachineSvgFallback(contextName, category || type);
+  }
+  if (type === "cattle" || type === "cow" || type === "buffalo") {
+    return getCattleSvgFallback(contextName);
+  }
+  if (type === "scheme") {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sch_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" /><stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#sch_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🏛️</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0fdf4" text-anchor="middle">${contextName || "Government Scheme"}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Sarkari Yojana</text>
+</svg>
+`)
+    );
+  }
+
+  return OFFLINE_AGRI_SVG;
+}
+
 export function resolveImageUrl(
   imageSource?: unknown,
-  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "scheme" | "general" = "general",
+  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
   contextName?: string
 ): string {
   const cacheKey = `${type}:${contextName || ""}:${String(imageSource || "")}`;
@@ -400,6 +469,8 @@ export function resolveImageUrl(
       finalUrl = getStoreProductImage(contextName);
     } else if (type === "tractor" || type === "harvester" || type === "equipment" || type === "machinery") {
       finalUrl = getMachineImage(contextName, type);
+    } else if (type === "cattle" || type === "cow" || type === "buffalo") {
+      finalUrl = getCattleImage(contextName);
     } else if (type === "category") {
       const cat = (contextName || "").toLowerCase();
       finalUrl = CATEGORY_FALLBACK_IMAGES[cat] || CATEGORY_FALLBACK_IMAGES.default;
@@ -441,7 +512,7 @@ export function normalizeApiProductImage(raw: Record<string, unknown>, category?
 }
 
 export interface ResolveImageOptions {
-  entityType?: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "scheme" | "general";
+  entityType?: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general";
   entityName?: string;
   category?: string;
   fallback?: string;
@@ -453,13 +524,13 @@ export interface ResolveImageOptions {
  * Priority:
  * 1. Verified local/static/direct valid URL
  * 2. Verified Database image URL
- * 3. Master Verified Crop / Machinery / Product High-Resolution Photography
+ * 3. Master Verified Crop / Machinery / Product / Cattle High-Resolution Photography
  * 4. Safe Category-specific Fallback
- * 5. Guaranteed Offline Neutral Agricultural SVG
+ * 5. Exact SVG Fallback
  */
 export function resolveImage(options: ResolveImageOptions): string {
   const { entityType = "general", entityName, category, fallback, src } = options;
   const resolved = resolveImageUrl(src, entityType, entityName || category);
-  return resolved || fallback || OFFLINE_AGRI_SVG;
+  return resolved || fallback || getExactCategoryFallbackSvg(entityType, entityName, category);
 }
 

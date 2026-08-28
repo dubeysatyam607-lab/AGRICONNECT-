@@ -1242,7 +1242,6 @@ export const pa: JourneyDict = {
   "home.rustRisk": "ਫ਼ਸਲ ਵਿੱਚ ਕੀੜੇ ਅਤੇ ਬਿਮਾਰੀ ਦੀ ਜਾਂਚ ਲਈ ਕ੍ਰੌਪ ਡਾਕਟਰ ਵਰਤੋ",
   "home.sampleListings": "ਨਮੂਨਾ ਸੂਚੀ — ਅਸਲ ਸੂਚੀ ਇੱਥੇ ਦਿਖੇਗੀ ਜਦੋਂ ਕਿਸਾਨ ਜੋੜਨਗੇ।",
   "home.scan": "ਸਕੈਨ",
-  "home.setLocationHint": "🌤 ਸਹੀ ਮੌਸਮ ਲਈ ਆਪਣਾ ਸਥਾਨ ਚੁਣੋ",
   "home.setUpMyFarm": "ਮੇਰਾ ਖੇਤ ਸੈੱਟ ਕਰੋ",
   "home.todayMandi": "ਅੱਜ ਦੀ ਮੰਡੀ",
   "home.trending": "ਚਰਚਿਤ ਫ਼ਸਲਾਂ",

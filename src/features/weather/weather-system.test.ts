@@ -2,10 +2,47 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeatherRemoteDataSource } from './data/datasources/WeatherRemoteDataSource';
 import { WeatherRepositoryImpl } from './data/repositories/WeatherRepositoryImpl';
 import { IWeatherModuleData } from './domain/models/WeatherModels';
+import { geocodeLocation } from '@/features/location/geocodingService';
 
 describe('AgriConnect Weather System — Real Data Verification', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe('Geocoding & Location Precision', () => {
+    it('accurately resolves Indian agricultural towns to correct coordinates', async () => {
+      const shivpuri = await geocodeLocation('Shivpuri');
+      expect(shivpuri).not.toBeNull();
+      expect(shivpuri?.state).toBe('Madhya Pradesh');
+      expect(shivpuri?.latitude).toBeCloseTo(25.4244, 2);
+      expect(shivpuri?.longitude).toBeCloseTo(77.6534, 2);
+
+      const pimpri = await geocodeLocation('Pimpri-Chinchwad');
+      expect(pimpri).not.toBeNull();
+      expect(pimpri?.state).toBe('Maharashtra');
+      expect(pimpri?.latitude).toBeCloseTo(18.6298, 2);
+      expect(pimpri?.longitude).toBeCloseTo(73.7997, 2);
+
+      const indore = await geocodeLocation('Indore');
+      expect(indore).not.toBeNull();
+      expect(indore?.state).toBe('Madhya Pradesh');
+      expect(indore?.latitude).toBeCloseTo(22.7196, 2);
+
+      const bhopal = await geocodeLocation('Bhopal');
+      expect(bhopal).not.toBeNull();
+      expect(bhopal?.state).toBe('Madhya Pradesh');
+      expect(bhopal?.latitude).toBeCloseTo(23.2599, 2);
+
+      const jaipur = await geocodeLocation('Jaipur');
+      expect(jaipur).not.toBeNull();
+      expect(jaipur?.state).toBe('Rajasthan');
+      expect(jaipur?.latitude).toBeCloseTo(26.9124, 2);
+    });
+
+    it('returns null for empty or invalid query without guessing or inventing coordinates', async () => {
+      const res = await geocodeLocation('');
+      expect(res).toBeNull();
+    });
   });
 
   describe('WeatherRemoteDataSource', () => {
@@ -165,7 +202,7 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
         fetchRemoteWeather: vi.fn().mockImplementation(async (lat: number, lng: number, name?: string) => ({
           location: { name: name || 'Location', district: name || 'District', state: 'India', latitude: lat, longitude: lng },
           live: {
-            temp: lat > 30 ? 16 : 32, // Northern vs Southern India gradient
+            temp: lat > 30 ? 16 : 32,
             feelsLike: lat > 30 ? 15 : 36,
             condition: lat > 30 ? 'Fog / Mist' : 'Sunny',
             humidity: lat > 30 ? 85 : 60,

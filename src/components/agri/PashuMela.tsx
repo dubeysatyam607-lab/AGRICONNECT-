@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Milk, ExternalLink, MapPin, Filter, Search } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriCard } from "@/components/ui/agri-card";
-import { LazyImage } from "@/components/ui/lazy-image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Input } from "@/components/ui/input";
 import PashuMelaSkeleton from "./skeletons/PashuMelaSkeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -308,15 +308,14 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
         {filteredLivestock.map((animal, idx) => (
           <AgriCard key={animal.id} className="p-0 overflow-hidden animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
             <div className="h-28 bg-muted overflow-hidden relative">
-              <LazyImage
+              <SafeImage
                 src={animal.image}
                 alt={`${animal.breed} ${animal.type}`}
+                entityName={animal.breed || animal.type}
+                resolveType="cattle"
+                category={animal.type.toLowerCase()}
                 className="w-full h-full object-cover"
-                fallback={
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                    <Milk size={32} className="text-primary/50" />
-                  </div>
-                }
+                fallbackIcon={<Milk size={32} className="text-primary/50" />}
               />
               {animal.verified && (
                 <span className="absolute top-1 right-1 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">

@@ -429,11 +429,11 @@ export async function searchAgriImages(
     if (cached.length > 0) return cached.slice(0, perPage);
   }
 
-  // 2. Fetch via secure server API
+  // 2. Fetch via secure serverless Edge Function or server API
   try {
-    const baseUrl = typeof window !== "undefined" ? "" : "http://localhost:5000";
-    const endpoint = `${baseUrl}/api/images/search?query=${encodeURIComponent(cleanQuery)}&perPage=${perPage}&type=${encodeURIComponent(type)}`;
-    const res = await fetch(endpoint, {
+    const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co").replace(/\/$/, "");
+    const edgeEndpoint = `${supabaseUrl}/functions/v1/pexels-search?query=${encodeURIComponent(cleanQuery)}&per_page=${perPage}`;
+    const res = await fetch(edgeEndpoint, {
       headers: { Accept: "application/json" },
     });
 
@@ -460,6 +460,10 @@ export async function searchAgriImages(
     }
   }
 
+  if (PEXELS_PHOTO_LIBRARY[type]) {
+    return PEXELS_PHOTO_LIBRARY[type];
+  }
+
   return PEXELS_PHOTO_LIBRARY.farmer;
 }
 
@@ -482,6 +486,10 @@ export interface AgricultureImageOptions {
     | "seeder"
     | "sprayer"
     | "marketplace"
+    | "farmer"
+    | "cattle"
+    | "cow"
+    | "buffalo"
     | "general";
   name: string;
   category?: string;
@@ -490,13 +498,12 @@ export interface AgricultureImageOptions {
 }
 
 /**
- * Master Centralized Dynamic Agriculture Image Service.
- * Evaluates candidate relevance and returns verified high-res Pexels image metadata.
+ * Main Agricultural Image Resolver with multi-tier caching and exact-category fallbacks.
  */
 export async function getAgricultureImage(
   opts: AgricultureImageOptions
 ): Promise<CachedAgriImage> {
-  const { type, name, category, brand, forceRefresh = false } = opts;
+  const { type = "general", name = "", category, brand, forceRefresh = false } = opts;
   const rawKey = `${type}:${name.trim().toLowerCase()}`;
   const now = Date.now();
 
@@ -535,8 +542,15 @@ export async function getAgricultureImage(
     return result;
   }
 
-  // 4. Construct search query
+  // 4. Construct search query with exact entity specificity
   let searchQuery = normalized;
+  if (type === "crop" || type === "mandi_crop") {
+    searchQuery = `${searchQuery} fruit crop agriculture`;
+  } else if (type === "tractor") {
+    searchQuery = `${searchQuery} tractor farm agriculture`;
+  } else if (type === "cattle" || type === "cow" || type === "buffalo") {
+    searchQuery = `${searchQuery} farm cattle`;
+  }
   if (brand) searchQuery = `${brand} ${searchQuery}`;
   if (category && !searchQuery.includes(category.toLowerCase())) {
     searchQuery = `${searchQuery} ${category}`;
@@ -568,15 +582,31 @@ export async function getAgricultureImage(
     // handled by fallback below
   }
 
-  // 6. Safe fallback
-  const fallbackPhoto = PEXELS_PHOTO_LIBRARY.farmer[0];
+  // 6. Safe category-specific fallback (NEVER cross categories!)
+  let fallbackUrl = "";
+  if (type === "crop" || type === "mandi_crop") {
+    const { getCropImage } = await import("./crop-images");
+    fallbackUrl = getCropImage(name);
+  } else if (type === "tractor" || type === "machinery" || type === "harvester" || type === "rotavator" || type === "cultivator" || type === "seeder") {
+    const { getMachineImage } = await import("./machine-images");
+    fallbackUrl = getMachineImage(name, type);
+  } else if (type === "cattle" || type === "cow" || type === "buffalo") {
+    const { getCattleImage } = await import("./cattle-images");
+    fallbackUrl = getCattleImage(name);
+  } else if (type === "product" || type === "fertilizer" || type === "seed" || type === "pesticide") {
+    const { getStoreProductImage } = await import("./image-resolver");
+    fallbackUrl = getStoreProductImage(name, category);
+  } else {
+    fallbackUrl = PEXELS_PHOTO_LIBRARY.farmer[0].src.large;
+  }
+
   const fallbackResult: CachedAgriImage = {
     entityType: type,
     entityName: name,
     searchQuery,
-    imageUrl: fallbackPhoto.src.large,
-    photographer: fallbackPhoto.photographer,
-    photographerUrl: fallbackPhoto.url,
+    imageUrl: fallbackUrl,
+    photographer: "AgriConnect Verified Photography",
+    photographerUrl: "https://pexels.com",
     source: "fallback",
     fetchedAt: now,
     expiry: now + CACHE_TTL_MS,

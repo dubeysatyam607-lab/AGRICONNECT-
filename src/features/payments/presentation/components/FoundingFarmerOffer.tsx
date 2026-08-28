@@ -7,6 +7,9 @@ import { interpolate } from '@/i18n/journey';
 import { supabase } from '@/integrations/supabase/client';
 import { trackFfEvent } from '../../domain/ffAnalytics';
 
+import { ManualUpiPaymentDialog } from './ManualUpiPaymentDialog';
+import type { ManualPlan } from '../../domain/manualUpi';
+
 const FUNC_URL =
   ((import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co") as string).replace(/\/$/, '') +
   '/functions/v1/founding-farmer';
@@ -119,95 +122,28 @@ export function FoundingFarmerOffer({
   if (!config.offer_valid) return null;
   if (currentPlanId && currentPlanId !== 'plan-free' && currentPlanId !== 'free') return null;
 
-  const handlePurchase = async (plan: 'plus' | 'pro') => {
-    setPurchasing(plan);
+  const [manualPlan, setManualPlan] = useState<ManualPlan | null>(null);
+  const [userId, setUserId] = useState<string>('');
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
+
+  const handlePurchase = (plan: 'plus' | 'pro') => {
     trackFfEvent('ff_plan_selected', { plan });
-    try {
-      // 1. Create subscription (server claims slot + creates Razorpay order)
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        onToast?.('Please sign in first');
-        setPurchasing(null);
-        return;
-      }
-
-      const createRes = await fetch(FUNC_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
-        body: JSON.stringify({ action: 'create-subscription', plan }),
-      });
-      const createData = await createRes.json();
-      if (!createRes.ok || !createData.orderId) {
-        onToast?.(createData.error || t('failed'));
-        setPurchasing(null);
-        return;
-      }
-
-      // 2. Open Razorpay checkout
-      trackFfEvent('ff_payment_initiated', { plan, amount: createData.amount, orderId: createData.orderId });
-      const RazorpayConstructor = (window as any).Razorpay;
-      if (!RazorpayConstructor) {
-        onToast?.('Payment system not loaded. Please refresh.');
-        setPurchasing(null);
-        return;
-      }
-
-      const rz = new RazorpayConstructor({
-        key: createData.key,
-        amount: createData.amount * 100,
-        currency: 'INR',
-        name: 'AgriConnect',
-        description: `Founding Farmer ${plan === 'plus' ? 'Plus' : 'Pro'}`,
-        order_id: createData.orderId,
-        prefill: { contact: sessionData.session.user.phone || '' },
-        notes: { purpose: 'founding_farmer', plan },
-        theme: { color: '#16a34a' },
-        handler: async (response: any) => {
-          // 3. Verify payment server-side
-          try {
-            const verifyRes = await fetch(FUNC_URL, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${sessionData.session.access_token}`,
-              },
-              body: JSON.stringify({
-                action: 'verify-payment',
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                plan,
-                founding_farmer_number: createData.foundingFarmerNumber,
-              }),
-            });
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok && verifyData.ok) {
-              trackFfEvent('ff_payment_success', { plan, ffNumber: createData.foundingFarmerNumber });
-              onToast?.(t('success'));
-              onSubscriptionActivated?.();
-            } else {
-              trackFfEvent('ff_payment_failed', { plan, error: verifyData.error });
-              onToast?.(verifyData.error || t('failed'));
-            }
-          } catch {
-            trackFfEvent('ff_payment_failed', { plan, error: 'network_error' });
-            onToast?.(t('failed'));
-          } finally {
-            setPurchasing(null);
-          }
-        },
-        modal: {
-          ondismiss: () => setPurchasing(null),
-        },
-      });
-      rz.open();
-    } catch {
-      onToast?.(t('failed'));
-      setPurchasing(null);
-    }
+    if (!config) return;
+    setManualPlan({
+      id: plan === 'plus' ? 'plan-plus' : 'plan-pro',
+      name: `Founding Farmer ${plan === 'plus' ? 'Plus' : 'Pro'}`,
+      description: `Official Founding Farmer lifetime badge + ${plan.toUpperCase()} benefits`,
+      price: plan === 'plus' ? config.plus_price : config.pro_price,
+      currency: 'INR',
+      interval: 'month',
+      is_active: true,
+      features: null,
+    });
   };
 
   return (
@@ -328,6 +264,20 @@ export function FoundingFarmerOffer({
           </Button>
         </div>
       </div>
+
+      {manualPlan && (
+        <ManualUpiPaymentDialog
+          open={!!manualPlan}
+          onOpenChange={(v) => { if (!v) setManualPlan(null); }}
+          plan={manualPlan}
+          userId={userId}
+          onToast={onToast}
+          onSubmitted={() => {
+            setManualPlan(null);
+            onSubscriptionActivated?.();
+          }}
+        />
+      )}
     </div>
   );
 }

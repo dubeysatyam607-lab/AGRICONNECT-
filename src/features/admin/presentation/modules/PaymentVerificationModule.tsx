@@ -73,7 +73,7 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
 
   const [acting, setActing] = useState(false);
 
-  const [upiId, setUpiId] = useState('7067820256@ptyes');
+  const [upiId, setUpiId] = useState('7067820256@airtel');
   const [payeeName, setPayeeName] = useState('SATYAM DUBEY');
   const [savingConfig, setSavingConfig] = useState(false);
 
@@ -106,7 +106,7 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
   const loadConfig = useCallback(async () => {
     const { data } = await supabase.from('payment_config').select('upi_id, payee_name').eq('id', 'default').maybeSingle();
     if (data) {
-      setUpiId(data.upi_id || '7067820256@ptyes');
+      setUpiId(data.upi_id || '7067820256@airtel');
       setPayeeName(data.payee_name || 'SATYAM DUBEY');
     }
   }, []);
@@ -137,7 +137,13 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
     setProofRow(row);
     setProofUrl(null);
     try {
-      const { data, error } = await supabase.storage.from('payment-proofs').createSignedUrl(row.proof_storage_path, 600);
+      const cleanPath = (row.proof_storage_path || '').replace(/^payment-proofs\//, '');
+      let { data, error } = await supabase.storage.from('payment-proofs').createSignedUrl(cleanPath, 600);
+      if (error && cleanPath !== row.proof_storage_path) {
+        const retry = await supabase.storage.from('payment-proofs').createSignedUrl(row.proof_storage_path, 600);
+        data = retry.data;
+        error = retry.error;
+      }
       setProofUrl(error ? null : data?.signedUrl || null);
     } catch {
       setProofUrl(null);
