@@ -246,8 +246,10 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
       expect(weatherErrorCopy('Offline. Check your connection.')).toContain('connect to the weather service');
     });
 
-    it('maps timeouts and rate limits distinctly', () => {
+    it('maps timeouts, aborts, and rate limits distinctly', () => {
       expect(weatherErrorCopy(new Error('The request timed out'))).toContain('taking too long');
+      expect(weatherErrorCopy(new Error('The operation was aborted'))).toContain('taking too long');
+      expect(weatherErrorCopy(new Error('This operation was aborted'))).toContain('taking too long');
       expect(weatherErrorCopy(new Error('Rate limit reached'))).toContain('rate limit');
       expect(weatherErrorCopy(new Error('Too many requests'))).toContain('rate limit');
     });
