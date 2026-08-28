@@ -5,7 +5,6 @@ import { IWeatherRepository } from '../../domain/repositories/IWeatherRepository
 import { useLocation } from '@/features/location/LocationContext';
 import { IWeatherModuleData } from '../../domain/models/WeatherModels';
 import { isOnline } from '@/lib/offline-cache';
-import { friendlyError } from '@/components/ui/error-state';
 
 export interface WeatherViewModelState {
   data: IWeatherModuleData | null;
@@ -13,7 +12,6 @@ export interface WeatherViewModelState {
   refreshing: boolean;
   error: string | null;
   isFahrenheit: boolean;
-  locationLabel: string;
 }
 
 export interface WeatherViewModelActions {
@@ -23,16 +21,51 @@ export interface WeatherViewModelActions {
   triggerHaptic: () => void;
 }
 
+const WEATHER_REFRESH_MS = 15 * 60 * 1000;
+
+/**
+ * Maps thrown errors to clear, user-facing copy — never exposes internals.
+ */
+export function weatherErrorCopy(err: unknown): string {
+  const fallback = 'Weather data temporarily unavailable. Please try again.';
+  const msg = err instanceof Error ? err.message : String(err);
+  const lower = msg.toLowerCase();
+  if (lower.includes('offline') || lower.includes('network') || lower.includes('failed to fetch') || lower.includes('fetch failed')) {
+    return 'Unable to connect to the weather service.';
+  }
+  if (lower.includes('taking too long') || lower.includes('timed out') || lower.includes('timeout')) {
+    return 'Weather service is taking too long to respond. Please try again.';
+  }
+  if (lower.includes('rate limit') || lower.includes('too many requests')) {
+    return 'Weather service rate limit reached. Please try again shortly.';
+  }
+  if (lower.includes('401') || lower.includes('403') || lower.includes('authentication') || lower.includes('unauthorized')) {
+    return 'Weather service authentication failed.';
+  }
+  if (lower.includes('404') || lower.includes('could not be found') || lower.includes('incomplete forecast')) {
+    return 'Weather data could not be found for this location.';
+  }
+  if (lower.includes('500') || lower.includes('502') || lower.includes('503') || lower.includes('unavailable')) {
+    return 'Weather service is temporarily unavailable.';
+  }
+  if (lower.includes('location required') || lower.includes('invalid coordinates') || lower.includes('valid latitude')) {
+    return 'Location required. Please allow location access or choose your location manually.';
+  }
+  if (lower.includes('400') || lower.includes('bad request')) {
+    return 'Weather service rejected the request. Please try again.';
+  }
+  return fallback;
+}
+
 /**
  * Enterprise Reactive Weather MVVM Hook.
- *
- * Strictly binds to verified coordinates from LocationContext & user's farm profile.
+ * Strictly binds to active coordinates from LocationContext.
  * Fetches verified live weather, handles coordinate switches without stale bleeding,
- * provides robust retry logic, and maintains accurate unit conversions.
+ * and maintains accurate unit conversions. NEVER falls back to a default city.
  */
 export function useWeatherViewModel(repository?: IWeatherRepository): WeatherViewModelState & WeatherViewModelActions {
   const repo = useMemo(() => repository || inject<IWeatherRepository>(DI_TOKENS.WeatherRepository), [repository]);
-  const { location, refresh, farms } = useLocation();
+  const { location, refresh } = useLocation();
 
   const [state, setState] = useState<WeatherViewModelState>({
     data: null,
@@ -40,7 +73,6 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     refreshing: false,
     error: null,
     isFahrenheit: false,
-    locationLabel: '',
   });
 
   const triggerHaptic = useCallback(() => {
@@ -48,30 +80,31 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
       try {
         navigator.vibrate(15);
       } catch {
-        // Haptics unsupported
+        // Haptics not supported by this browser/device – fail silently.
       }
     }
   }, []);
 
   // Track active coordinates to prevent out-of-order responses on rapid location changes
   const activeCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
-  const inFlightRef = useRef(false);
 
   const fetchWeatherForCoords = useCallback(async (lat: number, lng: number, locName?: string, isRefresh = false) => {
-    if (inFlightRef.current && isRefresh) return;
-    inFlightRef.current = true;
     activeCoordsRef.current = { lat, lng };
 
-    const cleanLabel = locName || 'Current Location';
-
     try {
-      setState(prev => ({
-        ...prev,
-        loading: !prev.data || isRefresh ? prev.loading : true,
-        refreshing: isRefresh,
-        error: null,
-        locationLabel: cleanLabel,
-      }));
+      // On a location change (not a refresh), the previous city's weather MUST NOT
+      // remain visible while the new location loads.
+      if (!isRefresh) {
+        setState(prev => ({
+          ...prev,
+          data: null,
+          loading: true,
+          refreshing: false,
+          error: null,
+        }));
+      } else {
+        setState(prev => ({ ...prev, refreshing: true, error: null }));
+      }
 
       const result = isRefresh
         ? await repo.refreshWeather(lat, lng, locName)
@@ -89,7 +122,6 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
           loading: false,
           refreshing: false,
           error: null,
-          locationLabel: result.location.name || cleanLabel,
         }));
       }
     } catch (err: any) {
@@ -99,31 +131,15 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
         Math.abs(activeCoordsRef.current.lat - lat) < 0.01 &&
         Math.abs(activeCoordsRef.current.lng - lng) < 0.01
       ) {
-        let errMessage = 'Live weather is temporarily unavailable. Please try again.';
-        const rawMsg = err?.message || String(err);
-        const lower = rawMsg.toLowerCase();
-
-        if (!isOnline()) {
-          errMessage = "You're offline. Please connect to the internet for live weather.";
-        } else if (lower.includes('rate limit') || lower.includes('429')) {
-          errMessage = 'Weather service rate limit reached. Please try again shortly.';
-        } else if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('abort')) {
-          errMessage = 'Weather service is taking too long to respond. Please retry.';
-        } else if (lower.includes('location required') || lower.includes('location_required')) {
-          errMessage = 'Please enable location access or select your district to view weather.';
-        } else {
-          errMessage = friendlyError(err, 'Live weather is temporarily unavailable. Please try again.');
-        }
-
         setState(prev => ({
           ...prev,
           loading: false,
           refreshing: false,
-          error: errMessage,
+          error: isOnline()
+            ? weatherErrorCopy(err)
+            : "You're offline. Please connect to the internet for live weather.",
         }));
       }
-    } finally {
-      inFlightRef.current = false;
     }
   }, [repo]);
 
@@ -133,20 +149,14 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     const locName = city || district || village;
 
     if (typeof latitude === 'number' && typeof longitude === 'number') {
-      setState(prev => ({ ...prev, refreshing: true, error: null }));
+      setState(prev => ({ ...prev, refreshing: true }));
       await fetchWeatherForCoords(latitude, longitude, locName, true);
     } else {
-      // Check if user has an active or saved farm location
-      const activeFarm = farms.find(f => f.is_active) || farms[0];
-      if (activeFarm && typeof activeFarm.latitude === 'number' && typeof activeFarm.longitude === 'number') {
-        setState(prev => ({ ...prev, refreshing: true, error: null }));
-        await fetchWeatherForCoords(activeFarm.latitude, activeFarm.longitude, activeFarm.name || activeFarm.district, true);
-      } else {
-        setState(prev => ({ ...prev, refreshing: true, error: null }));
-        refresh();
-      }
+      // No coordinates yet — request GPS and show a locating state.
+      setState(prev => ({ ...prev, loading: true, refreshing: true, error: null }));
+      refresh();
     }
-  }, [location, farms, fetchWeatherForCoords, refresh, triggerHaptic]);
+  }, [location, fetchWeatherForCoords, refresh, triggerHaptic]);
 
   const toggleTemperatureUnit = useCallback(() => {
     triggerHaptic();
@@ -162,24 +172,44 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     return `${Math.round(celsius)}°C`;
   }, [state.isFahrenheit]);
 
-  // React to location updates from LocationContext & Farms
+  // React to location updates from LocationContext
   useEffect(() => {
-    const { status, latitude, longitude, city, district, village } = location;
+    const { status, latitude, longitude, city, district, village, error } = location;
     const locName = city || district || village;
 
-    if (typeof latitude === 'number' && typeof longitude === 'number' && Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    if (typeof latitude === 'number' && typeof longitude === 'number') {
       fetchWeatherForCoords(latitude, longitude, locName);
+    } else if (status === 'loading') {
+      // GPS is still resolving — keep the locating state.
+      setState(prev => ({ ...prev, data: null, loading: true, refreshing: false, error: null }));
+    } else if (status === 'idle') {
+      // Location provider hasn't attempted detection yet — stay loading briefly.
+      setState(prev => ({ ...prev, data: null, loading: true, error: null }));
     } else {
-      // Check if user has a saved farm location
-      const activeFarm = farms.find(f => f.is_active) || farms[0];
-      if (activeFarm && typeof activeFarm.latitude === 'number' && typeof activeFarm.longitude === 'number') {
-        fetchWeatherForCoords(activeFarm.latitude, activeFarm.longitude, activeFarm.name || activeFarm.district);
-      } else if (status === 'error' || status === 'ready') {
-        // Fall back to default agricultural reference coordinates
-        fetchWeatherForCoords(28.6139, 77.2090, 'New Delhi');
-      }
+      // No coordinates available (denied GPS, no saved/farm location).
+      // NEVER silently fetch a default city — ask the user instead.
+      setState(prev => ({
+        ...prev,
+        data: null,
+        loading: false,
+        refreshing: false,
+        error: error || 'Location required. Please allow location access or choose your location manually.',
+      }));
     }
-  }, [location, farms, fetchWeatherForCoords]);
+  }, [location, fetchWeatherForCoords]);
+
+  // Periodic refresh so weather never goes stale; skip while a request is in flight
+  // to prevent duplicate concurrent calls.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const { latitude, longitude, city, district, village } = location;
+      if (state.loading || state.refreshing) return;
+      if (typeof latitude === 'number' && typeof longitude === 'number') {
+        fetchWeatherForCoords(latitude, longitude, city || district || village, true);
+      }
+    }, WEATHER_REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, [location, state.loading, state.refreshing, fetchWeatherForCoords]);
 
   return {
     ...state,

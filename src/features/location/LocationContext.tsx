@@ -48,33 +48,28 @@ const LocationContext = createContext<LocationContextValue | undefined>(undefine
 
 const STORAGE_KEY = 'agriLocation';
 
-const DEFAULT_LOCATION: NormalizedLocation = {
-  latitude: 28.6139,
-  longitude: 77.2090,
-  city: 'New Delhi',
-  district: 'New Delhi',
-  state: 'Delhi',
-  country: 'India',
-  source: 'manual',
-};
+// No silent default city — live weather must never fabricate a location.
+// When no explicit/manual/GPS/farm location exists, coords stay undefined and
+// consumers show a "set your location" prompt instead of a fake default city.
+function initialLocation(): NormalizedLocation & { status: LocationStatus; error?: string } {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as NormalizedLocation;
+      if (typeof parsed.latitude === 'number' && typeof parsed.longitude === 'number') {
+        return { ...parsed, status: 'ready', source: 'saved' };
+      }
+    }
+  } catch {
+    // Storage can be unavailable in private browsing or constrained webviews.
+  }
+  return { status: 'idle' };
+}
 
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
-  const [location, setLocation] = useState<NormalizedLocation & { status: LocationStatus; error?: string }>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as NormalizedLocation;
-        if (typeof parsed.latitude === 'number' && typeof parsed.longitude === 'number') {
-          return { ...parsed, status: 'ready', source: 'saved' };
-        }
-      }
-    } catch {
-      // Storage can be unavailable in private browsing or constrained webviews.
-    }
-    return { ...DEFAULT_LOCATION, status: 'ready', source: 'manual' };
-  });
+  const [location, setLocation] = useState<NormalizedLocation & { status: LocationStatus; error?: string }>(initialLocation);
 
   const [farms, setFarms] = useState<FarmLocation[]>([]);
   const [farmsLoading, setFarmsLoading] = useState(false);
@@ -178,8 +173,9 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
             default:
               msg = finalErr.message || 'Unable to detect location.';
           }
-          const fallbackLoc = location.latitude ? location : DEFAULT_LOCATION;
-          updateLocation(fallbackLoc, 'ready', msg);
+          // Keep whatever coords we already had (never fabricate a default city).
+          const hasCoords = !!location.latitude;
+          updateLocation(hasCoords ? location : ({} as NormalizedLocation), hasCoords ? 'ready' : 'error', msg);
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
       );
@@ -216,7 +212,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
         .order('is_active', { ascending: false });
       if (error) throw error;
       const rows = (data || []) as any[];
-      setFarms(rows.map((r) => ({
+      const mapped = rows.map((r) => ({
         id: r.id,
         name: r.name,
         latitude: Number(r.latitude),
@@ -228,7 +224,28 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
         area: r.area != null ? Number(r.area) : undefined,
         crop: r.crop || undefined,
         is_active: !!r.is_active,
-      })));
+      }));
+      setFarms(mapped);
+      // If the user never explicitly set a location but has a farm saved, adopt
+      // the active farm location so farm advisories are hyperlocal (never a fake city).
+      setLocation((prev) => {
+        if (prev.latitude || prev.status === 'error' && (prev as NormalizedLocation).latitude) return prev;
+        const active = mapped.find((f) => f.is_active) || mapped[0];
+        if (!active) return prev;
+        if (prev.latitude) return prev;
+        return {
+          latitude: active.latitude,
+          longitude: active.longitude,
+          city: active.village || active.district,
+          district: active.district,
+          state: active.state,
+          village: active.village,
+          pincode: active.pincode,
+          source: 'manual',
+          status: 'ready',
+          updatedAt: Date.now(),
+        } as typeof prev;
+      });
     } catch (e: any) {
       console.warn('[LocationContext] Failed to load farms:', e?.message);
       setFarms([]);
