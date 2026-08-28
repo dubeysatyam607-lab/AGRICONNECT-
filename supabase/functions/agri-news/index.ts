@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { resolveAllowedOrigins, getCorsHeaders as sharedCorsHeaders } from "../_shared/cors.ts";
 import { checkRateLimit } from "../_shared/rate-limiter.ts";
 
 const NEWS_API_KEY = Deno.env.get("NEWS_API_KEY");
@@ -6,18 +7,10 @@ const NEWSDATA_API_KEY = Deno.env.get("NEWSDATA_API_KEY") || "";
 const FREE_NEWS_BASE = "https://saurav.tech/NewsAPI";
 const NEWS_CACHE_MINUTES = 10;
 
-const ALLOWED_ORIGINS = (
-  Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app'
-).split(',').map(o => o.trim());
+const ALLOWED_ORIGINS = resolveAllowedOrigins();
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && ALLOWED_ORIGINS.some((o) => o === origin) ? origin : undefined;
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, content-type",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Max-Age": "86400",
-  };
+  return sharedCorsHeaders(origin, 'GET, POST, OPTIONS');
 }
 
 export interface AgriNewsArticle {

@@ -1,27 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { resolveAllowedOrigins, getCorsHeaders as sharedCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateAuth, authErrorResponse } from "../_shared/auth-validator.ts";
 
-const ALLOWED_ORIGINS = (
-  Deno.env.get("ALLOWED_ORIGINS") ||
-  "http://localhost:3000,http://localhost:5173,http://localhost:8000,https://agriconnect-navy-six.vercel.app,https://agriconnect-navy-six-*.vercel.app"
-).split(",").map(o => o.trim());
+const ALLOWED_ORIGINS = resolveAllowedOrigins();
 
 function getCORSHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && ALLOWED_ORIGINS.some((o) => {
-    if (o.includes("*")) {
-      const prefix = o.replace("*", "");
-      return origin.startsWith(prefix);
-    }
-    return o === origin;
-  }) ? origin : undefined;
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Headers": "authorization, x-client-info, content-type, x-razorpay-signature",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Max-Age": "86400",
-  };
-  if (allowed) headers["Access-Control-Allow-Origin"] = allowed;
-  return headers;
+  return sharedCorsHeaders(origin, 'POST, OPTIONS');
 }
 
 const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID");

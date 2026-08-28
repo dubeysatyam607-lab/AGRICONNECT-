@@ -3,6 +3,7 @@ import { IWeatherModuleData } from '../../domain/models/WeatherModels';
 import { WeatherRemoteDataSource, weatherRemoteDataSource } from '../datasources/WeatherRemoteDataSource';
 import { secureStorage } from '@/core/storage/SecureStorage';
 import { analyticsService } from '@/core/services/AnalyticsService';
+import { writeCache } from '@/lib/offline-cache';
 
 const WEATHER_CACHE_KEY_PREFIX = 'agri_weather_v2';
 const WEATHER_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes TTL
@@ -43,6 +44,7 @@ export class WeatherRepositoryImpl implements IWeatherRepository {
         
         // If cached within TTL, return fresh cached data
         if (cachedData.live && typeof cachedData.live.temp === 'number' && !isNaN(cacheAge) && cacheAge < WEATHER_CACHE_TTL_MS) {
+          await this.persistSharedCache(cachedData);
           return {
             ...cachedData,
             isOfflineCached: false,
@@ -57,6 +59,7 @@ export class WeatherRepositoryImpl implements IWeatherRepository {
     try {
       const remoteData = await this.remoteDataSource.fetchRemoteWeather(lat, lng, locationName);
       await secureStorage.setItem(cacheKey, JSON.stringify(remoteData));
+      await this.persistSharedCache(remoteData);
 
       analyticsService.logEvent('weather_loaded', {
         location: remoteData.location.name,
@@ -79,6 +82,19 @@ export class WeatherRepositoryImpl implements IWeatherRepository {
     }
   }
 
+  /**
+   * Writes the latest verified forecast into the shared `weather:home` cache so
+   * weather alerts, the AI advisor, and the digital profile consume the SAME
+   * normalized live data instead of a stale/never-written key.
+   */
+  private async persistSharedCache(remoteData: IWeatherModuleData): Promise<void> {
+    try {
+      writeCache<IWeatherModuleData>('weather:home', remoteData);
+    } catch {
+      // Shared cache is best-effort — aliveness of live weather comes first.
+    }
+  }
+
   public async refreshWeather(lat?: number, lng?: number, locationName?: string): Promise<IWeatherModuleData> {
     if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
       throw new Error('Valid latitude and longitude coordinates are required.');
@@ -87,6 +103,7 @@ export class WeatherRepositoryImpl implements IWeatherRepository {
     const cacheKey = this.getCacheKey(lat, lng);
     const remoteData = await this.remoteDataSource.fetchRemoteWeather(lat, lng, locationName);
     await secureStorage.setItem(cacheKey, JSON.stringify(remoteData));
+    await this.persistSharedCache(remoteData);
 
     analyticsService.logEvent('weather_refreshed', {
       location: remoteData.location.name,
