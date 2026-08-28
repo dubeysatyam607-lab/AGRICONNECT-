@@ -25,6 +25,9 @@ import { useFarm } from "@/contexts/FarmContext";
 import { deriveFarmAdvice } from "@/lib/farm-advisor";
 import { fetchMandiPrices, type MandiPrice } from "@/lib/mandi-api";
 import { WeatherDashboardModal } from "@/features/weather/presentation/views/WeatherDashboardModal";
+import { LocationSelector } from "@/features/location/LocationSelector";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useLocation } from "@/features/location/LocationContext";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/ui/Logo";
@@ -115,6 +118,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   const liveCity = wl?.location?.name || village;
   const condEmoji = (cond?: string) => COND_EMOJI[cond || ""] || "🌤️";
   const [weatherOpen, setWeatherOpen] = useState(false);
+  const [locationSheetOpen, setLocationSheetOpen] = useState(false);
+  const { location: locState } = useLocation();
 
   // Real mandi prices from data.gov.in (via mandi-api). Never fabricates prices:
   // empty state is shown when the live feed is unreachable.
@@ -345,7 +350,10 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                     <CloudSun size={24} className="animate-pulse" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">{t('home.fetchingWeather') || 'Fetching live weather…'}</p>
+                    <p className="text-sm font-bold text-foreground">
+                      {t('home.fetchingWeather') || 'Fetching live weather…'}
+                      {locState?.city && locState.city !== 'Current Location' ? ` for ${locState.city}` : ''}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5">{t('home.weatherDetecting') || 'Getting hyperlocal temperature & rain forecast'}</p>
                   </div>
                 </div>
@@ -361,12 +369,21 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                     <p className="text-xs text-muted-foreground mt-0.5">{weather.error || (t('home.setLocationHint') || '🌤 Set your location for hyperlocal weather')}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => weather.refreshLocation()}
-                  className="mt-3 w-full rounded-xl bg-forest px-3 py-2 text-xs font-bold text-white hover:brightness-110"
-                >
-                  {t('wth.retry') || 'Retry Weather'}
-                </button>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => weather.refreshLocation()}
+                    className="flex-1 rounded-xl bg-forest px-3 py-2 text-xs font-bold text-white hover:brightness-110"
+                    disabled={weather.loading}
+                  >
+                    {t('wth.retry') || 'Retry Weather'}
+                  </button>
+                  <button
+                    onClick={() => setLocationSheetOpen(true)}
+                    className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground hover:bg-muted/40"
+                  >
+                    {t('home.changeLocation') || 'Set Location'}
+                  </button>
+                </div>
               </div>
             )}
         </section>
@@ -715,6 +732,21 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             onToggleUnit={weather.toggleTemperatureUnit}
           />
         )}
+
+        {/* Set / Change Location Sheet */}
+        <Sheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen}>
+          <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl">
+            <SheetHeader className="pb-2 text-left">
+              <SheetTitle>{t('home.changeLocation') || 'Set Your Location'}</SheetTitle>
+            </SheetHeader>
+            <LocationSelector
+              onLocationSelected={() => {
+                setLocationSheetOpen(false);
+                setTimeout(() => weather.refreshLocation(), 250);
+              }}
+            />
+          </SheetContent>
+        </Sheet>
       </section>
     </div>
   );
