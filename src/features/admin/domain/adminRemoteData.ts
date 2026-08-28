@@ -1,4 +1,4 @@
-import { fetchDashboardKPIs, fetchDailySeries, fetchRecentAudit } from './adminDataService';
+import { fetchAdminSnapshot } from './adminDataService';
 
 /**
  * Real production KPIs — all from Supabase tables.
@@ -108,51 +108,73 @@ export const isPlatformEmpty = (snapshot: AdminKpiSnapshot): boolean =>
   snapshot.kpis.transportBookings === 0 &&
   snapshot.kpis.laborRequests === 0;
 
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const asNumber = (v: unknown): number => (typeof v === 'number' ? v : Number(v ?? 0) || 0);
+
 export async function fetchAdminKpis(): Promise<FetchKpisResult> {
   try {
-    const [kpiResult, daily, recentAudit] = await Promise.all([
-      fetchDashboardKPIs(),
-      fetchDailySeries(14),
-      fetchRecentAudit(10),
-    ]);
-
-    if (kpiResult.error) {
-      return { data: null, error: kpiResult.error, timedOut: false };
+    const snapshot = await fetchAdminSnapshot();
+    if (snapshot.error) {
+      return { data: null, error: snapshot.error, timedOut: snapshot.timedOut };
     }
 
+    const k = snapshot.data?.kpis ?? {};
     const kpis: AdminKpis = {
-      totalFarmers: kpiResult.kpis.totalUsers ?? 0,
-      totalUsers: kpiResult.kpis.totalUsers ?? 0,
-      newToday: kpiResult.kpis.newToday ?? 0,
-      new7d: kpiResult.kpis.new7d ?? 0,
-      new30d: kpiResult.kpis.new30d ?? 0,
-      aiConversations: kpiResult.kpis.aiConversations ?? 0,
-      cropScans: kpiResult.kpis.cropScans ?? 0,
-      tractorBookings: kpiResult.kpis.tractorBookings ?? 0,
-      bookingsToday: kpiResult.kpis.bookingsToday ?? 0,
-      cattleListings: kpiResult.kpis.cattleListings ?? 0,
-      equipmentListings: kpiResult.kpis.equipmentListings ?? 0,
-      marketplaceProducts: kpiResult.kpis.marketplaceProducts ?? 0,
-      pushSubscribers: kpiResult.kpis.pushSubscribers ?? 0,
-      priceAlerts: kpiResult.kpis.priceAlerts ?? 0,
-      contactMessages: kpiResult.kpis.contactMessages ?? 0,
-      transportBookings: kpiResult.kpis.transportBookings ?? 0,
-      laborRequests: kpiResult.kpis.laborRequests ?? 0,
-      laborers: kpiResult.kpis.laborers ?? 0,
-      livestock: kpiResult.kpis.livestock ?? 0,
-      storageFacilities: kpiResult.kpis.storageFacilities ?? 0,
-      walletCount: kpiResult.kpis.walletCount ?? 0,
-      auditLogs: kpiResult.kpis.auditLogs ?? 0,
-      successfulPayments: kpiResult.kpis.successfulPayments ?? 0,
-      activeSubscriptions: kpiResult.kpis.activeSubscriptions ?? 0,
-      expiredSubscriptions: kpiResult.kpis.expiredSubscriptions ?? 0,
-      cancelledSubscriptions: kpiResult.kpis.cancelledSubscriptions ?? 0,
-      openSupportTickets: kpiResult.kpis.openSupportTickets ?? 0,
-      crashReports: kpiResult.kpis.crashReports ?? 0,
+      totalFarmers: asNumber(k.totalFarmers),
+      totalUsers: asNumber(k.totalUsers),
+      newToday: asNumber(k.newToday),
+      new7d: asNumber(k.new7d),
+      new30d: asNumber(k.new30d),
+      aiConversations: asNumber(k.aiConversations),
+      cropScans: asNumber(k.cropScans),
+      tractorBookings: asNumber(k.tractorBookings),
+      bookingsToday: asNumber(k.bookingsToday),
+      cattleListings: asNumber(k.cattleListings),
+      equipmentListings: asNumber(k.equipmentListings),
+      marketplaceProducts: asNumber(k.marketplaceProducts),
+      pushSubscribers: asNumber(k.pushSubscribers),
+      priceAlerts: asNumber(k.priceAlerts),
+      contactMessages: asNumber(k.contactMessages),
+      transportBookings: asNumber(k.transportBookings),
+      laborRequests: asNumber(k.laborRequests),
+      laborers: asNumber(k.laborers),
+      livestock: asNumber(k.livestock),
+      storageFacilities: asNumber(k.storageFacilities),
+      walletCount: asNumber(k.walletCount),
+      auditLogs: asNumber(k.auditLogs),
+      successfulPayments: asNumber(k.successfulPayments),
+      activeSubscriptions: asNumber(k.activeSubscriptions),
+      expiredSubscriptions: asNumber(k.expiredSubscriptions),
+      cancelledSubscriptions: asNumber(k.cancelledSubscriptions),
+      openSupportTickets: asNumber(k.openSupportTickets),
+      crashReports: asNumber(k.crashReports),
     };
 
+    const daily: AdminDailyPoint[] = (snapshot.data?.daily ?? []).map((d) => {
+      const dt = new Date(`${d.date}T00:00:00Z`);
+      return {
+        date: d.date,
+        label: DAY_NAMES[Number.isNaN(dt.getTime()) ? 0 : dt.getUTCDay()] ?? '',
+        newUsers: asNumber(d.newUsers),
+        totalUsers: asNumber(d.totalUsers),
+        tractorBookings: asNumber(d.tractorBookings),
+        cattleListings: asNumber(d.cattleListings),
+        requests: asNumber(d.requests),
+      };
+    });
+
+    const recentAudit: AdminAuditEntry[] = (snapshot.data?.recentAudit ?? []).map((a) => ({
+      id: String(a.id),
+      actor: String(a.actor),
+      action: String(a.action),
+      entity: String(a.entity),
+      summary: String(a.summary),
+      timestamp: String(a.timestamp),
+    }));
+
     return {
-      data: { generatedAt: new Date().toISOString(), kpis, daily, recentAudit },
+      data: { generatedAt: snapshot.data?.generatedAt ?? new Date().toISOString(), kpis, daily, recentAudit },
       error: null,
       timedOut: false,
     };

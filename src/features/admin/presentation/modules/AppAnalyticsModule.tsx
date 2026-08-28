@@ -28,6 +28,25 @@ function useRealAnalytics(): AnalyticsPoint[] {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
+        // Real tracked analytics from the app_analytics table (may be sparse).
+        const { data: tracked } = await supabase
+          .from('app_analytics')
+          .select('date, active_users, new_signups, sessions, orders, retention')
+          .gte('date', new Date(now - 13 * dayMs).toISOString().slice(0, 10))
+          .order('date', { ascending: true });
+        const trackedByDay = new Map<string, AnalyticsPoint>();
+        for (const row of (tracked ?? []) as Array<Record<string, unknown>>) {
+          const dateStr = String(row.date).slice(0, 10);
+          trackedByDay.set(dateStr, {
+            date: dateStr,
+            activeUsers: Number(row.active_users ?? 0),
+            newUsers: Number(row.new_signups ?? 0),
+            sessions: Number(row.sessions ?? 0),
+            orders: Number(row.orders ?? 0),
+            retention: Number(row.retention ?? 0),
+          });
+        }
+
         const points: AnalyticsPoint[] = [];
         for (let i = 13; i >= 0; i--) {
           const dayStart = new Date(todayStart.getTime() - i * dayMs);
@@ -58,14 +77,16 @@ function useRealAnalytics(): AnalyticsPoint[] {
           const newUsers = countOf(profilesRes);
           const orders = countOf(bookingsRes);
           const scans = countOf(scansRes);
+          const base = newUsers + orders + scans;
+          const trackedDay = trackedByDay.get(dateStr);
 
           points.push({
             date: dateStr,
-            activeUsers: newUsers + orders + scans,
+            activeUsers: trackedDay?.activeUsers ?? base,
             newUsers,
-            sessions: (newUsers + orders + scans) * 3,
+            sessions: trackedDay?.sessions ?? base,
             orders,
-            retention: i === 0 ? 0 : Math.max(0, 100 - i * 5 + Math.round(Math.random() * 3)),
+            retention: trackedDay?.retention ?? 0,
           });
         }
         if (!cancelled) setSeries(points);

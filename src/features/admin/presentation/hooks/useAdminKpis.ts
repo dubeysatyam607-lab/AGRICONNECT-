@@ -72,6 +72,8 @@ export function useAdminKpis() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transport_bookings' }, debouncedRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'labor_requests' }, debouncedRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_requests' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'app_analytics' }, debouncedRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets' }, debouncedRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_subscriptions' }, debouncedRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, debouncedRefetch)
