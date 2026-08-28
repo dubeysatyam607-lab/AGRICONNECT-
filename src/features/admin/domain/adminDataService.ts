@@ -166,198 +166,68 @@ export async function searchProfiles(query: string): Promise<{ data: UserProfile
 }
 
 // ============================================================
-// COUNT QUERIES (for KPIs)
+// DASHBOARD SNAPSHOT — single authoritative RPC
 // ============================================================
 
-async function count(table: string, filters?: Array<{ column: string; op: string; value: unknown }>): Promise<number> {
-  try {
-    let q = supabase.from(table).select('id', { count: 'exact', head: true });
-    if (filters) {
-      for (const f of filters) {
-        if (f.op === 'eq') q = q.eq(f.column, f.value as string);
-        else if (f.op === 'neq') q = q.neq(f.column, f.value as string);
-        else if (f.op === 'gte') q = q.gte(f.column, f.value as string);
-        else if (f.op === 'lt') q = q.lt(f.column, f.value as string);
-      }
-    }
-    const { data, error } = await q;
-    return error ? 0 : (data as unknown as { count: number }[] | null)?.length ?? 0;
-  } catch { return 0; }
-}
-
-// Fix: use count from supabase response properly
-async function countRows(table: string, filters?: Array<{ column: string; op: string; value: unknown }>): Promise<number> {
-  try {
-    let q = supabase.from(table).select('id', { count: 'exact', head: true });
-    if (filters) {
-      for (const f of filters) {
-        if (f.op === 'eq') q = q.eq(f.column, f.value as string);
-        else if (f.op === 'neq') q = q.neq(f.column, f.value as string);
-        else if (f.op === 'gte') q = q.gte(f.column, f.value as string);
-        else if (f.op === 'lt') q = q.lt(f.column, f.value as string);
-      }
-    }
-    const { count, error } = await q;
-    return error ? 0 : (count ?? 0);
-  } catch { return 0; }
-}
-
-export async function fetchDashboardKPIs(): Promise<{
+export interface AdminSnapshot {
+  generatedAt: string;
   kpis: Record<string, number>;
+  daily: Array<{
+    date: string;
+    newUsers: number;
+    totalUsers: number;
+    tractorBookings: number;
+    cattleListings: number;
+    requests: number;
+  }>;
+  recentAudit: Array<{
+    id: string;
+    actor: string;
+    action: string;
+    entity: string;
+    summary: string;
+    timestamp: string;
+  }>;
+}
+
+/**
+ * Single authoritative dashboard snapshot: one SECURITY DEFINER RPC that
+ * returns every KPI + the 14-day daily series + recent audit in ONE
+ * round-trip with database-local dates. No client-side count query soup,
+ * no silent zeros — an error is surfaced, never masked.
+ */
+export async function fetchAdminSnapshot(timeoutMs = 15000): Promise<{
+  data: AdminSnapshot | null;
   error: string | null;
+  timedOut: boolean;
 }> {
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const d7Ago = new Date(Date.now() - 7 * 86400000).toISOString();
-  const d30Ago = new Date(Date.now() - 30 * 86400000).toISOString();
-
+  let timedOut = false;
   try {
-    const results = await Promise.all([
-      countRows('profiles'),
-      countRows('profiles', [{ column: 'created_at', op: 'gte', value: todayStart }]),
-      countRows('profiles', [{ column: 'created_at', op: 'gte', value: d7Ago }]),
-      countRows('profiles', [{ column: 'created_at', op: 'gte', value: d30Ago }]),
-      countRows('ai_conversations'),
-      countRows('crop_scans'),
-      countRows('tractor_bookings'),
-      countRows('tractor_bookings', [{ column: 'created_at', op: 'gte', value: todayStart }]),
-      countRows('cattle_listings'),
-      countRows('tractor_listings'),
-      countRows('store_inventory'),
-      countRows('push_subscriptions'),
-      countRows('price_alerts'),
-      countRows('contact_messages'),
-      countRows('transport_bookings'),
-      countRows('labor_requests'),
-      countRows('laborers'),
-      countRows('livestock'),
-      countRows('storage_facilities'),
-      countRows('wallets'),
-      countRows('audit_logs'),
-      countRows('payments', [{ column: 'status', op: 'eq', value: 'success' }]),
-      countRows('user_subscriptions', [{ column: 'status', op: 'eq', value: 'active' }]),
-      countRows('user_subscriptions', [{ column: 'status', op: 'eq', value: 'expired' }]),
-      countRows('user_subscriptions', [{ column: 'status', op: 'eq', value: 'cancelled' }]),
-      countRows('support_tickets', [{ column: 'status', op: 'eq', value: 'open' }]),
-      countRows('crash_reports'),
-    ]);
-
-    const kpis = {
-      totalUsers: results[0],
-      newToday: results[1],
-      new7d: results[2],
-      new30d: results[3],
-      aiConversations: results[4],
-      cropScans: results[5],
-      tractorBookings: results[6],
-      bookingsToday: results[7],
-      cattleListings: results[8],
-      equipmentListings: results[9],
-      marketplaceProducts: results[10],
-      pushSubscribers: results[11],
-      priceAlerts: results[12],
-      contactMessages: results[13],
-      transportBookings: results[14],
-      laborRequests: results[15],
-      laborers: results[16],
-      livestock: results[17],
-      storageFacilities: results[18],
-      walletCount: results[19],
-      auditLogs: results[20],
-      successfulPayments: results[21],
-      activeSubscriptions: results[22],
-      expiredSubscriptions: results[23],
-      cancelledSubscriptions: results[24],
-      openSupportTickets: results[25],
-      crashReports: results[26],
+    const timer = setTimeout(() => { timedOut = true; }, timeoutMs);
+    const { data, error } = await supabase.rpc('admin_get_dashboard_kpis');
+    clearTimeout(timer);
+    if (error) return { data: null, error: error.message, timedOut };
+    if (typeof data !== 'object' || data === null) {
+      return { data: null, error: 'Invalid response from server', timedOut };
+    }
+    const raw = data as Record<string, unknown>;
+    const kpis = (raw.kpis ?? {}) as Record<string, number>;
+    const daily = (raw.daily ?? []) as AdminSnapshot['daily'];
+    const recentAudit = (raw.recentAudit ?? []) as AdminSnapshot['recentAudit'];
+    return {
+      data: {
+        generatedAt: typeof raw.generated_at === 'string' ? raw.generated_at : new Date().toISOString(),
+        kpis,
+        daily,
+        recentAudit,
+      },
+      error: null,
+      timedOut,
     };
-
-    return { kpis, error: null };
   } catch (err: unknown) {
-    return { kpis: {}, error: err instanceof Error ? err.message : 'Unknown error' };
+    return { data: null, error: err instanceof Error ? err.message : 'Unknown error', timedOut };
   }
 }
-
-// ============================================================
-// DAILY SERIES (for charts)
-// ============================================================
-
-export async function fetchDailySeries(days: number): Promise<Array<{
-  date: string;
-  label: string;
-  newUsers: number;
-  totalUsers: number;
-  tractorBookings: number;
-  cattleListings: number;
-  requests: number;
-}>> {
-  try {
-    const since = new Date(Date.now() - days * 86400000).toISOString();
-    const [profiles, bookings, cattle, messages, transports, labors, allProfiles] = await Promise.all([
-      supabase.from('profiles').select('created_at').gte('created_at', since),
-      supabase.from('tractor_bookings').select('created_at').gte('created_at', since),
-      supabase.from('cattle_listings').select('created_at').gte('created_at', since),
-      supabase.from('contact_messages').select('created_at').gte('created_at', since),
-      supabase.from('transport_bookings').select('created_at').gte('created_at', since),
-      supabase.from('labor_requests').select('created_at').gte('created_at', since),
-      supabase.from('profiles').select('created_at'),
-    ]);
-
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const profilesByDay = new Map<string, number>();
-    const allProfData = (allProfiles.data ?? []) as Array<{ created_at: string }>;
-    const beforeWindow = allProfData.filter(p => new Date(p.created_at) < new Date(Date.now() - (days - 1) * 86400000)).length;
-    let cumUsers = beforeWindow;
-
-    for (const p of ((profiles.data ?? []) as Array<{ created_at: string }>)) {
-      const d = new Date(p.created_at).toISOString().slice(0, 10);
-      profilesByDay.set(d, (profilesByDay.get(d) ?? 0) + 1);
-    }
-
-    const bookingsByDay = new Map<string, number>();
-    for (const b of ((bookings.data ?? []) as Array<{ created_at: string }>)) {
-      const d = new Date(b.created_at).toISOString().slice(0, 10);
-      bookingsByDay.set(d, (bookingsByDay.get(d) ?? 0) + 1);
-    }
-
-    const cattleByDay = new Map<string, number>();
-    for (const c of ((cattle.data ?? []) as Array<{ created_at: string }>)) {
-      const d = new Date(c.created_at).toISOString().slice(0, 10);
-      cattleByDay.set(d, (cattleByDay.get(d) ?? 0) + 1);
-    }
-
-    const reqsByDay = new Map<string, number>();
-    for (const r of [...((messages.data ?? []) as Array<{ created_at: string }>), ...((transports.data ?? []) as Array<{ created_at: string }>), ...((labors.data ?? []) as Array<{ created_at: string }>)]) {
-      const d = new Date(r.created_at).toISOString().slice(0, 10);
-      reqsByDay.set(d, (reqsByDay.get(d) ?? 0) + 1);
-    }
-
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-
-    return Array.from({ length: days }, (_, i) => {
-      const d = new Date(todayDate.getTime() - (days - 1 - i) * 86400000);
-      const ds = d.toISOString().slice(0, 10);
-      const newUsers = profilesByDay.get(ds) ?? 0;
-      cumUsers += newUsers;
-      return {
-        date: ds,
-        label: dayNames[d.getDay()],
-        newUsers,
-        totalUsers: cumUsers,
-        tractorBookings: bookingsByDay.get(ds) ?? 0,
-        cattleListings: cattleByDay.get(ds) ?? 0,
-        requests: reqsByDay.get(ds) ?? 0,
-      };
-    });
-  } catch {
-    return [];
-  }
-}
-
-// ============================================================
-// AUDIT LOG
-// ============================================================
 
 export async function fetchRecentAudit(limit = 10): Promise<Array<{
   id: string;

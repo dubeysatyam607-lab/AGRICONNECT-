@@ -9,6 +9,7 @@ import type { FormField } from '../components/EntityDialog';
 import { AdminStatusBadge } from '../components/StatusBadge';
 import { useAdminCrud, logAdminExport } from '../hooks/useAdminCrud';
 import { fmtCompact, fmtNumber, shortDate } from '../../domain/adminStore';
+import { supabase } from '@/integrations/supabase/client';
 import type { PushCampaign } from '../../domain/adminTypes';
 
 const COLUMNS: DataColumn<PushCampaign>[] = [
@@ -47,10 +48,19 @@ export function PushModule() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PushCampaign | null>(null);
 
-  const sendNow = (items: PushCampaign[]) => {
-    items.forEach((r) =>
-      update(r, { status: 'Sent', sent: 240000 + Math.round(Math.random() * 40000), opened: Math.round((240000 * 0.5)) }),
-    );
+  const sendNow = async (items: PushCampaign[]) => {
+    // Real subscriber reach — pulled from the live push_subscriptions table,
+    // never fabricated. Open rate is not tracked so it stays 0.
+    let subscribers = 0;
+    try {
+      const { count } = await supabase
+        .from('push_subscriptions')
+        .select('id', { count: 'exact', head: true });
+      subscribers = count ?? 0;
+    } catch {
+      subscribers = 0;
+    }
+    items.forEach((r) => update(r, { status: 'Sent', sent: subscribers, opened: 0 }));
   };
 
   const bulkActions: BulkAction<PushCampaign>[] = [
