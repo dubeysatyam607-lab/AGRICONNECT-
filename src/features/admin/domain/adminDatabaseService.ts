@@ -560,24 +560,49 @@ export async function fetchRealKycRecords(): Promise<KycRecord[]> {
 
 export async function fetchRealPayments(): Promise<PaymentTransaction[]> {
   try {
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Manual UPI is the real in-app money path (payment_requests); the
+    // Razorpay `payments` table is merged in as a secondary source.
+    const [upiRes, razorRes] = await Promise.allSettled([
+      supabase.from('payment_requests').select('*').order('created_at', { ascending: false }),
+      supabase.from('payments').select('*').order('created_at', { ascending: false }),
+    ]);
 
-    if (error || !data || data.length === 0) return [];
+    const rows: Array<Record<string, any>> = [];
 
-    return data.map((p) => ({
-      id: p.id,
-      user: p.user_id ? String(p.user_id).slice(0, 8) : 'Farmer',
-      type: (p.purpose || 'Subscription') as any,
-      amount: Number(p.amount || 0),
-      currency: p.currency || 'INR',
-      method: (p.provider || 'UPI') as any,
-      status: (p.status === 'success' ? 'Success' : p.status === 'failed' ? 'Failed' : 'Pending') as any,
-      reference: p.provider_txn_id || p.id,
-      timestamp: p.created_at,
-    }));
+    if (upiRes.status === 'fulfilled' && upiRes.value.data) {
+      for (const p of upiRes.value.data) {
+        const status = p.status === 'approved' ? 'Success' : p.status === 'pending' ? 'Pending' : 'Failed';
+        rows.push({
+          id: String(p.id),
+          user: p.user_id ? String(p.user_id).slice(0, 8) : 'Farmer',
+          type: 'Subscription',
+          amount: Number(p.amount || 0),
+          currency: p.currency || 'INR',
+          method: 'UPI',
+          status: status as any,
+          reference: p.utr || String(p.id).slice(0, 8),
+          timestamp: p.created_at,
+        });
+      }
+    }
+
+    if (razorRes.status === 'fulfilled' && razorRes.value.data) {
+      for (const p of razorRes.value.data) {
+        rows.push({
+          id: p.id,
+          user: p.user_id ? String(p.user_id).slice(0, 8) : 'Farmer',
+          type: (p.purpose || 'Subscription') as any,
+          amount: Number(p.amount || 0),
+          currency: p.currency || 'INR',
+          method: 'UPI' as any,
+          status: (p.status === 'success' ? 'Success' : p.status === 'failed' ? 'Failed' : 'Pending') as any,
+          reference: p.provider_txn_id || p.id,
+          timestamp: p.created_at,
+        });
+      }
+    }
+
+    return rows.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
   } catch {
     return [];
   }
