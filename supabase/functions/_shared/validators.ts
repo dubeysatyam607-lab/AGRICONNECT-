@@ -13,6 +13,7 @@ export const mandiPricesRequestSchema = z.object({
   state: z.string().max(100).optional(),
   district: z.string().max(100).optional(),
   commodity: z.string().max(100).optional(),
+  market: z.string().max(100).optional(),
   searchQuery: z.string().max(100).optional(),
 });
 
