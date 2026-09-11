@@ -21,7 +21,7 @@ const RESOURCE_IDS = [
 const PAGE_LIMIT = 250;
 const MAX_PAGES = 400;
 const MAX_UNSCOPED_RECORDS = 10000;
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 20000;
 
 interface AgmarknetRecord {
   commodity?: string;
@@ -73,7 +73,16 @@ async function fetchResourcePages(
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
     } catch (err) {
-      return { records, total, error: `Fetch failed on page ${page + 1}: ${err instanceof Error ? err.message : String(err)}` };
+      // data.gov.in can be slow on cold pages; give it one more chance.
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      try {
+        response = await fetch(url, {
+          headers: { "Accept": "application/json", "User-Agent": "AgriConnect-Mandi/1.0" },
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+      } catch (err2) {
+        return { records, total, error: `Fetch failed on page ${page + 1}: ${err2 instanceof Error ? err2.message : String(err2)}` };
+      }
     }
 
     if (!response.ok) {
