@@ -41,11 +41,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
 
       // Fetch extended farm profile from database
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .maybeSingle();
+      const query = supabase.from('profiles').select('*').eq('id', currentUser.id);
+      const { data: profile } = typeof (query as any)?.maybeSingle === 'function'
+        ? await (query as any).maybeSingle()
+        : typeof (query as any)?.single === 'function'
+        ? await (query as any).single().catch(() => ({ data: null }))
+        : { data: null };
 
       const extended = (profile as any)?.extended_profile || {};
       const crop = extended.crops?.[0] || extended.primaryCrop || meta.crop || 'Wheat';

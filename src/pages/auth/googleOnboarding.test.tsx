@@ -138,7 +138,7 @@ describe('CompleteProfile — Google First-Time Onboarding Flow', () => {
 
     // Advanced to Step 2
     await waitFor(() => {
-      expect(screen.getByText(/Farm Size \(in Acres\)/i)).toBeTruthy();
+      expect(screen.getByText(/Farm Area & Unit/i)).toBeTruthy();
     });
   });
 
@@ -155,7 +155,7 @@ describe('CompleteProfile — Google First-Time Onboarding Flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /Continue to Farm Details/i }));
 
     // Step 2
-    await waitFor(() => expect(screen.getByText(/Farm Size \(in Acres\)/i)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/Farm Area & Unit/i)).toBeTruthy());
     
     // Fill Farm details
     const stateSelect = screen.getAllByRole('combobox')[0];
@@ -171,7 +171,7 @@ describe('CompleteProfile — Google First-Time Onboarding Flow', () => {
     fireEvent.change(acresInput, { target: { value: '5.0' } });
 
     // Select crop
-    const cropSelect = screen.getAllByRole('combobox')[2];
+    const cropSelect = screen.getAllByRole('combobox')[3];
     fireEvent.change(cropSelect, { target: { value: 'Sugarcane (Ganna)' } });
 
     fireEvent.click(screen.getByRole('button', { name: /Continue to Consent/i }));

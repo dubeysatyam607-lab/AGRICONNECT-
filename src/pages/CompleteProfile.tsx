@@ -72,9 +72,11 @@ export const CompleteProfile: React.FC = () => {
   const [selectedState, setSelectedState] = useState('');
   const [district, setDistrict] = useState('');
   const [village, setVillage] = useState('');
+  const [farmName, setFarmName] = useState('');
   const [farmLocation, setFarmLocation] = useState('');
   const [primaryCrop, setPrimaryCrop] = useState('');
   const [farmSize, setFarmSize] = useState('');
+  const [landUnit, setLandUnit] = useState<'Acres' | 'Bigha' | 'Hectares' | 'Guntha'>('Acres');
   const [irrigationType, setIrrigationType] = useState<string>('');
   const [soilType, setSoilType] = useState<string>('');
   const [experience, setExperience] = useState<string>('');
@@ -126,6 +128,15 @@ export const CompleteProfile: React.FC = () => {
           if (profile.farming_experience) setExperience(profile.farming_experience);
           if (profile.alternate_phone) setAlternatePhone(profile.alternate_phone);
           if (Array.isArray(profile.additional_crops)) setAdditionalCrops(profile.additional_crops);
+
+          // Check extended_profile JSON for farmName and landUnit
+          try {
+            const ext = profile.extended_profile ? JSON.parse(profile.extended_profile) : {};
+            if (ext.farmName) setFarmName(ext.farmName);
+            if (ext.landUnit) setLandUnit(ext.landUnit);
+          } catch {
+            // Ignore JSON parse error
+          }
         }
       } catch (err) {
         console.warn('[CompleteProfile] Read profile error:', err);
@@ -210,6 +221,15 @@ export const CompleteProfile: React.FC = () => {
     setErrorMsg(null);
 
     try {
+      const extendedData = {
+        farmName: farmName.trim() || undefined,
+        landUnit: landUnit || 'Acres',
+        irrigationType: irrigationType || undefined,
+        soilType: soilType || undefined,
+        farmingExperience: experience || undefined,
+        additionalCrops: additionalCrops,
+      };
+
       const payload = {
         id: user.id,
         full_name: fullName.trim(),
@@ -220,7 +240,7 @@ export const CompleteProfile: React.FC = () => {
         state: selectedState,
         district: district.trim(),
         village: village.trim(),
-        farm_location: (farmLocation.trim() || `${village}, ${district}, ${selectedState}`),
+        farm_location: (farmName.trim() ? `${farmName.trim()} (${village}, ${district}, ${selectedState})` : `${village}, ${district}, ${selectedState}`),
         primary_crop: primaryCrop.trim(),
         farm_size: parseFloat(farmSize) || 0,
         irrigation_type: irrigationType || null,
@@ -229,6 +249,7 @@ export const CompleteProfile: React.FC = () => {
         additional_crops: additionalCrops,
         app_language: preferredLang,
         onboarding_completed: true,
+        extended_profile: JSON.stringify(extendedData),
         terms_accepted_at: new Date().toISOString(),
         terms_version: 'v1.0',
         privacy_accepted_at: new Date().toISOString(),
@@ -269,6 +290,7 @@ export const CompleteProfile: React.FC = () => {
             village: village.trim(),
             district: district.trim(),
             state: selectedState,
+            farm_name: farmName.trim(),
             onboarding_completed: true,
           },
         });
@@ -565,7 +587,7 @@ export const CompleteProfile: React.FC = () => {
               {/* Village / Town */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <MapPin size={14} className="text-emerald-600" /> Village / Town <span className="text-emerald-600">*</span>
+                  <MapPin size={14} className="text-emerald-600" /> Village / City <span className="text-emerald-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -576,34 +598,60 @@ export const CompleteProfile: React.FC = () => {
                 />
               </div>
 
-              {/* Farm Size (Acres) */}
+              {/* Farm Name */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Ruler size={14} className="text-emerald-600" /> Farm Size (in Acres) <span className="text-emerald-600">*</span>
+                  <Sprout size={14} className="text-emerald-600" /> Farm Name <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
                 </label>
                 <input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  max="1000"
-                  value={farmSize}
-                  onChange={(e) => setFarmSize(e.target.value)}
-                  placeholder="e.g. 4.5"
+                  type="text"
+                  value={farmName}
+                  onChange={(e) => setFarmName(e.target.value)}
+                  placeholder="e.g. Kisan Organic Farm"
                   className="w-full bg-background border border-input rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-sm"
                 />
+              </div>
+
+              {/* Farm Area & Land Unit */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Ruler size={14} className="text-emerald-600" /> Farm Area &amp; Unit <span className="text-emerald-600">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    max="10000"
+                    value={farmSize}
+                    onChange={(e) => setFarmSize(e.target.value)}
+                    placeholder="e.g. 4.5"
+                    className="w-2/3 bg-background border border-input rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-sm"
+                  />
+                  <select
+                    value={landUnit}
+                    onChange={(e) => setLandUnit(e.target.value as any)}
+                    className="w-1/3 bg-background border border-input rounded-xl px-2.5 py-2.5 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-sm"
+                  >
+                    <option value="Acres">Acres</option>
+                    <option value="Bigha">Bigha</option>
+                    <option value="Hectares">Hectares</option>
+                    <option value="Guntha">Guntha</option>
+                  </select>
+                </div>
               </div>
 
               {/* Primary Crop */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Sprout size={14} className="text-emerald-600" /> Primary Crop <span className="text-emerald-600">*</span>
+                  <Sprout size={14} className="text-emerald-600" /> Main / Primary Crop <span className="text-emerald-600">*</span>
                 </label>
                 <select
                   value={primaryCrop}
                   onChange={(e) => setPrimaryCrop(e.target.value)}
                   className="w-full bg-background border border-input rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-sm"
                 >
-                  <option value="">Select Primary Crop</option>
+                  <option value="">Select Main Crop</option>
                   {MAJOR_INDIAN_CROPS.map((crop) => (
                     <option key={crop} value={crop}>
                       {crop}
@@ -705,8 +753,9 @@ export const CompleteProfile: React.FC = () => {
                 <div><span className="text-muted-foreground">Name:</span> {fullName}</div>
                 <div><span className="text-muted-foreground">Phone:</span> +91 {phone}</div>
                 <div><span className="text-muted-foreground">Location:</span> {village}, {district}, {selectedState}</div>
-                <div><span className="text-muted-foreground">Primary Crop:</span> {primaryCrop}</div>
-                <div><span className="text-muted-foreground">Farm Size:</span> {farmSize} Acres</div>
+                <div><span className="text-muted-foreground">Farm Name:</span> {farmName || 'Not specified'}</div>
+                <div><span className="text-muted-foreground">Main Crop:</span> {primaryCrop}</div>
+                <div><span className="text-muted-foreground">Farm Area:</span> {farmSize} {landUnit}</div>
                 <div><span className="text-muted-foreground">Irrigation:</span> {irrigationType || 'Not specified'}</div>
               </div>
             </div>
