@@ -360,10 +360,29 @@ const IndexInner: React.FC = () => {
       "mandi": "/mandi",
       "tractors": "/machinery",
       "schemes": "/schemes",
-      "admin": "/admin"
+      "loans": "/loans",
+      "labor": "/labor",
+      "cattle": "/cattle",
+      "transport": "/transport",
+      "soil": "/soil-test",
+      "news": "/news",
+      "mandi-finder": "/mandi-finder",
+      "cold-storage": "/cold-storage",
+      "community": "/community",
+      "krishi-shorts": "/krishi-shorts",
+      "analytics": "/farm-ledger",
+      "insurance": "/crop-insurance",
+      "crop-calendar": "/crop-calendar",
+      "profit-calculator": "/profit-calculator",
+      "price-alerts": "/price-alerts",
+      "notifications": "/notifications",
+      "advisor": "/advisor",
+      "network": "/network",
+      "settings": "/settings",
+      "admin": "/admin",
     };
     const path = tabPaths[activeTab];
-    if (path && location.pathname !== path && (location.pathname === "/" || Object.values(tabPaths).includes(location.pathname))) {
+    if (path && location.pathname !== path) {
       navigate(path, { replace: true });
     }
   }, [activeTab, navigate, location.pathname]);
