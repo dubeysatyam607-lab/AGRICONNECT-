@@ -139,7 +139,7 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
   });
 
   it("quotes from a real dataset without inventing prices", () => {
-    const realPrices = [
+    const realPrices: Parameters<typeof getMandiPriceQuote>[1] = [
       {
         id: "wheat::jaipu ramji::jaipur::rajasthan",
         crop: "Wheat",
@@ -159,7 +159,7 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
         arrivalDate: "2026-08-06",
         lastUpdatedText: "2026-08-06",
       },
-    ] as any;
+    ];
 
     const quote = getMandiPriceQuote({ crop: "Wheat", mandi: "Jaipur" }, realPrices);
     expect(quote.found).toBe(true);

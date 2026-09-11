@@ -50,11 +50,11 @@ describe("Mandi AI Selling Advisor Engine", () => {
   });
 
   it("projects a transparent expected price range without inventing markets or profits", () => {
-    const advice = generateSellingAdvice(baseItem);
+    const advice = generateSellingAdvice(baseItem) as Partial<ReturnType<typeof generateSellingAdvice>>;
     expect(advice.minExpectedPrice).toBeGreaterThan(0);
     expect(advice.maxExpectedPrice).toBeGreaterThan(advice.minExpectedPrice);
-    expect((advice as any).betterNearbyMarket).toBeUndefined();
-    expect((advice as any).extraProfit50Qtl).toBeUndefined();
+    expect(advice.betterNearbyMarket).toBeUndefined();
+    expect(advice.extraProfit50Qtl).toBeUndefined();
     expect(advice.reasonEn).not.toMatch(/Regional Hub|buyer demand|this week/i);
   });
 
