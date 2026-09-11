@@ -49,10 +49,26 @@ describe("Mandi AI Selling Advisor Engine", () => {
     expect(advice.reasonHi).toContain("कम");
   });
 
-  it("calculates expected price range and extra profit on 50 quintals", () => {
+  it("projects a transparent expected price range without inventing markets or profits", () => {
     const advice = generateSellingAdvice(baseItem);
     expect(advice.minExpectedPrice).toBeGreaterThan(0);
     expect(advice.maxExpectedPrice).toBeGreaterThan(advice.minExpectedPrice);
-    expect(advice.extraProfit50Qtl).toBeGreaterThan(0);
+    expect((advice as any).betterNearbyMarket).toBeUndefined();
+    expect((advice as any).extraProfit50Qtl).toBeUndefined();
+    expect(advice.reasonEn).not.toMatch(/Regional Hub|buyer demand|this week/i);
+  });
+
+  it("advises SELL_NOW near the top of the published range without fabricating day-over-day change", () => {
+    const nearTop: MandiPrice = {
+      ...baseItem,
+      price: 2520,
+      minPrice: 2300,
+      maxPrice: 2600,
+      msp: undefined,
+      change: "0%",
+    };
+    const advice = generateSellingAdvice(nearTop);
+    expect(advice.action).toBe("SELL_NOW");
+    expect(advice.reasonEn).toContain("range");
   });
 });

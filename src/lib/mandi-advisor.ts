@@ -1,7 +1,6 @@
 /**
  * Mandi AI Selling Advisor Engine.
- * Analyzes real APMC market data (current price, MSP, historical trends, nearby markets)
- * to generate actionable selling recommendations for farmers.
+ * Generates honest selling recommendations from real AGMARKNET data (price, MSP, published range).
  */
 
 import type { MandiPrice } from "./mandi-api";
@@ -18,65 +17,53 @@ export interface SellingAdvice {
   maxExpectedPrice: number;
   reasonEn: string;
   reasonHi: string;
-  betterNearbyMarket?: {
-    marketName: string;
-    price: number;
-    extraGainPerQtl: number;
-  };
-  extraProfit50Qtl: number; // Potential extra profit on 50 quintals harvest
 }
 
 /**
  * Generate AI selling advice from verified live market data.
+ * Uses only real values: the day's modal price, the published min/max range,
+ * and the official MSP. Never invents neighbouring markets or hypothetical profits.
  */
 export function generateSellingAdvice(item: MandiPrice): SellingAdvice {
   const price = item.price || 0;
   const msp = item.msp;
-  const minPrice = item.minPrice || Math.round(price * 0.92);
-  const maxPrice = item.maxPrice || Math.round(price * 1.08);
+  const hasRealRange = item.minPrice > 0 && item.maxPrice > 0;
+  const minPrice = hasRealRange ? item.minPrice : price;
+  const maxPrice = hasRealRange ? item.maxPrice : price;
 
   const priceRatioToMsp = msp && msp > 0 ? price / msp : 1.0;
-  const changePct = parseFloat((item.change || "0").replace("%", "").replace("+", "")) || 0;
 
   let action: AdviceAction = "WAIT_FEW_DAYS";
-  let confidence = 82;
-  let reasonEn = "";
-  let reasonHi = "";
+  let confidence = 80;
+  let reasonEn = `Rates in ${item.market} are steady. Monitor price movement for 2-3 days before taking a selling decision.`;
+  let reasonHi = `${item.market} में भाव स्थिर बने हुए हैं। बिक्री का फैसला लेने से पहले 2-3 दिन बाजार के रुख पर नजर रखें।`;
   let badgeColor: "emerald" | "amber" | "rose" = "amber";
 
   const cropHiName = item.cropHi || item.crop;
 
-  // Decision Logic
-  if (msp && priceRatioToMsp >= 1.03) {
+  if (price > 0 && msp && priceRatioToMsp >= 1.03) {
     // Price is significantly above government MSP -> Strong Sell Today
     action = "SELL_NOW";
     badgeColor = "emerald";
-    confidence = Math.min(94, 85 + Math.round((priceRatioToMsp - 1) * 30));
+    confidence = 90;
     const gain = price - msp;
-    reasonEn = `${item.crop} price (₹${price.toLocaleString("en-IN")}/qtl) is ₹${gain.toLocaleString("en-IN")} above government MSP (₹${msp.toLocaleString("en-IN")}). High buyer demand in ${item.market}.`;
-    reasonHi = `${cropHiName} का भाव (₹${price.toLocaleString("en-IN")}/क्विंटल) सरकारी MSP (₹${msp.toLocaleString("en-IN")}) से ₹${gain.toLocaleString("en-IN")} अधिक है। ${item.market} में खरीदारों की अच्छी मांग है।`;
-  } else if (changePct > 2.0) {
-    // Prices rising fast -> Wait 2-3 days to capture peak
-    action = "WAIT_FEW_DAYS";
-    badgeColor = "amber";
-    confidence = Math.min(91, 78 + Math.round(changePct * 2));
-    reasonEn = `${item.crop} prices increased by ${changePct.toFixed(1)}% this week. Waiting 2-3 days may capture an additional ₹50-₹120/qtl.`;
-    reasonHi = `${cropHiName} के भाव में इस सप्ताह ${changePct.toFixed(1)}% की वृद्धि हुई है। 2-3 दिन रुकने पर ₹50-₹120 प्रति क्विंटल अतिरिक्त मिल सकते हैं।`;
-  } else if (msp && priceRatioToMsp < 0.96) {
+    reasonEn = `${item.crop} price (₹${price.toLocaleString("en-IN")}/qtl) is ₹${gain.toLocaleString("en-IN")} above government MSP (₹${msp.toLocaleString("en-IN")}).`;
+    reasonHi = `${cropHiName} का भाव (₹${price.toLocaleString("en-IN")}/क्विंटल) सरकारी MSP (₹${msp.toLocaleString("en-IN")}) से ₹${gain.toLocaleString("en-IN")} अधिक है।`;
+  } else if (msp && price > 0 && priceRatioToMsp < 0.96) {
     // Price is below MSP -> Hold for market recovery
     action = "HOLD_LONG_TERM";
     badgeColor = "rose";
-    confidence = 88;
+    confidence = 85;
     const loss = msp - price;
-    reasonEn = `Current rate is ₹${loss.toLocaleString("en-IN")} below MSP (₹${msp.toLocaleString("en-IN")}) due to heavy arrivals. Holding for a few weeks is recommended as supply stabilizes.`;
-    reasonHi = `भारी आवक के कारण ${cropHiName} का वर्तमान भाव MSP (₹${msp.toLocaleString("en-IN")}) से ₹${loss.toLocaleString("en-IN")} कम है। आवक घटने तक कुछ सप्ताह फसल रोकना लाभदायक रहेगा।`;
-  } else if (price >= maxPrice * 0.95) {
-    // Near maximum price -> Sell Now
+    reasonEn = `Current rate is ₹${loss.toLocaleString("en-IN")} below MSP (₹${msp.toLocaleString("en-IN")}). Holding for a few weeks may let the market recover.`;
+    reasonHi = `${cropHiName} का वर्तमान भाव MSP (₹${msp.toLocaleString("en-IN")}) से ₹${loss.toLocaleString("en-IN")} कम है। कुछ सप्ताह फसल रोकना लाभदायक हो सकता है।`;
+  } else if (hasRealRange && price >= maxPrice * 0.95 && maxPrice > minPrice) {
+    // Trading near the top of the published range -> Sell Now
     action = "SELL_NOW";
     badgeColor = "emerald";
-    confidence = 86;
-    reasonEn = `Rates in ${item.market} are trading near the maximum recorded peak for this month. Selling today locks in solid returns.`;
-    reasonHi = `${item.market} में भाव इस महीने के उच्चतम स्तर के करीब है। आज बेचना अच्छे लाभ की गारंटी देता है।`;
+    confidence = 85;
+    reasonEn = `Rates in ${item.market} are near the top of today's published range (₹${minPrice.toLocaleString("en-IN")}–₹${maxPrice.toLocaleString("en-IN")}/qtl). Selling today locks in solid returns.`;
+    reasonHi = `${item.market} में भाव आज के प्रकाशित दायरे (₹${minPrice.toLocaleString("en-IN")}–₹${maxPrice.toLocaleString("en-IN")}/क्विंटल) के उच्चतम बिंदु के निकट है। आज बेचना अच्छे लाभ की संभावना देता है।`;
   } else {
     // Default moderate advice
     action = "WAIT_FEW_DAYS";
@@ -86,19 +73,9 @@ export function generateSellingAdvice(item: MandiPrice): SellingAdvice {
     reasonHi = `${item.market} में भाव स्थिर बने हुए हैं। बिक्री का फैसला लेने से पहले 2-3 दिन बाजार के रुख पर नजर रखें।`;
   }
 
-  // Calculate expected price bounds
-  const minExpectedPrice = Math.round(price * (action === "SELL_NOW" ? 0.98 : action === "WAIT_FEW_DAYS" ? 1.01 : 1.05));
-  const maxExpectedPrice = Math.round(price * (action === "SELL_NOW" ? 1.03 : action === "WAIT_FEW_DAYS" ? 1.06 : 1.12));
-
-  // Virtual higher market comparison
-  const extraGainPerQtl = Math.round(price * 0.035);
-  const betterNearbyMarket = {
-    marketName: `${item.state} Regional Hub`,
-    price: price + extraGainPerQtl,
-    extraGainPerQtl,
-  };
-
-  const extraProfit50Qtl = extraGainPerQtl * 50;
+  // Transparent projection around the real modal price — clearly a projection, not a promise.
+  const minExpectedPrice = Math.round(price * 0.98);
+  const maxExpectedPrice = Math.round(price * 1.06);
 
   const badgeLabels: Record<AdviceAction, { en: string; hi: string }> = {
     SELL_NOW: { en: "🟢 Sell Today", hi: "🟢 आज बेचें" },
@@ -116,7 +93,5 @@ export function generateSellingAdvice(item: MandiPrice): SellingAdvice {
     maxExpectedPrice,
     reasonEn,
     reasonHi,
-    betterNearbyMarket,
-    extraProfit50Qtl,
   };
 }

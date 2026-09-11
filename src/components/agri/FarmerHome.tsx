@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
-  CalendarDays, Droplets, Wind, IndianRupee, CloudSun,
-  TrendingDown, Leaf, Landmark, AlertTriangle, MapPin,
-  Star, ArrowRight, Flame, Sprout,
-  Coins, FlaskConical, Warehouse, Users, Bot,
+  Droplets, Wind, IndianRupee, CloudSun,
+  TrendingDown, Landmark, AlertTriangle, MapPin,
+  ArrowRight, Flame, Sprout,
+  Coins, FlaskConical, Warehouse, Bot, ShieldCheck,
+  CheckCircle2, Sparkles, AlertCircle, RefreshCw, Sun, Moon
 } from "lucide-react";
 import DynamicHero from "./DynamicHero";
 import AiInsightCard from "./AiInsightCard";
@@ -13,13 +14,11 @@ import { FirstDayBoard } from "./FirstDayBoard";
 import { NotificationBell } from "@/features/notifications/presentation/components/NotificationBell";
 import { AdvisorBriefCard } from "@/features/ai-advisor/presentation/components/AdvisorBriefCard";
 import { INITIAL_TRACTORS } from "@/lib/mock-data";
-import { MACHINE_IMG, DEFAULT_MACHINE_IMG } from "@/lib/machine-images";
-import { AgriImage } from "@/components/ui/agri-image";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, localeFor } from "@/i18n/journey";
 import { useRole } from "@/contexts/RoleContext";
 import { CattleAssetForm, TransportAssetForm, StoreInventoryForm, SoilTestLabForm } from "./AssetForms";
-import { useAuth, useOptionalAuth } from "@/hooks/useAuth";
+import { useOptionalAuth } from "@/hooks/useAuth";
 import { useWeatherViewModel } from "@/features/weather/presentation/viewmodels/useWeatherViewModel";
 import { useFarm } from "@/contexts/FarmContext";
 import { deriveFarmAdvice } from "@/lib/farm-advisor";
@@ -37,31 +36,13 @@ interface FarmerHomeProps {
   onBookTractor: (tractor: (typeof INITIAL_TRACTORS)[number]) => void;
 }
 
-const ALERTS = [
-  { icon: AlertTriangle, tone: "text-amber-600 dark:text-amber-400 bg-amber-500/12", textKey: "home.alert1", tab: "crop-doctor" },
-  { icon: AlertTriangle, tone: "text-red-600 dark:text-red-400 bg-red-500/12", textKey: "home.alert2", tab: "crop-doctor" },
-];
-
-// Six primary features — the only colorful cards on the home screen.
-// `token` maps each requested brand color to an existing design token:
-//   --feature-ai (purple), --feature-mandi (emerald), --feature-weather (sky),
-//   --feature-tractor (orange), --feature-schemes (indigo), --feature-loans (amber).
 const PRIMARY_SERVICES = [
-  { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor", subKey: "svc.cropDoctorSub", token: "--feature-doctor" },
-  { id: "ai-chat", icon: Bot, labelKey: "svc.aiChat", subKey: "svc.aiChatSub", token: "--feature-ai" },
-  { id: "weather", icon: CloudSun, labelKey: "svc.weather", subKey: "svc.weatherSub", token: "--feature-weather" },
-  { id: "mandi", icon: TrendingUp, labelKey: "svc.mandi", subKey: "svc.mandiSub", token: "--feature-mandi" },
-  { id: "tractors", icon: Tractor, labelKey: "svc.tractors", subKey: "svc.tractorsSub", token: "--feature-tractor" },
-  { id: "store", icon: ShoppingBag, labelKey: "svc.store", subKey: "svc.storeSub", token: "--feature-store" },
-] as const;
-
-const SECONDARY_SERVICES = [
-  { id: "schemes", icon: Landmark, labelKey: "svc.schemes" },
-  { id: "transport", icon: Truck, labelKey: "svc.transport" },
-  { id: "loans", icon: Coins, labelKey: "svc.loans" },
-  { id: "news", icon: Newspaper, labelKey: "svc.news" },
-  { id: "soil", icon: FlaskConical, labelKey: "svc.soil" },
-  { id: "cold-storage", icon: Warehouse, labelKey: "svc.coldStorage" },
+  { id: "mandi", icon: TrendingUp, labelKey: "svc.mandi", subKey: "svc.mandiSub", color: "emerald", badge: "Live APMC" },
+  { id: "store", icon: ShoppingBag, labelKey: "svc.store", subKey: "svc.storeSub", color: "blue", badge: "Inputs" },
+  { id: "tractors", icon: Tractor, labelKey: "svc.tractors", subKey: "svc.tractorsSub", color: "amber", badge: "Rentals" },
+  { id: "schemes", icon: Landmark, labelKey: "svc.schemes", subKey: "svc.schemesSub", color: "indigo", badge: "Govt Subsidies" },
+  { id: "soil", icon: FlaskConical, labelKey: "svc.soil", subKey: "svc.soilSub", color: "teal", badge: "Lab Test" },
+  { id: "cattle", icon: Sprout, labelKey: "svc.cattle", subKey: "svc.cattleSub", color: "rose", badge: "Livestock" },
 ] as const;
 
 const COND_EMOJI: Record<string, string> = {
@@ -76,13 +57,7 @@ const COND_EMOJI: Record<string, string> = {
   "Hot & Dry Wind (Loo)": "🌡️",
 };
 
-const NEWS = [
-  { titleKey: "home.news1.title", sourceKey: "home.news1.source", timeKey: "home.news1.time", tagKey: "home.news1.tag" },
-  { titleKey: "home.news2.title", sourceKey: "home.news2.source", timeKey: "home.news2.time", tagKey: "home.news2.tag" },
-  { titleKey: "home.news3.title", sourceKey: "home.news3.source", timeKey: "home.news3.time", tagKey: "home.news3.tag" },
-];
-
-const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) => {
+export const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) => {
   const { t, language } = useLanguage();
   const { activeRole } = useRole();
   const auth = useOptionalAuth();
@@ -91,38 +66,80 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   const { profile: farmProfile } = useFarm();
   const advice = useMemo(() => deriveFarmAdvice(farmProfile, weather.data), [farmProfile, weather.data]);
 
-  // Fetch real profile from the profiles table for display name
-  const [profileFullName, setProfileFullName] = useState<string | null>(null);
+  // Load authoritative farmer profile from Supabase profiles table
+  const [profileData, setProfileData] = useState<{
+    fullName: string | null;
+    village: string | null;
+    district: string | null;
+    state: string | null;
+    farmName: string | null;
+    primaryCrop: string | null;
+    farmSize: number | null;
+    landUnit: string | null;
+    soilType: string | null;
+  }>({
+    fullName: null,
+    village: null,
+    district: null,
+    state: null,
+    farmName: null,
+    primaryCrop: null,
+    farmSize: null,
+    landUnit: null,
+    soilType: null,
+  });
+
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
-    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+
+    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       .then(({ data }) => {
-        if (!cancelled && data?.full_name) setProfileFullName(data.full_name);
+        if (cancelled || !data) return;
+        let ext: Record<string, any> = {};
+        try {
+          ext = data.extended_profile ? JSON.parse(data.extended_profile) : {};
+        } catch { /* ignore JSON parse */ }
+
+        setProfileData({
+          fullName: data.full_name || null,
+          village: data.village || ext.villageOrTehsil || null,
+          district: data.district || ext.district || null,
+          state: data.state || ext.state || null,
+          farmName: ext.farmName || null,
+          primaryCrop: data.primary_crop || ext.primaryCrop || (Array.isArray(ext.crops) ? ext.crops[0] : null),
+          farmSize: data.farm_size !== null ? Number(data.farm_size) : (ext.totalArea ? Number(ext.totalArea) : null),
+          landUnit: ext.landUnit || 'Acres',
+          soilType: data.soil_type || ext.soilType || null,
+        });
       })
       .catch(() => {});
+
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  // FIX 4: Smart display name — never show raw usernames like "satyamff124"
+  // Resolve user display name
   const rawEmailName = user?.email?.split('@')[0] || '';
-  const cleanedEmailName = rawEmailName.split(/[^a-zA-Z]/)[0]; // first alphabetic word only
+  const cleanedEmailName = rawEmailName.split(/[^a-zA-Z]/)[0];
   const capitalizedName = cleanedEmailName ? cleanedEmailName.charAt(0).toUpperCase() + cleanedEmailName.slice(1) : '';
-  const userName = profileFullName
+  const userName = profileData.fullName
     || user?.user_metadata?.full_name
     || user?.user_metadata?.name
     || capitalizedName
-    || (t('home.guestName'));
-  const village = user?.user_metadata?.village || (t('home.guestVillage'));
+    || (t('home.guestName') || 'Kisan Mitra');
+
+  const village = profileData.village || user?.user_metadata?.village || '';
+  const district = profileData.district || user?.user_metadata?.district || '';
+  const state = profileData.state || user?.user_metadata?.state || '';
+
   const wl = weather.data;
-  const liveCity = wl?.location?.name || village;
+  const liveCity = wl?.location?.name || village || district || (t('home.guestVillage') || 'India');
   const condEmoji = (cond?: string) => COND_EMOJI[cond || ""] || "🌤️";
   const [weatherOpen, setWeatherOpen] = useState(false);
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
   const { location: locState } = useLocation();
 
-  // Real mandi prices from data.gov.in (via mandi-api). Never fabricates prices:
-  // empty state is shown when the live feed is unreachable.
+  // Live Mandi prices from Data.gov.in / APMC Agmarknet
   const [mandiPrices, setMandiPrices] = useState<MandiPrice[]>([]);
   const [mandiError, setMandiError] = useState<string | null>(null);
   const [mandiLoading, setMandiLoading] = useState(true);
@@ -143,36 +160,25 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
 
   useEffect(() => {
     loadMandi();
-    // FIX 9: Auto-retry mandi prices every 30 minutes
     const interval = setInterval(loadMandi, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadMandi]);
 
-  const tickerItems = mandiPrices.slice(0, 10).map((p) => ({
-    id: p.id,
-    crop: p.crop,
-    price: p.price.toLocaleString("en-IN"),
-    chg: p.change,
-    up: p.status === "up",
-  }));
-  const trendsItems = mandiPrices.slice(0, 3).map((p) => ({
-    id: p.id,
-    crop: p.crop,
-    price: p.price.toLocaleString("en-IN"),
-    chg: parseFloat(p.change.replace(/[%+]/g, "")) || 0,
-    up: p.status === "up",
-  }));
-  const todayMandiItems = mandiPrices.slice(0, 4).map((p) => ({
-    id: p.id,
-    crop: p.crop,
-    price: p.price.toLocaleString("en-IN"),
-    chg: parseFloat(p.change.replace(/[%+]/g, "")) || 0,
-    up: p.status === "up",
-  }));
+  // Highlight farmer's primary crop first in the mandi snapshot
+  const activeCropName = profileData.primaryCrop || farmProfile?.crop || '';
+  const prioritizedMandiPrices = useMemo(() => {
+    if (!mandiPrices.length) return [];
+    if (!activeCropName) return mandiPrices.slice(0, 4);
+
+    const normTarget = activeCropName.toLowerCase();
+    const matched = mandiPrices.filter((p) => p.crop.toLowerCase().includes(normTarget));
+    const others = mandiPrices.filter((p) => !p.crop.toLowerCase().includes(normTarget));
+    return [...matched, ...others].slice(0, 4);
+  }, [mandiPrices, activeCropName]);
 
   const now = new Date();
   const hour = now.getHours();
-  const greeting = hour < 12 ? t("home.greetingMorning") : hour < 17 ? t("home.greetingAfternoon") : t("home.greetingEvening");
+  const greeting = hour < 12 ? (t("home.greetingMorning") || "Good Morning") : hour < 17 ? (t("home.greetingAfternoon") || "Good Afternoon") : (t("home.greetingEvening") || "Good Evening");
   const dateStr = now.toLocaleDateString(localeFor(language), { weekday: "long", day: "numeric", month: "long" });
 
   const cropT = (name: string) => {
@@ -196,7 +202,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
     onNavigate(tab);
   };
 
-  const firstName = userName.split(" ")[0];
+  const firstName = userName.split(" ")[0] || userName;
 
   const renderRoleDashboard = () => {
     switch (activeRole) {
@@ -214,35 +220,23 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
     }
   };
 
-  const sectionHeader = (id: string, title: string, action?: { label: string; tab: string }, emoji?: string) => (
-    <div className="flex items-end justify-between mb-3 px-1">
-      <h2 id={id} className="font-display font-semibold text-[20px] tracking-tight text-foreground">
-        {emoji && <span className="mr-1.5" aria-hidden="true">{emoji}</span>}
-        {title}
-      </h2>
-      {action && (
-        <button
-          onClick={() => go(action.tab)}
-          className="group flex shrink-0 items-center gap-1 text-[13px] font-bold text-forest dark:text-emerald-400"
-        >
-          {action.label}
-          <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-        </button>
-      )}
-    </div>
+  const hasFarmConfig = Boolean(
+    profileData.farmName ||
+    profileData.primaryCrop ||
+    (profileData.farmSize && profileData.farmSize > 0)
   );
 
   return (
-    <div className="relative min-h-screen pb-36 overflow-x-hidden">
-      {/* Ultra-Modern Floating Glass Header */}
-      <header className="sticky top-3 z-40 mx-3 sm:mx-4 flex items-center justify-between rounded-2xl glass-dock border border-white/60 dark:border-white/10 shadow-xl px-4 py-3 transition-all duration-300" style={{ top: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))' }}>
+    <div className="relative min-h-screen bg-gradient-to-b from-emerald-50/50 via-background to-background text-foreground pb-36 overflow-x-hidden">
+      {/* ── Top Floating Glass Header ───────────────────────────────── */}
+      <header className="sticky top-3 z-40 mx-3 sm:mx-4 flex items-center justify-between rounded-2xl glass-dock border border-white/80 dark:border-white/10 shadow-lg px-4 py-3 transition-all duration-300">
         <div className="flex items-center gap-3">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-sm bg-emerald-500/10">
-            <Logo size={34} />
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 border border-white dark:border-slate-900 animate-live-pulse" />
+          <span className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-sm bg-emerald-600/10">
+            <Logo size={36} />
+            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 animate-pulse" />
           </span>
           <div className="leading-none">
-            <p className="font-display font-black text-[18px] tracking-tight text-foreground bg-gradient-to-r from-emerald-800 to-teal-700 dark:from-emerald-300 dark:to-teal-200 bg-clip-text text-transparent">{t('agr207')}</p>
+            <p className="font-display font-black text-lg tracking-tight text-emerald-950 dark:text-emerald-100">AgriConnect</p>
             <p className="text-[11px] font-bold text-muted-foreground mt-0.5 flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
               {liveCity} · {dateStr.split(",")[0]}
@@ -253,473 +247,388 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           <NotificationBell onNavigate={go} />
           <button
             onClick={() => go("profile")}
-            className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-display font-black text-sm shadow-md shadow-emerald-600/30 tap-bounce transition-transform"
-            aria-label={t("home.openProfile")}
+            className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center font-display font-black text-sm shadow-md shadow-emerald-600/30 active:scale-95 transition-transform"
+            aria-label="Open Profile"
           >
             {firstName.charAt(0).toUpperCase()}
           </button>
         </div>
       </header>
 
-      <section className="pt-4" aria-label={t("home.farmOverview")}>
-        {/* ── Dynamic Hero (time-of-day + weather adaptive) ── */}
-        <DynamicHero
-          greeting={greeting}
-          firstName={firstName}
-          dateStr={dateStr}
-          liveCity={liveCity}
-          farmLabel={interpolate(t("home.farmLabel"), { name: firstName })}
-          cropLine={advice.heroLine}
-          wl={wl}
-          weatherStatus={weather.loading ? 'loading' : weather.error ? 'error' : 'ready'}
-          formatTemp={weather.formatTemp}
-          condEmoji={condEmoji}
-          onGo={go}
-        />
+      <main className="px-3.5 sm:px-4 pt-3 space-y-4 max-w-4xl mx-auto">
+        
+        {/* ── 1. Farmer Greeting Card ─────────────────────────────────── */}
+        <section className="rounded-3xl border border-emerald-500/20 bg-card p-5 shadow-sm space-y-2 relative overflow-hidden" aria-label="Farmer Greeting">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-emerald-400/15 blur-2xl" />
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-[11px] font-extrabold uppercase tracking-wider mb-1">
+                <span>🌾</span>
+                <span>{greeting}, {firstName}</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                Everything a farmer needs in one place.
+              </h1>
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium flex items-center gap-1.5">
+            <MapPin size={13} className="text-emerald-600 shrink-0" />
+            <span>{village ? `${village}, ` : ''}{district ? `${district}, ` : ''}{state || 'India'}</span>
+            <span className="text-muted-foreground/40">•</span>
+            <span>{dateStr}</span>
+          </p>
+        </section>
 
-        {/* ── First-day personalized board (after onboarding) ─── */}
-        <FirstDayBoard onGo={go} />
-
-        {/* ── FIX 5: Profile completion prompt (only shown if farm is unconfigured) ─── */}
-        {user && typeof window !== 'undefined' && localStorage.getItem('agri_onboarding_seen') !== 'true' && localStorage.getItem('agri_profile_complete') !== 'true' && !farmProfile?.crop && (
-          <section className="px-4 mt-4 animate-fade-in">
+        {/* ── 2. Farm / Crop Context Card ─────────────────────────────── */}
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3" aria-label="Farm Context">
+          <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 font-bold text-sm">
+                🌱
+              </span>
+              <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
+                My Farm Context
+              </h2>
+            </div>
             <button
-              onClick={() => go('profile')}
-              className="w-full rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-green-500/10 p-4 text-left shadow-card hover-lift"
+              onClick={() => go("profile")}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
-                  <Sprout size={18} />
+              <span>{hasFarmConfig ? 'Edit Details' : 'Set Up Farm'}</span>
+              <ChevronRight size={13} />
+            </button>
+          </div>
+
+          {hasFarmConfig ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+              <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/15">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Farm Name</span>
+                <span className="text-sm font-black text-foreground truncate block mt-0.5">
+                  {profileData.farmName || `${firstName}'s Farm`}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-foreground leading-snug">
-                    🌱 {t('home.prompt.completeProfile') || 'Complete your profile to unlock AI recommendations personalised for your farm'}
-                  </p>
-                  <p className="mt-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    {t('home.prompt.completeNow') || 'Complete Now (2 min) →'}
-                  </p>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/15">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Main Crop</span>
+                <span className="text-sm font-black text-emerald-800 dark:text-emerald-300 truncate block mt-0.5">
+                  {profileData.primaryCrop ? cropT(profileData.primaryCrop) : (farmProfile?.crop || 'Wheat')}
+                </span>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/15">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Land Area</span>
+                <span className="text-sm font-black text-foreground truncate block mt-0.5">
+                  {profileData.farmSize ? `${profileData.farmSize} ${profileData.landUnit || 'Acres'}` : `${farmProfile?.farmArea || 5} Acres`}
+                </span>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/15">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">Soil Type</span>
+                <span className="text-sm font-black text-foreground truncate block mt-0.5">
+                  {profileData.soilType || farmProfile?.soilType || 'Alluvial Soil'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
+                  🚜
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Personalize your farm details</p>
+                  <p className="text-xs text-muted-foreground">Add your crop, land area and village for custom AI advice &amp; mandi alerts.</p>
                 </div>
               </div>
-            </button>
-          </section>
-        )}
+              <button
+                onClick={() => go("profile")}
+                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2 px-3.5 shadow-sm shrink-0 transition-colors"
+              >
+                Set Up Farm (1 min) →
+              </button>
+            </div>
+          )}
+        </section>
 
-        {/* ── Weather ──────────────────────────────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "240ms" }} aria-labelledby="weather-heading">
+        {/* ── 3. Hyperlocal Weather Snapshot ──────────────────────────── */}
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3" aria-label="Weather Snapshot">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 font-bold text-sm">
+                🌤️
+              </span>
+              <div>
+                <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
+                  Hyperlocal Weather
+                </h2>
+                <p className="text-[11px] text-muted-foreground">{liveCity} (Open-Meteo Verified)</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setWeatherOpen(true)}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
+            >
+              <span>7-Day Radar &amp; Rain</span>
+              <ChevronRight size={13} />
+            </button>
+          </div>
+
           {wl ? (
-            <button onClick={() => setWeatherOpen(true)} className="relative w-full overflow-hidden rounded-[28px] gradient-weather text-white p-5 text-left shadow-colorful hover-lift">
-              <span className="absolute top-4 right-7 text-3xl select-none animate-sun-pulse" aria-hidden="true">{condEmoji(wl.live.condition)}</span>
-              <span className="absolute top-12 right-5 text-2xl select-none animate-cloud-slow" aria-hidden="true">☁️</span>
-              <div className="relative flex items-center gap-4">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/70">{interpolate(t("home.weatherAt"), { city: wl.location.name })}</p>
-                  <p className="font-display text-[42px] font-bold leading-none mt-2 flex items-center">
-                    {weather.formatTemp(wl.live.temp)}
-                  </p>
-                  <p className="text-[13px] font-semibold text-white/80 mt-1">
-                    {interpolate(t("home.feelsLike"), { cond: wl.live.condition, temp: weather.formatTemp(wl.live.feelsLike) })}
-                  </p>
-                  <p className="text-[11px] text-white/60 mt-0.5">{wl.location.district}, {wl.location.state}</p>
+            <div
+              onClick={() => setWeatherOpen(true)}
+              className="p-4 rounded-2xl bg-gradient-to-br from-sky-500/10 via-emerald-500/5 to-teal-500/10 border border-sky-500/20 cursor-pointer hover:border-sky-500/40 transition-all space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl select-none" aria-hidden="true">
+                    {condEmoji(wl.live.condition)}
+                  </span>
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-black text-foreground font-display">
+                        {weather.formatTemp(wl.live.temp)}
+                      </span>
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        Feels like {weather.formatTemp(wl.live.feelsLike)}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground mt-0.5">{wl.live.condition}</p>
+                  </div>
                 </div>
-                <div className="flex-1" />
-                <span className="flex flex-col gap-1.5">
-                  <span className="feature-chip bg-white/15 text-white"><Droplets size={12} /> {wl.live.humidity}%</span>
-                  <span className="feature-chip bg-white/15 text-white"><Wind size={12} /> {interpolate(t("hero.wind"), { speed: wl.live.windSpeed })}</span>
+
+                <div className="flex flex-col gap-1 text-right text-xs font-bold">
+                  <span className="inline-flex items-center gap-1 justify-end text-sky-700 dark:text-sky-300">
+                    <Droplets size={12} /> {wl.live.humidity}% Humidity
+                  </span>
+                  <span className="inline-flex items-center gap-1 justify-end text-emerald-700 dark:text-emerald-300">
+                    <Wind size={12} /> {interpolate(t("hero.wind") || '{speed} km/h', { speed: wl.live.windSpeed })}
+                  </span>
                   {wl.daily?.[0] && (
-                    <span className="feature-chip bg-secondary text-secondary-foreground">
-                      <span aria-hidden="true">🌧️</span> {interpolate(t("home.rain"), { pct: wl.daily[0].rainProbability })}
+                    <span className="inline-flex items-center gap-1 justify-end text-indigo-700 dark:text-indigo-300">
+                      <span>🌧️</span> {wl.daily[0].rainProbability}% Rain Chance
                     </span>
                   )}
-                </span>
+                </div>
               </div>
 
-                <div className="relative flex gap-2 mt-4 overflow-x-auto no-scrollbar">
-                  {(wl.hourly ?? []).slice(0, 6).map((h) => (
-                    <span key={`${h.time}-${h.timestamp}`} className="flex shrink-0 flex-col items-center gap-1 rounded-2xl bg-white/12 border border-white/15 px-3 py-2">
-                      <span className="text-[10px] font-bold text-white/70">{h.time}</span>
-                      <span className="text-base" aria-hidden="true">{condEmoji(h.condition)}</span>
-                      <span className="text-[12px] font-bold">{weather.formatTemp(h.temp)}</span>
-                    </span>
-                  ))}
-                </div>
+              {/* 5-Hour Forecast Pills */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+                {(wl.hourly ?? []).slice(0, 5).map((h) => (
+                  <div key={`${h.time}-${h.timestamp}`} className="flex-1 min-w-[62px] text-center p-2 rounded-xl bg-card border border-border/80 text-xs">
+                    <span className="text-[10px] font-bold text-muted-foreground block">{h.time}</span>
+                    <span className="text-base block my-0.5" aria-hidden="true">{condEmoji(h.condition)}</span>
+                    <span className="font-extrabold text-foreground block">{weather.formatTemp(h.temp)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : weather.loading ? (
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border flex items-center justify-center gap-2 py-8">
+              <RefreshCw size={18} className="animate-spin text-emerald-600" />
+              <span className="text-xs font-bold text-muted-foreground">Fetching live Open-Meteo weather data...</span>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-foreground">Weather unavailable for current coordinates</p>
+                <p className="text-[11px] text-muted-foreground">Tap retry or set custom district location.</p>
+              </div>
+              <button
+                onClick={() => weather.refreshLocation()}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+              >
+                Retry
               </button>
-            ) : weather.loading ? (
-              <div className="w-full rounded-[28px] border border-border bg-card p-6 shadow-card">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-600 flex items-center justify-center">
-                    <CloudSun size={24} className="animate-pulse" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">
-                      {t('home.fetchingWeather') || 'Fetching live weather…'}
-                      {locState?.city && locState.city !== 'Current Location' ? ` for ${locState.city}` : ''}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('home.weatherDetecting') || 'Getting hyperlocal temperature & rain forecast'}</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full rounded-[28px] border border-border bg-card p-6 shadow-card">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-muted/60 text-muted-foreground flex items-center justify-center">
-                    <CloudSun size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">{t('home.weatherUnavailable') || 'Live Weather Unavailable'}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{weather.error || (t('home.setLocationHint') || '🌤 Set your location for hyperlocal weather')}</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => weather.refreshLocation()}
-                    className="flex-1 rounded-xl bg-forest px-3 py-2 text-xs font-bold text-white hover:brightness-110"
-                    disabled={weather.loading}
-                  >
-                    {t('wth.retry') || 'Retry Weather'}
-                  </button>
-                  <button
-                    onClick={() => setLocationSheetOpen(true)}
-                    className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground hover:bg-muted/40"
-                  >
-                    {t('home.changeLocation') || 'Set Location'}
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
+          )}
         </section>
-        {/* ── AI Insight Card (heart of the home screen) ─── */}
-        <AiInsightCard
-          wl={wl}
-          loading={weather.loading}
-          cropLabel={advice.cropLabel}
-          items={advice.items}
-          onGo={go}
-        />
-        {/* ── Quick Actions (Primary Features) ───────────── */}
-        <section className="px-4 mt-6" aria-labelledby="quick-heading">
-          <div className="flex items-end justify-between mb-3 px-1">
-            <h2 id="quick-heading" className="font-display font-semibold text-[20px] tracking-tight text-foreground">
-              <span className="mr-1.5" aria-hidden="true">⚡</span> {t("home.quickActions")}
-            </h2>
+
+        {/* ── 4. Live Mandi / Market Snapshot ─────────────────────────── */}
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3" aria-label="Mandi Snapshot">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 font-bold text-sm">
+                💰
+              </span>
+              <div>
+                <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
+                  Live Mandi Bhav
+                </h2>
+                <p className="text-[11px] text-muted-foreground">Data.gov.in &amp; APMC Agmarknet Verified</p>
+              </div>
+            </div>
+            <button
+              onClick={() => go("mandi")}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
+            >
+              <span>Explore All Mandis</span>
+              <ChevronRight size={13} />
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-3.5">
+
+          {prioritizedMandiPrices.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {prioritizedMandiPrices.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => go("mandi")}
+                  className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-muted/20 hover:bg-muted/50 hover:border-emerald-500/30 transition-all text-left"
+                >
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
+                      <span>{cropT(item.crop)}</span>
+                      {activeCropName && item.crop.toLowerCase().includes(activeCropName.toLowerCase()) && (
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[9px] font-black uppercase">
+                          My Crop
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">{item.market}, {item.district}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-black text-foreground flex items-center justify-end">
+                      <IndianRupee size={12} />{item.price.toLocaleString("en-IN")}
+                      <span className="text-[10px] text-muted-foreground font-normal ml-0.5">/q</span>
+                    </p>
+                    <p className={cn("text-[11px] font-black flex items-center justify-end gap-0.5 mt-0.5", item.status === "up" ? "text-emerald-600" : "text-rose-600")}>
+                      {item.status === "up" ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                      {item.change}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : mandiLoading ? (
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border flex items-center justify-center gap-2 py-6">
+              <RefreshCw size={16} className="animate-spin text-emerald-600" />
+              <span className="text-xs font-bold text-muted-foreground">Loading APMC Mandi rates...</span>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Rates sync daily from Agmarknet APMC servers.</span>
+              <button onClick={() => go("mandi")} className="text-xs font-bold text-emerald-600 hover:underline">
+                View Mandi Rates →
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* ── 5 & 6. Primary Action CTAs (AI Assistant & Crop Health) ──── */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3.5" aria-label="Primary Actions">
+          {/* Kisan AI CTA */}
+          <button
+            onClick={() => go("ai-chat")}
+            className="group relative flex items-start gap-4 p-5 rounded-3xl bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900 text-white shadow-lg hover:shadow-xl transition-all text-left transform active:scale-[0.99] overflow-hidden border border-emerald-500/30"
+          >
+            <div className="pointer-events-none absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-emerald-400/20 blur-xl" />
+            <div className="h-12 w-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+              <Bot size={24} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-400/20 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                  Voice &amp; Chat AI
+                </span>
+              </div>
+              <h3 className="text-base font-black tracking-tight text-white">
+                Ask Kisan AI Assistant
+              </h3>
+              <p className="text-xs text-emerald-100/80 leading-snug">
+                24/7 Krishi Salah in Hindi, English &amp; 10+ regional languages.
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-white/60 group-hover:translate-x-1 group-hover:text-white transition-all shrink-0 mt-1" />
+          </button>
+
+          {/* Crop Doctor CTA */}
+          <button
+            onClick={() => go("crop-doctor")}
+            className="group relative flex items-start gap-4 p-5 rounded-3xl bg-gradient-to-br from-teal-800 via-emerald-900 to-slate-900 text-white shadow-lg hover:shadow-xl transition-all text-left transform active:scale-[0.99] overflow-hidden border border-teal-500/30"
+          >
+            <div className="pointer-events-none absolute -right-8 -bottom-8 h-28 w-28 rounded-full bg-teal-400/20 blur-xl" />
+            <div className="h-12 w-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+              <Scan size={24} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-teal-400/20 text-teal-200 px-2 py-0.5 rounded-full border border-teal-400/30">
+                  Instant Diagnosis
+                </span>
+              </div>
+              <h3 className="text-base font-black tracking-tight text-white">
+                Crop Doctor — Disease Scan
+              </h3>
+              <p className="text-xs text-teal-100/80 leading-snug">
+                Upload or capture leaf photo for pest identification &amp; remedy.
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-white/60 group-hover:translate-x-1 group-hover:text-white transition-all shrink-0 mt-1" />
+          </button>
+        </section>
+
+        {/* ── 7. Important Services Grid ──────────────────────────────── */}
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3.5" aria-label="Important Services">
+          <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 font-bold text-sm">
+                📦
+              </span>
+              <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
+                Important Services
+              </h2>
+            </div>
+            <button
+              onClick={() => go("services")}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
+            >
+              <span>View All Services</span>
+              <ChevronRight size={13} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {PRIMARY_SERVICES.map((s) => (
               <button
                 key={s.id}
                 onClick={() => go(s.id)}
-                className="group relative flex flex-col items-start gap-3 rounded-[24px] border p-4 text-left tap-bounce transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
-                style={{
-                  backgroundColor: `hsl(var(${s.token}) / 0.10)`,
-                  borderColor: `hsl(var(${s.token}) / 0.28)`,
-                  boxShadow: `0 14px 34px -14px hsl(var(${s.token}) / 0.35)`,
-                }}
+                className="group flex flex-col items-start gap-2.5 p-4 rounded-2xl border border-border bg-background hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 hover:border-emerald-500/40 transition-all text-left shadow-xs hover:shadow-sm"
               >
-                <span
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                  style={{ 
-                    backgroundColor: `hsl(var(${s.token}))`,
-                    boxShadow: `0 8px 20px -4px hsl(var(${s.token}) / 0.5)` 
-                  }}
-                >
-                  <s.icon size={22} />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-[14px] font-black leading-tight text-foreground">{t(s.labelKey)}</span>
-                  <span className="block text-[11px] font-semibold text-muted-foreground mt-1">{t(s.subKey)}</span>
-                </span>
-                <span className="absolute top-4 right-3.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/60 dark:bg-black/20 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
-                  <ChevronRight size={14} />
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-        {/* ── Personalized AI Advisor brief ────────────── */}
-        <AdvisorBriefCard onNavigate={go} />
-        {/* ── Live Mandi Ticker ────────────────────────── */}
-        <section className="mt-5 overflow-hidden" aria-label={t("home.liveMandi")}>
-          {tickerItems.length > 0 ? (
-            <div className="flex whitespace-nowrap animate-ticker gap-0">
-              {tickerItems.map((item) => (
-                <button
-                  key={`${item.id}-a`}
-                  onClick={() => go("mandi")}
-                  className="mx-2 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-card hover-lift"
-                >
-                  <span className="text-xs font-bold text-foreground">{cropT(item.crop)}</span>
-                  <span className="text-xs font-bold text-foreground flex items-center gap-0.5">
-                    <IndianRupee size={11} />{item.price}
+                <div className="flex items-center justify-between w-full">
+                  <span className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <s.icon size={20} />
                   </span>
-                  <span className={cn("text-[11px] font-black", item.up ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-                    {item.up ? "▲" : "▼"} {item.chg}
-                  </span>
-                </button>
-              ))}
-              {tickerItems.map((item) => (
-                <button
-                  key={`${item.id}-b`}
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  className="mx-2 pointer-events-none inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2"
-                >
-                  <span className="text-xs font-bold text-foreground">{cropT(item.crop)}</span>
-                  <span className="text-xs font-bold text-foreground flex items-center gap-0.5">
-                    <IndianRupee size={11} />{item.price}
-                  </span>
-                  <span className={cn("text-[11px] font-black", item.up ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-                    {item.up ? "▲" : "▼"} {item.chg}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            /* FIX 9: User-friendly mandi message instead of raw errors */
-            <button
-              onClick={() => { go("mandi"); if (mandiError) loadMandi(); }}
-              className="mx-4 flex w-[calc(100%-2rem)] items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-card"
-            >
-              <span className="text-[13px] font-semibold text-muted-foreground leading-snug">
-                {mandiLoading
-                  ? t("home.mandiLoading")
-                  : 'Prices update daily · Tap to check latest rates'}
-              </span>
-              <span className="shrink-0 text-[12px] font-bold text-forest dark:text-emerald-400">{t("home.viewMore")} →</span>
-            </button>
-          )}
-        </section>
-
-
-
-        {/* ── Crop Health Alert ────────────────────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "240ms" }} aria-labelledby="health-heading">
-          <button
-            onClick={() => go("crop-doctor")}
-            className="interactive-card flex items-center gap-4 rounded-2xl border border-feature-doctor/25 bg-feature-doctor/8 p-4 w-full text-left cursor-pointer"
-          >
-            <span className="relative h-14 w-14 shrink-0 rounded-full bg-emerald-700 text-white flex items-center justify-center shadow-colorful animate-ripple">
-              <Scan size={22} />
-            </span>
-            <div className="flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-feature-doctor">{t("home.cropHealth")}</p>
-              <p className="text-[14px] font-bold text-foreground leading-snug mt-0.5">
-                {t("home.rustRisk")}
-              </p>
-              <p className="text-[12px] text-muted-foreground mt-0.5">{t("home.farmersFlagged")}</p>
-            </div>
-            <span className="shrink-0 rounded-full bg-emerald-700 text-white px-3.5 py-2 text-[12px] font-bold shadow-colorful">
-              {t("home.scan")}
-            </span>
-          </button>
-
-
-
-
-
-        </section>
-
-        {/* ── Trending Crops ───────────────────────────── */}
-        {trendsItems.length > 0 && (
-        <section className="mt-6 reveal" style={{ animationDelay: "360ms" }} aria-labelledby="trends-heading">
-          <div className="px-4">
-            {sectionHeader("trends-heading", t("home.trending"), { label: t("svc.mandi"), tab: "mandi" }, "🔥")}
-          </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
-            {trendsItems.map((c) => (
-              <button key={c.id} onClick={() => go("mandi")} className="interactive-card w-[150px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <p className="text-[13px] font-bold text-foreground">{cropT(c.crop)}</p>
-                  <Flame size={13} className="text-feature-tractor" />
-                </div>
-                <p className="mt-1.5 text-[17px] font-black text-foreground flex items-center gap-0.5">
-                  <IndianRupee size={12} />{c.price}
-                </p>
-                <p className={cn("text-[12px] font-bold mt-0.5 flex items-center gap-0.5", c.up ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-                  {c.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{c.chg}%
-                </p>
-              </button>
-            ))}
-          </div>
-        </section>
-        )}
-
-        {/* ── Nearby tractors (image rich) ────────────── */}
-        <section className="mt-6 reveal" style={{ animationDelay: "480ms" }} aria-labelledby="tractors-heading">
-          <div className="px-4">
-            {sectionHeader("tractors-heading", t("home.nearbyTractors"), { label: t("home.all"), tab: "tractors" }, "🚜")}
-            {/* FIX 7: Supply acquisition CTA instead of "sample listings" disclaimer */}
-            <button
-              onClick={() => go('tractors')}
-              className="mb-3 px-1 text-[12px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
-            >
-              {t('tractor.beFirstToList') || 'Be the first to list your tractor in your area →'}
-            </button>
-          </div>
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 pb-1">
-            {INITIAL_TRACTORS.map((tractor) => (
-              <button
-                key={tractor.id}
-                onClick={() => onBookTractor(tractor)}
-                className="w-[250px] shrink-0 snap-center overflow-hidden rounded-2xl border border-border bg-card text-left shadow-card hover-lift"
-              >
-                <div className="relative h-[120px] w-full overflow-hidden bg-muted">
-                  <AgriImage
-                    type="tractor"
-                    contextName={tractor.name}
-                    seedKey={tractor.id || tractor.name}
-                    alt={`${tractor.name} tractor working in field`}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute top-2 left-2 feature-chip bg-black/45 text-white backdrop-blur-md">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-live-pulse" /> {t("home.available")}
-                  </span>
-                  <span className="absolute top-2 right-2 feature-chip bg-card/90 text-foreground">
-                    <Star size={11} className="text-amber-500 fill-amber-500" /> {tractor.rating}
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase">
+                    {s.badge}
                   </span>
                 </div>
-                <div className="p-3.5">
-                  <p className="text-[14px] font-bold text-foreground">{tractor.name}</p>
-                  <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 flex items-center gap-1">
-                    <MapPin size={11} /> {tractor.distance} · {tractor.owner}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-[15px] font-black text-foreground flex items-center gap-0.5">
-                      <IndianRupee size={12} />{tractor.ratePerHour}<span className="text-[11px] font-bold text-muted-foreground">{t("home.perHr")}</span>
-                    </span>
-                    <span className="rounded-full gradient-tractor text-white px-3 py-1.5 text-[11px] font-bold shadow-colorful">{t("home.book")}</span>
-                  </div>
+                <div>
+                  <span className="text-sm font-black text-foreground block leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                    {t(s.labelKey)}
+                  </span>
+                  <span className="text-[11px] font-medium text-muted-foreground block mt-0.5 line-clamp-1">
+                    {t(s.subKey)}
+                  </span>
                 </div>
               </button>
             ))}
           </div>
         </section>
 
-        {/* ── Govt alert timeline ──────────────────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "540ms" }} aria-labelledby="govt-heading">
-          <div className="relative overflow-hidden rounded-[28px] gradient-govt text-white p-5 shadow-colorful">
-            <div className="absolute -right-10 -top-14 h-44 w-44 rounded-full bg-white/10 blur-2xl animate-drift-soft" />
-            <span className="absolute bottom-2 right-4 text-4xl opacity-20 select-none" aria-hidden="true">🏛️</span>
-            <div className="relative flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 flex items-center gap-1.5">
-                <Landmark size={13} /> {t("home.govtAlert")}
-              </p>
-            </div>
-            <div className="relative mt-4 space-y-0">
-              {[
-                { title: t("home.govt1.title"), meta: t("home.govt1.meta"), tab: "schemes" },
-                { title: t("home.govt2.title"), meta: t("home.govt2.meta"), tab: "schemes" },
-              ].map((item) => (
-                <button key={item.title} onClick={() => go(item.tab)} className="group relative flex w-full items-start gap-3 py-2.5 text-left">
-                  <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-secondary animate-live-pulse" />
-                  <span className="flex-1">
-                    <span className="block text-[14px] font-semibold leading-snug group-hover:underline">{item.title}</span>
-                    <span className="block text-[12px] text-white/65 mt-0.5">{item.meta}</span>
-                  </span>
-                  <ChevronRight size={16} className="mt-1 text-white/50 group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ── 8. Recent Activity, Today Tasks & Advisories ─────────────── */}
+        <section className="space-y-4" aria-label="Recent Activity and Tasks">
+          {/* Today's Tasks Component */}
+          <TodayTasks triggerHaptic={triggerHaptic} />
 
-        {/* ── Today's Tasks ────────────────────────────── */}
-        <TodayTasks triggerHaptic={triggerHaptic} />
-
-        {/* ── Mandi snapshot ───────────────────────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "660ms" }} aria-labelledby="mandi-heading">
-          {sectionHeader("mandi-heading", t("home.todayMandi"), { label: t("home.viewMore"), tab: "mandi" }, "💰")}
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
-            {todayMandiItems.length > 0 ? (
-              <div className="divide-y divide-border">
-                {todayMandiItems.map((item) => (
-                  <button key={item.id} onClick={() => go("mandi")} className="group flex w-full items-center gap-3 py-2.5 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]">
-                    <span className={cn("h-8 w-8 shrink-0 rounded-xl flex items-center justify-center", item.up ? "bg-feature-mandi/12 text-feature-mandi" : "bg-feature-news/12 text-feature-news")}>
-                      {item.up ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                    </span>
-                    <span className="flex-1 text-[14px] font-bold text-foreground">{cropT(item.crop)}</span>
-                    <span className="text-[14px] font-bold text-foreground flex items-center gap-0.5">
-                      <IndianRupee size={12} />{item.price}
-                    </span>
-                    <span className={cn("flex items-center gap-0.5 text-[12px] font-black", item.up ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-                      {item.chg}%
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              /* FIX 9: User-friendly mandi message */
-              <button onClick={() => { go("mandi"); if (mandiError) loadMandi(); }} className="flex w-full items-center justify-between gap-3 py-2 text-left">
-                <span className="text-[13px] font-semibold text-muted-foreground leading-snug">
-                  {mandiLoading
-                    ? t("home.mandiLoading")
-                    : 'Government servers refresh daily · Tap to check'}
-                </span>
-                <span className="shrink-0 text-[12px] font-bold text-forest dark:text-emerald-400">{t("home.viewMore")} →</span>
-              </button>
-            )}
-          </div>
-        </section>
-
-        {/* ── Pest & disease alerts ────────────────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "720ms" }} aria-labelledby="alerts-heading">
-          {sectionHeader("alerts-heading", t("home.pestAlerts"), { label: t("home.scan"), tab: "crop-doctor" }, "🚨")}
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
-            <div className="divide-y divide-border">
-              {ALERTS.map((a) => (
-                <button key={a.textKey} onClick={() => go(a.tab)} className="group flex w-full items-start gap-3 py-2.5 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]">
-                  <span className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", a.tone)}>
-                    <a.icon size={15} />
-                  </span>
-                  <span className="flex-1 text-[13px] font-medium text-foreground leading-snug group-hover:text-primary transition-colors">{t(a.textKey)}</span>
-                  <ChevronRight size={15} className="mt-1 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Latest news ──────────────────────────────── */}
-        <section className="mt-6 reveal" style={{ animationDelay: "780ms" }} aria-labelledby="news-heading">
-          <div className="px-4">
-            {sectionHeader("news-heading", t("home.latestNews"), { label: t("home.more"), tab: "news" }, "📰")}
-          </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
-            {NEWS.map((n) => (
-              <button key={n.titleKey} onClick={() => go("news")} className="interactive-card w-[240px] shrink-0 rounded-2xl border border-border bg-card p-4 text-left shadow-card cursor-pointer">
-                <span className="feature-chip bg-feature-news/12 text-feature-news">{t(n.tagKey)}</span>
-                <p className="mt-2.5 text-[14px] font-bold text-foreground leading-snug line-clamp-3">{t(n.titleKey)}</p>
-                <p className="mt-2 text-[11px] font-semibold text-muted-foreground">{t(n.sourceKey)} · {t(n.timeKey)}</p>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* ── More Services (Secondary Features) ─────────── */}
-        <section className="px-4 mt-6 reveal" style={{ animationDelay: "840ms" }} aria-labelledby="more-heading">
-          <div className="flex items-end justify-between mb-3 px-1">
-            <h2 id="more-heading" className="font-display font-semibold text-[20px] tracking-tight text-foreground">
-              <span className="mr-1.5" aria-hidden="true">📦</span> {t("home.moreServices")}
-            </h2>
-            <button onClick={() => go("services")} className="group flex shrink-0 items-center gap-1 text-[13px] font-bold text-forest dark:text-emerald-400">
-              {t("home.viewAll")}
-              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-            {SECONDARY_SERVICES.map((s) => (
-              <button key={s.id} onClick={() => go(s.id)} className="flex shrink-0 flex-col items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5 active:scale-95">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
-                  <s.icon size={20} />
-                </span>
-                <span className="text-[11px] font-medium text-muted-foreground">{t(s.labelKey)}</span>
-              </button>
-            ))}
-          </div>
+          {/* AI Farm Insight & Advisory */}
+          <AiInsightCard
+            wl={wl}
+            loading={weather.loading}
+            cropLabel={advice.cropLabel}
+            items={advice.items}
+            onGo={go}
+          />
         </section>
 
         {renderRoleDashboard()}
 
-        {/* Full Weather Intelligence Dashboard */}
+        {/* Weather Intelligence Dashboard Modal */}
         {wl && (
           <WeatherDashboardModal
             isOpen={weatherOpen}
@@ -747,7 +656,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             />
           </SheetContent>
         </Sheet>
-      </section>
+
+      </main>
     </div>
   );
 };
