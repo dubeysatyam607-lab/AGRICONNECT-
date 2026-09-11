@@ -125,6 +125,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     closeBtn: t("mandi.hub.close") || "बंद करें",
     confidence: t("mandi.hub.confidence") || "% सटीक पूर्वानुमान",
     arrivalLabel: t("mandi.hub.arrivalLabel") || "आवक:",
+    nullRange: t("mandi.hub.nullRange") || "Not available",
   };
 
   const CATEGORY_LABELS: Record<string, string> = {
@@ -149,7 +150,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const [tab, setTab] = useState<Tab>("prices");
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
-  const [selectedState, setSelectedState] = useState("");
+  const [selectedState, setSelectedState] = useState("Rajasthan");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedMandi, setSelectedMandi] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -161,7 +162,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
   const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedCrop, setSelectedCrop] = useState<MandiPrice | null>(null);
-  const [harvestQuantity, setHarvestQuantity] = useState<number>(50);
   // Reset pagination when filters/search change
   useEffect(() => {
     setPage(1);
@@ -265,8 +265,13 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`, "_blank");
   };
 
-  // States & Districts & Mandis
-  const states = useMemo(() => INDIAN_STATES, []);
+  // States: prefer the ones actually present in the live dataset, with the
+  // official Union list as the complete fallback (never fabricated data).
+  const states = useMemo(() => {
+    const fromData = new Set(data.map(c => c.state).filter(Boolean));
+    const merged = new Set<string>([...INDIAN_STATES, ...fromData]);
+    return Array.from(merged).sort();
+  }, [data]);
   const districts = useMemo(() => {
     let subset = data;
     if (selectedState) subset = subset.filter(c => c.state === selectedState);
@@ -341,12 +346,14 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const changeBadge = (c: MandiPrice) => {
     const ch = parseChange(c.change);
     return (
-      <span className={cn(
-        "inline-flex items-center gap-0.5 text-[11px] font-extrabold px-2 py-0.5 rounded-full border",
-        c.status === "up" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-        c.status === "down" && "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
-        (!c.status || c.status === "stable") && "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
-      )}>
+      <span
+        title={c.minPrice > 0 && c.maxPrice > 0 ? "Position of the modal price within today's published min–max range" : "No day-over-day comparison is published for this feed"}
+        className={cn(
+          "inline-flex items-center gap-0.5 text-[11px] font-extrabold px-2 py-0.5 rounded-full border",
+          c.status === "up" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+          c.status === "down" && "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
+          (!c.status || c.status === "stable") && "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+        )}>
         {c.status === "up" && <TrendingUp size={11} />}
         {c.status === "down" && <TrendingDown size={11} />}
         {(!c.status || c.status === "stable") && <Minus size={11} />}
@@ -354,6 +361,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       </span>
     );
   };
+
+  const fmtRange = (n: number) => (n > 0 ? formatINR(n) : L.nullRange);
 
   const renderAdviceBadge = (c: MandiPrice) => {
     const advice = c.sellingAdvice;
@@ -415,7 +424,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 <h3 className="font-extrabold text-base tracking-tight leading-none text-white drop-shadow">
                   {c.crop} {c.cropHi && c.cropHi !== c.crop && <span className="text-xs font-normal opacity-90">({c.cropHi})</span>}
                 </h3>
-                <p className="text-[10px] opacity-80 mt-0.5">{c.category} · {c.arrivalQuantity} {L.quintalArrival}</p>
+                <p className="text-[10px] opacity-80 mt-0.5 line-clamp-1">{c.category}{c.arrivalQuantity ? ` · ${c.arrivalQuantity} ${L.quintalArrival}` : ""}</p>
               </div>
               {changeBadge(c)}
             </div>
@@ -460,9 +469,9 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
             {/* Min / Max Range */}
             <div className="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-2 flex items-center justify-between text-xs font-bold text-muted-foreground">
-              <span>{L.min}: <b className="text-foreground">{formatINR(c.minPrice)}</b></span>
+              <span>{L.min}: <b className="text-foreground">{fmtRange(c.minPrice)}</b></span>
               <span className="h-3 w-px bg-border" />
-              <span>{L.max}: <b className="text-foreground">{formatINR(c.maxPrice)}</b></span>
+              <span>{L.max}: <b className="text-foreground">{fmtRange(c.maxPrice)}</b></span>
             </div>
 
             {/* Location & Market Hours */}
@@ -471,9 +480,11 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 <MapPin size={13} className="text-emerald-600 shrink-0" />
                 {c.market}, {c.district}
               </span>
-              <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0", c.operatingStatus === "OPEN" ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-200 dark:bg-slate-800 text-muted-foreground")}>
-                {c.operatingStatus === "OPEN" ? `🟢 ${L.mandiOpen}` : `🔴 ${L.mandiClosed}`}
-              </span>
+              {c.operatingStatus && (
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0", c.operatingStatus === "OPEN" ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-200 dark:bg-slate-800 text-muted-foreground")}>
+                  {c.operatingStatus === "OPEN" ? `🟢 ${L.mandiOpen}` : `🔴 ${L.mandiClosed}`}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -536,8 +547,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     const advice = c.sellingAdvice;
     const fav = isFav(c);
 
-    const calculatedExtraEarnings = advice ? advice.extraProfit50Qtl * (harvestQuantity / 50) : 0;
-
     return (
       <div className="fixed inset-0 z-[60]">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedCrop(null)} />
@@ -584,8 +593,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-[11px] opacity-80 block">{L.dailyArrival}</span>
-                <span className="text-sm font-extrabold text-white">{c.arrivalQuantity} {L.quintalUnit}</span>
+                <span className="text-[11px] opacity-80 block">{L.arrivalLabel}</span>
+                <span className="text-sm font-extrabold text-white">{c.arrivalDate || L.nullRange}</span>
               </div>
             </div>
           </div>
@@ -617,36 +626,6 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               </div>
             )}
 
-            {/* Interactive Harvest Extra Earnings Calculator */}
-            {advice && (
-              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
-                    <Calculator size={15} className="text-emerald-600" /> {L.yieldBenefitTitle}
-                  </span>
-                  <span className="text-xs font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-lg">
-                    +{formatINR(calculatedExtraEarnings)} {L.yieldBenefitLabel}
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] text-muted-foreground font-semibold flex justify-between">
-                    <span>{L.yieldQtyLabel}</span>
-                    <b className="text-foreground">{harvestQuantity} {L.quintalUnit}</b>
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="200"
-                    step="5"
-                    value={harvestQuantity}
-                    onChange={(e) => setHarvestQuantity(Number(e.target.value))}
-                    className="w-full accent-emerald-600 cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Price Details */}
             <div className="flex items-end justify-between border-t border-border pt-4">
               <div>
@@ -657,8 +636,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               <div className="flex flex-col items-end gap-1.5">
                 {changeBadge(c)}
                 <div className="flex gap-3 text-[10px] text-muted-foreground font-medium">
-                  <span>{L.min}: <b className="text-foreground">{formatINR(c.minPrice)}</b></span>
-                  <span>{L.max}: <b className="text-foreground">{formatINR(c.maxPrice)}</b></span>
+                  <span>{L.min}: <b className="text-foreground">{fmtRange(c.minPrice)}</b></span>
+                  <span>{L.max}: <b className="text-foreground">{fmtRange(c.maxPrice)}</b></span>
                 </div>
               </div>
             </div>
@@ -681,7 +660,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   return (
     <div className="pb-28 pt-4 px-4 space-y-4 max-w-5xl mx-auto">
       {/* Offline Cache Timestamp Banner */}
-      {isCachedData && cachedAtText && (
+      {isCachedData && cachedAtText && typeof navigator !== 'undefined' && !navigator.onLine && (
         <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs font-bold animate-fade-in shadow-sm">
           <span className="flex items-center gap-2">
             <WifiOff size={15} className="shrink-0" />
@@ -695,14 +674,24 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2 tracking-tight">
             <TrendingUp className="text-emerald-700 dark:text-emerald-400" size={22} /> {L.title}
-            <span className="flex items-center gap-1 text-[9px] font-black tracking-widest text-white bg-emerald-600 rounded-md px-1.5 py-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-live-dot" /> {L.live}
+            <span className={cn(
+              "flex items-center gap-1 text-[9px] font-black tracking-widest text-white rounded-md px-1.5 py-0.5",
+              error ? "bg-rose-600" : isCachedData ? "bg-amber-500" : "bg-emerald-600"
+            )}>
+              <span className={cn("w-1.5 h-1.5 rounded-full bg-white", !error && !isCachedData && "animate-live-dot")} />
+              {error ? (hi ? "ऑफ़लाइन" : "OFFLINE") : isCachedData ? (hi ? "कैश्ड" : "CACHED") : refreshing ? "SYNC…" : (hi ? "लाइव मंडी" : "LIVE APMC")}
             </span>
           </h2>
           <p className="text-sm text-muted-foreground">{L.subtitle}</p>
+          {lastUpdated && !error && (
+            <p className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
+              <Clock size={11} className="text-emerald-600" />
+              {L.updated}: {lastUpdated.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · AGMARKNET
+            </p>
+          )}
         </div>
 
         <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label={t("mandi.hub.ariaRefresh")}>

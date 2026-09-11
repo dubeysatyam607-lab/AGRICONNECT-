@@ -15,7 +15,7 @@ import type {
   AiPrompt,
   PushCampaign,
   WeatherStation,
-  MandiPrice,
+  MandiEntry,
   ReportItem,
   VerificationRequest,
   KycRecord,
@@ -486,7 +486,7 @@ export async function fetchRealWeather(): Promise<WeatherStation[]> {
 
 /* ── Real Mandi Prices ──────────────────────────────────────────────────── */
 
-export async function fetchRealMandiPrices(): Promise<MandiPrice[]> {
+export async function fetchRealMandiPrices(): Promise<MandiEntry[]> {
   return [];
 }
 
