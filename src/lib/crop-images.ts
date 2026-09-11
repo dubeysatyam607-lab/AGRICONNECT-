@@ -244,7 +244,7 @@ export const CATEGORY_CROP_IMAGES: Record<string, string> = {
   fruits: "https://images.pexels.com/photos/28939331/pexels-photo-28939331.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   spices: "https://images.pexels.com/photos/8217944/pexels-photo-8217944.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   commercial: "https://images.pexels.com/photos/5640079/pexels-photo-5640079.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  default: "https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  default: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
 
 export function getCropCategory(cropName?: string): string {

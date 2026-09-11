@@ -58,7 +58,38 @@ serve(async (req: Request) => {
     }
 
     const data = await pexelsRes.json();
-    return new Response(JSON.stringify({ photos: data.photos || [] }), {
+    const photos = (data.photos || []).map((p: { id?: number; src?: Record<string, string>; alt?: string | null; photographer?: string | null }) => ({
+      id: p?.id ?? 0,
+      alt: p?.alt ?? "",
+      photographer: p?.photographer ?? "",
+      src: {
+        original: p?.src?.original ?? "",
+        large2x: p?.src?.large2x ?? "",
+        large: p?.src?.large ?? "",
+        medium: p?.src?.medium ?? "",
+        small: p?.src?.small ?? "",
+        portrait: p?.src?.portrait ?? "",
+        landscape: p?.src?.landscape ?? "",
+        tiny: p?.src?.tiny ?? "",
+      },
+    }));
+
+    const validPhotos: typeof photos = [];
+    for (const photo of photos) {
+      const probeUrl = photo.src.medium || photo.src.large || photo.src.original;
+      if (!probeUrl) continue;
+      try {
+        const probe = await fetch(probeUrl, { method: "HEAD" });
+        if (!probe.ok) continue;
+        const contentType = probe.headers.get("content-type") || "";
+        if (!contentType.startsWith("image/")) continue;
+        validPhotos.push(photo);
+      } catch {
+        // skip unverifiable
+      }
+    }
+
+    return new Response(JSON.stringify({ photos: validPhotos }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
