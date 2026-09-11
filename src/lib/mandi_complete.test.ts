@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   searchMandiDataset,
-  getBaselineMandiPrices,
   fetchMandiPrices,
   type MandiPrice,
 } from "./mandi-api";
@@ -117,10 +116,9 @@ describe("Mandi Complete Crop Coverage & Search", () => {
     expect(all.length).toBe(samplePrices.length);
   });
 
-  it("returns baseline APMC benchmarks when offline or API reconnects", () => {
-    const baseline = getBaselineMandiPrices();
-    expect(baseline.length).toBeGreaterThan(20);
-    expect(baseline.every((b) => b.price > 0)).toBe(true);
+  it("returns real empty array when no data exists rather than invented data", () => {
+    const empty = searchMandiDataset([], "Wheat");
+    expect(empty.length).toBe(0);
   });
 
   it("maps categories accurately across agricultural produce", () => {
