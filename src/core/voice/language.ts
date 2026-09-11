@@ -73,19 +73,28 @@ export function detectLanguageOf(text: string): DetectResult {
 
   const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
 
-  // 1. Devanagari Hindi or other Indian Indic scripts
+  // 1. Devanagari Hindi, Marathi or other Indian Indic scripts
   if (best && best[0] !== 'latin') {
     const range = SCRIPT_RANGES.find((r) => r.script === best[0]);
     if (range) {
+      // Disambiguate Devanagari (Hindi vs Marathi)
+      if (range.script === 'devanagari') {
+        const marathiChars = text.match(/[\u0933]/g); // ळ (unique to Marathi/Vedic)
+        const marathiWords = /(^|\s|[.,!?;])(आहे|आहेत|नाही|काय|कसे|कशी|करावे|शेती|शेतकरी|पिकाला|पिकाची|पिकावर|भाजीपाला|खत|पाणी|हवे|पाहिजे|कधी|कशा|झाले|झाली|येईल|द्यावे|लागवड|हळद|कांदा|ऊस|कपाशी|तूर|हरभरा|सोयाबीनचे|रोगाचे|औषध|फवारणी|तणनाशक|जमीन|उपाय|माहिती|दर|भाव|बाजारभाव)($|\s|[.,!?;])/i;
+        if (marathiChars || marathiWords.test(text)) {
+          return { lang: 'mr', script: 'devanagari' };
+        }
+        return { lang: 'hi', script: 'devanagari' };
+      }
+
       // Disambiguate Bengali vs Assamese (shared Unicode block 0x0980-0x09FF)
       if (range.lang === 'bn') {
         const assameseChars = text.match(/[ৰৱ]/g);
-        // Bengali-specific chars incl. vowel signs (combining marks) — intentional
-        // eslint-disable-next-line no-misleading-character-class
-        const bengaliOnlyChars = text.match(/[\u09E7\u0982\u0983\u0981\u09BC\u09BE\u09BF\u09C0\u09C1\u09C2\u09C3\u09C7\u09C8\u09CB\u09CC]/g);
-        if (assameseChars && assameseChars.length > 0 && (!bengaliOnlyChars || assameseChars.length >= bengaliOnlyChars.length)) {
+        const assameseWords = /(^|\s|[.,!?;])(হৈছে|মই|মোৰ|কৰক|আছে|আঁচনি|খেতিত|কৃষক|নমস্কাৰ|দৰ|বতৰ)($|\s|[.,!?;])/i;
+        if ((assameseChars && assameseChars.length > 0) || assameseWords.test(text)) {
           return { lang: 'as', script: 'bengali' };
         }
+        return { lang: 'bn', script: 'bengali' };
       }
       return { lang: range.lang, script: range.script };
     }

@@ -7,7 +7,7 @@ import {
 import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, LANGUAGE_NAMES, type Language } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFarm } from "@/contexts/FarmContext";
 import { useLocation } from "@/features/location/LocationContext";
@@ -165,7 +165,7 @@ interface KisanChatProps {
 }
 
 const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLanguage }) => {
-  const { languageName, t } = useLanguage();
+  const { language, setLanguage, languageName, t } = useLanguage();
   const selectedLanguage = languageName || propLanguage || "Hindi (हिंदी)";
   const greeting = t('chat.greeting');
   const isHindi = selectedLanguage.includes("Hindi");
@@ -1307,7 +1307,26 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Language Selector for all 12 languages */}
+          <select
+            value={language}
+            onChange={(e) => {
+              const newLang = e.target.value as Language;
+              setLanguage(newLang);
+              setSttLang(getSttLangCode(newLang));
+            }}
+            className="text-[11px] font-bold bg-background text-foreground border border-emerald-300 dark:border-emerald-700 rounded-xl px-2 py-1.5 outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs max-w-[110px] sm:max-w-[130px] truncate"
+            title="Change Chat Language"
+            aria-label="Select Language"
+          >
+            {Object.entries(LANGUAGE_NAMES).map(([code, name]) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+
           <button
             onClick={handleNewSession}
             className="p-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 active:scale-95 rounded-xl transition-all border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 text-xs font-bold shadow-xs"
@@ -1485,9 +1504,25 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                             {isSpeaking && isLast ? t('chat.stopSpeakingBtn') : t('chat.listenBtn')}
                           </button>
                           {msg.source === "local" && (
-                            <span className="flex items-center gap-1 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
-                              ⚡ {t('chat.badgeSmartOffline')}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="flex items-center gap-1 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
+                                ⚡ {t('chat.badgeSmartOffline')}
+                              </span>
+                              {isLast && !isLoading && (
+                                <button
+                                  onClick={() => {
+                                    const lastUserMsg = [...chatHistory].reverse().find(m => m.role === 'user');
+                                    if (lastUserMsg?.content) {
+                                      handleSend(lastUserMsg.content);
+                                    }
+                                  }}
+                                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 border border-emerald-500/30 rounded-full px-2 py-0.5 normal-case transition-all active:scale-95"
+                                  title="Retry querying online Kisan AI"
+                                >
+                                  🔄 Retry AI
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
