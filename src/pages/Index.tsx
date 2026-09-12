@@ -62,6 +62,9 @@ const FarmerNetworkHub = lazy(() =>
 const FarmOsHub = lazy(() =>
   import("@/features/farm-os/presentation/FarmOsHub").then((m) => ({ default: m.FarmOsHub })),
 );
+const AgriMarketplaceHub = lazy(() =>
+  import("@/features/marketplace/presentation/AgriMarketplaceHub").then((m) => ({ default: m.AgriMarketplaceHub })),
+);
 const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
 
 // ── Per-tab SEO Metadata (dynamic title/description for SPA sections) ──
@@ -248,6 +251,12 @@ const TAB_SEO_META: Record<string, { title: string; description: string; path: s
     path: '/farm-os',
     noindex: true,
   },
+  marketplace: {
+    title: 'AgriConnect Marketplace — Buy, Sell & Rent Farm Equipment, Cattle & Produce',
+    description: 'Verified farmer-to-farmer marketplace. Rent tractors, harvesters, seeders, buy/sell cattle, hire farm labour, and trade organic crops directly with zero commission.',
+    path: '/marketplace',
+    noindex: true,
+  },
 };
 
 const DEFAULT_TAB_META = TAB_SEO_META.home;
@@ -260,6 +269,7 @@ const IndexInner: React.FC = () => {
   const getTabFromPath = (path: string) => {
     switch (path) {
       case "/dashboard": return "home";
+      case "/marketplace": return "marketplace";
       case "/market":
       case "/agri-store":
       case "/store": return "store";
@@ -500,6 +510,8 @@ const IndexInner: React.FC = () => {
         return <FarmerNetworkHub onNavigate={handleNavigate} onToast={showToast} />;
       case "farm-os":
         return <FarmOsHub onNavigate={handleNavigate} onToast={showToast} />;
+      case "marketplace":
+        return <AgriMarketplaceHub onNavigate={handleNavigate} onToast={showToast} />;
       case "admin":
         return <AdminDashboard />;
       case "settings":

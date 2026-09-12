@@ -188,12 +188,13 @@ export function useWeatherViewModel(repository?: IWeatherRepository): WeatherVie
     } else {
       // No coordinates available (denied GPS, no saved/farm location).
       // NEVER silently fetch a default city — ask the user instead.
+      // Clear the explicit error string so the UI falls back to the friendly "Set your location" CTA.
       setState(prev => ({
         ...prev,
         data: null,
         loading: false,
         refreshing: false,
-        error: error || 'Location required. Please allow location access or choose your location manually.',
+        error: null,
       }));
     }
   }, [location, fetchWeatherForCoords]);

@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Camera, X, Loader } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { AgriButton } from '@/components/ui/agri-button';
+import { SafeImage } from '@/components/ui/SafeImage';
 import { dialogService } from '@/core/services/DialogService';
 
 interface ImageUploadProps {
@@ -71,13 +72,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ value, onChange, onError, buc
 
       {value ? (
         <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
-          <img
+          <SafeImage
             src={value}
             alt="Uploaded image preview"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.style.display = 'none';
-            }}
+            resolveType="general"
             className="w-full h-full object-cover"
           />
           <button

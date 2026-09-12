@@ -99,6 +99,22 @@ export class WeatherRemoteDataSource {
     }
   }
 
+  /**
+   * Safely parses an ISO date string (YYYY-MM-DD or YYYY-MM-DDTHH:mm) into a local Date object.
+   * Fixes Safari RangeError bugs and off-by-one day bugs caused by UTC parsing.
+   */
+  public static parseIsoDate(t: string): Date {
+    if (!t) return new Date();
+    if (t.length === 10) {
+      const [y, m, d] = t.split('-');
+      return new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    }
+    // Convert YYYY-MM-DDTHH:mm to YYYY/MM/DD HH:mm for Safari compatibility
+    const safeT = t.replace(/-/g, '/').replace('T', ' ');
+    const d = new Date(safeT);
+    return isNaN(d.getTime()) ? new Date() : d;
+  }
+
   /** Returns an agricultural advisory based on verified condition and rain probability. */
   public static dailyAdvisory(cond: WeatherConditionType, rainProb: number, tempMax?: number, windSpeed?: number): string {
     if (rainProb >= 60) return 'Heavy rain likely. Postpone all pesticide/fertilizer spraying and check field drainage.';
@@ -168,9 +184,9 @@ export class WeatherRemoteDataSource {
           time: i === 0
             ? 'Now'
             : typeof h.time === 'string' && h.time.length > 5
-              ? new Date(h.time).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true })
+              ? WeatherRemoteDataSource.parseIsoDate(h.time).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true })
               : h.time || 'Now',
-          timestamp: h.timestamp || (h.time ? new Date(h.time).getTime() : Date.now() + i * 3600000),
+          timestamp: h.timestamp || (h.time ? WeatherRemoteDataSource.parseIsoDate(h.time).getTime() : Date.now() + i * 3600000),
           temp: typeof h.temp === 'number' && !isNaN(h.temp) ? Math.round(h.temp) : live.temp,
           condition: WeatherRemoteDataSource.conditionOf(h.condition || 'Clear'),
           rainProbability: Math.round(h.rainProbability ?? 0),
@@ -185,8 +201,8 @@ export class WeatherRemoteDataSource {
           const tMin = typeof d.minTemp === 'number' ? Math.round(d.minTemp) : typeof d.tempMin === 'number' ? Math.round(d.tempMin) : Math.round(live.temp);
           const tMax = typeof d.maxTemp === 'number' ? Math.round(d.maxTemp) : typeof d.tempMax === 'number' ? Math.round(d.tempMax) : Math.round(live.temp);
           return {
-            dayName: idx === 0 ? 'Today' : d.dayName || new Date(d.date).toLocaleDateString('en-IN', { weekday: 'short' }),
-            date: d.date ? new Date(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
+            dayName: idx === 0 ? 'Today' : d.dayName || WeatherRemoteDataSource.parseIsoDate(d.date).toLocaleDateString('en-IN', { weekday: 'short' }),
+            date: d.date ? WeatherRemoteDataSource.parseIsoDate(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
             condition: dayCond,
             minTemp: tMin,
             maxTemp: tMax,
@@ -333,8 +349,8 @@ export class WeatherRemoteDataSource {
       const hRain = typeof hourlyRaw.precipitation_probability?.[i] === 'number' ? hourlyRaw.precipitation_probability[i] : 0;
       const hWind = typeof hourlyRaw.wind_speed_10m?.[i] === 'number' ? hourlyRaw.wind_speed_10m[i] : 0;
       return {
-        time: i === 0 ? 'Now' : new Date(t).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true }),
-        timestamp: new Date(t).getTime() || Date.now() + i * 3600000,
+        time: i === 0 ? 'Now' : WeatherRemoteDataSource.parseIsoDate(t).toLocaleTimeString('en-IN', { hour: 'numeric', hour12: true }),
+        timestamp: WeatherRemoteDataSource.parseIsoDate(t).getTime() || Date.now() + i * 3600000,
         temp: Math.round(hTemp),
         condition: WeatherRemoteDataSource.conditionOf(WeatherRemoteDataSource.wmoToLabel(hCode)),
         rainProbability: Math.round(hRain),
@@ -353,8 +369,8 @@ export class WeatherRemoteDataSource {
       const humidMean = Math.round(dailyRaw.relative_humidity_2m_mean?.[i] ?? curHumidity);
 
       return {
-        dayName: i === 0 ? 'Today' : new Date(t).toLocaleDateString('en-IN', { weekday: 'short' }),
-        date: t ? new Date(t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
+        dayName: i === 0 ? 'Today' : WeatherRemoteDataSource.parseIsoDate(t).toLocaleDateString('en-IN', { weekday: 'short' }),
+        date: t ? WeatherRemoteDataSource.parseIsoDate(t).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '',
         condition: cond,
         minTemp: minT,
         maxTemp: maxT,

@@ -28,7 +28,8 @@ export function isOriginAllowed(origin: string | null, allowed: string[]): boole
   if (!origin) return false;
   return allowed.some((o) => {
     if (o.includes("*")) {
-      return origin.startsWith(o.replace(/\*/g, ""));
+      const regexStr = "^" + o.replace(/[.+?^${}()|[\\]\\\\]/g, '\\\\$&').replace(/\\*/g, '.*') + "$";
+      return new RegExp(regexStr).test(origin);
     }
     return o === origin;
   });

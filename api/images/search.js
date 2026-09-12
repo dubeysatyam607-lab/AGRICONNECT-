@@ -81,7 +81,11 @@ function buildSearchQuery(query, type) {
 export default async function handler(req, res) {
   // CORS headers
   const origin = req.headers.origin || "";
-  res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000", "https://agriconnect-navy-six.vercel.app"];
+  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || /^https:\\/\\/agriconnect-navy-six-[a-zA-Z0-9-]+\\.vercel\\.app$/.test(origin));
+  if (isAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Max-Age", "86400");

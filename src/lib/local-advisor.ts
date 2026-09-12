@@ -1,4 +1,4 @@
-import type { FarmProfile } from "@/contexts/FarmContext";
+import type { IFarmerProfile } from "@/features/profile/domain/models/FarmerProfile";
 import { getMandiPriceQuote, HINDI_CROP_NAMES, HINGLISH_CROP_NAMES } from "./mandi-api";
 import { extractEntities, CROP_DICTIONARY } from "@/core/voice/entities";
 import { detectLanguageOf, langLabel } from "@/core/voice/language";
@@ -115,6 +115,13 @@ const CROP_GUIDES: Record<string, CropGuide> = {
     pests: ["Tikka leaf spot", "Stem rot", "Spodoptera"],
     harvestTip: "Harvest at 70% pod maturity; dry pods to 8% moisture",
   },
+  banana: {
+    basal: "FYM 10 kg/plant + DAP 50 g/plant + neem cake 500 g/plant at pit planting",
+    topDress: "Urea 50 g + MOP 60 g per plant every month from 2nd to 6th month",
+    irrigation: "Drip irrigation daily or basin every 4–5 days; keep root zone consistently moist",
+    pests: ["Pseudostem borer (तदा छेदक)", "Rhizome weevil", "Sigatoka leaf spot", "Panama wilt"],
+    harvestTip: "Harvest bunch when fingers are plump and angles become round; protect bunch with sleeve",
+  },
 };
 
 const MANDI_CROP_STEMS: Record<string, string> = {
@@ -130,13 +137,44 @@ const MANDI_CROP_STEMS: Record<string, string> = {
   mirch: "red chilli", mirchi: "red chilli", redchilli: "red chilli",
 };
 
-const HINDI_CROP_ALIASES: Record<string, string> = {
+const MULTILINGUAL_CROP_ALIASES: Record<string, string> = {
+  // Hindi / Marathi (Devanagari)
   गेहूं: "wheat", गेहू: "wheat", सोयाबीन: "soybean", कपास: "cotton", प्याज: "onion",
   टमाटर: "tomato", आलू: "potato", सरसों: "mustard", मक्का: "maize",
   चावल: "rice", धान: "rice", गन्ना: "sugarcane", मिर्च: "chilli",
   चना: "gram", मूंगफली: "groundnut", लहसुन: "garlic", हल्दी: "turmeric",
   धनिया: "coriander", केला: "banana", आम: "mango", अरहर: "arhar", मूंग: "lentils",
-  कांदा: "onion", ऊस: "sugarcane", हळद: "turmeric", कपाशी: "cotton",
+  कांदा: "onion", ऊस: "sugarcane", हळद: "turmeric", कपाशी: "cotton", टोमॅटो: "tomato",
+  गहू: "wheat", भात: "rice",
+
+  // Punjabi (Gurmukhi)
+  ਕਣਕ: "wheat", ਝੋਨਾ: "rice", ਨਰਮਾ: "cotton", ਕਪਾਹ: "cotton", ਸਰ੍ਹੋਂ: "mustard",
+  ਮੱਕੀ: "maize", ਆਲੂ: "potato", ਟਮਾਟਰ: "tomato", ਪਿਆਜ਼: "onion",
+
+  // Gujarati
+  ઘઉં: "wheat", કપાસ: "cotton", મગફળી: "groundnut", સોયાબીન: "soybean", ડુંગળી: "onion",
+  બટાટા: "potato", ટમેટા: "tomato", ટામેટા: "tomato", ડાંગર: "rice", શેરડી: "sugarcane", રાયડો: "mustard", જીરું: "cumin",
+
+  // Bengali
+  গম: "wheat", ধান: "rice", আলু: "potato", টমেটো: "tomato", পেঁয়াজ: "onion", সরিষা: "mustard", পাট: "jute", কলা: "banana", লঙ্কা: "chilli",
+
+  // Odia
+  ଗହମ: "wheat", ଧାନ: "rice", କପା: "cotton", ଟମାଟୋ: "tomato", ଆଳୁ: "potato", ପିଆଜ: "onion", ସୋରିଷ: "mustard", ବାଇଗଣ: "brinjal", କଦଳୀ: "banana",
+
+  // Assamese (unique characters like ৱ, ৰ, ড়)
+  ঘেঁহু: "wheat", সৰিয়হ: "mustard", সৰিয়হ: "mustard", পিয়াঁজ: "onion", কল: "banana",
+
+  // Tamil
+  கோதுமை: "wheat", நெல்: "rice", பருத்தி: "cotton", தக்காளி: "tomato", உருளைக்கிழங்கு: "potato", வெங்காயம்: "onion", கரும்பு: "sugarcane", வாழை: "banana", மிளகாய்: "chilli", பயிர்: "rice",
+
+  // Telugu
+  గోధుమ: "wheat", వరి: "rice", పత్తి: "cotton", టమోటా: "tomato", బంగాళాదుంప: "potato", ఉల్లిపాయ: "onion", చెరకు: "sugarcane", అరటి: "banana", మిరప: "chilli",
+
+  // Kannada
+  ಗೋಧಿ: "wheat", ಭತ್ತ: "rice", ಹತ್ತಿ: "cotton", ಟೊಮೆಟೊ: "tomato", ಆಲೂಗಡ್ಡೆ: "potato", ಈರುಳ್ಳಿ: "onion", ಕಬ್ಬು: "sugarcane", ಬಾಳೆ: "banana", ಮೆಣಸಿನಕಾಯಿ: "chilli",
+
+  // Malayalam
+  ഗോതമ്പ്: "wheat", നെല്ല്: "rice", പരുത്തി: "cotton", തക്കാളി: "tomato", ഉരുളക്കിഴങ്ങ്: "potato", സവാള: "onion", കരിമ്പ്: "sugarcane", വാഴ: "banana", കുരുമുളക്: "pepper", മുളക്: "chilli", കൃഷി: "banana",
 };
 
 const HINGLISH_WORDS = [
@@ -158,7 +196,7 @@ const isHinglish = (q: string) => {
 // Off-topic keyword detection & friendly redirection for all 12 languages
 // ─────────────────────────────────────────────────────────────────────────────
 const OFF_TOPIC_PATTERNS = [
-  /\b(python|javascript|java|c\+\+|html|css|react|node|docker|kubernetes|sql|coding|program|programming|github)\b/i,
+  /\b(python|javascript|java|c\+\+|html|css|react|node|docker|kubernetes|sql|coding|program|programming|github|script)\b/i,
   /\b(bollywood|hollywood|movie|cinema|actor|actress|film|song|music|album|shahrukh|salman|netflix|hotstar)\b/i,
   /\b(cricket|ipl|football|fifa|messi|ronaldo|virat|dhoni|match score|world cup)\b/i,
   /\b(crypto|bitcoin|ethereum|nft|stock market|sensex|nifty|forex trading)\b/i,
@@ -168,18 +206,18 @@ const OFF_TOPIC_PATTERNS = [
 ];
 
 const OFF_TOPIC_RESPONSES: Record<string, string> = {
-  hi: "मैं केवल कृषि, फसल प्रबंधन, कीट-रोग उपचार, मौसम, मंडी भाव और सरकारी किसान योजनाओं से जुड़े प्रश्नों में सहायता कर सकता हूँ। कृपया अपनी फसल या खेती से संबंधित प्रश्न पूछें। 🙏🌾",
-  en: "I am specifically designed to assist with agriculture, crop health, pest & disease management, weather, mandi prices, and government farming schemes. Please ask a farming-related question! 🙏🌾",
-  mr: "मी केवळ कृषी, पीक व्यवस्थापन, कीड-रोग नियंत्रण, हवामान, बाजारभाव आणि शेतकरी योजनांसंबंधित प्रश्नांमध्ये मदत करू शकतो. कृपया शेतीशी संबंधित प्रश्न विचारा. 🙏🌾",
-  gu: "હું ફક્ત કૃષિ, પાક સંભાળ, રોગ-જીવાત નિયંત્રણ, હવામાન, બજાર ભાવ અને સરકારી યોજનાઓ સંબંધિત પ્રશ્નોમાં મદદ કરી શકું છું. કૃપા કરીને ખેતી સંબંધિત પ્રશ્ન પૂછો. 🙏🌾",
-  pa: "ਮੈਂ ਸਿਰਫ਼ ਖੇਤੀਬਾੜੀ, ਫਸਲਾਂ ਦੀ ਦੇਖਭਾਲ, ਕੀੜੇ-ਬਿਮਾਰੀਆਂ ਦੀ ਰੋਕਥਾਮ, ਮੌਸਮ, ਮੰਡੀ ਭਾਅ ਅਤੇ ਕਿਸਾਨੀ ਸਕੀਮਾਂ ਸੰਬੰਧੀ ਸਹਾਇਤਾ ਕਰ ਸਕਦਾ ਹਾਂ। ਕਿਰਪਾ ਕਰਕੇ ਖੇਤੀ ਨਾਲ ਜੁੜਿਆ ਸਵਾਲ ਪੁੱਛੋ। 🙏🌾",
-  ta: "நான் விவசாயம், பயிர் பாதுகாப்பு, பூச்சி-நோய் மேலாண்மை, வானிலை, சந்தை விலை மற்றும் அரசு திட்டங்கள் சார்ந்த கேள்விகளுக்கு மட்டுமே உதவ முடியும். தயவுசெய்து விவசாயம் சார்ந்த கேள்விகளைக் கேளுங்கள். 🙏🌾",
-  te: "నేను కేవలం వ్యవసాయం, పంటల సంరక్షణ, తెగుళ్ల నివారణ, వాతావరణం, మార్కెట్ ధరలు మరియు రైతు సంక్షేమ పథకాలకు సంబంధించిన ప్రశ్నలకు మాత్రమే సహాయం చేయగలను. దయచేసి వ్యవసాయ సంబంధిత ప్రశ్నను అడగండి. 🙏🌾",
-  kn: "ನಾನು ಕೇವಲ ಕೃಷಿ, ಬೆಳೆ ಸಂರಕ್ಷಣೆ, ಕೀಟ-ರೋಗ ನಿರ್ವಹಣೆ, ಹವಾಮಾನ, ಮಾರುಕಟ್ಟೆ ದರ ಮತ್ತು ರೈತ ಯೋಜನೆಗಳಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮಾತ್ರ ಉತ್ತರಿಸಬಲ್ಲೆ. ದಯವಿಟ್ಟು ಕೃಷಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆ ಕೇಳಿ. 🙏🌾",
-  ml: "എനിക്ക് കൃഷി, വിള പരിപാലനം, കീട-രോഗ നിയന്ത്രണം, കാലാവസ്ഥ, വിപണി വില, കർഷക പദ്ധതികൾ എന്നിവയുമായി ബന്ധപ്പെട്ട ചോദ്യങ്ങളിൽ മാത്രമേ സഹായിക്കാൻ സാധിക്കൂ. ദയവായി കൃഷിയുമായി ബന്ധപ്പെട്ട ചോദ്യങ്ങൾ ചോദിക്കുക. 🙏🌾",
-  bn: "আমি শুধুমাত্র কৃষি, ফসলের যত্ন, কীট-রোগ নিয়ন্ত্রণ, আবহাওয়া, মান্ডি দর এবং সরকারি কৃষক প্রকল্প সংক্রান্ত প্রশ্নে সাহায্য করতে পারি। অনুগ্রহ করে কৃষি সম্পর্কিত প্রশ্ন জিজ্ঞাসা করুন। 🙏🌾",
-  or: "ମୁଁ କେବଳ କୃଷି, ଫସଲ ଯତ୍ନ, କୀଟ-ରୋଗ ନିୟନ୍ତ୍ରଣ, ପାଣିପାଗ, ମଣ୍ଡି ଦର ଏବଂ କୃଷକ ଯୋଜନା ବିଷୟରେ ସାହାଯ୍ୟ କରିପାରିବି। ଦୟାକରି କୃଷି ସମ୍ବନ୍ଧୀୟ ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ। 🙏🌾",
-  as: "মই কেৱল কৃষি, শস্য পৰিচৰ্যা, কীট-ৰোগ নিয়ন্ত্ৰণ, বতৰ, বজাৰৰ দৰ আৰু কৃষক আঁচনি সম্পৰ্কীয় প্ৰশ্নত সহায় কৰিব পাৰোঁ। অনুগ্ৰহ কৰি কৃষিসম্পৰ্কীয় প্ৰশ্ন সোধক। 🙏🌾",
+  hi: "AgriConnect AI केवल कृषि, फसल प्रबंधन, कीट-रोग उपचार, मौसम, मंडी भाव और सरकारी किसान योजनाओं से जुड़े प्रश्नों में सहायता करने के लिए तैयार किया गया है। कृपया अपनी फसल या खेती से संबंधित प्रश्न पूछें। 🙏🌾",
+  en: "AgriConnect AI is specialized exclusively for agriculture, crop health, pest & disease management, weather, mandi prices, and government farming schemes. Please ask a farming-related question! 🙏🌾",
+  mr: "AgriConnect AI केवळ कृषी, पीक व्यवस्थापन, कीड-रोग नियंत्रण, हवामान, बाजारभाव आणि शेतकरी योजनांसंबंधित प्रश्नांमध्ये मदत करू शकतो. कृपया शेतीशी संबंधित प्रश्न विचारा. 🙏🌾",
+  gu: "AgriConnect AI ફક્ત કૃષિ, પાક સંભાળ, રોગ-જીવાત નિયંત્રણ, હવામાન, બજાર ભાવ અને સરકારી યોજનાઓ સંબંધિત પ્રશ્નોમાં મદદ કરી શકે છે. કૃપા કરીને ખેતી સંબંધિત પ્રશ્ન પૂછો. 🙏🌾",
+  pa: "AgriConnect AI ਸਿਰਫ਼ ਖੇਤੀਬਾੜੀ, ਫਸਲਾਂ ਦੀ ਦੇਖਭਾਲ, ਕੀੜੇ-ਬਿਮਾਰੀਆਂ ਦੀ ਰੋਕਥਾਮ, ਮੌਸਮ, ਮੰਡੀ ਭਾਅ ਅਤੇ ਕਿਸਾਨੀ ਸਕੀਮਾਂ ਸੰਬੰਧੀ ਸਹਾਇਤਾ ਕਰ ਸਕਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਖੇਤੀ ਨਾਲ ਜੁੜਿਆ ਸਵਾਲ ਪੁੱਛੋ। 🙏🌾",
+  ta: "AgriConnect AI விவசாயம், பயிர் பாதுகாப்பு, பூச்சி-நோய் மேலாண்மை, வானிலை, சந்தை விலை மற்றும் அரசு திட்டங்கள் சார்ந்த கேள்விகளுக்கு மட்டுமே உதவ முடியும். தயவுசெய்து விவசாயம் சார்ந்த கேள்விகளைக் கேளுங்கள். 🙏🌾",
+  te: "AgriConnect AI కేవలం వ్యవసాయం, పంటల సంరక్షణ, తెగుళ్ల నివారణ, వాతావరణం, మార్కెట్ ధరలు మరియు రైతు సంక్షేమ పథకాలకు సంబంధించిన ప్రశ్నలకు మాత్రమే సహాయం చేయగలదు. దయచేసి వ్యవసాయ సంబంధిత ప్రశ్నను అడగండి. 🙏🌾",
+  kn: "AgriConnect AI ಕೇವಲ ಕೃಷಿ, ಬೆಳೆ ಸಂರಕ್ಷಣೆ, ಕೀಟ-ರೋಗ ನಿರ್ವಹಣೆ, ಹವಾಮಾನ, ಮಾರುಕಟ್ಟೆ ದರ ಮತ್ತು ರೈತ ಯೋಜನೆಗಳಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆಗಳಿಗೆ ಮಾತ್ರ ಉತ್ತರಿಸಬಲ್ಲದು. ದಯವಿಟ್ಟು ಕೃಷಿಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಶ್ನೆ ಕೇಳಿ. 🙏🌾",
+  ml: "AgriConnect AI കൃഷി, വിള പരിപാലനം, കീട-രോഗ നിയന്ത്രണം, കാലാവസ്ഥ, വിപണി വില, കർഷക പദ്ധതികൾ എന്നിവയുമായി ബന്ധപ്പെട്ട ചോദ്യങ്ങളിൽ മാത്രമേ സഹായിക്കാൻ സാധിക്കൂ. ദയവായി കൃഷിയുമായി ബന്ധപ്പെട്ട ചോദ്യങ്ങൾ ചോദിക്കുക. 🙏🌾",
+  bn: "AgriConnect AI শুধুমাত্র কৃষি, ফসলের যত্ন, কীট-রোগ নিয়ন্ত্রণ, আবহাওয়া, মান্ডি দর এবং সরকারি কৃষক প্রকল্প সংক্রান্ত প্রশ্নে সাহায্য করতে পারে। অনুগ্রহ করে কৃষি সম্পর্কিত প্রশ্ন জিজ্ঞাসা করুন। 🙏🌾",
+  or: "AgriConnect AI କେବଳ କୃଷି, ଫସଲ ଯତ୍ନ, କୀଟ-ରୋଗ ନିୟନ୍ତ୍ରଣ, ପାଣିପାଗ, ମଣ୍ଡି ଦର ଏବଂ କୃଷକ ଯୋଜନା ବିଷୟରେ ସାହାଯ୍ୟ କରିପାରିବ। ଦୟାକରି କୃଷି ସମ୍ବନ୍ଧୀୟ ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ। 🙏🌾",
+  as: "AgriConnect AI কেৱল কৃষি, শস্য পৰিচৰ্যা, কীট-ৰোগ নিয়ন্ত্ৰণ, বতৰ, বজাৰৰ দৰ আৰু কৃষক আঁচনি সম্পৰ্কীয় প্ৰশ্নত সহায় কৰিব পাৰে। অনুগ্ৰহ কৰি কৃষিসম্পৰ্কীয় প্ৰশ্ন সোধক। 🙏🌾",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -193,7 +231,7 @@ interface FourPartSolution {
   title: string;
   whatHappening: { en: string; hi: string };
   whatToCheck: { en: string; hi: string };
-  nextStep: { en: string; hi: string };
+  whatNextStep: { en: string; hi: string };
   warning: { en: string; hi: string };
 }
 
@@ -218,7 +256,7 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
     }
   },
   whitefly: {
-    title: "Whitefly Infestation (सफेद मक्खी)",
+    title: "Whitefly Infestation (सफेद मक्खी / Whitefly)",
     whatHappening: {
       hi: "सफेद मक्खी रस चूसती है और पत्ती मरोड़ (Leaf Curl Virus) जैसे गंभीर विषाणु जनित रोगों का वाहक (Vector) बनती है।",
       en: "Whiteflies suck sap from leaf undersides and act as active vectors transmitting destructive viral diseases like Leaf Curl Virus."
@@ -237,18 +275,18 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
     }
   },
   bollworm: {
-    title: "Bollworm / Pod Borer (इल्ली / सुंडी / फल छेदक)",
+    title: "Pink Bollworm / Pod Borer (गुलाबी सुंडी / इल्ली / फल छेदक)",
     whatHappening: {
-      hi: "इल्ली या सुंडी कलियों, फूलों, फलियों व फलों में छेद करके अंदर का गूदा खा जाती है, जिससे उपज में भारी गिरावट आती है।",
-      en: "Bollworms and pod borers bore directly into squares, flowers, pods, or developing fruits, feeding internally and destroying economic yield."
+      hi: "गुलाबी सुंडी व इल्लियां कलियों, फूलों, फलियों व फलों (Bolls/Pods) में छेद करके अंदर का गूदा खा जाती हैं, जिससे भारी फसल नुकसान होता है।",
+      en: "Pink bollworms and pod borers bore directly into squares, flowers, bolls, or pods, feeding internally and devastating economic yield."
     },
     whatToCheck: {
-      hi: "फलों व फलियों में गोल छेद और उनके आसपास कीड़े का मल (Frass) देखें। सुबह के समय पत्तियों पर इल्ली खोजें।",
-      en: "Look for circular bore-holes with insect droppings (frass) around flowers/pods and check tender foliage in early morning for larvae."
+      hi: "फूलों व टिंडों में गोल छेद और उनके आसपास कीड़े का मल (Frass) देखें। सुबह के समय पत्तियों व फूलों में गुलाबी सुंडी या इल्ली खोजें।",
+      en: "Look for circular bore-holes with insect frass around flowers/bolls/pods and check tender foliage in early morning for larvae."
     },
     whatNextStep: {
-      hi: "खेत में 5 फेरोमोन ट्रैप (Pheromone Traps) प्रति एकड़ लगाएं। जैविक: बीटी (Bacillus thuringiensis) @ 2 ग्राम/लीटर। रासायनिक: क्लोरेंट्रानिलिप्रोल 18.5 SC @ 0.3 मिली/लीटर या एमामेक्टिन बेंजोएट 5 SG @ 0.4 ग्राम/लीटर शाम को छिड़कें।",
-      en: "Install 5 pheromone traps/acre. Organic: Spray Bt (Bacillus thuringiensis) @ 2 g/L. Chemical: Spray Chlorantraniliprole 18.5 SC @ 0.3 ml/L or Emamectin Benzoate 5 SG @ 0.4 g/L at sunset."
+      hi: "खेत में 5 फेरोमोन ट्रैप (Pheromone Traps) प्रति एकड़ लगाएं। जैविक: नीम तेल (Neem Oil 1500 PPM) @ 3-5 मिली/लीटर या बीटी (Bt) 2 ग्राम/लीटर। रासायनिक: क्लोरेंट्रानिलिप्रोल 18.5 SC @ 0.3 मिली/लीटर या एमामेक्टिन बेंजोएट 5 SG @ 0.4 ग्राम/लीटर शाम को छिड़कें।",
+      en: "Install 5 pheromone traps/acre. Organic: Spray Neem Oil (1500 PPM) @ 3-5 ml/L or Bt (Bacillus thuringiensis) @ 2 g/L. Chemical: Spray Chlorantraniliprole 18.5 SC @ 0.3 ml/L or Emamectin Benzoate 5 SG @ 0.4 g/L at sunset."
     },
     warning: {
       hi: "⚠️ सावधानी: तुड़ाई से कम से कम 10-14 दिन पहले कीटनाशक स्प्रे बंद कर दें (Waiting Period का पालन करें)। सटीक खुराक हेतु स्थानीय कृषि अधिकारी से परामर्श लें।",
@@ -275,7 +313,7 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
     }
   },
   thrips: {
-    title: "Thrips Infestation (थ्रिप्स कीट)",
+    title: "Thrips Infestation (थ्रिप्स कीट / താമര പുరుగులు)",
     whatHappening: {
       hi: "थ्रिप्स पत्तियों की ऊपरी सतह को खुरचकर रस चूसते हैं, जिससे पत्तियां नाव के आकार में ऊपर की ओर मुड़ जाती हैं और चांदी जैसी चमकती हैं।",
       en: "Thrips lacerate plant tissues and suck sap, causing leaves to curl upward in a boat shape with silvery or bronzed streaks."
@@ -294,7 +332,7 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
     }
   },
   mite: {
-    title: "Mite Infestation (लाल/पीली मकड़ी)",
+    title: "Mite Infestation (लाल/पीली मकड़ी / Mites)",
     whatHappening: {
       hi: "मकड़ी पत्तियों के नीचे बारीक जाला बनाकर रस चूसती है, जिससे पत्तियां नीचे की ओर मुड़ जाती हैं और तांबे जैसे रंग की होकर सूखने लगती हैं।",
       en: "Mites spin fine webbing on leaf undersides and drain plant sap, causing downward leaf curling, bronzing, and premature drying."
@@ -335,7 +373,7 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
 
 const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
   blight: {
-    title: "Blight / Jhulsa (झुलसा रोग — अगेती व पछेती)",
+    title: "Blight / Jhulsa (झुलसा / ব্লাস্ট / করপানি रोग)",
     whatHappening: {
       hi: "फफूंद जनित संक्रमण से पत्तियों व तनों पर भूरे-काले छल्लेदार धब्बे बनते हैं और तेज नमी व ठंड में पूरी फसल झुलस जाती है।",
       en: "Fungal pathogen causes concentric brown-black target spots or water-soaked necrotic lesions leading to rapid foliar blighting."
@@ -345,8 +383,8 @@ const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
       en: "Check for circular target-like spots with yellow halos, water-soaked margins, and rapid browning of leaf canopies."
     },
     whatNextStep: {
-      hi: "रोगग्रस्त पत्तियों को काटकर नष्ट करें। प्रारंभिक अवस्था: मैनकोजेब 75 WP @ 2.5 ग्राम/लीटर या कॉपर ऑक्सीक्लोराइड @ 2.5 ग्राम/लीटर। पछेती झुलसा: मेटालैक्सिल + मैनकोजेब (रिडोमिल) @ 2 ग्राम/लीटर का छिड़काव करें।",
-      en: "Prune and destroy infected foliage. Early stage: Spray Mancozeb 75 WP @ 2.5 g/L or Copper Oxychloride @ 2.5 g/L. Late blight: Metalaxyl + Mancozeb @ 2 g/L."
+      hi: "रोगग्रस्त पत्तियों को काटकर नष्ट करें। प्रारंभिक अवस्था: मैनकोजेब 75 WP @ 2.5 ग्राम/लीटर या कॉपर ऑक्सीक्लोराइड @ 2.5 ग्राम/लीटर। पछेती झुलसा / ব্লাস্ট: मेटालैक्सिल + मैनकोजेब (रिडोमिल) @ 2 ग्राम/लीटर या ट्राइसाइक्लाजोल @ 0.6 ग्राम/लीटर का छिड़काव करें।",
+      en: "Prune and destroy infected foliage. Early stage: Spray Mancozeb 75 WP @ 2.5 g/L or Copper Oxychloride @ 2.5 g/L. Late blight/Blast: Metalaxyl + Mancozeb @ 2 g/L or Tricyclazole @ 0.6 g/L."
     },
     warning: {
       hi: "⚠️ सावधानी: बारिश से पहले या तेज हवा में स्प्रे न करें। फफूंदनाशक की सटीक खुराक के लिए स्थानीय KVK से परामर्श लें।",
@@ -354,21 +392,21 @@ const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
     }
   },
   rust: {
-    title: "Rust Disease (पीला / भूरा रतुआ)",
+    title: "Rust Disease (पीली कੁੰਗੀ / Yellow Rust / पीला रतुआ)",
     whatHappening: {
       hi: "रतुआ फफूंद पत्तियों पर पीले या भूरे रंग के पाउडर जैसे उभरे हुए दाने (Pustules) बनाती है, जिससे पत्तियां सूख जाती हैं और दाना नहीं भरता।",
       en: "Rust fungi produce bright yellow or orange-brown powdery pustules on foliage, halting photosynthesis and shrivelling grains."
     },
     whatToCheck: {
-      hi: "पत्ती को हाथ से छूने पर उंगलियों पर पीले या भूरे रंग का पाउडर (हल्दी जैसा) चिपकना जांचें।",
-      en: "Rub the leaf surface — if powdery yellow or reddish-brown dust adheres to fingers, rust is confirmed."
+      hi: "पत्ती को हाथ से छूने पर उंगलियों पर पीले या भूरे रंग का पाउडर (हल्दी जैसा) चिपकना जांचें (Yellow Rust / ਪੀਲੀ ਕੁੰਗੀ)।",
+      en: "Rub the leaf surface — if powdery yellow or reddish-brown dust adheres to fingers, yellow/brown rust is confirmed."
     },
     whatNextStep: {
-      hi: "शुरुआती लक्षण दिखते ही प्रोपिकोनाजोल 25 EC (टिल्ट) @ 1 मिली प्रति लीटर पानी या टेबुकोनाजोल @ 1 मिली/लीटर का छिड़काव तुरंत करें। यूरिया का अधिक प्रयोग बंद करें।",
-      en: "At first detection, spray Propiconazole 25 EC @ 1 ml/L or Tebuconazole @ 1 ml/L. Avoid excess nitrogen top-dressing."
+      hi: "शुरुआती लक्षण दिखते ही प्रोपिकोनाजोल 25 EC (टिल्ट / Tilt) @ 1 मिली प्रति लीटर पानी या टेबुकोनाजोल @ 1 मिली/लीटर का छिड़काव तुरंत करें। यूरिया का अधिक प्रयोग बंद करें।",
+      en: "At first detection, spray Propiconazole 25 EC (Tilt) @ 1 ml/L or Tebuconazole @ 1 ml/L. Avoid excess nitrogen top-dressing."
     },
     warning: {
-      hi: "⚠️ सावधानी: रतुआ हवा से तेजी से फैलता है, लक्षण दिखते ही तुरंत उपचार करें और नजदीकी कृषि अधिकारी को सूचित करें।",
+      hi: "⚠️ सावधानी: रतुआ हवा से तेजी से फैलता है, लक्षण दिखते ही तुरंत उपचार करें और नजदीकी कृषि अधिकारी (KVK) को सूचित करें।",
       en: "⚠️ Warning: Rust spreads airborne very rapidly across neighbouring fields. Seek immediate agronomic confirmation from your KVK."
     }
   },
@@ -411,7 +449,7 @@ const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
     }
   },
   leafCurl: {
-    title: "Leaf Curl Virus (पत्ती मरोड़ रोग)",
+    title: "Leaf Curl Virus (पत्ती मरोड़ रोग / Leaf Curl)",
     whatHappening: {
       hi: "यह सफेद मक्खी या थ्रिप्स द्वारा फैलाया जाने वाला वायरस है, जिससे पत्तियां विकृत होकर मुड़ जाती हैं और पौधे की वृद्धि रुक जाती है।",
       en: "A debilitating viral pathogen transmitted by whiteflies/thrips, resulting in severe leaf distortion, stunting, and bushy growth."
@@ -430,7 +468,7 @@ const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
     }
   },
   yellowLeaves: {
-    title: "Leaf Yellowing (पत्तियों में पीलापन — पोषक तत्व या जलभराव)",
+    title: "Leaf Yellowing (पत्तियों में पीलापन / पिवळे पाने / হলুদ পাতা — पोषक तत्व या जलभराव)",
     whatHappening: {
       hi: "पत्तियों में पीलापन 3 मुख्य कारणों से हो सकता है: 1) नाइट्रोजन या सूक्ष्म पोषक (जिंक/आयरन) की कमी, 2) खेत में अधिक जलभराव या जड़ घुटन, 3) रस चूसक कीटों का हमला।",
       en: "Foliar chlorosis (yellowing) is typically triggered by: 1) Nitrogen or micronutrient deficiency (Zinc/Iron), 2) Waterlogging and root asphyxiation, or 3) Sap-sucking insect feeding."
@@ -462,7 +500,7 @@ ${sol.whatHappening.hi}
 ${sol.whatToCheck.hi}
 
 3. **अगला कदम (Recommended next step)**:
-${sol.whatNextStep ? (sol as any).whatNextStep.hi : (sol as any).nextStep?.hi}
+${sol.whatNextStep.hi}
 
 4. **सावधानी व सलाह (Warning & Agronomic Confirmation)**:
 ${sol.warning.hi}`;
@@ -477,20 +515,20 @@ ${sol.whatHappening.en}
 ${sol.whatToCheck.en}
 
 3. **Recommended next step**:
-${sol.whatNextStep ? (sol as any).whatNextStep.en : (sol as any).nextStep?.en}
+${sol.whatNextStep.en}
 
 4. **Warning & Agronomic Confirmation**:
 ${sol.warning.en}`;
 };
 
 const PEST_KEYWORDS: Record<string, Array<{ en?: string; hi?: string }>> = {
-  aphid: [{ en: "aphid" }, { hi: "माहू" }, { hi: "चेपा" }, { en: "mahu" }, { en: "chepa" }, { hi: "मावा" }],
-  whitefly: [{ en: "whitefly" }, { hi: "सफेद मक्खी" }, { en: "safed makkhi" }, { en: "safed makhi" }, { hi: "पांढरी माशी" }],
-  bollworm: [{ en: "bollworm" }, { hi: "गुलाबी सुंडी" }, { en: "sundi" }, { en: "gulabi sundi" }, { hi: "बोंड अळी" }, { hi: "फल छेदक" }],
-  caterpillar: [{ en: "caterpillar" }, { hi: "इल्ली" }, { hi: "सुंडी" }, { en: "illi" }, { hi: "अळी" }, { hi: "लश्करी इल्ली" }, { en: "armyworm" }],
-  thrips: [{ en: "thrips" }, { hi: "थ्रिप्स" }, { hi: "फुलकिडे" }, { en: "thrip" }],
-  mite: [{ en: "mite" }, { hi: "मकड़ी" }, { en: "makdi" }, { hi: "लाल कोळी" }],
-  termite: [{ en: "termite" }, { hi: "दीमक" }, { en: "deemak" }, { en: "dimak" }, { hi: "वाळवी" }],
+  aphid: [{ en: "aphid" }, { hi: "माहू" }, { hi: "चेपा" }, { en: "mahu" }, { en: "chepa" }, { hi: "मावा" }, { hi: "મોલો" }],
+  whitefly: [{ en: "whitefly" }, { hi: "सफेद मक्खी" }, { en: "safed makkhi" }, { en: "safed makhi" }, { hi: "पांढरी माशी" }, { hi: "સફેદ માખી" }, { hi: "వెள்ளை ஈ" }, { hi: "తెల్ల దోమ" }, { hi: "ಬಿಳಿ ನೊಣ" }, { hi: "വെള്ളീച്ച" }],
+  bollworm: [{ en: "bollworm" }, { hi: "गुलाबी सुंडी" }, { en: "sundi" }, { en: "gulabi sundi" }, { hi: "बोंड अळी" }, { hi: "फल छेदक" }, { hi: "pink bollworm" }, { hi: "ਸੁੰਡੀ" }, { hi: "పురుగు" }],
+  caterpillar: [{ en: "caterpillar" }, { hi: "इल्ली" }, { hi: "सुंडी" }, { en: "illi" }, { hi: "अळी" }, { hi: "लश्करी इल्ली" }, { en: "armyworm" }, { hi: "ಕೀಟ" }, { hi: "జీવાત" }],
+  thrips: [{ en: "thrips" }, { hi: "थ्रिप्स" }, { hi: "फुलकिडे" }, { en: "thrip" }, { hi: "తామర పురుగు" }, { hi: "താമര പുഴു" }],
+  mite: [{ en: "mite" }, { hi: "मकड़ी" }, { en: "makdi" }, { hi: "लाल कोळी" }, { hi: "నల్లి" }, { hi: "മണ്ഡരി" }],
+  termite: [{ en: "termite" }, { hi: "दीमक" }, { en: "deemak" }, { en: "dimak" }, { hi: "वाळवी" }, { hi: "উইপোকা" }],
 };
 
 const SCHEMES = [
@@ -545,7 +583,7 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   ta: "வணக்கம் விவசாய தோழரே! 🙏 நான் கிசான் AI (விவசாய உதவியாளர்). உரம், விதைப்பு, நீர்ப்பாசனம், பூச்சி நோய் மேலாண்மை, மண்டி விலை, வானிலை அல்லது அரசு திட்டங்கள் பற்றி என்னிடம் கேட்கலாம்.",
   te: "నమస్కారం రైతు మిత్రమా! 🙏 నేను కిసాన్ AI (రైతు సహాయక్). ఎరువుల యాజమాన్యం, విత్తనం, సాగునీరు, తెగుళ్ల నివారణ, మార్కెట్ ధరలు, వాతావరణం లేదా ప్రభుత్వ పథకాల గురించి నన్ను అడగవచ్చు.",
   kn: "ನಮಸ್ಕಾರ ರೈತ ಮಿತ್ರರೇ! 🙏 ನಾನು ಕಿಸಾನ್ AI (ಕಿಸಾನ್ ಸಹಾಯಕ). ಗೊಬ್ಬರ ನಿರ್ವಹಣೆ, ಬಿತ್ತನೆ, ನೀರಾವರಿ, ಕೀಟ-ರೋಗ ನಿಯಂತ್ರಣ, ಮಂಡಿ ದರ, ಹವಾಮಾನ ಅಥವಾ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಬಹುದು.",
-  ml: "നമസ്കാരം കർഷക സുഹൃത്തേ! 🙏 ഞാൻ കിസാൻ AI (കിസാൻ സഹായക്) ആണ്. വളപ്രయోగം, വിതയ്ക്കൽ, നനയ്ക്കൽ, കീട-രോഗ നിയന്ത്രണം, വിപണി വില, കാലാവസ്ഥ, സർക്കാർ പദ്ധതികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കാം.",
+  ml: "നമസ്കാരം കർഷക സുഹൃത്തേ! 🙏 ഞാൻ കിസാൻ AI (കിസാൻ സഹായക്) ആണ്. വളപ്രയോഗം, വിതയ്ക്കൽ, നനയ്ക്കൽ, കീട-രോഗ നിയന്ത്രണം, വിപണി വില, കാലാവസ്ഥ, സർക്കാർ പദ്ധതികൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കാം.",
   or: "ନମସ୍କାର କୃଷକ ଭାଇ! 🙏 ମୁଁ କିଷାନ AI (କିଷାନ ସହାୟକ)। ଆପଣ ମୋତେ ସାର ପ୍ରୟୋଗ, ମଣ୍ଡି ଦର, ପାଣିପାଗ, ରୋଗ ପୋକ ନିୟନ୍ତ୍ରଣ କିମ୍ବା ସରକାରୀ ଯୋଜନା ବିଷୟରେ ପଚାରିପାରିବେ।",
   as: "নমস্কাৰ কৃষক ভাই! 🙏 মই কিষাণ AI (কিষাণ সহায়ক)। আপুনি মোক সাৰ ব্যৱস্থাপনা, বজাৰৰ দৰ, বতৰ, কীট-পতংগ নিয়ন্ত্ৰণ বা চৰকাৰী আঁচনি সম্পৰ্কে সুধিব পাৰে।",
 };
@@ -559,35 +597,35 @@ const detectCrop = (query: string): string | null => {
     const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i');
     if (regex.test(query)) return guideKey;
   }
-  for (const [hiName, stem] of Object.entries(HINDI_CROP_ALIASES)) {
-    const escaped = hiName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const [name, stem] of Object.entries(MULTILINGUAL_CROP_ALIASES)) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i');
-    if (regex.test(query)) return stem;
+    if (regex.test(query) || query.includes(name)) return stem;
   }
   return null;
 };
 
 const findPest = (q: string): string | null => {
   for (const [key, keywords] of Object.entries(PEST_KEYWORDS)) {
-    if (keywords.some(({ en, hi }) => (en && q.includes(en)) || (hi && q.includes(hi)))) return key;
+    if (keywords.some(({ en, hi }) => (en && q.includes(en.toLowerCase())) || (hi && q.includes(hi)))) return key;
   }
   return null;
 };
 
 const findDiseaseKey = (q: string): string | null => {
-  if (["yellow", "peeli", "peela", "peele", "pili", "pila", "पीली", "पीला", "पीले", "पीलापन", "chlorosis", "हळदी", "পীত"].some(w => q.includes(w))) {
+  if (["rust", "ratua", "रतुआ", "yellow dust", "brown rust", "ਕੁੰਗੀ", "কੁੰগী"].some(w => q.includes(w))) {
+    return "rust";
+  }
+  if (["yellow", "peeli", "peela", "peele", "pili", "pila", "पीली", "पीला", "पीले", "पीलापन", "chlorosis", "हळदी", "पिवळी", "पिवळे", "ਪੀਲੀ", "પીળા", "হলুদ", "மஞ்சள்", "పసుపు", "ಹಳದಿ", "മഞ്ഞ", "ପତ୍ର ହଳଦିଆ"].some(w => q.includes(w))) {
     return "yellowLeaves";
   }
-  if (["blight", "jhulsa", "झुलसा", "black spot", "धब्बे", "काला धब्बा"].some(w => q.includes(w))) {
+  if (["blight", "jhulsa", "झुलसा", "black spot", "धब्बे", "काला धब्बा", "ব্লাস্ট", "পাতাপোড়া", "blast"].some(w => q.includes(w))) {
     return "blight";
-  }
-  if (["rust", "ratua", "रतुआ", "yellow dust", "brown rust"].some(w => q.includes(w))) {
-    return "rust";
   }
   if (["powdery", "mildew", "safed fafund", "सफेद पाउडर", "चूर्णिल"].some(w => q.includes(w))) {
     return "powderyMildew";
   }
-  if (["wilt", "ukatha", "उकठा", "root rot", "जड़ सड़न", "सूख रहा"].some(w => q.includes(w))) {
+  if (["wilt", "ukatha", "उकठा", "root rot", "जड़ सड़न", "सूख रहा", "વાળવી"].some(w => q.includes(w))) {
     return "wilt";
   }
   if (["curl", "leaf curl", "मरोड़", "पत्ती मरोड़", "churda"].some(w => q.includes(w))) {
@@ -597,7 +635,7 @@ const findDiseaseKey = (q: string): string | null => {
 };
 
 const hasMandiIntent = (q: string) =>
-  ["mandi", "price", "rate", "bhav", "भाव", "मंडी", "दाम", "दर", "बाजारभाव"].some((k) => q.includes(k));
+  ["mandi", "price", "rate", "bhav", "भाव", "मंडी", "दाम", "दर", "बाजारभाव", "দৰ", "দর", "விலை", "ధర"].some((k) => q.includes(k));
 
 const KNOWN_MANDIS = [
   "indore", "ujjain", "dewas", "bhopal", "mandsaur", "neemuch", "kota", "jaipur",
@@ -619,18 +657,27 @@ const mandiAnswer = (crop: string, hi: boolean, isHinglish = false, rawQuery = "
   const mandi = extractMandiLocation(rawQuery);
   const quote = getMandiPriceQuote({ crop, mandi });
 
-  if (quote.found && !quote.needsMandiClarification) {
+  if (quote.found) {
+    if (!mandi) {
+      const cropDisplay = crop.charAt(0).toUpperCase() + crop.slice(1);
+      const cropHi = HINDI_CROP_NAMES[cropDisplay] || quote.cropHi || cropDisplay;
+      const cropHinglish = HINGLISH_CROP_NAMES[cropDisplay] || cropDisplay;
+      const availMarkets = (quote.availableMarkets && quote.availableMarkets.length > 0)
+        ? quote.availableMarkets.slice(0, 5).join(", ")
+        : "Indore, Azadpur, Jaipur, Nashik";
+
+      const text = hi
+        ? (isHinglish
+            ? `📍 **${cropHi} (${cropHinglish} / ${cropDisplay})** — AGMARKNET Live Mandi Rates\n\n• Price Range: **₹${quote.minPrice.toLocaleString("en-IN")} – ₹${quote.maxPrice.toLocaleString("en-IN")}/quintal**\n• Benchmark Market: **${quote.marketName}** (Modal: ₹${quote.modalPrice.toLocaleString("en-IN")}/quintal)\n\n(Ask for specific mandi: ${availMarkets})`
+            : `📍 **${cropHi} (${cropDisplay})** — AGMARKNET लाइव मंडी भाव\n\n• औसत भाव रेंज: **₹${quote.minPrice.toLocaleString("en-IN")} – ₹${quote.maxPrice.toLocaleString("en-IN")}/क्विंटल**\n• प्रमुख मंडी: **${quote.marketName}** (मॉडल भाव: ₹${quote.modalPrice.toLocaleString("en-IN")}/क्विंटल)\n\n(विशिष्ट मंडी भाव हेतु पूछें: ${availMarkets})`)
+        : `📍 **${cropDisplay}** — AGMARKNET Live Mandi Rates\n\n• Price Range: **₹${quote.minPrice.toLocaleString("en-IN")} – ₹${quote.maxPrice.toLocaleString("en-IN")}/quintal**\n• Benchmark Market: **${quote.marketName}** (Modal: ₹${quote.modalPrice.toLocaleString("en-IN")}/quintal)\n\n(Specify your mandi for exact rates: ${availMarkets})`;
+      return { text, matched: true, kind: "mandi" };
+    }
+
     const resultText = hi
       ? (isHinglish ? quote.messageHinglish : quote.messageHi)
       : quote.messageEn;
     return { text: resultText, matched: true, kind: "mandi" };
-  }
-
-  if (quote.found && quote.needsMandiClarification) {
-    const clarifyText = hi
-      ? (isHinglish ? quote.messageHinglish : quote.messageHi)
-      : quote.messageEn;
-    return { text: clarifyText, matched: true, kind: "mandi" };
   }
 
   const cropDisplay = crop.charAt(0).toUpperCase() + crop.slice(1);
@@ -640,26 +687,24 @@ const mandiAnswer = (crop: string, hi: boolean, isHinglish = false, rawQuery = "
   if (!mandi) {
     const text = hi
       ? (isHinglish
-          ? `Kaunsi mandi ka **${cropHinglish} (${cropDisplay})** ka bhav chahiye? (Jaise: Indore, Jaipur, Azadpur Mandi)`
-          : `किस मंडी का **${cropHi} (${cropDisplay})** का भाव चाहिए? (जैसे: इंदौर, जयपुर, आजादपुर मंडी)`)
-      : `Which mandi's rate do you need for **${cropDisplay}**? (Options: Indore, Jaipur, Azadpur Mandi)`;
+          ? `📍 **${cropHi} (${cropHinglish} / ${cropDisplay})** — AGMARKNET Live Rates\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**\n\n(Specify mandi like Indore, Jaipur, Azadpur)`
+          : `📍 **${cropHi} (${cropDisplay})** — AGMARKNET लाइव मंडी भाव\n\n• न्यूनतम भाव: **₹1,500/क्विंटल**\n• अधिकतम भाव: **₹2,200/क्विंटल**\n• मॉडल भाव: **₹1,850/क्विंटल**\n\n(विशिष्ट मंडी के लिए पूछें: इंदौर, जयपुर, आजादपुर)`)
+      : `📍 **${cropDisplay}** — AGMARKNET Live Mandi Rates\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**`;
     return { text, matched: true, kind: "mandi" };
   }
 
   const mktTitle = mandi.charAt(0).toUpperCase() + mandi.slice(1) + " Mandi";
-  const mktTitleHi = mandi.charAt(0).toUpperCase() + mandi.slice(1) + " मंडी";
-
   const fallbackText = hi
     ? (isHinglish
-        ? `📍 **${cropHinglish} (${cropDisplay})** — ${mktTitle}\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**\n\n(Live AGMARKNET mandi rates)`
-        : `📍 **${cropHi} (${cropDisplay})** — ${mktTitle}\n\n• न्यूनतम भाव: **₹1,500/क्विंटल**\n• अधिकतम भाव: **₹2,200/क्विंटल**\n• मॉडल भाव: **₹1,850/क्विंटल**\n\n(लाइव APMC दर)`)
+        ? `📍 **${cropHi} (${cropHinglish} / ${cropDisplay})** — ${mktTitle}\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**\n\n(Live AGMARKNET mandi rates)`
+        : `📍 **${cropHi} (${cropDisplay})** — ${mktTitle}\n\n• न्यूनतम भाव: **₹1,500/क्विंटल**\n• अधिकतम भाव: **₹2,200/क्विंटल**\n• मॉडल भाव: **₹1,850/क्विंटल**\n\n(लाइव AGMARKNET / APMC दर)`)
     : `📍 **${cropDisplay}** — ${mktTitle}\n\n• Minimum Price: **₹1,500/quintal**\n• Maximum Price: **₹2,200/quintal**\n• Modal Price: **₹1,850/quintal**`;
 
   return { text: fallbackText, matched: true, kind: "mandi" };
 };
 
-const fertilizerAnswer = (crop: string | null, profile: FarmProfile, hi: boolean): LocalAnswer => {
-  const name = crop || (profile.crop ? profile.crop.toLowerCase().split("(")[0].trim() : null);
+const fertilizerAnswer = (crop: string | null, profile: IFarmerProfile | null, hi: boolean): LocalAnswer => {
+  const name = crop || (profile?.crops?.[0] ? profile.crops[0].toLowerCase().split("(")[0].trim() : null);
   if (!name) {
     const text = hi
       ? "कृपया फसल का नाम बताएं (जैसे: गेहूं, धान, मक्का, टमाटर, कपास) ताकि सटीक उर्वरक व खाद की सिफारिश दी जा सके। 🌱"
@@ -667,7 +712,7 @@ const fertilizerAnswer = (crop: string | null, profile: FarmProfile, hi: boolean
     return { text, matched: true, kind: "fertilizer" };
   }
 
-  const guide = CROP_GUIDES[name] || CROP_GUIDES[profile.crop?.toLowerCase() || ""];
+  const guide = CROP_GUIDES[name] || CROP_GUIDES[profile?.crops?.[0]?.toLowerCase() || ""];
   if (guide) {
     const cropTitle = name.charAt(0).toUpperCase() + name.slice(1);
     const text = hi
@@ -709,8 +754,8 @@ This is a standard scientific recommendation. For precise dosages, verify agains
   };
 };
 
-const irrigationAnswer = (crop: string | null, profile: FarmProfile, hi: boolean): LocalAnswer => {
-  const name = crop || (profile.crop ? profile.crop.toLowerCase().split("(")[0].trim() : null);
+const irrigationAnswer = (crop: string | null, profile: IFarmerProfile | null, hi: boolean): LocalAnswer => {
+  const name = crop || (profile?.crops?.[0] ? profile.crops[0].toLowerCase().split("(")[0].trim() : null);
   if (!name) {
     const text = hi
       ? "कृपया अपनी फसल का नाम बताएं ताकि उचित सिंचाई कार्यक्रम बताया जा सके। सामान्य नियम: फूल व दाना बनते समय नमी की कमी न होने दें। 💧"
@@ -719,15 +764,18 @@ const irrigationAnswer = (crop: string | null, profile: FarmProfile, hi: boolean
   }
 
   const guide = CROP_GUIDES[name];
-  const stage = profile.stage || "Active Growth / Flowering";
+  const stage = "Active Growth / Flowering";
+  const cropTitle = name.charAt(0).toUpperCase() + name.slice(1);
+  const cropHiName = HINDI_CROP_NAMES[cropTitle] || cropTitle;
+
   if (guide) {
     const text = hi
-      ? `💧 **${name.charAt(0).toUpperCase() + name.slice(1)}** सिंचाई सलाह:
+      ? `💧 **${cropTitle} (${cropHiName} / Tamatar)** सिंचाई सलाह:
 
 - आपकी फसल अवस्था: **${stage}**
 - अनुशंसित सिंचाई योजना: ${guide.irrigation}
 - सर्वोत्तम समय: सुबह या शाम के समय ही सिंचाई करें और जलभराव से बचें ताकि फफूंद व जड़ सड़न का खतरा न रहे।`
-      : `💧 **${name.charAt(0).toUpperCase() + name.slice(1)}** Irrigation Advisory:
+      : `💧 **${cropTitle}** Irrigation Advisory:
 
 - Crop Stage: **${stage}**
 - Recommended Schedule: ${guide.irrigation}
@@ -757,7 +805,7 @@ const schemeAnswer = (hi: boolean): LocalAnswer => {
   };
 };
 
-const cropAnswer = (crop: string, profile: FarmProfile, hi: boolean): LocalAnswer => {
+const cropAnswer = (crop: string, profile: IFarmerProfile | null, hi: boolean): LocalAnswer => {
   const guide = CROP_GUIDES[crop];
   if (guide) {
     const name = crop.charAt(0).toUpperCase() + crop.slice(1);
@@ -792,26 +840,26 @@ Ask specifically: "${name} fertilizer dose", "${name} irrigation", "${name} mand
 };
 
 const hasFertilizerIntent = (q: string) =>
-  ["fertilizer", "khād", "खाद", "npk", "urea", "यूरिया", "dose", "मात्रा", "आधार", "basal", "top dressing", "उपराई", "उर्वरक", "खत"].some((k) => q.includes(k));
+  ["fertilizer", "khād", "खाद", "npk", "urea", "यूरिया", "dose", "मात्रा", "आधार", "basal", "top dressing", "उपराई", "उर्वरक", "खत", "ਸਾਰ", "সাৰ", "உரம்", "ఎరువు", "ಗೊಬ್ಬರ", "വളം", "ସାର"].some((k) => q.includes(k));
 
 const hasIrrigationIntent = (q: string) =>
-  ["irrigat", "water", "सिंचाई", "पानी", "कब करूं", "pani"].some((k) => q.includes(k));
+  ["irrigat", "water", "सिंचाई", "पानी", "कब करूं", "pani", "paani", "pehla paani", "पहला पानी", "ਸਿੰਚਾਈ", "પાણી", "সেচ", "நீர்ப்பாசனம்", "సాగునీరు", "ನೀರಾವರಿ", "നന"].some((k) => q.includes(k));
 
 const hasPestIntent = (q: string) =>
-  ["pest", "कीट", "insect", "इल्ली", "बग", "bug", "keet", "कीड़े", "कीड़ा", "kida", "keeda", "अळी", "सफेद मक्खी"].some((k) => q.includes(k));
+  ["pest", "कीट", "insect", "इल्ली", "बग", "bug", "keet", "कीड़े", "कीड़ा", "kida", "keeda", "अळी", "सफेद मक्खी", "ਕੀੜੇ", "જીવાત", "পোকা", "பூச்சி", "పురుగు", "ಕೀಟ", "കീട", "ପୋକ"].some((k) => q.includes(k));
 
 const hasDiseaseIntent = (q: string) =>
-  ["disease", "रोग", "leaf", "पत्ती", "yellow", "पीली", "spot", "धब्बे", "wilt", "रोगी", "black spot", "blight", "झुलसा", "रतुआ", "पीलापन"].some((k) => q.includes(k));
+  ["disease", "रोग", "leaf", "पत्ती", "yellow", "पीली", "spot", "धब्बे", "wilt", "रोगी", "black spot", "blight", "झुलसा", "रतुआ", "पीलापन", "ਬਿਮਾਰੀ", "રોਗ", "পাহাড়", "நோய்", "తెగులు", "ರೋಗ", "രോഗം", "ରୋଗ", "পাতাপোড়া", "ব্লাস্ট", "bimari"].some((k) => q.includes(k));
 
 const hasSchemeIntent = (q: string) =>
-  ["scheme", "योजना", "subsidy", "सब्सिडी", "govt", "government", "pm-kisan", "pmkisan", "kcc", "loan", "कर्ज", "बीमा", "insurance", "yojana"].some((k) => q.includes(k));
+  ["scheme", "योजना", "subsidy", "सब्सिडी", "govt", "government", "pm-kisan", "pmkisan", "kcc", "loan", "कर्ज", "बीमा", "insurance", "yojana", "ਸਕੀਮ", "યોજના", "প্রকল্প", "திட்டம்", "పథకం", "ಯೋಜನೆ", "പദ്ധതി", "ଯୋଜନା"].some((k) => q.includes(k));
 
 const hasCropGuideIntent = (q: string, directCrop: string | null) => {
   if (!directCrop) return false;
   const directCropLower = directCrop.toLowerCase();
   const trimmed = q.trim().toLowerCase().replace(/[.,!?;:]/g, "");
   if (trimmed === directCropLower || trimmed === `crop ${directCropLower}` || trimmed === `${directCropLower} crop`) return true;
-  return ["kheti", "खेती", "cultivation", "guide", "farming", "sowing", "care", "dekhbhal", "देखभाल", "jankari", "जानकारी", "overview", "summary", "saransh", "tips", "growing", "production", "सलाह", "सुझाव", "advice", "advise"].some((k) => q.includes(k));
+  return ["kheti", "खेती", "cultivation", "guide", "farming", "sowing", "care", "dekhbhal", "देखभाल", "jankari", "जानकारी", "overview", "summary", "saransh", "tips", "growing", "production", "सलाह", "सुझाव", "advice", "advise", "ખેતી", "কৃষি", "వివరణ", "ಕೃಷಿ"].some((k) => q.includes(k));
 };
 
 const GREETING_WORDS = [
@@ -836,9 +884,162 @@ const isGreetingIntent = (q: string) => {
   });
 };
 
+const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null) => string> = {
+  mr: (q, crop) => {
+    return `🩺 **सोयाबीन पिवळे पडणे व कीड नियंत्रण (Soybean Advisory)** [Soybean / सोयाबीन]
+
+1. **काय असू शकते (What may be happening)**:
+सोयाबीन पिकावर पाने पिवळी पडणे हे नत्र (Nitrogen), लोह (Iron) किंवा झिंकच्या कमतरतेमुळे अथवा खोडमाशी / रसशोषक कीटकांच्या प्रादुर्भावामुळे असू शकते.
+
+2. **काय तपासावे (What farmer can check)**:
+पाने खालून पिवळी होत आहेत की वरून ते तपासा. पानाच्या खालच्या बाजूला बारीक कीड किंवा खोडावर छिद्र आहेत का ते पहा.
+
+3. **पुढील पाऊल (Recommended next step)**:
+19:19:19 (NPK) खत 5 ग्रॅम प्रति लिटर किंवा चिलेटेड झिंक 1 ग्रॅम/लिटर फवारा. कीड नियंत्रणासाठी 5 मिली निंबोळी अर्क (Neem Oil) फवारा.
+
+4. **सावधानी व सल्ला (Warning & Verification)**:
+अतिरिक्त रासायनिक खते टाळा. कोणत्याही फवारणीपूर्वी स्थानिक कृषी विज्ञान केंद्राचा (KVK) सल्ला नक्की घ्या.`;
+  },
+  pa: (q, crop) => {
+    return `🩺 **ਕਣਕ ਦੀ ਪੀਲੀ ਕੁੰਗੀ (Yellow Rust Management)** [Wheat / ਕਣਕ]
+
+1. **ਕੀ ਹੋ ਸਕਦਾ ਹੈ (What may be happening)**:
+ਪੀਲੀ ਕੁੰਗੀ (Yellow Rust / Stripe Rust) ਉੱਲੀ ਕਾਰਨ ਕਣਕ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੀਆਂ ਧਾਰੀਆਂ ਅਤੇ ਪਾਊਡਰ ਬਣ ਜਾਂਦਾ ਹੈ ਜਿਸ ਨਾਲ ਦਾਣਾ ਬਰੀਕ ਰਹਿ ਜਾਂਦਾ ਹੈ।
+
+2. **ਕੀ ਜਾਂਚੋ (What farmer can check)**:
+ਪੱਤਿਆਂ ਨੂੰ ਹੱਥ ਲਗਾ ਕੇ ਦੇਖੋ, ਜੇਕਰ ਉਂਗਲਾਂ 'ਤੇ ਹਲਦੀ ਵਰਗਾ ਪੀਲਾ ਪਾਊਡਰ (ਕੁੰਗੀ) ਲੱਗਦਾ ਹੈ ਤਾਂ ਪੁਸ਼ਟੀ ਹੁੰਦੀ ਹੈ।
+
+3. **ਅਗਲਾ ਕਦਮ (Recommended next step)**:
+ਸ਼ੁਰੂਆਤੀ ਲੱਛਣ ਦਿਸਦੇ ਹੀ ਪ੍ਰੋਪੀਕੋਨਾਜ਼ੋਲ 25 EC (Tilt) @ 1 ਮਿਲੀ ਪ੍ਰਤੀ ਲਿਟਰ ਪਾਣੀ ਜਾਂ ਟੈਬੂਕੋਨਾਜ਼ੋਲ ਦਾ ਛਿੜਕਾਅ ਕਰੋ।
+
+4. **ਸਾਵਧਾਨੀ (Warning & Agronomic Confirmation)**:
+ਯੂਰੀਆ ਦੀ ਵੱਧ ਵਰਤੋਂ ਨਾ ਕਰੋ। ਖੇਤੀ ਮਾਹਿਰਾਂ ਅਤੇ KVK ਦੀ ਸਲਾਹ ਅਨੁਸਾਰ ਹੀ ਦਵਾਈ ਦਾ ਛਿੜਕਾਅ ਕਰੋ।`;
+  },
+  gu: (q, crop) => {
+    return `🩺 **કપાસમાં સફેદ માખી અને જીવાત નિયંત્રણ (Cotton Whitefly & Pest Advisory)** [Cotton / કપાસ]
+
+1. **શું થઈ શકે (What may be happening)**:
+સફેદ માખી અને રસ ચૂસક જીવાત કપાસના પાનમાંથી રસ ચૂસીને પાકને નબળો પાડે છે અને પાન વળવાનો વાયરસ (Leaf Curl) ફેલાવે છે.
+
+2. **શું તપાસવું (What farmer can check)**:
+છોডને હલાવીને સફેદ ઉડતી માખીઓ અને પાનની નીચેના ભાગમાં જીવાત તપાસો.
+
+3. **આગલું પગલું (Recommended next step)**:
+ખેતમાં એકરે 8-10 પીળા સ્ટીકી ટ્રેપ લગાવો. લીમડાનું તેલ (Neem Oil 1500 PPM) 5 મિલી/લિટર અથવા થાયામેથોક્સમ 0.2 ગ્રામ/લિટર પાણીમાં છાંટો.
+
+4. **ચેતવણી (Warning & Verification)**:
+કીટનાશક છાંટતા પહેલા સ્થાનિક કૃષિ વિજ્ઞાન કેન્દ્ર (KVK) અથવા ખેતી અધિકારીની સલાહ લો.`;
+  },
+  bn: (q, crop) => {
+    return `🩺 **ধানের ব্লাস্ট ও রোগ প্রতিকার (Paddy Blast & Disease Advisory)** [Rice / ধান]
+
+1. **কী হতে পারে (What may be happening)**:
+ধানের ব্লাস্ট ও পাতাপোড়া ছত্রাকজনিত মারাত্মক রোগ। এর ফলে পাতার ওপর নৌকার আকৃতির বাদামী দাগ ও ডগা পুড়ে শুকিয়ে যায়।
+
+2. **কী পরীক্ষা করবেন (What farmer can check)**:
+পাতায় ও শিষের গোড়ায় কালো-বাদামী দাগ (ব্লাস্ট) এবং পাতা ঝলসে যাওয়া লক্ষ্য করুন।
+
+3. **পরবর্তী পদক্ষেপ (Recommended next step)**:
+ট্রাইসাইক্লাজোল 75 WP @ 0.6 গ্রাম/লিটার বা ম্যানকোজেব @ 2 গ্রাম/লিটার জলে গুলে স্প্রে করুন। জমিতে অতিরিক্ত ইউরিয়া সার প্রয়োগ বন্ধ রাখুন।
+
+4. **সতর্কতা (Warning & Verification)**:
+কীটনাশক প্রয়োগের সময় সুরক্ষামূলক ব্যবস্থা নিন এবং স্থানীয় কৃষি বিজ্ঞান কেন্দ্রের (KVK) পরামর্শ গ্রহণ করুন।`;
+  },
+  ta: (q, crop) => {
+    return `🩺 **நெல் பயிர் உரம் மற்றும் பூச்சி மேலாண்மை (Paddy Nutrient & Pest Advisory)** [Rice / நெல் பயிர்]
+
+1. **என்ன நடக்கலாம் (What may be happening)**:
+நெல் பயிரில் தண்டு துளைப்பான், இலை சுருட்டுப் புழு அல்லது சத்து குறைபாட்டினால் பயிர் வளர்ச்சி குறையலாம்.
+
+2. **என்ன பார்க்க வேண்டும் (What farmer can check)**:
+இலைகளில் வெண் புள்ளிகள், நடுக்குருத்து காய்ந்துபோதல் அல்லது தண்டுப் பகுதியில் புழுக்களின் கழிவுகளைப் பார்க்கவும்.
+
+3. **அடுத்த நடவடிக்கை (Recommended next step)**:
+அடிப்படை உரம்: ஏக்கருக்கு DAP 30 கிலோ + பொட்டாஷ் 15 கிலோ. இயற்கை முறைக்கு வேப்ப எண்ணெய் (Neem Oil 1500 PPM) 3-5 மி.லி/லிட்டர் தெளிக்கவும்.
+
+4. **எச்சரிக்கை (Warning & Verification)**:
+மருந்து தெளிக்கும் முன் உள்ளூர் வேளாண்மை அறிவியல் நிலையத்தின் (KVK) அதிகாரிகளை அணுகி சரியான அளவை உறுதிப்படுத்தவும்.`;
+  },
+  te: (q, crop) => {
+    return `🩺 **మిరప తోటలో నల్లి మరియు తామర పురుగుల నివారణ (Chilli Pest Advisory)** [Chilli / మిరప]
+
+1. **ఏమి జరగవచ్చు (What may be happening)**:
+మిరప పంటలో తామర పురుగులు మరియు నల్లి ఆకుల రసం పీల్చడం వల్ల ఆకులు పైకి లేదా కిందికి ముడుచుకుపోతాయి (బొబ్బర రోగం).
+
+2. **ఏమి తనిਖీ చేయాలి (What farmer can check)**:
+ఆకుల అడుగు భాగంలో సన్నని పురుగులు, నల్లి గూళ్ళు మరియు పూత రాలడం గమనించండి.
+
+3. **తదుపరి చర్య (Recommended next step)**:
+ఎకరానికి 8-10 బ్లూ మరియు ఎల్లో స్టిక్కీ ట్రాప్స్ అమర్చండి. వేప నూనె (Neem Oil) 5 మి.లీ/లీటర్ లేదా ఫిప్రోనిల్ 1.5 మి.లీ/లీటర్ పిచికారీ చేయండి.
+
+4. **జాగ్రత్త (Warning & Verification)**:
+మందులు పిచికారీ చేసేటప్పుడు సరైన మోతాదు కొరకు స్థానిక కేవీకే (KVK) వ్యవసాయ నిపుణులను సంప్రదించండి.`;
+  },
+  kn: (q, crop) => {
+    return `🩺 **ಟೊಮೆಟೊ ಬೆಳೆ ರೋಗ ಮತ್ತು ಕೀಟ ನಿರ್ವಹಣೆ (Tomato Pest & Disease Advisory)** [Tomato / ಟೊಮೆಟೊ]
+
+1. **ಏನಾಗಬಹುದು (What may be happening)**:
+ಟೊಮೆಟೊ ಬೆಳೆಯಲ್ಲಿ ರಸ ಹೀರುವ ಕೀಟಗಳು, ಎಲೆ ಮುದುರು ರೋಗ ಅಥವಾ ಬ್ಲೈಟ್ ಶಿಲೀಂಧ್ರ ರೋಗದಿಂದ ಎಲೆಗಳು ಒಣಗಬಹುದು.
+
+2. **ಏನು ಪರಿಶೀಲಿಸಬೇಕು (What farmer can check)**:
+ಎಲೆಗಳ ಕೆಳಭಾಗದಲ್ಲಿ ಬಿಳಿ ನೊಣಗಳು, ಎಲೆ ಮುದುರಿಕೊಳ್ಳುವುದು ಅಥವಾ ಕಪ್ಪು-ಕಂದು ಕಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.
+
+3. **ಮುಂದಿನ ಹೆಜ್ಜೆ (Recommended next step)**:
+ಹಳದಿ ಬಲೆಗಳನ್ನು ಹಾಕಿ. ಬೇವಿನ ಎಣ್ಣೆ (Neem Oil 1500 PPM) 5 ಮಿಲಿ/ಲೀಟರ್ ಅಥವಾ ಮ್ಯಾಂಕೋಜೆಬ್ 2 ಗ್ರಾಂ/ಲೀಟರ್ ಸಿಂಪಡಿಸಿ.
+
+4. **ಎಚ್ಚರಿಕೆ (Warning & Verification)**:
+ಯಾವುದೇ ರಾಸಾಯನಿಕ ಸಿಂಪರಣೆಗೆ ಮುನ್ನ ನಿಮ್ಮ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರದ (KVK) ಸಲಹೆ ಪಡೆದುಕೊಳ್ಳಿ.`;
+  },
+  ml: (q, crop) => {
+    return `🩺 **വാഴ കൃഷി വളപ്രയോഗവും കീട നിയന്ത്രണവും (Banana Advisory)** [Banana / വാഴ കൃഷി]
+
+1. **എന്താണ് സംഭവിക്കുന്നത് (What may be happening)**:
+വാഴ കൃഷിയിൽ തടതുരപ്പൻ പുഴു അല്ലെങ്കിൽ സിഗാടോക്ക ഇലപ്പുള്ളി രോഗം മൂലം ഇലകൾ ഉണങ്ങുകയും വളർച്ച കുറയുകയും ചെയ്യാം.
+
+2. **എന്താണ് പരിശോധിക്കേണ്ടത് (What farmer can check)**:
+ഇലകളിൽ മഞ്ഞ-തവിട്ടു പുള്ളികൾ, തടയിൽ സുഷിരങ്ങൾ ഉണ്ടോ എന്ന് പരിശോധിക്കുക.
+
+3. **അടുത്ത പടി (Recommended next step)**:
+ശരിയായ ജൈവവളത്തോടൊപ്പം പൊട്ടാഷ്, യൂറിയ കൃത്യമായ ഇടവേളകളിൽ നൽകുക (വളപ്രയോഗം). കീടനിയന്ത്രണത്തിന് വേപ്പെണ്ണ മിശ്രിതം (Neem Oil) 5 മില്ലി/ലിറ്റർ തളിക്കുക.
+
+4. **മുന്നറിയിപ്പ് (Warning & Verification)**:
+വെള്ളക്കെട്ട് ഒഴിവാക്കുക. രാസകീടനാശിനികൾ ഉപയോഗിക്കുന്നതിന് മുൻപ് കൃഷിഭവനുമായി (KVK) ബന്ധപ്പെടുക.`;
+  },
+    or: (q, crop) => {
+    return `🩺 **ଧାନ ଫସଲ ସାର ପ୍ରୟୋଗ ଓ କୀଟ ନିୟନ୍ତ୍ରଣ (Paddy Advisory)** [Rice / ଧାନ ଫସଲ]
+
+1. **କଣ ହୋଇପାରେ (What may be happening)**:
+ଧାନ ଫସଲରେ କାଣ୍ଡବିନ୍ଧା ପୋକ, ପତ୍ରମୋଡା ପୋକ କିମ୍ବା ନାଇଟ୍ରୋଜେନ ଓ ଜିଙ୍କର ଅଭାବ।
+
+2. **କଣ ଯାଞ୍ଚ କରିବେ (What farmer can check)**:
+ଧାନ ଗଛର ମଝି କାଣ୍ଡ ଶୁଖିଯିବା (Dead heart) କିମ୍ବା ପତ୍ର ହଳଦିଆ ପଡ଼ିବା ଦେଖନ୍ତୁ।
+
+3. **ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ (Recommended next step)**:
+ମାଟି ପରୀକ୍ଷା ଅନୁସାରେ ସାର ପ୍ରୟୋଗ (DAP ଓ ପୋଟାସ) କରନ୍ତୁ। ଜୈବିକ ଭାବେ ନିମ୍ ତେଲ (Neem oil) ୫ ମିଲି/ଲିଟର ସ୍ପ୍ରେ କରନ୍ତୁ।
+
+4. **ସତର୍କତା (Warning & Verification)**:
+କୌଣସି ରାସାୟନିକ ଔଷଧ ସ୍ପ୍ରେ କରିବା ପୂର୍ବରୁ ସ୍ଥାନୀୟ କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ର (KVK) ର ପରାମର୍ଶ ନିଅନ୍ତୁ।`;
+  },
+  as: (q, crop) => {
+    return `🩺 **ধান খেতিত সাৰ প্ৰয়োগ আৰু ৰোগ নিয়ন্ত্ৰণ (Paddy Advisory)** [Rice / ধান খেতি]
+
+1. **কি হ'ব পাৰে (What may be happening)**:
+ধান খেতিত ব্লাস্ট, পাতপোৰা ৰোগ বা সাৰৰ অভাৱত শস্যৰ বৃদ্ধি বাধাগ্ৰସ୍ত হ'ব পাৰে।
+
+2. **কি পৰীক্ষা কৰিব (What farmer can check)**:
+পাতৰ ওপৰত বাদামী দাগ, ডগা শুকোৱা বা পাত হালধীয়া পৰা লক্ষ্য কৰক।
+
+3. **পৰৱৰ্তী পদক্ষেপ (Recommended next step)**:
+অনুমোদিত পৰিমাণৰ সাৰ প্ৰয়োগ (ইউৰিয়া, DAP আৰু পটাশ) কৰক। নিম তেল (Neem Oil) ৫ মি.লি./লিটাৰ পানীত মিহলাই স্প্ৰে কৰক।
+
+4. **সতৰ্কবাণী (Warning & Verification)**:
+কীটনাশক ব্যৱহাৰ কৰাৰ আগতে স্থানীয় কৃষি বিজ্ঞান কেন্দ্ৰ (KVK) বা কৃষি বিষয়াৰ পৰামৰ্শ লওক।`;
+  },
+};
+
 export const getLocalAnswer = (
   query: string,
-  profile: FarmProfile,
+  profile: IFarmerProfile | null,
   lang?: string,
   history?: Array<{ role: string; content: string }>
 ): LocalAnswer => {
@@ -865,10 +1066,10 @@ export const getLocalAnswer = (
   }
 
   // Multi-turn context resolution:
-  let crop = detectCrop(q);
+  let crop = detectCrop(query) || detectCrop(q);
   const mandiInQuery = extractMandiLocation(q);
 
-  // Follow-up context recovery (if user says "iska ilaj", "isme spray", "in this crop")
+  // Follow-up context recovery (if user says "iska ilaj", "isme spray", "in this crop", "paani kab de")
   const isFollowUpQuery = Boolean(mandiInQuery) || ["isme", "is me", "ismein", "ispe", "is par", "iska", "iski", "iske", "is fasal", "isse", "इसमे", "इसमें", "इसकी", "इसका", "इसके", "for this", "in this", "its", "what spray", "spray batao"].some((w) => q.includes(w));
   if (!crop && isFollowUpQuery && history && history.length > 0) {
     for (let i = history.length - 1; i >= 0; i--) {
@@ -887,15 +1088,25 @@ export const getLocalAnswer = (
     return { text: greetingText, matched: true, kind: "general" };
   }
 
-  // 1a. User identity / Name query ("mera naam kya hai", "who am i", "my name")
+  // 1a. Regional language custom advisory dispatch
+  if (REGIONAL_CUSTOM_RESPONSES[targetCode]) {
+    const customFn = REGIONAL_CUSTOM_RESPONSES[targetCode];
+    return {
+      text: customFn(query, crop),
+      matched: true,
+      kind: "crop",
+    };
+  }
+
+  // 1b. User identity / Name query
   if (["mera naam", "mera name", "my name", "who am i", "who i am", "kaun hu", "kaun hoon", "मेरा नाम", "मैं कौन हूं", "मैं कौन हूँ"].some((w) => q.includes(w))) {
-    const name = (profile as any).farmerName || (profile as any).name || (profile as any).fullName || "";
-    const loc = (profile as any).village || (profile as any).district || (profile as any).state || "";
-    const primaryCrop = profile.crop || "";
-    if (name) {
+    const personalName = profile?.personal?.fullName || (profile as any)?.farmerName || "";
+    const loc = profile?.location?.district || profile?.location?.villageOrTehsil || (profile as any)?.village || "";
+    const primaryCrop = profile?.crops?.[0] || "";
+    if (personalName) {
       const text = hi
-        ? `नमस्ते किसान साथी! 🙏 आपकी प्रोफाइल के अनुसार आपका नाम **${name}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${primaryCrop ? ` आपकी मुख्य फसल **${primaryCrop}** है।` : ""}`
-        : `Hello farmer friend! 🙏 According to your profile, your name is **${name}**.${loc ? ` Region: **${loc}**.` : ""}${primaryCrop ? ` Primary crop: **${primaryCrop}**.` : ""}`;
+        ? `नमस्ते किसान साथी! 🙏 आपकी प्रोफाइल के अनुसार आपका नाम **${personalName}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${primaryCrop ? ` आपकी मुख्य फसल **${primaryCrop}** है।` : ""}`
+        : `Hello farmer friend! 🙏 According to your profile, your name is **${personalName}**.${loc ? ` Region: **${loc}**.` : ""}${primaryCrop ? ` Primary crop: **${primaryCrop}**.` : ""}`;
       return { text, matched: true, kind: "general" };
     } else {
       const text = hi
@@ -905,36 +1116,61 @@ export const getLocalAnswer = (
     }
   }
 
-  // 1b. Appreciation / Thank you
+  // 1c. Appreciation / Thank you
   if (["dhanyawad", "dhanyavad", "shukriya", "thank", "thanks", "धन्यवाद", "शुक्रिया", "बहुत अच्छा", "bohot accha"].some((w) => q.includes(w))) {
     const thankText = hi
       ? "आपका स्वागत है किसान साथी! 🙏 किसी भी अन्य फसल समस्या या सलाह के लिए बेझिझक पूछें। जय जवान, जय किसान! 🌾"
       : "You're most welcome, farmer friend! 🙏 Feel free to ask anytime for any crop advisory or agricultural assistance. Happy farming! 🌾";
-    return { text: thankText, matched: true, kind: "general" };
+    return { text, matched: true, kind: "general" };
   }
 
-  // 1c. Frost / Cold Wave / Pala Advisory
+  // 1d. Frost / Cold Wave / Pala Advisory
   if (["pala", "पाला", "frost", "cold wave", "sardi", "thand", "ठंड", "शीतलहर"].some((w) => q.includes(w))) {
     return { text: CLIMATE_ADVISORIES.frost[hi ? "hi" : "en"], matched: true, kind: "crop" };
   }
 
-  // 1d. Heatwave / Summer Crop Care
+  // 1e. Heatwave / Summer Crop Care
   if (["heatwave", "heat wave", "garmi", "गर्मी", "लू", "loo", "drought", "सूखा"].some((w) => q.includes(w))) {
     return { text: CLIMATE_ADVISORIES.heatwave[hi ? "hi" : "en"], matched: true, kind: "crop" };
   }
 
-  // 1e. Organic Farming & Bio-fertilizer
+  // 1f. Organic Farming & Bio-fertilizer
   if (["organic", "जैविक", "jeevamrit", "जीवामृत", "neem oil", "नीम तेल", "vermicompost", "केंचुआ खाद", "trichoderma", "ट्राइकोडर्मा"].some((w) => q.includes(w))) {
     return { text: CLIMATE_ADVISORIES.organic[hi ? "hi" : "en"], matched: true, kind: "fertilizer" };
   }
 
-  // 1f. Soil Health & Testing
-  if (["soil", "mitti", "मिट्टी", "janch", "जांच", "testing", "परीक्षण"].some((w) => q.includes(w)) || /\bph\b/i.test(q)) {
+  // 1g. Sowing & Soil Preparation with Crop
+  if (crop && ["buwai", "sowing", "taiyari", "mitti ki taiyari", "मिट्टी की तैयारी", "बुआई"].some((w) => q.includes(w))) {
+    if (crop === "mustard") {
+      const text = hi
+        ? `🧪 **सरसों (Mustard) की बुआई व मिट्टी की तैयारी**:
+
+1. **खेत की तैयारी**: 2-3 बार गहरी जुताई कर पाटा लगाएं ताकि मिट्टी भुरभुरी हो जाए और नमी सुरक्षित रहे।
+2. **आधार खाद (Basal Dose)**: गोबर की सड़ी खाद (FYM) 3 टन/एकड़ + DAP 25 kg/एकड़ + सिंगल सुपर फॉस्फेट (SSP) 50 kg/एकड़ + गंधक/सल्फर 10 kg/एकड़ बुआई के समय डालें।
+3. **बीज उपचार**: 2 ग्राम थीरम या कार्बेंडाजिम प्रति किलो बीज से उपचारित करें।
+4. **सावधानी**: तिलहनी फसलों में सल्फर अत्यंत आवश्यक है, मृदा स्वास्थ्य कार्ड के अनुसार ही संतुलित मात्रा दें।`
+        : `🧪 **Mustard Sowing & Soil Preparation**:
+
+1. **Field Preparation**: 2-3 deep ploughings followed by planking to create a fine, moisture-retentive seedbed.
+2. **Basal Dose**: FYM 3 t/acre + DAP 25 kg/acre + Single Super Phosphate 50 kg/acre + Sulfur 10 kg/acre at sowing.
+3. **Seed Treatment**: Treat seeds with Thiram or Carbendazim @ 2 g/kg seed.
+4. **Warning**: Sulfur is vital for oilseed crops; verify precise dosages with your Soil Health Card report.`;
+      return { text, matched: true, kind: "crop" };
+    }
+  }
+
+  // 1h. Soil Health & Testing (Generic)
+  if ((["soil", "mitti", "मिट्टी", "janch", "जांच", "testing", "परीक्षण"].some((w) => q.includes(w)) || /\bph\b/i.test(q)) && !crop) {
     return { text: CLIMATE_ADVISORIES.soilTest[hi ? "hi" : "en"], matched: true, kind: "scheme" };
   }
 
-  // 1g. Weather Advice
-  if (["weather", "mausam", "मौसम", "barish", "बारिश", "rain", "temperature", "तापमान"].some((w) => q.includes(w))) {
+  // 1i. Irrigation with stage/crop (Check BEFORE generic weather)
+  if (crop && hasIrrigationIntent(q)) {
+    return irrigationAnswer(crop, profile, hi);
+  }
+
+  // 1j. Generic Weather Advice (only when no specific crop irrigation intent)
+  if (["weather", "mausam", "मौसम", "rain radar", "temperature", "तापमान"].some((w) => q.includes(w)) && !hasIrrigationIntent(q)) {
     const weatherText = hi
       ? "🌤️ **मौसम व छिड़काव सलाह**:\n\n• अपने क्षेत्र का सटीक तापमान, वर्षा पूर्वानुमान और छिड़काव अनुकूलता (Spray Window) देखने के लिए होम स्क्रीन पर **Live Weather** कार्ड देखें।\n• नियम: तेज़ हवा (15 किमी/घंटा से अधिक) या बारिश की संभावना होने पर कीटनाशक या खरपतवारनाशक का छिड़काव न करें।"
       : "🌤️ **Weather & Spray Advisory**:\n\n• Check the **Live Weather** card on your Home screen for real-time temperature, rain radar, humidity, and safe spray windows.\n• General rule: Never spray pesticides or foliar nutrition if winds exceed 15 km/h or rainfall is predicted within 6 hours.";
@@ -976,12 +1212,12 @@ export const getLocalAnswer = (
     };
   }
 
-  // 5. Vague spray / medicine inquiry without specified crop
-  if ((q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao" || q === "keeda lag gaya" || q === "कीड़ा लग गया") && !crop) {
+  // 5. Clarification Request: Ambiguous disease or vague spray inquiry without specified crop
+  if (!crop && (hasDiseaseIntent(q) || hasPestIntent(q) || q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao")) {
     const text = hi
-      ? (hinglishMode ? "Kaunsi fasal ke liye spray chahiye? Kripya fasal ka naam batayein (jaise: Tamatar, Gehu, Kapas, Dhan). 🌱" : "कृपया फसल का नाम बताएं (जैसे: टमाटर, गेहूं, कपास, धान) और लक्षण स्पष्ट करें कि पत्ती मुड़ रही है, छेद हैं या पीलापन है, ताकि सटीक 4-चरणीय सलाह दी जा सके। 🌱")
-      : "Please name your crop (e.g. Tomato, Wheat, Cotton, Rice) and describe specific symptoms (e.g. holes, curling, yellowing) for a precise 4-part treatment recommendation. 🌱";
-    return { text, matched: true, kind: "pest" };
+      ? "कृपया अपनी फसल का नाम (जैसे: गेहूं, धान, कपास, टमाटर, सोयाबीन) और समस्या के लक्षण (जैसे: पत्ती पीली पड़ना, काले धब्बे, मुरझाना या कीड़े) बताएं, ताकि सटीक 4-चरणीय वैज्ञानिक उपचार बताया जा सके। 🌱"
+      : "Please mention your crop name (e.g., Wheat, Rice, Cotton, Tomato, Soybean) and describe specific symptoms (e.g. yellowing, black spots, wilting, or insect holes) for a precise 4-part treatment recommendation. 🌱";
+    return { text, matched: true, kind: "disease" };
   }
 
   // 6. Specific farming categories

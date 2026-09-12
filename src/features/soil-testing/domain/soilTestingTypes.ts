@@ -160,3 +160,152 @@ export interface SoilTestingKPIs {
   failedOrCancelled: number;
   totalRevenue: number;
 }
+
+/**
+ * 7 Canonical Tracked Workflow Statuses requested for Phase 13
+ */
+export type CanonicalSoilStatus =
+  | 'Requested'
+  | 'Agent Assigned'
+  | 'Pickup Scheduled'
+  | 'Sample Collected'
+  | 'Testing'
+  | 'Report Ready'
+  | 'Completed';
+
+export interface CanonicalStatusMeta {
+  key: CanonicalSoilStatus;
+  order: number;
+  titleEn: string;
+  titleHi: string;
+  descriptionEn: string;
+  descriptionHi: string;
+}
+
+export const CANONICAL_SOIL_STATUS_STEPS: CanonicalStatusMeta[] = [
+  {
+    key: 'Requested',
+    order: 1,
+    titleEn: 'Requested',
+    titleHi: 'अनुरोध दर्ज (Requested)',
+    descriptionEn: 'Soil test request created and logged into system.',
+    descriptionHi: 'मिट्टी परीक्षण अनुरोध दर्ज किया गया।',
+  },
+  {
+    key: 'Agent Assigned',
+    order: 2,
+    titleEn: 'Agent Assigned',
+    titleHi: 'प्रतिनिधि नियुक्त (Agent Assigned)',
+    descriptionEn: 'Field collection technician assigned (or pending assignment if none available).',
+    descriptionHi: 'सैंपल संग्रह प्रतिनिधि नियुक्त (या आवंटन प्रतीक्षारत)।',
+  },
+  {
+    key: 'Pickup Scheduled',
+    order: 3,
+    titleEn: 'Pickup Scheduled',
+    titleHi: 'पिकअप निर्धारित (Pickup Scheduled)',
+    descriptionEn: 'Pickup date and time window confirmed with farmer.',
+    descriptionHi: 'पिकअप की तारीख और समय स्लॉट तय हो गया।',
+  },
+  {
+    key: 'Sample Collected',
+    order: 4,
+    titleEn: 'Sample Collected',
+    titleHi: 'सैंपल एकत्र (Sample Collected)',
+    descriptionEn: 'Representative 500g composite sample collected and sealed with tracking barcode.',
+    descriptionHi: 'खेत से 500 ग्राम मिट्टी का नमूना बारकोड के साथ एकत्र किया गया।',
+  },
+  {
+    key: 'Testing',
+    order: 5,
+    titleEn: 'Testing',
+    titleHi: 'प्रयोगशाला जांच (Testing)',
+    descriptionEn: 'Sample accessioned at ICAR-compliant laboratory; NPK & chemical testing in progress.',
+    descriptionHi: 'केंद्रीय प्रयोगशाला में NPK एवं सूक्ष्म पोषक तत्वों की जांच जारी।',
+  },
+  {
+    key: 'Report Ready',
+    order: 6,
+    titleEn: 'Report Ready',
+    titleHi: 'रिपोर्ट तैयार (Report Ready)',
+    descriptionEn: 'Digital certified Soil Health Card generated with AI fertilizer recommendations.',
+    descriptionHi: 'प्रमाणित डिजिटल मृदा स्वास्थ्य कार्ड और उर्वरक सलाह तैयार।',
+  },
+  {
+    key: 'Completed',
+    order: 7,
+    titleEn: 'Completed',
+    titleHi: 'पूर्ण (Completed)',
+    descriptionEn: 'Report delivered in-app, SMS alert sent, and emailed to farmer.',
+    descriptionHi: 'रिपोर्ट ऐप में उपलब्ध, किसान को अधिसूचना व ईमेल प्रेषित।',
+  },
+];
+
+/**
+ * Map database SoilOrderStatus to the 7 Canonical Phase 13 Statuses
+ */
+export function mapToCanonicalStatus(
+  status: SoilOrderStatus,
+  assignedAgentName?: string | null
+): { canonicalStatus: CanonicalSoilStatus; displayLabel: string; isAgentPending: boolean } {
+  switch (status) {
+    case 'submitted':
+    case 'payment_confirmed':
+      return {
+        canonicalStatus: 'Requested',
+        displayLabel: 'Requested',
+        isAgentPending: false,
+      };
+
+    case 'agent_pending':
+      return {
+        canonicalStatus: 'Agent Assigned',
+        displayLabel: assignedAgentName ? 'Agent Assigned' : 'Pending Assignment',
+        isAgentPending: !assignedAgentName,
+      };
+
+    case 'pickup_scheduled':
+      return {
+        canonicalStatus: 'Pickup Scheduled',
+        displayLabel: 'Pickup Scheduled',
+        isAgentPending: false,
+      };
+
+    case 'sample_collected':
+      return {
+        canonicalStatus: 'Sample Collected',
+        displayLabel: 'Sample Collected',
+        isAgentPending: false,
+      };
+
+    case 'sample_received':
+    case 'testing_in_progress':
+      return {
+        canonicalStatus: 'Testing',
+        displayLabel: 'Testing',
+        isAgentPending: false,
+      };
+
+    case 'report_ready':
+      return {
+        canonicalStatus: 'Report Ready',
+        displayLabel: 'Report Ready',
+        isAgentPending: false,
+      };
+
+    case 'report_delivered':
+      return {
+        canonicalStatus: 'Completed',
+        displayLabel: 'Completed',
+        isAgentPending: false,
+      };
+
+    case 'cancelled':
+    default:
+      return {
+        canonicalStatus: 'Requested',
+        displayLabel: status === 'cancelled' ? 'Cancelled' : 'Requested',
+        isAgentPending: false,
+      };
+  }
+}
