@@ -20,6 +20,8 @@ export class EdgeCallTimeoutError extends Error {
 export interface EdgeCallResult<T> {
   data: T | null;
   error: string | null;
+  /** Optional stable machine-readable error code returned by edge functions. */
+  code?: string | null;
   timedOut: boolean;
 }
 
@@ -38,28 +40,29 @@ export async function invokeEdgeWithTimeout<T = Record<string, unknown>>(
     if (error) {
       // `error` carries the edge function's JSON payload on non-2xx responses.
       const payload = (error as { message?: string; context?: unknown }).context as
-        | { error?: string }
+        | { error?: string; code?: string }
         | undefined;
       const rawMsg = payload?.error || (error as { message?: string }).message || "Request failed";
+      const code = payload?.code ?? null;
 
       // Detect common Supabase proxy errors and translate to actionable messages.
       const lower = rawMsg.toLowerCase();
       if (lower.includes("function") && (lower.includes("not found") || lower.includes("not deployed"))) {
-        return { data: null, error: "This feature is not yet deployed. Please deploy the edge functions first.", timedOut: false };
+        return { data: null, error: "This feature is not yet deployed. Please deploy the edge functions first.", code: "deploy", timedOut: false };
       }
       if (lower.includes("temporary issue") || lower.includes("hit a temporary")) {
-        return { data: null, error: "AI service is not responding. Make sure edge functions are deployed and GEMINI_API_KEY is configured.", timedOut: false };
+        return { data: null, error: "AI service is not responding. Make sure edge functions are deployed and AI keys are configured.", code: "config", timedOut: false };
       }
       if (lower.includes("status 401") || lower.includes("unauthorized")) {
-        return { data: null, error: "Session expired. Please sign in again.", timedOut: false };
+        return { data: null, error: "Session expired. Please sign in again.", code: "session", timedOut: false };
       }
       if (lower.includes("status 503") || lower.includes("no ai provider")) {
-        return { data: null, error: "AI is not configured. The administrator needs to set GEMINI_API_KEY.", timedOut: false };
+        return { data: null, error: "AI is not configured. The administrator needs to set an AI provider key.", code: "config", timedOut: false };
       }
 
-      return { data: null, error: rawMsg, timedOut: false };
+      return { data: null, error: rawMsg, code, timedOut: false };
     }
-    return { data, error: null, timedOut: false };
+    return { data, error: null, code: null, timedOut: false };
   } catch (err) {
     const isTimeout = err instanceof DOMException && err.name === "AbortError";
     return {
@@ -69,6 +72,7 @@ export async function invokeEdgeWithTimeout<T = Record<string, unknown>>(
         : err instanceof Error
           ? err.message
           : "Something went wrong. Please try again.",
+      code: isTimeout ? "timeout" : "api",
       timedOut: isTimeout,
     };
   } finally {

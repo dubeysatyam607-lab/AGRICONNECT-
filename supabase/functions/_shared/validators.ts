@@ -43,8 +43,10 @@ export const kisanChatRequestSchema = z.object({
 // Crop doctor request schema
 export const cropDoctorRequestSchema = z.object({
   description: z.string().max(5000).optional(),
-  imageBase64: z.string().max(10 * 1024 * 1024).optional(), // 10MB max for base64 image
+  imageBase64: z.string().max(12 * 1024 * 1024).optional(), // 12MB char cap — base64 inflates ~1.33x; binary cap enforced server-side
   language: z.string().max(50).optional(),
+  storagePath: z.string().max(500).nullable().optional(),   // private bucket object path
+  mimeType: z.string().max(50).optional(),
 });
 
 // Nearby services (mandis / agri shops) request schema

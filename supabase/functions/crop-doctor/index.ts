@@ -17,16 +17,27 @@ const RATE_LIMIT_CONFIG = { maxRequests: 10, windowMs: 60 * 1000 };
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;      // raw base64 payload cap
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
 
+const SCAN_BUCKET = "crop-scan-images";
+const SIGNED_URL_TTL_SECONDS = 7 * 24 * 3600; // 7 days, refreshed on next scan
+
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   { auth: { persistSession: false } },
 );
 
+/** Structured error payload: stable `code` + bilingual copy for the client. */
+function errPayload(code: string, messageEn: string, messageHi: string, extra: Record<string, unknown> = {}) {
+  return JSON.stringify({ error: messageEn, error_hi: messageHi, code, ...extra });
+}
+
 // ── Image validation (spec §11): format + size + corrupt/base64 sanity. ──────
-function validateImage(imageBase64: string): { ok: true; mime: string; base64: string } | { ok: false; error: string } {
-  if (imageBase64.length > MAX_IMAGE_BYTES) {
-    return { ok: false, error: "Image too large. Please upload an image smaller than 8MB." };
+function validateImage(imageBase64: string): { ok: true; mime: string; base64: string } | { ok: false; error: string; errorHi: string } {
+  // Base64 inflates binary ~1.33x; this string-level guard is only a cheap
+  // pre-screen. The authoritative size limit is applied on the DECODED bytes
+  // below (MAX_IMAGE_BYTES = 8MB binary).
+  if (imageBase64.length > MAX_IMAGE_BYTES * 1.5) {
+    return { ok: false, error: "Image too large. Please upload an image smaller than 8MB.", errorHi: "छवि बहुत बड़ी है। कृपया 8MB से छोटी तस्वीर अपलोड करें।" };
   }
 
   const dataUrlMatch = imageBase64.match(/^data:([^;,]+);base64,(.+)$/s);
@@ -45,24 +56,29 @@ function validateImage(imageBase64: string): { ok: true; mime: string; base64: s
       else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e) mime = "image/png";
       else if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) mime = "image/webp";
     } catch {
-      return { ok: false, error: "Image data is corrupted. Please upload the image again." };
+      return { ok: false, error: "Image data is corrupted. Please upload the image again.", errorHi: "छवि डेटा खराब है। कृपया तस्वीर दोबारा अपलोड करें।" };
     }
   } else {
-    return { ok: false, error: "Unsupported image format. Please upload a JPG, PNG or WEBP image." };
+    return { ok: false, error: "Unsupported image format. Please upload a JPG, PNG or WEBP image.", errorHi: "असमर्थित छवि प्रारूप। कृपया JPG, PNG या WEBP तस्वीर अपलोड करें।" };
   }
 
   if (!mime || !ALLOWED_MIME.has(mime)) {
-    return { ok: false, error: "Unsupported image format. Please upload a JPG, PNG or WEBP image." };
+    return { ok: false, error: "Unsupported image format. Please upload a JPG, PNG or WEBP image.", errorHi: "असमर्थित छवि प्रारूप। कृपया JPG, PNG या WEBP तस्वीर अपलोड करें।" };
   }
 
-  // Corrupt-image guard: base64 must decode without errors and be non-trivial.
+  // Corrupt-image + real size guard: decode once, then apply the binary
+  // 8MB cap and the "non-trivial image" minimum on actual bytes.
+  let decoded: string;
   try {
-    const decoded = atob(b64.replace(/\s/g, ""));
-    if (decoded.length < 500) {
-      return { ok: false, error: "The image appears to be empty or too small to analyze. Please upload a clear photo." };
-    }
+    decoded = atob(b64.replace(/\s/g, ""));
   } catch {
-    return { ok: false, error: "Image data is corrupted. Please upload the image again." };
+    return { ok: false, error: "Image data is corrupted. Please upload the image again.", errorHi: "छवि डेटा खराब है। कृपया तस्वीर दोबारा अपलोड करें।" };
+  }
+  if (decoded.length > MAX_IMAGE_BYTES) {
+    return { ok: false, error: "Image too large. Please upload an image smaller than 8MB.", errorHi: "छवि बहुत बड़ी है। कृपया 8MB से छोटी तस्वीर अपलोड करें।" };
+  }
+  if (decoded.length < 500) {
+    return { ok: false, error: "The image appears to be empty or too small to analyze. Please upload a clear photo.", errorHi: "तस्वीर खाली या विश्लेषण के लिए बहुत छोटी लगती है। कृपया स्पष्ट फोटो अपलोड करें।" };
   }
 
   return { ok: true, mime, base64: b64 };
@@ -81,12 +97,34 @@ async function logUsage(userId: string, provider?: string) {
   }
 }
 
-async function persistScan(userId: string, result: Record<string, unknown>, mime?: string, language?: string) {
+async function createSignedImageUrl(storagePath: string | null | undefined): Promise<string | null> {
+  if (!storagePath) return null;
+  try {
+    const { data, error } = await supabaseAdmin.storage
+      .from(SCAN_BUCKET)
+      .createSignedUrl(storagePath, SIGNED_URL_TTL_SECONDS);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
+}
+
+async function persistScan(
+  userId: string,
+  result: Record<string, unknown>,
+  mime?: string,
+  language?: string,
+  storagePath?: string | null,
+  imageUrl?: string | null,
+) {
   try {
     const { error } = await supabaseAdmin.from("crop_scans").insert({
       user_id: userId,
       mime_type: mime ?? null,
       language: language ?? null,
+      storage_path: storagePath ?? null,
+      image_url: imageUrl ?? null,
       crop: result.crop ?? null,
       plant_part: result.plant_part ?? null,
       health_status: result.health_status ?? null,
@@ -109,22 +147,28 @@ LANGUAGE RULE (STRICT):
 - The user's selected language is: "{language}".
 - Respond ENTIRELY in that language.
 
+HONESTY (ABSOLUTE — never violate):
+- You provide an AI assessment, NEVER a definitive diagnosis. The user is explicitly told "AI assessment — not a definitive diagnosis."
+- Never state a disease as confirmed fact from a photo alone. Use hedged language: "possible", "likely", "may be", "AI confidence".
+- NEVER invent a disease name. Only name a specific disease if the symptoms are unmistakable AND well-known; otherwise say "unknown — needs expert confirmation" or describe symptoms only.
+- NEVER invent pesticide/fertilizer dosages, product names, or application rates. Give general guidance only (e.g. "remove affected leaves", "avoid excess nitrogen"), and recommend consulting a Krishi Vigyan Kendra or Kisan Call Centre 1800-180-1551 for exact doses.
+- Identify the crop only if reasonably confident from the photo; otherwise set "crop" to null. Do not take the user's text description as visual proof of the crop.
+
 IMAGE QUALITY FIRST (ABSOLUTE):
 - Before diagnosing, assess image quality. If the photo is blurry, too dark, too distant, or does not clearly show the affected crop/leaf, you MUST say so and ask for a clearer close-up photo. Do NOT guess a diagnosis from a bad image.
 
-SAFETY (ABSOLUTE):
-- Never state a disease as confirmed fact from a photo alone. Use hedged language: "possible", "likely", "may be", "AI confidence".
-- Never invent pesticide/fertilizer dosages. Give general guidance only, and recommend consulting a Krishi Vigyan Kendra or Kisan Call Centre 1800-180-1551 for exact doses.
-- Distinguish possible causes: disease / pest damage / nutrient deficiency / water stress / environmental stress / healthy.
-
 ANALYSIS:
-1. Identify the crop (if visible).
+1. Identify the crop (only if visually confident, else null).
 2. Identify the plant part (leaf, stem, root, fruit, whole plant).
 3. Assess health: healthy / possible disease / possible pest / possible deficiency / possible stress.
-4. List visible symptoms.
-5. Give practical next steps (organic first, then chemical in general terms).
+4. List visible symptoms (observation only, describe what you see).
+5. Give practical next steps (organic first, then chemical only in general terms — no doses).
 6. State the urgency: low / medium / high / urgent (e.g. if the whole field is affected or it spreads fast).
 7. Say when to seek expert confirmation (KVK, local agri extension officer, Kisan Call Centre).
+
+CONFIDENCE:
+- Set confidence 0-100 ONLY when the image is clear and you are reasonably sure. When the image is unclear, or you are guessing, set confidence LOW (below 40) or null.
+- If you cannot identify the crop, set "crop" to null and still describe symptoms/next steps honestly.
 
 OUTPUT — STRICT JSON, no markdown fences, no prose before or after:
 {
@@ -132,9 +176,9 @@ OUTPUT — STRICT JSON, no markdown fences, no prose before or after:
   "plant_part": "Leaf" or null,
   "health_status": "possible disease | possible pest | possible deficiency | possible water stress | possible environmental stress | healthy | unclear",
   "possible_issue": "Short hedged statement, e.g. 'Likely fungal leaf spot, needs field confirmation'",
-  "confidence": 0-100 (only if the image is clear; low confidence when unclear),
+  "confidence": 0-100 or null,
   "symptoms": ["visible symptom 1", "..."],
-  "recommendations": ["step 1", "..."],
+  "recommendations": ["general step 1", "..."],
   "urgency": "low" | "medium" | "high" | "urgent",
   "needs_clearer_image": true/false,
   "next_steps_for_farmer": ["..."],
@@ -156,7 +200,11 @@ serve(async (req) => {
   const rateLimitResult = await checkRateLimit(authResult.userId!, 'crop-doctor', RATE_LIMIT_CONFIG);
   if (!rateLimitResult.allowed) {
     return new Response(
-      JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
+      errPayload(
+        "rate_limit",
+        "Too many requests. Please wait a moment and try again.",
+        "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।",
+      ),
       {
         status: 429,
         headers: {
@@ -172,12 +220,17 @@ serve(async (req) => {
   const parseResult = await parseAndValidate(req, cropDoctorRequestSchema, headers);
   if (!parseResult.success) return parseResult.response;
 
-  const { description, imageBase64, language = "Hindi (हिंदी)" } = parseResult.data;
+  const { description, imageBase64, language = "Hindi (हिंदी)", storagePath } = parseResult.data;
 
   // Image validation before any AI spend (spec §11): clear errors, no hardcoded diagnoses.
   if (!imageBase64) {
     return new Response(
-      JSON.stringify({ error: "Please attach a crop photo to analyze it.", needs_clearer_image: true }),
+      errPayload(
+        "validation",
+        "Please attach a crop photo to analyze it.",
+        "विश्लेषण के लिए कृपया फसल की तस्वीर संलग्न करें।",
+        { needs_clearer_image: true },
+      ),
       { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
@@ -185,10 +238,16 @@ serve(async (req) => {
   const validation = validateImage(imageBase64);
   if (!validation.ok) {
     return new Response(
-      JSON.stringify({ error: validation.error, needs_clearer_image: true }),
+      errPayload("validation", validation.error, validation.errorHi, { needs_clearer_image: true }),
       { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }
+
+  // Only accept a storage path already scoped to this user's own folder.
+  const safeStoragePath =
+    typeof storagePath === "string" && storagePath.startsWith(`${authResult.userId}/`)
+      ? storagePath
+      : null;
 
   try {
     const systemPrompt = SYSTEM_PROMPT.replace("{language}", language);
@@ -236,8 +295,12 @@ serve(async (req) => {
       };
     }
 
-    await persistScan(authResult.userId!, result, validation.mime, language);
     await logUsage(authResult.userId!, provider);
+
+    // Persist with a server-generated signed URL for the private bucket so the
+    // user's own scan history can show the photo without a public bucket.
+    const signedUrl = await createSignedImageUrl(safeStoragePath);
+    await persistScan(authResult.userId!, result, validation.mime, language, safeStoragePath, signedUrl);
 
     return new Response(
       JSON.stringify({ result }),
@@ -254,21 +317,26 @@ serve(async (req) => {
 
     if (error instanceof AiGatewayError) {
       const status = error.kind === "rate_limit" ? 429 : error.kind === "quota" ? 402 : error.kind === "timeout" ? 504 : error.kind === "config" ? 503 : 502;
-      const message = error.kind === "timeout"
-        ? "निदान सेवा धीमी है। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
-        : error.kind === "quota"
-          ? "AI क्रेडिट समाप्त। कृपया क्रेडिट जोड़ें।"
-          : error.kind === "rate_limit"
-            ? "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।"
-            : "निदान सेवा में अस्थायी समस्या। कृपया बाद में पुनः प्रयास करें।";
+      const code = error.kind === "timeout" ? "timeout" : error.kind === "quota" ? "quota" : error.kind === "rate_limit" ? "rate_limit" : error.kind === "config" ? "config" : "api";
+      const copy: Record<string, { en: string; hi: string }> = {
+        timeout: { en: "The analysis service is taking too long. Please try again shortly.", hi: "विश्लेषण सेवा धीमी है। कृपया थोड़ी देर बाद पुनः प्रयास करें।" },
+        quota: { en: "AI credits exhausted. Please try again later.", hi: "AI क्रेडिट समाप्त। कृपया बाद में पुनः प्रयास करें।" },
+        rate_limit: { en: "Too many requests. Please wait a few seconds and retry.", hi: "बहुत सारे अनुरोध। कृपया कुछ सेकंड बाद पुनः प्रयास करें।" },
+        config: { en: "AI analysis is not configured yet. Please contact support.", hi: "AI विश्लेषण अभी कॉन्फ़िगर नहीं है। कृपया सहायता से संपर्क करें।" },
+        api: { en: "Temporary problem in the analysis service. Please try again later.", hi: "विश्लेषण सेवा में अस्थायी समस्या। कृपया बाद में पुनः प्रयास करें।" },
+      };
       return new Response(
-        JSON.stringify({ error: message }),
+        errPayload(code, copy[code].en, copy[code].hi),
         { status, headers: { ...headers, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
-      JSON.stringify({ error: "निदान सेवा में समस्या। कृपया पुनः प्रयास करें।" }),
+      errPayload(
+        "api",
+        "Something went wrong with the analysis. Please try again.",
+        "विश्लेषण में समस्या आई। कृपया पुनः प्रयास करें।",
+      ),
       { status: 500, headers: { ...headers, "Content-Type": "application/json" } }
     );
   }

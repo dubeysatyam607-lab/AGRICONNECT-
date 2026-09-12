@@ -9,7 +9,7 @@ import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage, LANGUAGE_NAMES, type Language } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { useFarm } from "@/contexts/FarmContext";
+import { useProfile } from "@/contexts/ProfileContext";
 import { useLocation } from "@/features/location/LocationContext";
 import { getLocalAnswer, type LocalAnswerKind } from "@/lib/local-advisor";
 import { dialogService } from "@/core/services/DialogService";
@@ -27,6 +27,7 @@ import type { SttController, TtsController, MicState } from "@/core/voice";
 import { ListeningOverlay } from "@/core/voice/ui/ListeningOverlay";
 import { VoicePlayerBar } from "@/core/voice/ui/VoicePlayerBar";
 import { SafeImage } from "@/components/ui/SafeImage";
+import { ALLOWED_IMAGE_TYPES, MAX_RAW_IMAGE_MB, compressImageFile } from "@/lib/crop-scan";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -72,7 +73,7 @@ interface NearbyFetchResult {
   hasLocation: boolean;
 }
 
-const MAX_IMAGE_SIZE_MB = 8;
+const MAX_IMAGE_SIZE_MB = MAX_RAW_IMAGE_MB;
 
 // Stop all speaking utility using core Sarvam AI engine
 const stopSpeaking = () => {
@@ -172,7 +173,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
   const { user } = useAuth();
   const { toast } = useToast();
-  const { profile } = useFarm();
+  const { profile } = useProfile();
   const { location: activeLocation } = useLocation();
   const localLang = isHindi ? "hi" : "en";
 
@@ -472,12 +473,11 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedMimes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedMimes.includes(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       toast({
         title: "Invalid file type",
         description: "Please attach a valid JPG, PNG, or WebP image.",
@@ -495,13 +495,21 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64Url = reader.result as string;
-      setImagePreview(base64Url);
-      setImageBase64(base64Url.split(",")[1]);
-    };
-    reader.readAsDataURL(file);
+    // Compress/resize before upload so large phone photos are not rejected by
+    // the edge function's 8MB payload cap and we send less data over the wire.
+    try {
+      const compressed = await compressImageFile(file);
+      setImagePreview(compressed.dataUrl);
+      setImageBase64(compressed.dataUrl.split(",")[1]);
+    } catch {
+      toast({
+        title: t('chat.fileTooLargeTitle') || "Upload failed",
+        description: "Could not process this image. Please try another photo.",
+        variant: "destructive"
+      });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const clearAttachedImage = () => {
@@ -879,9 +887,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           if (r.health_status) lines.push(`• **Health**: ${r.health_status}`);
           if (r.confidence != null) lines.push(`• **Confidence**: ${r.confidence}%`);
           if (Array.isArray(r.symptoms) && r.symptoms.length) lines.push(`• **Symptoms**: ${r.symptoms.join(", ")}`);
-          if (Array.isArray(r.recommendations) && r.recommendations.length) lines.push(`• **Treatment**: ${r.recommendations.join("; ")}`);
+          if (Array.isArray(r.recommendations) && r.recommendations.length) lines.push(`• **Suggested steps**: ${r.recommendations.join("; ")}`);
           if (r.urgency) lines.push(`• **Urgency**: ${r.urgency}`);
           if (Array.isArray(r.next_steps_for_farmer) && r.next_steps_for_farmer.length) lines.push(`• **Next Steps**: ${r.next_steps_for_farmer.join(", ")}`);
+          lines.push(`\n_${t('doctor.notDiagnosis') || 'AI assessment — not a definitive diagnosis.'}_`);
           assistantResponse = lines.join("\n");
           suggestions = isHindi ? ["खाद की सही मात्रा बताएं", "सिंचाई का सही समय", "नजदीकी मंडी भाव"] : ["Fertilizer dosage", "Irrigation schedule", "Mandi prices"];
         }
