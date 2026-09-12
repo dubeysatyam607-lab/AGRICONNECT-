@@ -8,21 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ImageUpload from "./ImageUpload";
 
-const ImageUploadPlaceholder = () => {
-  const { t } = useLanguage();
-  return (
-    <div className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer mb-4">
-      <Camera size={32} className="mb-2 text-primary/50" />
-      <span className="text-sm font-medium">{t('agr4')}</span>
-    </div>
-  );
-};
+// Removed ImageUploadPlaceholder in favor of actual ImageUpload
 
 export const CattleAssetForm = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +29,14 @@ export const CattleAssetForm = () => {
       price: Number(fd.get("price")),
       location: String(fd.get("location") || ""),
       is_active: true,
+      image_url: imageUrl || null,
     };
     try {
       const { error } = await supabase.from("cattle_listings").insert([payload]);
       if (error) throw error;
       toast({ title: "Livestock Listed Successfully!", description: "Your cattle is now visible in Pashu Mela." });
       setSubmitted(true);
+      setImageUrl("");
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Could not list livestock. Please try again.", variant: "destructive" });
     }
@@ -62,7 +57,7 @@ export const CattleAssetForm = () => {
     <AgriCard>
       <h3 className="font-bold text-lg mb-4">{t('agr8')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <ImageUploadPlaceholder />
+        <ImageUpload value={imageUrl} onChange={setImageUrl} bucket="cattle-images" />
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr9')}</label>
@@ -142,7 +137,6 @@ export const TransportAssetForm = () => {
     <AgriCard>
       <h3 className="font-bold text-lg mb-4">{t('agr22')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <ImageUploadPlaceholder />
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr23')}</label>
           <input required name="model" type="text" placeholder="e.g. Tata Ace, Mahindra 575" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
@@ -213,13 +207,16 @@ export const StoreInventoryForm = () => {
       description: String(fd.get("description") || ""),
       image_url: imageUrl || null,
       status: "Available",
+      rating: 0,
+      reviews: 0,
       seller_id: user?.id || null,
     };
     try {
       const { error } = await supabase.from("store_inventory").insert([payload]);
       if (error) throw error;
-      toast({ title: "Product Listed Successfully!", description: "Your product is now live in the Agri-Store." });
+      toast({ title: "Product Listed Successfully!", description: "Your product is now available in Agri Store." });
       setSubmitted(true);
+      setImageUrl("");
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Could not list product. Please try again.", variant: "destructive" });
     }
@@ -320,6 +317,7 @@ export const StoreInventoryForm = () => {
 export const SoilTestLabForm = () => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,12 +328,14 @@ export const SoilTestLabForm = () => {
       turnaround: String(fd.get("turnaround") || ""),
       price: Number(fd.get("price")),
       status: "Available",
+      image_url: imageUrl || null,
     };
     try {
       const { error } = await supabase.from("soil_test_labs").insert([payload]);
       if (error) throw error;
       toast({ title: "Lab Listed Successfully!", description: "Your Soil Testing Lab is now available for bookings." });
       setSubmitted(true);
+      setImageUrl("");
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Could not list lab. Please try again.", variant: "destructive" });
     }
@@ -356,7 +356,7 @@ export const SoilTestLabForm = () => {
     <AgriCard>
       <h3 className="font-bold text-lg mb-4">{t('agr54')}</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <ImageUploadPlaceholder />
+        <ImageUpload value={imageUrl} onChange={setImageUrl} bucket="store-images" />
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('agr55')}</label>
           <input required name="lab" type="text" placeholder="e.g. Kisan Krishi Lab" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />

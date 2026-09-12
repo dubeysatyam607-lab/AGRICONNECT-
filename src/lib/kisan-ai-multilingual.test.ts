@@ -1,13 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { getLocalAnswer } from "./local-advisor";
-import type { FarmProfile } from "@/contexts/FarmContext";
+import type { IFarmerProfile } from "@/features/profile/domain/models/FarmerProfile";
 
-const mockProfile: FarmProfile = {
-  crop: "Wheat",
-  variety: "Sharbati",
-  stage: "Tillering",
-  farmArea: 5,
-  soilType: "Black Soil",
+const mockProfile: IFarmerProfile = {
+  id: "1",
+  userId: "1",
+  crops: ["Wheat"],
+  farmSpecs: {
+    totalArea: 5,
+    soilType: "Black Soil",
+  },
 };
 
 describe("Kisan AI Multilingual & Conversational Intelligence", () => {

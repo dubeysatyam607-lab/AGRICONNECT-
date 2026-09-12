@@ -1,37 +1,21 @@
 import { describe, it, expect } from "vitest";
 import { getLocalAnswer } from "./local-advisor";
 import { detectLanguageOf } from "@/core/voice/language";
-import type { FarmProfile } from "@/contexts/FarmContext";
+import type { IFarmerProfile } from "@/features/profile/domain/models/FarmerProfile";
 
-const mockProfile: FarmProfile = {
-  farmerName: "Rajesh Kumar",
-  phone: "9876543210",
-  state: "Madhya Pradesh",
-  district: "Indore",
-  village: "Sanwer",
-  crop: "Wheat",
-  variety: "Sharbati",
-  stage: "Tillering",
-  farmArea: 5,
-  soilType: "Black Soil",
-  irrigationSource: "Borewell",
-  preferredLanguage: "hi",
-  savedAt: "2026-08-21T00:00:00.000Z",
+const mockProfile: IFarmerProfile = {
+  id: "1",
+  userId: "1",
+  personal: { fullName: "Rajesh Kumar", mobile: "9876543210" },
+  location: { state: "Madhya Pradesh", district: "Indore", villageOrTehsil: "Sanwer" },
+  crops: ["Wheat"],
+  farmSpecs: { totalArea: 5, soilType: "Black Soil" },
 };
 
-const emptyProfile: FarmProfile = {
-  farmerName: "",
-  phone: "",
-  state: "",
-  district: "",
-  village: "",
-  crop: "",
-  variety: "",
-  stage: "",
-  farmArea: 0,
-  soilType: "",
-  irrigationSource: "",
-  preferredLanguage: "en",
+const emptyProfile: IFarmerProfile = {
+  id: "2",
+  userId: "2",
+  crops: [],
 };
 
 describe("Kisan AI / Kisan Sahayak Phase 5 — Comprehensive Tests", () => {

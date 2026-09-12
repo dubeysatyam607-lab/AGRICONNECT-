@@ -237,6 +237,67 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
       expect(chennai.live.condition).toBe('Sunny');
       expect(chennai.live.uvIndex).toBe(9);
     });
+
+    it('rejects missing or undefined coordinates without silently guessing a default city', async () => {
+      const mockDataSource = {
+        fetchRemoteWeather: vi.fn(),
+      };
+      const repo = new WeatherRepositoryImpl(mockDataSource as any);
+
+      await expect(repo.getWeatherForecast(undefined, undefined)).rejects.toThrow(
+        'Valid latitude and longitude coordinates are required.'
+      );
+      await expect(repo.getWeatherForecast(NaN, 75.85)).rejects.toThrow(
+        'Valid latitude and longitude coordinates are required.'
+      );
+      expect(mockDataSource.fetchRemoteWeather).not.toHaveBeenCalled();
+    });
+
+    it('retains lastUpdated timestamp and all required farmer metrics', async () => {
+      const mockDataSource = {
+        fetchRemoteWeather: vi.fn().mockResolvedValue({
+          location: { name: 'Nagpur Mandi', district: 'Nagpur', state: 'Maharashtra', latitude: 21.1458, longitude: 79.0882 },
+          live: {
+            temp: 28,
+            feelsLike: 31,
+            condition: 'Heavy Monsoon Shower',
+            humidity: 92,
+            windSpeed: 18,
+            windDirection: 'SW',
+            windDegrees: 220,
+            uvIndex: 4,
+            pressureHpa: 1005,
+            pressureTrend: 'Falling',
+            visibilityKm: 5,
+            dewPoint: 25,
+            aqi: { index: 1, pm25: 12, pm10: 20, status: 'Good' },
+            sunriseTime: '05:52 AM',
+            sunsetTime: '06:40 PM',
+            daylightProgressPercent: 65,
+          },
+          hourly: [
+            { time: 'Now', timestamp: Date.now(), temp: 28, condition: 'Heavy Monsoon Shower', rainProbability: 85, windSpeed: 18 },
+          ],
+          daily: [
+            { dayName: 'Today', date: '12 Sep', condition: 'Heavy Monsoon Shower', minTemp: 23, maxTemp: 29, rainProbability: 90, windSpeed: 20, humidity: 90, agriAdvisory: 'Heavy rain alert' },
+          ],
+          lastUpdated: '2026-09-12T00:45:00.000Z',
+          isOfflineCached: false,
+        }),
+      };
+
+      const repo = new WeatherRepositoryImpl(mockDataSource as any);
+      const res = await repo.getWeatherForecast(21.1458, 79.0882, 'Nagpur Mandi');
+
+      expect(res.location.name).toBe('Nagpur Mandi');
+      expect(res.live.temp).toBe(28);
+      expect(res.live.condition).toBe('Heavy Monsoon Shower');
+      expect(res.live.humidity).toBe(92);
+      expect(res.live.windSpeed).toBe(18);
+      expect(res.daily[0].rainProbability).toBe(90);
+      expect(res.hourly[0].rainProbability).toBe(85);
+      expect(res.lastUpdated).toBe('2026-09-12T00:45:00.000Z');
+    });
   });
 
   describe('weatherErrorCopy — differentiated, non-technical error copy', () => {
@@ -271,4 +332,96 @@ describe('AgriConnect Weather System — Real Data Verification', () => {
       expect(weatherErrorCopy(null)).toBe('Weather data temporarily unavailable. Please try again.');
     });
   });
+
+  describe('Crop + Location + Weather — Agricultural Context Engine', () => {
+    it('generates high wind spraying warning when wind speed exceeds 15 km/h', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      const mockProfile: any = { crops: ['Cotton (Kapas)'], stage: 'flowering' };
+      const mockWeather: any = {
+        location: { name: 'Bathinda', district: 'Bathinda', state: 'Punjab' },
+        live: { temp: 32, humidity: 45, windSpeed: 22, condition: 'Clear' },
+        daily: [{ rainProbability: 10, agriAdvisory: '' }],
+      };
+
+      const advice = deriveFarmAdvice(mockProfile, mockWeather);
+      expect(advice.cropLabel).toContain('Cotton');
+      const windItem = advice.items.find(it => it.title.includes('High Wind Speed'));
+      expect(windItem).toBeDefined();
+      expect(windItem?.sub).toContain('Avoid foliar/pesticide sprays today to prevent chemical drift');
+    });
+
+    it('generates rain precaution and delays irrigation when rain probability >= 40%', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      const mockProfile: any = { crops: ['Paddy / Rice (Dhan)'] };
+      const mockWeather: any = {
+        location: { name: 'Karnal', district: 'Karnal', state: 'Haryana' },
+        live: { temp: 28, humidity: 80, windSpeed: 10, condition: 'Heavy Monsoon Shower' },
+        daily: [{ rainProbability: 75, agriAdvisory: 'Heavy rain alert' }],
+      };
+
+      const advice = deriveFarmAdvice(mockProfile, mockWeather);
+      expect(advice.waterAdvice).toContain('Rain 75% expected');
+      expect(advice.waterAdvice).toContain('postpone irrigation');
+      const rainItem = advice.items.find(it => it.title.includes('Rain 75% Expected'));
+      expect(rainItem).toBeDefined();
+    });
+
+    it('warns about rust and humid fungal diseases on Wheat and Mustard in humid conditions', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      
+      // Test Wheat
+      const wheatProfile: any = { crops: ['Wheat (Gehun)'] };
+      const humidWeather: any = {
+        location: { name: 'Ludhiana', district: 'Ludhiana', state: 'Punjab' },
+        live: { temp: 24, humidity: 88, windSpeed: 8, condition: 'Overcast' },
+        daily: [{ rainProbability: 20 }],
+      };
+      const wheatAdvice = deriveFarmAdvice(wheatProfile, humidWeather);
+      const wheatAdvisoryItem = wheatAdvice.items.find(it => it.title.includes('Wheat Field Advisory'));
+      expect(wheatAdvisoryItem?.sub).toContain('yellow rust');
+
+      // Test Mustard
+      const mustardProfile: any = { crops: ['Mustard (Sarson)'] };
+      const mustardAdvice = deriveFarmAdvice(mustardProfile, humidWeather);
+      const mustardAdvisoryItem = mustardAdvice.items.find(it => it.title.includes('Mustard Field Advisory'));
+      expect(mustardAdvisoryItem?.sub).toContain('white rust');
+    });
+
+    it('warns about heat stress and directs irrigation to early morning / late evening during extreme temperatures', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      const mockProfile: any = { crops: ['Sugarcane (Ganna)'] };
+      const heatWeather: any = {
+        location: { name: 'Nagpur', district: 'Nagpur', state: 'Maharashtra' },
+        live: { temp: 42, humidity: 30, windSpeed: 12, condition: 'Sunny' },
+        daily: [{ rainProbability: 5 }],
+      };
+
+      const advice = deriveFarmAdvice(mockProfile, heatWeather);
+      expect(advice.waterAdvice).toContain('High temperature (42°C)');
+      expect(advice.waterAdvice).toContain('early morning or late evening');
+    });
+
+    it('warns about frost and cold injury during severe cold temperatures', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      const mockProfile: any = { crops: ['Potato (Aloo)'] };
+      const coldWeather: any = {
+        location: { name: 'Shimla', district: 'Shimla', state: 'Himachal Pradesh' },
+        live: { temp: 5, humidity: 60, windSpeed: 10, condition: 'Clear' },
+        daily: [{ rainProbability: 0 }],
+      };
+
+      const advice = deriveFarmAdvice(mockProfile, coldWeather);
+      const potatoItem = advice.items.find(it => it.title.includes('Potato Field Advisory'));
+      expect(potatoItem?.sub).toContain('protect roots from cold injury');
+    });
+
+    it('handles null or undefined farmer profile safely and falls back to general standing crop guidance', async () => {
+      const { deriveFarmAdvice } = await import('@/lib/farm-advisor');
+      const advice = deriveFarmAdvice(null, null);
+      expect(advice.cropLabel).toBeDefined();
+      expect(advice.items.length).toBeGreaterThanOrEqual(4);
+      expect(advice.heroLine).toBeDefined();
+    });
+  });
 });
+

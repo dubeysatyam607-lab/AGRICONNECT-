@@ -37,8 +37,8 @@ function precompressPlugin(): PluginOption {
 
         const buf = Buffer.isBuffer(code) ? code : Buffer.from(code);
 
-        // Brotli (best ratio, supported by all modern browsers)
-        const br = zlib.brotliCompressSync(buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } });
+        // Brotli (fast, great ratio, supported by all modern browsers)
+        const br = zlib.brotliCompressSync(buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 6 } });
         this.emitFile({
           type: "asset",
           fileName: `${name}.br`,
@@ -46,7 +46,7 @@ function precompressPlugin(): PluginOption {
         });
 
         // Gzip (maximum compatibility)
-        const gz = zlib.gzipSync(buf, { level: 9 });
+        const gz = zlib.gzipSync(buf, { level: 6 });
         this.emitFile({
           type: "asset",
           fileName: `${name}.gz`,

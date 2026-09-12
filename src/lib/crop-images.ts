@@ -392,8 +392,8 @@ export function getCropCategory(cropName?: string): string {
   return "Cereals";
 }
 
-export function getCropImage(cropName?: string): string {
-  if (!cropName) return CATEGORY_CROP_IMAGES.default;
+export function getCropImage(cropName?: string): string | undefined {
+  if (!cropName) return undefined;
   const raw = cropName.toLowerCase().replace(/[()]/g, " ").trim();
 
   // 1. Direct match in dictionary
@@ -409,17 +409,13 @@ export function getCropImage(cropName?: string): string {
     }
   }
 
-  // 3. Category level match
-  const cat = getCropCategory(raw).toLowerCase();
-  if (CATEGORY_CROP_IMAGES[cat]) {
-    return CATEGORY_CROP_IMAGES[cat];
-  }
-
-  return CATEGORY_CROP_IMAGES.default;
+  // We explicitly do NOT return generic category images here,
+  // to enforce the "Do not use random crop images" requirement.
+  return undefined;
 }
 
 export function getCropBackupImage(cropName?: string): string {
-  return getCropImage(cropName);
+  return getCropSvgFallback(cropName);
 }
 
 export function getCropEmoji(cropName?: string): string {

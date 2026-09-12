@@ -19,14 +19,14 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
     mockedInvoke.mockReset();
   });
 
-  it("getCropImage maps crops to valid high-res image URLs", () => {
+  it("getCropImage maps crops to valid high-res image URLs only when semantically matched", () => {
     const wheatImage = getCropImage("Wheat");
     const tomatoImage = getCropImage("Tomato");
-    const fallbackImage = getCropImage("Unknown Exotic Plant");
+    const unmatchedImage = getCropImage("Unknown Exotic Plant");
 
     expect(wheatImage).toMatch(/images\.(unsplash|pexels)\.com/);
     expect(tomatoImage).toMatch(/images\.(unsplash|pexels)\.com/);
-    expect(fallbackImage).toMatch(/images\.(unsplash|pexels)\.com/);
+    expect(unmatchedImage).toBeUndefined();
   });
 
   it("getCropCategory correctly classifies crops into categories", () => {

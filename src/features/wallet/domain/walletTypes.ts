@@ -69,3 +69,50 @@ export interface AdminWalletRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface AdminAdjustmentAuditLog {
+  id: string;
+  wallet_id: string;
+  user_id: string;
+  amount: number;
+  direction: 'in' | 'out';
+  reason: string;
+  admin_user_id: string;
+  created_at: string;
+}
+
+/**
+ * Safely derives wallet balance from transaction records in the append-only ledger.
+ * Credits and refunds increase balance; debits and payments decrease balance.
+ */
+export function deriveBalanceFromLedger(transactions: WalletTransaction[]): number {
+  return transactions
+    .filter((tx) => tx.status === 'completed')
+    .reduce((acc, tx) => {
+      if (tx.direction === 'in' || tx.type === 'credit' || tx.type === 'refund' || tx.type === 'cashback' || tx.type === 'reward') {
+        return acc + Number(tx.amount || 0);
+      } else if (tx.direction === 'out' || tx.type === 'debit' || tx.type === 'payment' || tx.type === 'withdrawal') {
+        return acc - Number(tx.amount || 0);
+      }
+      return acc;
+    }, 0);
+}
+
+/**
+ * Verifies that a transaction contains all mandatory Phase 15 audit fields.
+ */
+export function validateTransactionFields(txn: Partial<WalletTransaction>): { valid: boolean; missingFields: string[] } {
+  const missing: string[] = [];
+  if (!txn.id) missing.push('transaction_id');
+  if (!txn.user_id) missing.push('user_id');
+  if (txn.amount === undefined || txn.amount === null || isNaN(txn.amount) || txn.amount <= 0) missing.push('amount');
+  if (!txn.type) missing.push('type');
+  if (!txn.status) missing.push('status');
+  if (!txn.reference_id && !txn.reference_type) missing.push('reference');
+  if (!txn.created_at) missing.push('created_at');
+
+  return {
+    valid: missing.length === 0,
+    missingFields: missing,
+  };
+}
