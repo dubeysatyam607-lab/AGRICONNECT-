@@ -7,9 +7,9 @@ import {
 import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage, LANGUAGE_NAMES, type Language } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useFarm } from "@/contexts/FarmContext";
 import { useLocation } from "@/features/location/LocationContext";
 import { getLocalAnswer, type LocalAnswerKind } from "@/lib/local-advisor";
 import { dialogService } from "@/core/services/DialogService";
@@ -27,7 +27,6 @@ import type { SttController, TtsController, MicState } from "@/core/voice";
 import { ListeningOverlay } from "@/core/voice/ui/ListeningOverlay";
 import { VoicePlayerBar } from "@/core/voice/ui/VoicePlayerBar";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { ALLOWED_IMAGE_TYPES, MAX_RAW_IMAGE_MB, compressImageFile } from "@/lib/crop-scan";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -73,7 +72,7 @@ interface NearbyFetchResult {
   hasLocation: boolean;
 }
 
-const MAX_IMAGE_SIZE_MB = MAX_RAW_IMAGE_MB;
+const MAX_IMAGE_SIZE_MB = 8;
 
 // Stop all speaking utility using core Sarvam AI engine
 const stopSpeaking = () => {
@@ -166,14 +165,14 @@ interface KisanChatProps {
 }
 
 const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLanguage }) => {
-  const { language, setLanguage, languageName, t } = useLanguage();
+  const { languageName, t } = useLanguage();
   const selectedLanguage = languageName || propLanguage || "Hindi (हिंदी)";
   const greeting = t('chat.greeting');
   const isHindi = selectedLanguage.includes("Hindi");
 
   const { user } = useAuth();
   const { toast } = useToast();
-  const { profile } = useProfile();
+  const { profile } = useFarm();
   const { location: activeLocation } = useLocation();
   const localLang = isHindi ? "hi" : "en";
 
@@ -473,11 +472,12 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    const allowedMimes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedMimes.includes(file.type)) {
       toast({
         title: "Invalid file type",
         description: "Please attach a valid JPG, PNG, or WebP image.",
@@ -495,21 +495,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       return;
     }
 
-    // Compress/resize before upload so large phone photos are not rejected by
-    // the edge function's 8MB payload cap and we send less data over the wire.
-    try {
-      const compressed = await compressImageFile(file);
-      setImagePreview(compressed.dataUrl);
-      setImageBase64(compressed.dataUrl.split(",")[1]);
-    } catch {
-      toast({
-        title: t('chat.fileTooLargeTitle') || "Upload failed",
-        description: "Could not process this image. Please try another photo.",
-        variant: "destructive"
-      });
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Url = reader.result as string;
+      setImagePreview(base64Url);
+      setImageBase64(base64Url.split(",")[1]);
+    };
+    reader.readAsDataURL(file);
   };
 
   const clearAttachedImage = () => {
@@ -887,10 +879,9 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           if (r.health_status) lines.push(`• **Health**: ${r.health_status}`);
           if (r.confidence != null) lines.push(`• **Confidence**: ${r.confidence}%`);
           if (Array.isArray(r.symptoms) && r.symptoms.length) lines.push(`• **Symptoms**: ${r.symptoms.join(", ")}`);
-          if (Array.isArray(r.recommendations) && r.recommendations.length) lines.push(`• **Suggested steps**: ${r.recommendations.join("; ")}`);
+          if (Array.isArray(r.recommendations) && r.recommendations.length) lines.push(`• **Treatment**: ${r.recommendations.join("; ")}`);
           if (r.urgency) lines.push(`• **Urgency**: ${r.urgency}`);
           if (Array.isArray(r.next_steps_for_farmer) && r.next_steps_for_farmer.length) lines.push(`• **Next Steps**: ${r.next_steps_for_farmer.join(", ")}`);
-          lines.push(`\n_${t('doctor.notDiagnosis') || 'AI assessment — not a definitive diagnosis.'}_`);
           assistantResponse = lines.join("\n");
           suggestions = isHindi ? ["खाद की सही मात्रा बताएं", "सिंचाई का सही समय", "नजदीकी मंडी भाव"] : ["Fertilizer dosage", "Irrigation schedule", "Mandi prices"];
         }
@@ -1316,26 +1307,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Language Selector for all 12 languages */}
-          <select
-            value={language}
-            onChange={(e) => {
-              const newLang = e.target.value as Language;
-              setLanguage(newLang);
-              setSttLang(getSttLangCode(newLang));
-            }}
-            className="text-[11px] font-bold bg-background text-foreground border border-emerald-300 dark:border-emerald-700 rounded-xl px-2 py-1.5 outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs max-w-[110px] sm:max-w-[130px] truncate"
-            title="Change Chat Language"
-            aria-label="Select Language"
-          >
-            {Object.entries(LANGUAGE_NAMES).map(([code, name]) => (
-              <option key={code} value={code}>
-                {name}
-              </option>
-            ))}
-          </select>
-
+        <div className="flex items-center gap-2">
           <button
             onClick={handleNewSession}
             className="p-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 active:scale-95 rounded-xl transition-all border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 text-xs font-bold shadow-xs"
@@ -1513,25 +1485,9 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                             {isSpeaking && isLast ? t('chat.stopSpeakingBtn') : t('chat.listenBtn')}
                           </button>
                           {msg.source === "local" && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="flex items-center gap-1 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
-                                ⚡ {t('chat.badgeSmartOffline')}
-                              </span>
-                              {isLast && !isLoading && (
-                                <button
-                                  onClick={() => {
-                                    const lastUserMsg = [...chatHistory].reverse().find(m => m.role === 'user');
-                                    if (lastUserMsg?.content) {
-                                      handleSend(lastUserMsg.content);
-                                    }
-                                  }}
-                                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 border border-emerald-500/30 rounded-full px-2 py-0.5 normal-case transition-all active:scale-95"
-                                  title="Retry querying online Kisan AI"
-                                >
-                                  🔄 Retry AI
-                                </button>
-                              )}
-                            </div>
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-full px-2 py-0.5 normal-case">
+                              ⚡ {t('chat.badgeSmartOffline')}
+                            </span>
                           )}
                         </div>
                       )}
