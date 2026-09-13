@@ -1,9 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX, History, RotateCcw, AlertTriangle } from "lucide-react";
+import { Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX, History, AlertTriangle } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { useToast } from "@/hooks/use-toast";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
+import {
+  compressImageFile,
+  uploadScanImage,
+  classifyEdgeError,
+  SCAN_ERROR_KEYS,
+  type ScanErrorCode,
+} from "@/lib/crop-scan";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchScanHistory, deleteScan, type StoredScan } from "@/lib/ai-persistence";
@@ -51,6 +58,7 @@ const CropDoctor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [compressedBlob, setCompressedBlob] = useState<Blob | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const speakResultText = useCallback(() => {
@@ -115,54 +123,14 @@ const CropDoctor: React.FC = () => {
     if (!showHistory) loadHistory();
   };
 
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error("Could not read the image file."));
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        canvas.width = Math.round(width);
-        canvas.height = Math.round(height);
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        try {
-          resolve(canvas.toDataURL("image/jpeg", 0.70));
-        } catch {
-          reject(new Error("Image compression failed."));
-        }
-      };
-      img.onerror = () => reject(new Error("The image could not be loaded. It may be corrupted."));
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload a valid JPG, PNG, or WebP image.",
+        title: t("doctor.error.invalidTypeTitle") || "Invalid file type",
+        description: t("doctor.error.invalidType") || "Please upload a valid JPG, PNG, or WebP image.",
         variant: "destructive",
       });
       return;
@@ -170,145 +138,26 @@ const CropDoctor: React.FC = () => {
 
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: `Image size must be less than ${MAX_FILE_MB}MB.`,
+        title: t("doctor.error.tooLargeTitle") || "File too large",
+        description: t("doctor.error.tooLarge") || `Image size must be less than ${MAX_FILE_MB}MB.`,
         variant: "destructive",
       });
       return;
     }
 
     try {
-      const compressed = await compressImage(file);
-      setImagePreview(compressed);
-      setImageBase64(compressed);
+      const compressed = await compressImageFile(file);
+      setImagePreview(compressed.dataUrl);
+      setImageBase64(compressed.dataUrl);
+      setCompressedBlob(compressed.blob);
       setError(null);
     } catch (err: any) {
       toast({
-        title: "Upload failed",
-        description: err?.message || "Failed to process image.",
+        title: t("doctor.error.uploadFailedTitle") || "Upload failed",
+        description: err?.message || t("doctor.error.compress") || "Failed to process image.",
         variant: "destructive",
       });
     }
-  };
-
-  const getLocalCropScanDiagnosis = (desc: string, langName: string = "Hindi"): CropScanResult => {
-    const isHindi = !langName.toLowerCase().includes("english");
-    const text = (desc || "").toLowerCase();
-
-    // 1. Tomato (Tamatar / टमाटर)
-    if (text.includes("tomato") || text.includes("tamatar") || text.includes("tamatr") || text.includes("टमाटर")) {
-      if (text.includes("peela") || text.includes("yellow") || text.includes("curl") || text.includes("mudi") || text.includes("मक्खी")) {
-        return {
-          crop: isHindi ? "टमाटर (Tomato)" : "Tomato",
-          plant_part: isHindi ? "पत्ती और कोमल शाखाएं" : "Leaves & Shoots",
-          health_status: "possible disease",
-          possible_issue: isHindi
-            ? "टमाटर पर्ण कुंचन विषाणु (Tomato Leaf Curl Virus - ToLCV)"
-            : "Tomato Leaf Curl Virus (ToLCV) & Whitefly Infestation",
-          confidence: 89,
-          symptoms: isHindi
-            ? [
-                "पत्तियां ऊपर की ओर मुड़कर प्यालेनुमा हो जाना",
-                "पत्तियों का पीला पड़ना और पौधे का विकास रुकना",
-                "सफेद मक्खी (Whitefly) का पत्तियों की निचली सतह पर प्रकोप"
-              ]
-            : [
-                "Upward curling and puckering of leaves",
-                "Severe yellowing of leaf margins and stunted growth",
-                "Presence of whiteflies on the underside of leaves"
-              ],
-          recommendations: isHindi
-            ? [
-                "नीम का तेल (Neem Oil 1500 PPM) 5 मिली प्रति लीटर पानी में मिलाकर स्प्रे करें",
-                "पीले चिपचिपे कार्ड (Yellow Sticky Traps) 15-20 प्रति एकड़ लगाएं",
-                "व्हाइटफ्लाई नियंत्रण हेतु इमिडाक्लोप्रिड 17.8% SL (0.5 ml/L) या एसिटामिप्रिड 20% SP का छिड़काव करें"
-              ]
-            : [
-                "Spray Neem Oil 1500 PPM @ 5ml/L of water for organic whitefly deterrence",
-                "Install 15-20 Yellow Sticky Traps per acre",
-                "Apply Imidacloprid 17.8% SL (0.5 ml/L) or Acetamiprid 20% SP for systemic vector control"
-              ],
-          urgency: "high",
-          next_steps_for_farmer: isHindi
-            ? [
-                "रोगग्रस्त पौधों को उखाड़कर खेत से दूर नष्ट करें",
-                "नाइट्रोजन का अधिक उपयोग न करें, पोटैशियम की संतुलित मात्रा दें",
-                "निकटतम कृषि विज्ञान केंद्र (KVK) से संपर्क करें"
-              ]
-            : [
-                "Rogue out and destroy severely infected plants",
-                "Balance fertilizer with adequate potassium and avoid excess nitrogen",
-                "Consult local Krishi Vigyan Kendra (KVK) for regional advice"
-              ],
-        };
-      }
-
-      return {
-        crop: isHindi ? "टमाटर (Tomato)" : "Tomato",
-        plant_part: isHindi ? "पत्ती एवं तना" : "Leaves & Stems",
-        health_status: "offline_limited",
-        possible_issue: isHindi
-          ? "टमाटर — विशिष्ट लक्षण पहचान नहीं हो सके। कृपया ऑनलाइन होकर दोबारा जांच करें।"
-          : "Tomato — specific symptoms not identified. Please retry when online for accurate AI diagnosis.",
-        confidence: 0,
-        symptoms: [],
-        recommendations: isHindi
-          ? ["कृपया ऑनलाइन होकर तस्वीर दोबारा अपलोड करें", "स्पष्ट फोटो भेजें ताकि सही निदान हो सके"]
-          : ["Please go online and re-upload a photo", "Send a clear photo for accurate diagnosis"],
-        urgency: "N/A",
-        next_steps_for_farmer: isHindi
-          ? ["इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें"]
-          : ["Connect to internet and retry in Crop Doctor"],
-      };
-    }
-
-    // 2. Wheat (Gehu / गेहूं)
-    if (text.includes("wheat") || text.includes("gehu") || text.includes("गेहूं") || text.includes("गेहू")) {
-      return {
-        crop: isHindi ? "गेहूं (Wheat)" : "Wheat",
-        plant_part: isHindi ? "पत्तियां" : "Foliage",
-        health_status: "possible disease",
-        possible_issue: isHindi
-          ? "गेहूं का पीला रतुआ / रस्ट (Yellow Rust - Puccinia striiformis)"
-          : "Wheat Yellow Stripe Rust (Puccinia striiformis)",
-        confidence: 88,
-        symptoms: isHindi
-          ? ["पत्तियों पर पीले रंग की धारियां व चूर्ण जैसी फफूंद बनना", "हाथ लगाने पर पीला पाउडर छूटना"]
-          : ["Linear yellow pustules/stripes on leaves", "Yellow spore powder releases upon touching"],
-        recommendations: isHindi
-          ? [
-              "प्रोपिकोनाजोल 25% EC (टिल्ट) 1 मिली प्रति लीटर पानी में मिलाकर तुरंत छिड़काव करें",
-              "धूप निकलने पर छिड़काव करें ताकि दवा का असर पूरा हो"
-            ]
-          : [
-              "Foliar spray of Propiconazole 25% EC @ 1ml/L of water immediately",
-              "Apply during clear weather for maximum efficacy"
-            ],
-        urgency: "urgent",
-        next_steps_for_farmer: isHindi
-          ? ["खेत की लगातार निगरानी रखें", "पड़ोसी खेतों में भी रतुआ की जांच करें"]
-          : ["Monitor field daily", "Check adjacent wheat plots for spread"],
-      };
-    }
-
-    // 3. General Crop Diagnosis Engine — honest offline message
-    return {
-      crop: isHindi ? "फसल (Crop)" : "Crop",
-      plant_part: isHindi ? "पत्ती व वानस्पतिक भाग" : "Leaf & Foliage",
-      health_status: "offline_limited",
-      possible_issue: isHindi
-        ? "ऑफलाइन मोड — विशिष्ट रोग पहचान उपलब्ध नहीं। कृपया ऑनलाइन होकर दोबारा जांच करें।"
-        : "Offline mode — specific disease identification not available. Please retry online.",
-      confidence: 0,
-      symptoms: [],
-      recommendations: isHindi
-        ? ["कृपया इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें", "स्पष्ट फोटो भेजें ताकि सही निदान हो सके"]
-        : ["Please connect to internet and retry in Crop Doctor", "Send a clear photo for accurate diagnosis"],
-      urgency: "N/A",
-      next_steps_for_farmer: isHindi
-        ? ["इंटरनेट से जुड़ें और फसल डॉक्टर में दोबारा जांच करें"]
-        : ["Connect to internet and retry in Crop Doctor"],
-    };
   };
 
   const handleDiagnosis = async () => {
@@ -326,39 +175,49 @@ const CropDoctor: React.FC = () => {
     setError(null);
     setResult(null);
 
-    let diagnosticResult: CropScanResult | null = null;
+    await uploadScanImage(user?.id, compressedBlob);
 
     try {
-      const { data, error: err } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
+      const { data, error: err, code, timedOut } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
         "crop-doctor",
         { description: input, imageBase64, language: languageName },
         15000,
       );
 
-      if (!err && data?.result) {
-        diagnosticResult = data.result;
+      // Honesty contract: an edge failure is NEVER converted into a diagnosis.
+      if (err) {
+        const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
+        const key = SCAN_ERROR_KEYS[edgeCode] || "doctor.error.api";
+        const message = edgeCode === "validation" ? err : t(key) || err;
+        setIsLoading(false);
+        setError(message);
+        loadHistory();
+        return;
       }
+
+      if (!data?.result) {
+        setIsLoading(false);
+        setError(t("doctor.error.api") || "The AI returned an empty result. Please try again.");
+        loadHistory();
+        return;
+      }
+
+      setIsLoading(false);
+      setResult(data.result);
+
+      if (data.result.needs_clearer_image) {
+        setError("The photo is not clear enough to analyze. Please upload a clearer close-up of the affected part.");
+      }
+
+      if (autoSpeak && (data.result.possible_issue || data.result.health_status)) {
+        setTimeout(speakResultText, 500);
+      }
+
+      loadHistory();
     } catch {
-      // Handled via local fallback below
+      setIsLoading(false);
+      setError("Something went wrong on our side. Please try again in a moment.");
     }
-
-    // Graceful fallback to verified agronomy diagnostics if edge function is unreachable
-    if (!diagnosticResult) {
-      diagnosticResult = getLocalCropScanDiagnosis(input, languageName);
-    }
-
-    setIsLoading(false);
-    setResult(diagnosticResult);
-
-    if (diagnosticResult.needs_clearer_image) {
-      setError("The photo is not clear enough to analyze. Please upload a clearer close-up of the affected part.");
-    }
-
-    if (autoSpeak && (diagnosticResult.possible_issue || diagnosticResult.health_status)) {
-      setTimeout(speakResultText, 500);
-    }
-
-    loadHistory();
   };
 
   const handleReset = () => {
@@ -368,6 +227,7 @@ const CropDoctor: React.FC = () => {
     setInput("");
     setImagePreview(null);
     setImageBase64(null);
+    setCompressedBlob(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -443,6 +303,14 @@ const CropDoctor: React.FC = () => {
           )}
         </div>
 
+        {confidence == null && (
+          <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs space-y-1">
+            <p className="font-bold">AI is not confident in this assessment.</p>
+            <p>No confidence score available.</p>
+            <p>Not clearly identified — the crop or issue could not be determined.</p>
+          </div>
+        )}
+
         {result.possible_issue && (
           <p className="text-sm font-semibold text-foreground mb-3 leading-relaxed">{result.possible_issue}</p>
         )}
@@ -481,7 +349,14 @@ const CropDoctor: React.FC = () => {
           </div>
         )}
 
-        
+        {/* Honesty banner — never a definitive diagnosis */}
+        <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[11px] leading-relaxed flex items-start gap-2">
+          <Info size={14} className="shrink-0 mt-0.5" />
+          <p>
+            <strong>{t('doctor.notDiagnosis')}</strong>
+          </p>
+        </div>
+
         {/* Trust & Transparency Disclaimer */}
         <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed flex items-start gap-2">
           <Info size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
@@ -600,7 +475,7 @@ const CropDoctor: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <button
-                  onClick={() => { setImagePreview(null); setImageBase64(null); }}
+                  onClick={() => { setImagePreview(null); setImageBase64(null); setCompressedBlob(null); }}
                   className="absolute top-2 right-2 bg-background/80 p-2 rounded-full"
                 >
                   <X size={16} />

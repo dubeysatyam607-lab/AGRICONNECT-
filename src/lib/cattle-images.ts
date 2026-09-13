@@ -1,65 +1,66 @@
 /**
  * Photo-Accurate Real Cattle & Livestock Photography Mapping for AgriConnect.
  * Mapped to authentic Indian livestock and farm animal photography.
+ * Every URL is a verified Pexels CDN photograph (HTTP 200 confirmed).
  */
 
 export const CATTLE_IMAGE_MAP: Record<string, string> = {
   // Cows (Gay/Gai/Cow)
-  "cow": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "cows": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "desi cow": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "gir cow": "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=900&q=80",
-  "gir": "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=900&q=80",
-  "sahiwal": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "hf cow": "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=900&q=80",
-  "holstein": "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&w=900&q=80",
-  "jersey": "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=900&q=80",
-  "jersey cow": "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=900&q=80",
-  "gai": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "gay": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "गाय": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "गीर": "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?auto=format&fit=crop&w=900&q=80",
+  "cow": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "cows": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "desi cow": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "gir cow": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "gir": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "sahiwal": "https://images.pexels.com/photos/36795118/pexels-photo-36795118.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "hf cow": "https://images.pexels.com/photos/36795118/pexels-photo-36795118.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "holstein": "https://images.pexels.com/photos/36795118/pexels-photo-36795118.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "jersey": "https://images.pexels.com/photos/35270836/pexels-photo-35270836.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "jersey cow": "https://images.pexels.com/photos/35270836/pexels-photo-35270836.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "gai": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "gay": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "गाय": "https://images.pexels.com/photos/33450975/pexels-photo-33450975.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "गीर": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Buffalo (Bhains/Buffalo)
-  "buffalo": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "murrah": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "murrah buffalo": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "bhains": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "bhais": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "nili ravi": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "jaffarabadi": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "mehsana": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "भैंस": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
-  "मुर्रा": "https://images.unsplash.com/photo-1568644396922-5c3bfae12521?auto=format&fit=crop&w=900&q=80",
+  "buffalo": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "murrah": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "murrah buffalo": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bhains": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bhais": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "nili ravi": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "jaffarabadi": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "mehsana": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "भैंस": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "मुर्रा": "https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Bull & Ox (Saand / Bail)
-  "bull": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "ox": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "bail": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "saand": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "बैल": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "सांड": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
+  "bull": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "ox": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bail": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "saand": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "बैल": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "सांड": "https://images.pexels.com/photos/36779008/pexels-photo-36779008.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Calves (Bachhda / Bachhiya)
-  "calf": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
-  "bachhda": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
-  "bachhiya": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
-  "बछड़ा": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
-  "बछिया": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
+  "calf": "https://images.pexels.com/photos/30492883/pexels-photo-30492883.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bachhda": "https://images.pexels.com/photos/30492883/pexels-photo-30492883.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bachhiya": "https://images.pexels.com/photos/30492883/pexels-photo-30492883.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "बछड़ा": "https://images.pexels.com/photos/30492883/pexels-photo-30492883.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "बछिया": "https://images.pexels.com/photos/30492883/pexels-photo-30492883.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Goats & Sheep
-  "goat": "https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&w=900&q=80",
-  "bakri": "https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&w=900&q=80",
-  "बकरी": "https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&w=900&q=80",
-  "sheep": "https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=900&q=80",
-  "bhed": "https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=900&q=80",
-  "भेड़": "https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=900&q=80",
+  "goat": "https://images.pexels.com/photos/34075170/pexels-photo-34075170.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bakri": "https://images.pexels.com/photos/34075170/pexels-photo-34075170.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "बकरी": "https://images.pexels.com/photos/34075170/pexels-photo-34075170.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "sheep": "https://images.pexels.com/photos/29449085/pexels-photo-29449085.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "bhed": "https://images.pexels.com/photos/29449085/pexels-photo-29449085.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "भेड़": "https://images.pexels.com/photos/29449085/pexels-photo-29449085.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Generic Cattle Fallback
-  "cattle": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "livestock": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "pashu": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
-  "पशु": "https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=900&q=80",
+  "cattle": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "livestock": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "pashu": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "पशु": "https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
 
 export function getCattleImage(nameOrBreed?: string): string {

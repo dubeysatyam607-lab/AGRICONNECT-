@@ -6,15 +6,10 @@ import type { UseDigitalProfileReturn } from '../types';
 
 interface BookingsSectionProps {
   data: UseDigitalProfileReturn;
+  onNavigate: (tab: string) => void;
 }
 
-const DEMO_ORDERS = [
-  { id: 'A-1142', title: 'Urea 45kg + DAP 50kg', total: 1890, date: '3 days ago', status: 'delivered' },
-  { id: 'A-1138', title: 'Knapsack Sprayer 16L', total: 2450, date: '1 week ago', status: 'delivered' },
-  { id: 'A-1167', title: 'Mustard Seeds (Pusa Vijay)', total: 760, date: 'Today', status: 'placed' },
-];
-
-export const BookingsSection: React.FC<BookingsSectionProps> = ({ data }) => {
+export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNavigate }) => {
   const { t } = useLanguage();
 
   const statusLabel = (status: string): string => {
@@ -96,7 +91,7 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data }) => {
             description="Explore the Agri Store to buy certified seeds, fertilizers, and tools."
             action={{
               label: "Explore Agri Store",
-              onClick: () => window.location.href = "#store",
+              onClick: () => onNavigate('store'),
             }}
           />
         ) : (

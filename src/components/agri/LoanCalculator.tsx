@@ -20,28 +20,28 @@ const LOAN_SCHEMES: LoanScheme[] = [
     title: 'PM Kisan Samman Nidhi', 
     eligibility: 'Small/Marginal Farmers',
     applyUrl: 'https://pmkisan.gov.in/',
-    imageUrl: 'https://images.unsplash.com/photo-1594488500669-e3bb970ef1f7?auto=format&fit=crop&w=900&q=80'
+    imageUrl: 'https://images.pexels.com/photos/36678256/pexels-photo-36678256.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940'
   },
   { 
     id: 2, 
     title: 'Kisan Credit Card (KCC)', 
     eligibility: 'All Farmers',
     applyUrl: 'https://pmkisan.gov.in/RegistrationFormKCC.aspx',
-    imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80'
+    imageUrl: 'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940'
   },
   { 
     id: 3, 
     title: 'Agriculture Infrastructure Fund', 
     eligibility: 'All Farmers',
     applyUrl: 'https://agriinfra.dac.gov.in/',
-    imageUrl: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80'
+    imageUrl: 'https://images.pexels.com/photos/30248663/pexels-photo-30248663.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940'
   },
   { 
     id: 4, 
     title: 'PM-KISAN Credit Linked Subsidy', 
     eligibility: 'Registered Farmers',
     applyUrl: 'https://www.nabard.org/',
-    imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80'
+    imageUrl: 'https://images.pexels.com/photos/20212135/pexels-photo-20212135.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940'
   },
 ];
 

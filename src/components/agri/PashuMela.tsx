@@ -34,7 +34,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '5 km',
     seller: 'Ramesh Kumar',
     verified: true,
-    image: 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 2, 
@@ -47,7 +47,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '8 km',
     seller: 'Suresh Patel',
     verified: true,
-    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 3, 
@@ -60,7 +60,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '15 km',
     seller: 'Mohan Singh',
     verified: false,
-    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/36795118/pexels-photo-36795118.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 4, 
@@ -73,7 +73,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '12 km',
     seller: 'Kishan Lal',
     verified: true,
-    image: 'https://images.pexels.com/photos/5215646/pexels-photo-5215646.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 5, 
@@ -86,7 +86,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '3 km',
     seller: 'Abdul Khan',
     verified: true,
-    image: 'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/34075170/pexels-photo-34075170.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 6, 
@@ -99,7 +99,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '10 km',
     seller: 'Vikram Sharma',
     verified: false,
-    image: 'https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/35270836/pexels-photo-35270836.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 7, 
@@ -112,7 +112,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '20 km',
     seller: 'Lakhan Das',
     verified: true,
-    image: 'https://images.pexels.com/photos/1405939/pexels-photo-1405939.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/14148444/pexels-photo-14148444.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
   { 
     id: 8, 
@@ -125,7 +125,7 @@ const LIVESTOCK: LivestockItem[] = [
     distance: '25 km',
     seller: 'Gopal Yadav',
     verified: true,
-    image: 'https://images.pexels.com/photos/516232/pexels-photo-516232.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    image: 'https://images.pexels.com/photos/34075170/pexels-photo-34075170.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
   },
 ];
 

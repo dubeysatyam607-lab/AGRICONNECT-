@@ -140,37 +140,37 @@ const CROP_DATA: Record<string, {
     labelEn: "Mustard", labelHi: "सरसों", emoji: "🌻",
     yieldPerAcre: 10, inputCost: 7500, mspFallback: 5650,
     searchKey: "mustard", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
-    image: "https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/29986803/pexels-photo-29986803.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   cotton: {
     labelEn: "Cotton", labelHi: "कपास", emoji: "🫧",
     yieldPerAcre: 8, inputCost: 14000, mspFallback: 6620,
     searchKey: "cotton", season: "Kharif (May–Nov)", seasonHi: "खरीफ (मई–नव)",
-    image: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/5640079/pexels-photo-5640079.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   onion: {
     labelEn: "Onion", labelHi: "प्याज", emoji: "🧅",
     yieldPerAcre: 80, inputCost: 20000, mspFallback: 800,
     searchKey: "onion", season: "Rabi (Oct–Mar)", seasonHi: "रबी (अक्टू–मार्च)",
-    image: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   potato: {
     labelEn: "Potato", labelHi: "आलू", emoji: "🥔",
     yieldPerAcre: 100, inputCost: 25000, mspFallback: 700,
     searchKey: "potato", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
-    image: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   gram: {
     labelEn: "Gram (Chana)", labelHi: "चना", emoji: "🫘",
     yieldPerAcre: 9, inputCost: 6000, mspFallback: 5440,
     searchKey: "gram", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
-    image: "https://images.pexels.com/photos/9940116/pexels-photo-9940116.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/36683864/pexels-photo-36683864.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   groundnut: {
     labelEn: "Groundnut", labelHi: "मूंगफली", emoji: "🥜",
     yieldPerAcre: 14, inputCost: 10000, mspFallback: 6377,
     searchKey: "groundnut", season: "Kharif (Jun–Oct)", seasonHi: "खरीफ (जून–अक्टू)",
-    image: "https://images.pexels.com/photos/5685910/pexels-photo-5685910.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/9799045/pexels-photo-9799045.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
 };
 

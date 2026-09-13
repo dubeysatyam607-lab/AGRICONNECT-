@@ -254,7 +254,7 @@ const TAB_SEO_META: Record<string, { title: string; description: string; path: s
   marketplace: {
     title: 'AgriConnect Marketplace — Buy, Sell & Rent Farm Equipment, Cattle & Produce',
     description: 'Verified farmer-to-farmer marketplace. Rent tractors, harvesters, seeders, buy/sell cattle, hire farm labour, and trade organic crops directly with zero commission.',
-    path: '/marketplace',
+    path: '/market',
     noindex: true,
   },
 };
@@ -266,10 +266,13 @@ const IndexInner: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const getTabFromPath = (path: string) => {
-    switch (path) {
+const getTabFromPath = (path: string) => {
+    const deep = path.split("?")[0];
+    if (deep.startsWith("/machinery/") || deep.startsWith("/tractors/")) return "tractors";
+    if (deep.startsWith("/soil-test/")) return "soil";
+    switch(deep) {
       case "/dashboard": return "home";
-      case "/marketplace": return "marketplace";
+      case "/marketplace": return "store";
       case "/market":
       case "/agri-store":
       case "/store": return "store";

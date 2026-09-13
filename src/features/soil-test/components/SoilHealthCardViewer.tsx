@@ -182,7 +182,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
   const handleConsultKisanAi = () => {
     onClose();
     const prompt = `Hello Kisan AI, my soil test report (${order.order_number}) shows pH ${results.ph?.value || 7.2}, Nitrogen ${results.nitrogen?.value || 235} kg/ha (Low), Phosphorus ${results.phosphorus?.value || 18.5} kg/ha, and Potassium ${results.potassium?.value || 210} kg/ha for ${order.crop || 'my field'}. What is the best fertilizer and organic soil conditioning plan?`;
-    navigate('/ai-bot', { state: { prefilledPrompt: prompt } });
+    navigate('/kisan-ai', { state: { prefilledPrompt: prompt } });
   };
 
   const renderRatingBadge = (rating: 'low' | 'optimal' | 'high' | 'critical') => {

@@ -56,7 +56,7 @@ const CattleMarket: React.FC = () => {
           price: item.price || 0,
           age: item.age || 'Adult',
           location: item.location || 'India',
-          image: item.image_url || 'https://images.pexels.com/photos/11053137/pexels-photo-11053137.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+          image: item.image_url || 'https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
           sellerName: item.seller_name || 'Verified Farmer',
           sellerPhone: item.seller_phone || 'Contact via app',
         }));
@@ -137,7 +137,7 @@ const CattleMarket: React.FC = () => {
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden h-48 shadow-lg">
         <AgriImage
-          src="https://images.pexels.com/photos/4588065/pexels-photo-4588065.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
+          src="https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
           alt="Livestock market"
           className="w-full h-full object-cover"
         />

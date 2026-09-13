@@ -167,12 +167,12 @@ export class WeatherRemoteDataSource {
       windDirection: liveRaw.windDirection || WeatherRemoteDataSource.compass(liveRaw.windDegrees || 0),
       windDegrees: typeof liveRaw.windDegrees === 'number' && !isNaN(liveRaw.windDegrees) ? Math.round(liveRaw.windDegrees) : 0,
       uvIndex: typeof liveRaw.uvIndex === 'number' && !isNaN(liveRaw.uvIndex) ? Math.round(liveRaw.uvIndex) : typeof liveRaw.uv === 'number' && !isNaN(liveRaw.uv) ? Math.round(liveRaw.uv) : 0,
-      pressureHpa: typeof liveRaw.pressureHpa === 'number' && !isNaN(liveRaw.pressureHpa) ? Math.round(liveRaw.pressureHpa) : 1013,
+      pressureHpa: typeof liveRaw.pressureHpa === 'number' && !isNaN(liveRaw.pressureHpa) ? Math.round(liveRaw.pressureHpa) : null,
       pressureTrend: liveRaw.pressureTrend === 'Rising' || liveRaw.pressureTrend === 'Falling' ? liveRaw.pressureTrend : 'Steady',
-      visibilityKm: typeof liveRaw.visibilityKm === 'number' && !isNaN(liveRaw.visibilityKm) ? Math.round(liveRaw.visibilityKm) : 10,
-      aqi: liveRaw.aqi || { index: 1, pm25: 0, pm10: 0, status: 'Good' },
-      sunriseTime: liveRaw.sunriseTime || (raw.daily?.[0]?.sunrise ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunrise) : '06:00 AM'),
-      sunsetTime: liveRaw.sunsetTime || (raw.daily?.[0]?.sunset ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunset) : '06:30 PM'),
+      visibilityKm: typeof liveRaw.visibilityKm === 'number' && !isNaN(liveRaw.visibilityKm) ? Math.round(liveRaw.visibilityKm) : null,
+      aqi: liveRaw.aqi ?? null,
+      sunriseTime: liveRaw.sunriseTime || (raw.daily?.[0]?.sunrise ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunrise) : null),
+      sunsetTime: liveRaw.sunsetTime || (raw.daily?.[0]?.sunset ? WeatherRemoteDataSource.formatClock(raw.daily[0].sunset) : null),
       daylightProgressPercent: typeof liveRaw.daylightProgressPercent === 'number'
         ? liveRaw.daylightProgressPercent
         : WeatherRemoteDataSource.calculateDaylightProgress(raw.daily?.[0]?.sunrise, raw.daily?.[0]?.sunset),
@@ -301,7 +301,7 @@ export class WeatherRemoteDataSource {
     const curUv = typeof cur.uv_index === 'number' && !isNaN(cur.uv_index)
       ? cur.uv_index
       : (dailyRaw.uv_index_max?.[0] ?? 0);
-    const curPressure = typeof cur.pressure_msl === 'number' && !isNaN(cur.pressure_msl) ? cur.pressure_msl : 1013;
+    const curPressure = typeof cur.pressure_msl === 'number' && !isNaN(cur.pressure_msl) ? cur.pressure_msl : null;
 
     let pressureTrend: 'Rising' | 'Falling' | 'Steady' = 'Steady';
     if (Array.isArray(hourlyRaw.pressure_msl) && hourlyRaw.pressure_msl.length >= 4) {
@@ -319,8 +319,8 @@ export class WeatherRemoteDataSource {
 
     const sunriseIso = dailyRaw.sunrise?.[0];
     const sunsetIso = dailyRaw.sunset?.[0];
-    const sunriseTime = WeatherRemoteDataSource.formatClock(sunriseIso) || '06:00 AM';
-    const sunsetTime = WeatherRemoteDataSource.formatClock(sunsetIso) || '06:30 PM';
+    const sunriseTime = WeatherRemoteDataSource.formatClock(sunriseIso) || null;
+    const sunsetTime = WeatherRemoteDataSource.formatClock(sunsetIso) || null;
     const daylightProgressPercent = WeatherRemoteDataSource.calculateDaylightProgress(sunriseIso, sunsetIso);
 
     const live: ILiveWeather = {
@@ -334,10 +334,10 @@ export class WeatherRemoteDataSource {
       windDirection: WeatherRemoteDataSource.compass(curWindDir),
       windDegrees: Math.round(curWindDir),
       uvIndex: Math.round(curUv),
-      pressureHpa: Math.round(curPressure),
+      pressureHpa: typeof curPressure === 'number' ? Math.round(curPressure) : null,
       pressureTrend,
-      visibilityKm: cur.visibility != null && !isNaN(cur.visibility) ? Math.round(cur.visibility / 1000) : 10,
-      aqi: { index: 1, pm25: 0, pm10: 0, status: 'Good' },
+      visibilityKm: cur.visibility != null && !isNaN(cur.visibility) ? Math.round(cur.visibility / 1000) : null,
+      aqi: null,
       sunriseTime,
       sunsetTime,
       daylightProgressPercent,

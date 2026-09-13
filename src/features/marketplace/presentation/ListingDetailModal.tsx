@@ -52,7 +52,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   const categoryMeta = MARKETPLACE_CATEGORIES.find((c) => c.id === listing.category);
   const images = listing.images && listing.images.length > 0
     ? listing.images
-    : ['https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800'];
+    : ['https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940'];
 
   const handleShare = () => {
     if (navigator.share) {

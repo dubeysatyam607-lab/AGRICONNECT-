@@ -321,24 +321,27 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     loadFarms();
   }, [loadFarms]);
 
-  // On mount: try GPS if no saved location
+  // On every app open: resolve the user's LIVE location. If a saved/manual/farm
+  // location exists, re-validate it with GPS so weather never shows a stale or
+  // foreign place while GPS is available. Saved coords are kept only as an
+  // offline fallback when GPS is denied/unavailable.
   useEffect(() => {
-    if (!location.latitude && location.status === 'idle') {
+    if (navigator.geolocation) {
       requestGps();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Safety timeout: if location is still 'loading' after 20s (user ignored the GPS prompt),
-  // transition to 'error' so weather/other features don't spin forever.
+  // return to ready so offline/fallback coords are used, or mark error if none exist.
   useEffect(() => {
     if (location.status === 'loading') {
       const t = setTimeout(() => {
         setLocation((prev) => {
-          if (prev.status === 'loading') {
-            return { ...prev, status: 'error', error: 'Location permission is disabled. Please enable it in your browser settings or set your location manually.' };
-          }
-          return prev;
+          if (prev.status !== 'loading') return prev;
+          const hasCoords = typeof (prev as NormalizedLocation).latitude === 'number';
+          if (hasCoords) return { ...prev, status: 'ready', error: 'Location could not be refreshed; showing last known location.' };
+          return { ...prev, status: 'error', error: 'Location permission is disabled. Please enable location access or set your city manually.' };
         });
       }, 20000);
       return () => clearTimeout(t);

@@ -86,7 +86,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
   const L = {
     title: t("mandi.hub.title") || "Live Mandi Advisor & Prices",
-    subtitle: t("mandi.hub.subtitle") || "Verified APMC rates & AI Selling Intelligence",
+    subtitle: t("mandi.hub.subtitle") || "Verified APMC rates & Market Intelligence",
     live: t("mandi.hub.liveBadge") || "LIVE APMC",
     updated: t("mandi.updated") || "Updated",
     search: t("mandi.hub.searchPlaceholder") || "Search crop, mandi, district or state...",
@@ -96,7 +96,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     tabPrices: t("mandi.tabPrices") || "Prices",
     tabAdvisor: t("mandi.hub.tabAdvisor") || "AI Advisor",
     tabTrends: t("mandi.tabTrends") || "Trends",
-    tabCompare: t("mandi.tabCompare") || "Compare",
+    tabCompare: t("mandi.tabCompare") || "Market Comparison",
     tabNearby: t("mandi.tabNearby") || "Nearby",
     tabAlerts: t("mandi.tabAlerts") || "Alerts",
     perQuintal: t("mandi.perQuintal") || "/quintal",
@@ -155,6 +155,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const [selectedMandi, setSelectedMandi] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOption, setSortOption] = useState<SortOption>("highest");
+  const [compareCrop, setCompareCrop] = useState("");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   // Pagination state
   const [page, setPage] = useState(1);
@@ -532,6 +533,86 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     </div>
   );
 
+  const renderCompareTab = () => {
+    const crops = Array.from(new Set(data.map((c) => c.crop)));
+    const active = compareCrop || "";
+    const records = active ? data.filter((c) => c.crop === active) : [];
+    const sorted = [...records].sort((a, b) => b.price - a.price);
+    const best = sorted[0];
+    const lowest = sorted[sorted.length - 1];
+
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="text-emerald-600 shrink-0" size={18} />
+            <h3 className="font-extrabold text-base text-foreground">Compare Crop Prices Across Mandis</h3>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground">Select crop to compare</p>
+            <select
+              aria-label="Select crop to compare"
+              value={active}
+              onChange={(e) => setCompareCrop(e.target.value)}
+              className="w-full px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            >
+              <option value="">Select a crop</option>
+              {crops.map((crop) => (
+                <option key={crop} value={crop}>{crop}</option>
+              ))}
+            </select>
+          </div>
+
+          {active && records.length > 0 && (
+            <>
+              <div className="pt-1">
+                <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                  <Calculator size={15} className="text-emerald-600 shrink-0" /> Smart Farmer Selling Decision
+                </h4>
+                {best && lowest && best !== lowest ? (
+                  <div className="mt-2 rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs text-foreground leading-relaxed">
+                    <p>
+                      Best price for <b>{active}</b> is at <b>{best.market}</b> ({formatINR(best.price)}{L.perQuintal}) —
+                      that's <b>{formatINR(best.price - lowest.price)}{L.perQuintal}</b> more than {lowest.market}.
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      Consider carrying your produce to {best.market} for a better return on {active}.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-xl p-3 bg-slate-100 dark:bg-slate-800 text-xs text-muted-foreground">
+                    Only one active mandi is reporting {active} right now. More live data will improve this comparison.
+                  </div>
+                )}
+              </div>
+
+              <ul className="space-y-1.5">
+                {sorted.map((c) => (
+                  <li
+                    key={c.id}
+                    className={cn(
+                      "flex items-center justify-between rounded-xl px-3 py-2 text-xs",
+                      c === best && sorted.length > 1
+                        ? "bg-emerald-500/10 border border-emerald-500/30 font-bold text-foreground"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      {c === best && sorted.length > 1 && <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />}
+                      <span className="truncate">{c.market}, {c.district}</span>
+                    </span>
+                    <span className="font-extrabold shrink-0">{formatINR(c.price)}{L.perQuintal}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const TAB_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "prices", label: L.tabPrices, icon: TrendingUp },
     { id: "advisor", label: L.tabAdvisor, icon: Bot },
@@ -843,6 +924,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         <ErrorState message={error} onRetry={() => fetchMandi(true)} />
       ) : tab === "advisor" ? (
         renderAdvisorTab()
+      ) : tab === "compare" ? (
+        renderCompareTab()
       ) : filtered.length === 0 ? (
         <div className="text-center py-14 px-4 bg-card rounded-2xl border border-dashed border-border my-4 space-y-3 animate-fade-in">
           <Store className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
@@ -863,7 +946,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               setPage(1);
             }}
           >
-            Clear Filters
+            Clear All Filters
           </AgriButton>
         </div>
       ) : (

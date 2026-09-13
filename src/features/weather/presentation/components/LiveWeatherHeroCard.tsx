@@ -363,7 +363,7 @@ export const LiveWeatherHeroCard: React.FC<LiveWeatherHeroCardProps> = ({
         <div className="flex flex-col items-center justify-center text-center">
           <Gauge size={14} className="text-purple-300 mb-1" />
           <span className="text-[10px] text-white/70 font-semibold uppercase">{t('wth.pressure')}</span>
-          <span className="text-xs font-black text-white">{live.pressureHpa}</span>
+          <span className="text-xs font-black text-white">{live.pressureHpa !== null ? live.pressureHpa : '—'}</span>
         </div>
       </div>
 

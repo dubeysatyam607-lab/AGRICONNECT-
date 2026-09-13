@@ -25,17 +25,17 @@ export interface ILiveWeather {
   windDirection: string; // e.g., "NW", "SSW", "E"
   windDegrees: number; // 0 - 360 for compass rotation animation
   uvIndex: number; // 0 - 12+
-  pressureHpa: number; // atmospheric pressure in hPa/mBar (e.g. 1013)
+  pressureHpa: number | null; // atmospheric pressure in hPa/mBar (e.g. 1013); null when unavailable
   pressureTrend: 'Rising' | 'Falling' | 'Steady';
-  visibilityKm: number; // visibility in km (e.g., 10)
+  visibilityKm: number | null; // visibility in km (e.g., 10); null when unavailable
   aqi: {
     index: number; // 1 (Good) to 5 (Severe)
     pm25: number;
     pm10: number;
     status: 'Good' | 'Moderate' | 'Poor' | 'Unhealthy' | 'Severe';
-  };
-  sunriseTime: string; // e.g. "05:48 AM"
-  sunsetTime: string; // e.g. "07:15 PM"
+  } | null;
+  sunriseTime: string | null; // e.g. "05:48 AM"; null when unavailable
+  sunsetTime: string | null; // e.g. "07:15 PM"; null when unavailable
   daylightProgressPercent: number; // 0 to 100 for sun trajectory arc calculation
   iconUrl?: string;
 }
