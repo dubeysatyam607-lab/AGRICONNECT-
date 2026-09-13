@@ -44,11 +44,11 @@ export const ProfileAvatarUploader: React.FC<IProfileAvatarUploaderProps> = ({
   };
 
   const handleSimulateCamera = () => {
-    // Generate a clean agricultural farmer avatar SVG base64 or high-res Unsplash photo
+    // Generate a clean agricultural farmer avatar SVG base64 or high-res Pexels photo
     const sampleAvatars = [
-      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
-      'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      'https://images.pexels.com/photos/36678256/pexels-photo-36678256.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      'https://images.pexels.com/photos/11070641/pexels-photo-11070641.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      'https://images.pexels.com/photos/10206561/pexels-photo-10206561.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
     ];
     const randomAvatar = sampleAvatars[Math.floor(Math.random() * sampleAvatars.length)];
     onImageSelected(randomAvatar);

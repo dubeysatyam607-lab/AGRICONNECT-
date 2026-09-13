@@ -122,7 +122,7 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
       {/* Hero Banner */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
         <SafeImage
-          src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80"
+          src="https://images.pexels.com/photos/36678256/pexels-photo-36678256.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940"
           alt="Crop insurance"
           entityName="Fasal Bima Crop Insurance"
           resolveType="scheme"

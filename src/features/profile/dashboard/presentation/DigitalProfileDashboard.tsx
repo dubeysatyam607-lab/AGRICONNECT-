@@ -167,7 +167,7 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
       case 'overview': return <OverviewSection {...common} />;
       case 'my-farm': return <MyFarmSection data={data} />;
       case 'equipment': return <EquipmentSection data={data} />;
-      case 'bookings': return <BookingsSection data={data} />;
+      case 'bookings': return <BookingsSection {...common} />;
       case 'activity': return <ActivitiesSection data={data} />;
       case 'tasks': return <TaskManagerSection data={data} />;
       case 'analytics': return <AnalyticsSection data={data} />;

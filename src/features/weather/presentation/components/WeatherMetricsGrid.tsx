@@ -42,12 +42,12 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
   };
   const turbineSpinClass = getTurbineSpinClass(live?.windSpeed || 0);
 
-  const clampedPressure = Math.min(1040, Math.max(980, live?.pressureHpa || 1013));
-  const pressureRatio = (clampedPressure - 980) / (1040 - 980);
-  const pressureAngle = pressureRatio * 180;
-  const pressureNeedleRad = Math.PI - (pressureAngle * Math.PI) / 180;
-  const pressureNeedleX = 40 + 26 * Math.cos(pressureNeedleRad);
-  const pressureNeedleY = 45 - 26 * Math.sin(pressureNeedleRad);
+  const pressure = typeof live?.pressureHpa === 'number' ? live.pressureHpa : null;
+  const clampedPressure = pressure != null ? Math.min(1040, Math.max(980, pressure)) : null;
+  const pressureAngle = clampedPressure != null ? ((clampedPressure - 980) / (1040 - 980)) * 180 : null;
+  const pressureNeedleRad = pressureAngle != null ? Math.PI - (pressureAngle * Math.PI) / 180 : null;
+  const pressureNeedleX = pressureNeedleRad != null ? 40 + 26 * Math.cos(pressureNeedleRad) : 40;
+  const pressureNeedleY = pressureNeedleRad != null ? 45 - 26 * Math.sin(pressureNeedleRad) : 45;
 
   const progressPercent = typeof live?.daylightProgressPercent === 'number' ? live.daylightProgressPercent : 50;
   const progressRad = (progressPercent / 100) * Math.PI;
@@ -260,7 +260,7 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
         <div className="flex items-center justify-between my-0.5">
           <div>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-white">{live.pressureHpa}</span>
+              <span className="text-3xl font-black text-white">{live.pressureHpa !== null ? live.pressureHpa : '—'}</span>
               <span className="text-[10px] text-slate-400 font-bold">{t('wth.hpa')}</span>
             </div>
             <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5 leading-tight">
@@ -338,8 +338,8 @@ export const WeatherMetricsGrid: React.FC<WeatherMetricsGridProps> = ({ live, fo
           </div>
 
           <div className="w-full flex justify-between text-[9px] font-bold text-white pt-1.5 border-t border-white/10">
-            <span className="flex items-center gap-0.5 text-amber-300">⬆ {live.sunriseTime}</span>
-            <span className="flex items-center gap-0.5 text-orange-400">⬇ {live.sunsetTime}</span>
+            <span className="flex items-center gap-0.5 text-amber-300">⬆ {live.sunriseTime || '—'}</span>
+            <span className="flex items-center gap-0.5 text-orange-400">⬇ {live.sunsetTime || '—'}</span>
           </div>
         </div>
       </div>

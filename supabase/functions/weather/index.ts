@@ -424,7 +424,21 @@ serve(async (req) => {
           .eq('weather_alerts', true);
         if (subscriptions && subscriptions.length > 0) {
           const msg = alerts.items[0]?.message || `Weather alert in ${locationName}`;
-          console.log(`Weather alert for ${subscriptions.length} subscribers: ${msg}`);
+          const notified = new Set<string>();
+          for (const sub of subscriptions) {
+            if (!sub.user_id || notified.has(sub.user_id)) continue;
+            notified.add(sub.user_id);
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                userId: sub.user_id,
+                type: 'weather_alert',
+                title: 'Weather alert',
+                body: msg,
+                data: { locationName },
+              },
+            });
+          }
+          console.log(`Weather alert pushed to ${notified.size} subscriber(s)`);
         }
       } catch (pushError) {
         console.error('Push notification error:', pushError);

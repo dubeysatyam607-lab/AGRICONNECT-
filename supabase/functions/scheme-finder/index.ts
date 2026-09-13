@@ -145,7 +145,7 @@ const SCHEMES: Scheme[] = [
     summary: "Short-term credit for crop cultivation at concessional rates — effective 4% interest after interest subvention, up to ₹3 lakh without collateral.",
     summaryHi: "फसल उगाने के लिए रियायती दर पर अल्पकालिक ऋण — ब्याज अनुदान के बाद प्रभावी 4% ब्याज, ₹3 लाख तक बिना गारंटी।",
     benefit: "Up to ₹3 lakh credit at 4% effective interest", benefitAmount: "₹3 lakh @ 4%",
-    color: "#7c3aed", applyUrl: "https://pmkisan.gov.in/RegistrationFormKCC.aspx",
+    color: "#7c3aed", applyUrl: "https://myscheme.gov.in/schemes/kcc",
     deadline: "2026-12-31", rolling: true,
     docs: ["Aadhaar card", "Land records / tenancy proof", "Bank account", "Passport photo", "Crop details"],
     timeline: ["Apply at your bank or cooperative society", "Submit land records & KYC", "Bank does a field verification", "Limit sanctioned, card issued", "Draw credit anytime during season"],

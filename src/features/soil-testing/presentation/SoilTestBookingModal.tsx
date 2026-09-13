@@ -190,7 +190,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
       user.id,
       inputPayload,
       paymentMethod,
-      'paid'
+      'pending'
     );
 
     setSubmitting(false);
@@ -225,7 +225,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
             {step === 1 && 'Enter your farm details so our technician can locate and verify your soil sample.'}
             {step === 2 && 'Helps the laboratory tailor fertilizer doses to your specific crop and growth stage.'}
             {step === 3 && 'Choose between doorstep technician pickup or direct self-submission.'}
-            {step === 4 && 'Complete your booking with server-verified payment and instant confirmation.'}
+            {step === 4 && 'Your order will be created pending payment verification. Payment becomes confirmed after verification.'}
           </DialogDescription>
         </DialogHeader>
 

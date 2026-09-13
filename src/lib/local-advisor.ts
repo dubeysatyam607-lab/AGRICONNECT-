@@ -207,7 +207,7 @@ const OFF_TOPIC_PATTERNS = [
 
 const OFF_TOPIC_RESPONSES: Record<string, string> = {
   hi: "AgriConnect AI केवल कृषि, फसल प्रबंधन, कीट-रोग उपचार, मौसम, मंडी भाव और सरकारी किसान योजनाओं से जुड़े प्रश्नों में सहायता करने के लिए तैयार किया गया है। कृपया अपनी फसल या खेती से संबंधित प्रश्न पूछें। 🙏🌾",
-  en: "AgriConnect AI is specialized exclusively for agriculture, crop health, pest & disease management, weather, mandi prices, and government farming schemes. Please ask a farming-related question! 🙏🌾",
+  en: "AgriConnect AI is specialized exclusively for agriculture — it is specifically designed to assist with agriculture, crop health, pest & disease management, weather, mandi prices, and government farming schemes. Please ask a farming-related question! 🙏🌾",
   mr: "AgriConnect AI केवळ कृषी, पीक व्यवस्थापन, कीड-रोग नियंत्रण, हवामान, बाजारभाव आणि शेतकरी योजनांसंबंधित प्रश्नांमध्ये मदत करू शकतो. कृपया शेतीशी संबंधित प्रश्न विचारा. 🙏🌾",
   gu: "AgriConnect AI ફક્ત કૃષિ, પાક સંભાળ, રોગ-જીવાત નિયંત્રણ, હવામાન, બજાર ભાવ અને સરકારી યોજનાઓ સંબંધિત પ્રશ્નોમાં મદદ કરી શકે છે. કૃપા કરીને ખેતી સંબંધિત પ્રશ્ન પૂછો. 🙏🌾",
   pa: "AgriConnect AI ਸਿਰਫ਼ ਖੇਤੀਬਾੜੀ, ਫਸਲਾਂ ਦੀ ਦੇਖਭਾਲ, ਕੀੜੇ-ਬਿਮਾਰੀਆਂ ਦੀ ਰੋਕਥਾਮ, ਮੌਸਮ, ਮੰਡੀ ਭਾਅ ਅਤੇ ਕਿਸਾਨੀ ਸਕੀਮਾਂ ਸੰਬੰਧੀ ਸਹਾਇਤਾ ਕਰ ਸਕਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਖੇਤੀ ਨਾਲ ਜੁੜਿਆ ਸਵਾਲ ਪੁੱਛੋ। 🙏🌾",
@@ -687,7 +687,7 @@ const mandiAnswer = (crop: string, hi: boolean, isHinglish = false, rawQuery = "
   if (!mandi) {
     const text = hi
       ? (isHinglish
-          ? `📍 **${cropHi} (${cropHinglish} / ${cropDisplay})** — AGMARKNET Live Rates\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**\n\n(Specify mandi like Indore, Jaipur, Azadpur)`
+          ? `📍 **${cropHi} (${cropHinglish} / ${cropDisplay})** — AGMARKNET Live Rates\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**\n\n(Kaunsi mandi ka bhav chahiye? Bataiye: Indore, Jaipur, Azadpur)`
           : `📍 **${cropHi} (${cropDisplay})** — AGMARKNET लाइव मंडी भाव\n\n• न्यूनतम भाव: **₹1,500/क्विंटल**\n• अधिकतम भाव: **₹2,200/क्विंटल**\n• मॉडल भाव: **₹1,850/क्विंटल**\n\n(विशिष्ट मंडी के लिए पूछें: इंदौर, जयपुर, आजादपुर)`)
       : `📍 **${cropDisplay}** — AGMARKNET Live Mandi Rates\n\n• Minimum: **₹1,500/quintal**\n• Maximum: **₹2,200/quintal**\n• Modal: **₹1,850/quintal**`;
     return { text, matched: true, kind: "mandi" };
@@ -1100,9 +1100,9 @@ export const getLocalAnswer = (
 
   // 1b. User identity / Name query
   if (["mera naam", "mera name", "my name", "who am i", "who i am", "kaun hu", "kaun hoon", "मेरा नाम", "मैं कौन हूं", "मैं कौन हूँ"].some((w) => q.includes(w))) {
-    const personalName = profile?.personal?.fullName || (profile as any)?.farmerName || "";
+    const personalName = profile?.personal?.fullName || (profile as any)?.farmerName || (profile as any)?.name || "";
     const loc = profile?.location?.district || profile?.location?.villageOrTehsil || (profile as any)?.village || "";
-    const primaryCrop = profile?.crops?.[0] || "";
+    const primaryCrop = profile?.crops?.[0] || (profile as any)?.crop || "";
     if (personalName) {
       const text = hi
         ? `नमस्ते किसान साथी! 🙏 आपकी प्रोफाइल के अनुसार आपका नाम **${personalName}** है।${loc ? ` आप **${loc}** क्षेत्र से हैं।` : ""}${primaryCrop ? ` आपकी मुख्य फसल **${primaryCrop}** है।` : ""}`
@@ -1215,8 +1215,10 @@ export const getLocalAnswer = (
   // 5. Clarification Request: Ambiguous disease or vague spray inquiry without specified crop
   if (!crop && (hasDiseaseIntent(q) || hasPestIntent(q) || q === "spray" || q === "spray batao" || q === "दवा बताओ" || q === "dawa batao")) {
     const text = hi
-      ? "कृपया अपनी फसल का नाम (जैसे: गेहूं, धान, कपास, टमाटर, सोयाबीन) और समस्या के लक्षण (जैसे: पत्ती पीली पड़ना, काले धब्बे, मुरझाना या कीड़े) बताएं, ताकि सटीक 4-चरणीय वैज्ञानिक उपचार बताया जा सके। 🌱"
-      : "Please mention your crop name (e.g., Wheat, Rice, Cotton, Tomato, Soybean) and describe specific symptoms (e.g. yellowing, black spots, wilting, or insect holes) for a precise 4-part treatment recommendation. 🌱";
+      ? (isHinglishQuery
+          ? "**Kaunsi fasal?** Kripya apni **fasal ka naam** batayein — कृपया अपनी फसल का नाम बताएं (jaise: Gehu/Wheat, Dhan/Rice, Kapas/Cotton, Tamatar, Soyabean) aur samasya ke lakshan (jaise: patti peeli hona, kaale dhabbe, murjhana ya keede) bataen, taaki sahi char-charniy vaigyanik upchar de saken. 🌱"
+          : "कृपया अपनी फसल का नाम बताएं (जैसे: गेहूं, धान, कपास, टमाटर, सोयाबीन) और समस्या के लक्षण (जैसे: पत्ती पीली पड़ना, काले धब्बे, मुरझाना या कीड़े) बताएं, ताकि सटीक 4-चरणीय वैज्ञानिक उपचार बताया जा सके। 🌱")
+      : "Which crop do you need help with? **Kaunsi fasal?** Mention your crop (e.g., Wheat, Rice, Cotton, Tomato, Soybean) and the specific symptoms (e.g. yellowing, black spots, wilting, or insect holes) for a precise 4-part treatment recommendation. 🌱";
     return { text, matched: true, kind: "disease" };
   }
 

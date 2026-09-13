@@ -96,7 +96,9 @@ export const LoginPage: React.FC = () => {
   }
 
   const handleSuccess = () => {
-    const raw = (location.state as { from?: string })?.from;
+    const raw = (location.state as { from?: string })?.from
+      || new URLSearchParams(window.location.search).get('redirect')
+      || undefined;
     const safePath = sanitizeRedirectPath(raw);
     navigate(safePath, { replace: true });
   };

@@ -44,7 +44,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       joined_date: '2024-03-15',
     },
     images: [
-      'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/29253996/pexels-photo-29253996.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -86,7 +86,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       joined_date: '2023-11-20',
     },
     images: [
-      'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/27037415/pexels-photo-27037415.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -127,7 +127,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       joined_date: '2024-01-10',
     },
     images: [
-      'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/28699301/pexels-photo-28699301.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -166,7 +166,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 12,
     },
     images: [
-      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/39136278/pexels-photo-39136278.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -205,7 +205,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 15,
     },
     images: [
-      'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -246,7 +246,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 29,
     },
     images: [
-      'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/11070641/pexels-photo-11070641.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'call',
     verification_status: 'verified',
@@ -285,7 +285,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 31,
     },
     images: [
-      'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -325,7 +325,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 14,
     },
     images: [
-      'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/37218952/pexels-photo-37218952.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',
@@ -364,7 +364,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 9,
     },
     images: [
-      'https://images.unsplash.com/photo-1595838725984-1d957df7a699?auto=format&fit=crop&q=80&w=800',
+      'https://images.pexels.com/photos/8272348/pexels-photo-8272348.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',

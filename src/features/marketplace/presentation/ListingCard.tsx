@@ -38,7 +38,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   const primaryImage =
     listing.images && listing.images.length > 0
       ? listing.images[0]
-      : 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=600';
+      : 'https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=500&w=600';
 
   return (
     <div

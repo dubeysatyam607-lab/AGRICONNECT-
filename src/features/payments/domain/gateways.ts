@@ -153,17 +153,27 @@ const RazorpayGateway: PaymentGateway = {
     return isRazorpayConfigured();
   },
   async charge(req: ChargeRequest): Promise<ChargeResult> {
-    if (!this.isLive) return SimulatedGateway.charge(req);
+    if (!this.isLive) {
+      return {
+        success: false,
+        failureReason: 'Payment gateway is not configured. Please try again later.',
+        error: { code: 'GATEWAY_UNCONFIGURED', message: 'Payment unavailable' },
+      };
+    }
     const loaded = await loadRazorpayScript();
     if (!loaded) {
       return { success: false, failureReason: 'Razorpay SDK could not be loaded' };
     }
-    let orderId: string | undefined;
+    let orderId: string;
     try {
       const order = await createServerOrder(req);
       orderId = order.id;
     } catch {
-      orderId = undefined; // client-only fallback order
+      return {
+        success: false,
+        failureReason: 'Could not create a server-verified payment order.',
+        error: { code: 'ORDER_FAILED', message: 'Payment unavailable' },
+      };
     }
     return new Promise<ChargeResult>((resolve) => {
       const Rz = (window as unknown as RazorpayWindow).Razorpay;
@@ -238,5 +248,9 @@ export const getDefaultGateway = (): PaymentGateway => {
   if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
     return SimulatedGateway;
   }
-  return isRazorpayConfigured() ? RazorpayGateway : SimulatedGateway;
+  const isDev = typeof import.meta !== 'undefined' && !!import.meta.env?.DEV;
+  if (isDev && !isRazorpayConfigured()) {
+    return SimulatedGateway;
+  }
+  return RazorpayGateway;
 };

@@ -277,8 +277,8 @@ export default async function handler(req, res) {
 
     const sunriseIso = dailyRaw.sunrise?.[0];
     const sunsetIso = dailyRaw.sunset?.[0];
-    const sunriseTime = formatClock(sunriseIso) || "06:00 AM";
-    const sunsetTime = formatClock(sunsetIso) || "06:30 PM";
+    const sunriseTime = formatClock(sunriseIso) || null;
+    const sunsetTime = formatClock(sunsetIso) || null;
     const daylightProgressPercent = calculateDaylightProgress(sunriseIso, sunsetIso);
 
     const live = {
@@ -294,8 +294,8 @@ export default async function handler(req, res) {
       uvIndex: Math.round(curUv),
       pressureHpa: Math.round(curPressure),
       pressureTrend,
-      visibilityKm: cur.visibility != null && !isNaN(cur.visibility) ? Math.round(cur.visibility / 1000) : 10,
-      aqi: { index: 1, pm25: 0, pm10: 0, status: "Good" },
+      visibilityKm: cur.visibility != null && !isNaN(cur.visibility) ? Math.round(cur.visibility / 1000) : null,
+      aqi: null,
       sunriseTime,
       sunsetTime,
       daylightProgressPercent,

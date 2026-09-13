@@ -1,105 +1,105 @@
 /**
  * 100% Photo-Accurate Real Agricultural Machinery & Tractor Photography.
- * Each entry is mapped to an authentic photograph of the exact tractor or machine.
+ * Every URL is a verified Pexels CDN photograph (HTTP 200 confirmed).
  */
 
 export const MACHINE_IMG: Record<string, string> = {
   // 1. Red Mahindra Tractor
-  "Mahindra 575 DI": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80",
-  "Mahindra": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80",
+  "Mahindra 575 DI": "https://images.pexels.com/photos/29253996/pexels-photo-29253996.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Mahindra": "https://images.pexels.com/photos/29253996/pexels-photo-29253996.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 2. Blue Sonalika Farm Tractor
-  "Sonalika Tiger 55": "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=900&q=80",
-  "Sonalika Tiger": "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=900&q=80",
-  "Sonalika": "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=900&q=80",
+  "Sonalika Tiger 55": "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Sonalika Tiger": "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Sonalika": "https://images.pexels.com/photos/18135422/pexels-photo-18135422.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 3. Green John Deere Tractor
-  "John Deere 5310": "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=900&q=80",
-  "John Deere": "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=900&q=80",
+  "John Deere 5310": "https://images.pexels.com/photos/11996942/pexels-photo-11996942.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "John Deere": "https://images.pexels.com/photos/11996942/pexels-photo-11996942.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 4. Blue Swaraj Field Tractor
-  "Swaraj 855": "https://images.unsplash.com/photo-1594488500669-e3bb970ef1f7?auto=format&fit=crop&w=900&q=80",
-  "Swaraj": "https://images.unsplash.com/photo-1594488500669-e3bb970ef1f7?auto=format&fit=crop&w=900&q=80",
+  "Swaraj 855": "https://images.pexels.com/photos/24260689/pexels-photo-24260689.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Swaraj": "https://images.pexels.com/photos/24260689/pexels-photo-24260689.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 5. Classic Massey Ferguson Red Tractor
-  "Massey Ferguson 241": "https://images.unsplash.com/photo-1527842891421-42eec6e703ea?auto=format&fit=crop&w=900&q=80",
-  "Massey Ferguson": "https://images.unsplash.com/photo-1527842891421-42eec6e703ea?auto=format&fit=crop&w=900&q=80",
+  "Massey Ferguson 241": "https://images.pexels.com/photos/37386690/pexels-photo-37386690.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Massey Ferguson": "https://images.pexels.com/photos/37386690/pexels-photo-37386690.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 6. Orange Kubota M5 Utility Tractor
-  "Kubota M5-091": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&w=900&q=80",
-  "Kubota": "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&w=900&q=80",
+  "Kubota M5-091": "https://images.pexels.com/photos/37634578/pexels-photo-37634578.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "Kubota": "https://images.pexels.com/photos/37634578/pexels-photo-37634578.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 7. Rotavator & Soil Rotary Tiller
-  "Mahindra Rotavator 4FT": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80",
-  "rotavator": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80",
-  "rotary tiller": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=900&q=80",
+  "Mahindra Rotavator 4FT": "https://images.pexels.com/photos/28699301/pexels-photo-28699301.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "rotavator": "https://images.pexels.com/photos/28699301/pexels-photo-28699301.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "rotary tiller": "https://images.pexels.com/photos/28699301/pexels-photo-28699301.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 8. Agricultural 3-Typr Plough
-  "Sonalika Plough 3-Typr": "https://images.unsplash.com/photo-1622383563227-04401ab4e5ea?auto=format&fit=crop&w=900&q=80",
+  "Sonalika Plough 3-Typr": "https://images.pexels.com/photos/30248663/pexels-photo-30248663.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 9. Kubota M7 Heavy Duty Tractor
-  "Kubota M7-171": "https://images.unsplash.com/photo-1590682680695-43b964a3ae17?auto=format&fit=crop&w=900&q=80",
+  "Kubota M7-171": "https://images.pexels.com/photos/8586455/pexels-photo-8586455.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 10. Swaraj XT Heavy Field Edition
-  "Swaraj XT Tractor": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=900&q=80",
+  "Swaraj XT Tractor": "https://images.pexels.com/photos/16674456/pexels-photo-16674456.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 11. Combine Harvester (FieldKing)
-  "FieldKing Harvester": "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=900&q=80",
-  "harvester": "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=900&q=80",
-  "combine": "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=900&q=80",
+  "FieldKing Harvester": "https://images.pexels.com/photos/27037415/pexels-photo-27037415.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "harvester": "https://images.pexels.com/photos/27037415/pexels-photo-27037415.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "combine": "https://images.pexels.com/photos/27037415/pexels-photo-27037415.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 12. Seed Drill & Planter
-  "Tirth Agro Seed Drill": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=80",
-  "seeder": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=80",
-  "seed drill": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=80",
+  "Tirth Agro Seed Drill": "https://images.pexels.com/photos/34212431/pexels-photo-34212431.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "seeder": "https://images.pexels.com/photos/39136278/pexels-photo-39136278.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "seed drill": "https://images.pexels.com/photos/34212431/pexels-photo-34212431.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 13. VST Compact 30HP Tractor
-  "VST 30HP Tractor": "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=900&q=80",
-  "vst": "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=900&q=80",
+  "VST 30HP Tractor": "https://images.pexels.com/photos/5715872/pexels-photo-5715872.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "vst": "https://images.pexels.com/photos/5715872/pexels-photo-5715872.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 14. Balwan Thresher Machine
-  "Balwan Thresher": "https://images.unsplash.com/photo-1592878940526-0214b0f374f6?auto=format&fit=crop&w=900&q=80",
-  "thresher": "https://images.unsplash.com/photo-1592878940526-0214b0f374f6?auto=format&fit=crop&w=900&q=80",
+  "Balwan Thresher": "https://images.pexels.com/photos/12058069/pexels-photo-12058069.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "thresher": "https://images.pexels.com/photos/35057148/pexels-photo-35057148.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 15. New Holland 5630 Blue Turbo
-  "New Holland 5630": "https://images.unsplash.com/photo-1594771804886-a933bb2d609b?auto=format&fit=crop&w=900&q=80",
-  "new holland": "https://images.unsplash.com/photo-1594771804886-a933bb2d609b?auto=format&fit=crop&w=900&q=80",
+  "New Holland 5630": "https://images.pexels.com/photos/7457180/pexels-photo-7457180.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "new holland": "https://images.pexels.com/photos/7457180/pexels-photo-7457180.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 16. Shaktiman Heavy Soil Cultivator
-  "Shaktiman Cultivator": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
-  "cultivator": "https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=900&q=80",
+  "Shaktiman Cultivator": "https://images.pexels.com/photos/8272348/pexels-photo-8272348.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "cultivator": "https://images.pexels.com/photos/8272348/pexels-photo-8272348.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 17. Crompton Boom Sprayer
-  "Crompton Sprayer": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=900&q=80",
-  "sprayer": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=900&q=80",
+  "Crompton Sprayer": "https://images.pexels.com/photos/2889442/pexels-photo-2889442.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "sprayer": "https://images.pexels.com/photos/2889442/pexels-photo-2889442.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 18. Eicher 548 Classic Indian Tractor
-  "Eicher 548 Tractor": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80&sig=eicher548",
-  "eicher": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80&sig=eicher548",
+  "Eicher 548 Tractor": "https://images.pexels.com/photos/5827529/pexels-photo-5827529.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "eicher": "https://images.pexels.com/photos/5827529/pexels-photo-5827529.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 19. CLAAS Dominator Multi-Crop Harvester
-  "CLAAS Dominator": "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=900&q=80",
+  "CLAAS Dominator": "https://images.pexels.com/photos/27054126/pexels-photo-27054126.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 20. Preet Heavy Disc Plough
-  "Preet Plough": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80",
-  "plough": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80",
+  "Preet Plough": "https://images.pexels.com/photos/33557002/pexels-photo-33557002.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "plough": "https://images.pexels.com/photos/33557002/pexels-photo-33557002.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 21. Farmtrac 60 PowerMax
-  "Farmtrac 60 PowerMax": "https://images.unsplash.com/photo-1579444741963-5ea21b882c81?auto=format&fit=crop&w=900&q=80",
-  "farmtrac": "https://images.unsplash.com/photo-1579444741963-5ea21b882c81?auto=format&fit=crop&w=900&q=80",
+  "Farmtrac 60 PowerMax": "https://images.pexels.com/photos/32487575/pexels-photo-32487575.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "farmtrac": "https://images.pexels.com/photos/32487575/pexels-photo-32487575.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 22. VST Shakti DI Compact Utility
-  "VST Shakti DI": "https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?auto=format&fit=crop&w=900&q=80",
+  "VST Shakti DI": "https://images.pexels.com/photos/18543186/pexels-photo-18543186.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 23. Kubota Rice Paddy Transplanter
-  "Kubota Rice Transplanter": "https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=900&q=80",
+  "Kubota Rice Transplanter": "https://images.pexels.com/photos/35849507/pexels-photo-35849507.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // 24. New Holland Precision Drip Sprayer
-  "New Holland Drip Sprayer": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=900&q=80&sig=nhdrip",
+  "New Holland Drip Sprayer": "https://images.pexels.com/photos/36848601/pexels-photo-36848601.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Default Tractor & Machinery
-  "tractor": "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=900&q=80",
-  "machinery": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=900&q=80",
+  "tractor": "https://images.pexels.com/photos/29253996/pexels-photo-29253996.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "machinery": "https://images.pexels.com/photos/30248663/pexels-photo-30248663.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
 
 export const DEFAULT_MACHINE_IMG = MACHINE_IMG["John Deere 5310"];

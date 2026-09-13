@@ -203,7 +203,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
       {/* Header */}
       <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
         <SafeImage
-          src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=900&q=80"
+          src="https://images.pexels.com/photos/8851253/pexels-photo-8851253.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940"
           alt="Soil testing"
           entityName="Soil Health Testing"
           resolveType="general"

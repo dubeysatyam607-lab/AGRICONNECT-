@@ -32,7 +32,8 @@ describe("AgriConnect Full-Stack Security Penetration & Defensive Regression Tes
     });
 
     it("prevents double refunding on already refunded transactions", async () => {
-      // Create and pay for an order using wallet
+      // Fund the wallet explicitly (no fabricated opening balance) then pay
+      await addWalletMoney(1000, "Test top-up");
       const txn = await processPayment({
         purpose: "store",
         subtotal: 100,
