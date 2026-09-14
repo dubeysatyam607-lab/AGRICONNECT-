@@ -333,7 +333,7 @@ serve(async (req) => {
     // Persist with a server-generated signed URL for the private bucket so the
     // user's own scan history can show the photo without a public bucket.
     const signedUrl = await createSignedImageUrl(safeStoragePath);
-    await persistScan(authResult.userId!, result, validation.mime, language, safeStoragePath, signedUrl);
+    await persistScan(authResult.userId!, result, validImages[0]?.mime, language, safeStoragePath, signedUrl);
 
     return new Response(
       JSON.stringify({ result }),
