@@ -298,9 +298,9 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       }
 
       loadHistory();
-    } catch {
+    } catch (err: any) {
       setIsLoading(false);
-      setError("Something went wrong with the analysis. Please try again in a moment.");
+      setError(err?.message || "Something went wrong with the analysis. Please try again in a moment.");
     }
   };
 
