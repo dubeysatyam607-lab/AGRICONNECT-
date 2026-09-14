@@ -129,6 +129,9 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   pea: "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   peas: "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "green peas": "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "peas wet": "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "pea wet": "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "wet peas": "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   matar: "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "मटर": "https://images.pexels.com/photos/17975576/pexels-photo-17975576.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
