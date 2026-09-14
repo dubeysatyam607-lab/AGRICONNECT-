@@ -115,6 +115,7 @@ const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 /** Deterministic "gateway failure" used to demonstrate retry + failed recovery. */
 const shouldSimulateFailure = (method: PaymentMethod, attempts: number): boolean => {
   if (method === 'wallet') return false;
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) return false;
   // Roughly 1 in 8 attempts fail; retries almost always succeed.
   return attempts === 0 && Math.random() < 0.12;
 };

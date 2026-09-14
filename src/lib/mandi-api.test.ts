@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { fetchMandiPrices, getMandiPriceQuote, setLatestRealPrices } from "./mandi-api";
+import { fetchMandiPrices, getMandiPriceQuote, setLatestRealPrices, normalizeCommodity, cleanCropName } from "./mandi-api";
 import { getCropImage, getCropCategory } from "./crop-images";
 
 vi.mock("@/lib/invoke-edge", () => ({
@@ -144,7 +144,7 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
         id: "wheat::jaipu ramji::jaipur::rajasthan",
         crop: "Wheat",
         cropHi: "गेहूं",
-        cropImage: "https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+        cropImage: "https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
         category: "Cereals",
         price: 2425,
         market: "Jaipur Mandi",
@@ -167,5 +167,127 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
     expect(quote.minPrice).toBe(2300);
     expect(quote.maxPrice).toBe(2500);
     expect(quote.messageEn).toContain("AGMARKNET");
+  });
+
+  it("quotes never duplicate the crop name when Hindi name is unavailable", () => {
+    const realPrices: Parameters<typeof getMandiPriceQuote>[1] = [
+      {
+        id: "blackgram::khanna::ludhiana::punjab",
+        crop: "Black Gram(Urd Beans)(Whole)",
+        cropHi: "उड़द",
+        cropImage: undefined,
+        category: "Pulses",
+        price: 7600,
+        market: "Khanna Mandi",
+        district: "Ludhiana",
+        state: "Punjab",
+        minPrice: 7400,
+        maxPrice: 7850,
+        unit: "₹/Quintal",
+        status: "stable",
+        change: "0%",
+        arrivalDate: "2026-09-05",
+        lastUpdatedText: "2026-09-05",
+      },
+    ];
+
+    const quote = getMandiPriceQuote({ crop: "Black Gram", mandi: "Khanna" }, realPrices);
+    expect(quote.found).toBe(true);
+    expect(quote.cropName).toBe("Black Gram");
+    expect(quote.cropHi).toBe("उड़द");
+    // No "Black Gram (Black Gram)" duplication in any language variant.
+    expect(quote.messageEn).not.toContain("Black Gram (Black Gram)");
+    expect(quote.messageHi).not.toContain("Black Gram (Black Gram)");
+    expect(quote.messageHinglish).not.toContain("Black Gram (Black Gram)");
+    expect(quote.messageHi).toContain("उड़द (Black Gram)");
+    expect(quote.messageEn).toContain("Black Gram");
+  });
+
+  it("duplicate-free quote when the record has no Hindi/regional name at all", () => {
+    const realPrices: Parameters<typeof getMandiPriceQuote>[1] = [
+      {
+        id: "odd-crop::test::test::mh",
+        crop: "Some Mono Crop",
+        category: "Cereals",
+        price: 1234,
+        market: "Test Mandi",
+        district: "Test",
+        state: "Maharashtra",
+        minPrice: 1200,
+        maxPrice: 1300,
+        unit: "₹/Quintal",
+        status: "up",
+        change: "+10%",
+        arrivalDate: "2026-09-05",
+        lastUpdatedText: "2026-09-05",
+      },
+    ];
+
+    const quote = getMandiPriceQuote({ crop: "Some Mono Crop" }, realPrices);
+    expect(quote.found).toBe(true);
+    expect(quote.cropHi).toBeUndefined();
+    expect(quote.messageHi).not.toContain("undefined");
+    expect(quote.messageHi).not.toContain("Some Mono Crop (Some Mono Crop)");
+    expect(quote.messageHinglish).not.toContain("Some Mono Crop (Some Mono Crop)");
+  });
+
+  it("normalizeCommodity fixes AGMARKNET double-name and parenthetical qualifiers", () => {
+    expect(normalizeCommodity("Black Gram(Urd Beans)(Whole)")).toBe("Black Gram");
+    expect(normalizeCommodity("Black Gram(Urd Beans)(Whole)Black Gram")).toBe("Black Gram");
+    expect(normalizeCommodity("Cumin Seed(Jeera)Seed")).toBe("Cumin Seed");
+    expect(normalizeCommodity("Cumin Seed(Jeera)")).toBe("Cumin Seed");
+    expect(normalizeCommodity("Rice(IR-64)")).toBe("Rice");
+    expect(normalizeCommodity("Wheat")).toBe("Wheat");
+    expect(normalizeCommodity("  Paddy  (Common)  ")).toBe("Paddy");
+    expect(normalizeCommodity("")).toBe("");
+    // CleanCropName keeps the internal duplicate; normalizeCommodity removes it.
+    expect(cleanCropName("Black Gram(Urd Beans)(Whole)Black Gram")).toBe("Black Gram Black Gram");
+  });
+
+  it("maps db-served records with servedFrom/meta and normalized commodity names", async () => {
+    mockedInvoke.mockResolvedValue({
+      data: {
+        servedFrom: "database",
+        syncedAt: "2026-09-13T12:00:00.000Z",
+        total: 1,
+        availableStates: ["Rajasthan", "Uttar Pradesh"],
+        availableDistricts: ["Jaipur", "Lucknow"],
+        availableMarkets: ["Jaipur Mandi", "Lucknow Mandi"],
+        availableCommodities: ["Black Gram"],
+        prices: [
+          {
+            state: "Uttar Pradesh",
+            district: "Lucknow",
+            market: "Lucknow Mandi",
+            commodity: "Black Gram(Urd Beans)(Whole)",
+            variety: "FAQ",
+            arrivalDate: "2026-09-13",
+            minPrice: 7400,
+            maxPrice: 7900,
+            price: 7680,
+          },
+        ],
+      },
+      error: null,
+      timedOut: false,
+    });
+
+    const result = await fetchMandiPrices(undefined, "Uttar Pradesh");
+    expect(result.source).toBe("db");
+    expect(result.servedFrom).toBe("database");
+    expect(result.syncedAtText).toBeDefined();
+    expect(result.availableStates).toContain("Uttar Pradesh");
+    expect(result.availableDistricts).toContain("Lucknow");
+    expect(result.prices.length).toBe(1);
+    expect(result.prices[0].crop).toBe("Black Gram");
+    expect(result.prices[0].cropHi).toBe("उड़द");
+    expect(result.prices[0].originalCommodity).toContain("Black Gram(Urd Beans)(Whole)");
+    // No duplicated name anywhere.
+    expect(result.prices[0].crop).not.toContain("Black Gram Black Gram");
+  });
+
+  it("unknown crops map to the Other category (never deleted, never miscategorised)", () => {
+    expect(getCropCategory("Wheat")).toBe("Cereals");
+    expect(getCropCategory("Some Exotic Crop")).toBe("Other");
   });
 });

@@ -9,12 +9,19 @@ export const weatherRequestSchema = z.object({
 });
 
 // Mandi prices request schema
+// `sync` forces a live data.gov.in refresh (upsert + serve). `includeMeta`
+// asks for dynamic discovery lists (states/districts/markets/commodities).
+// `limit`/`offset` enable server-side pagination of the price rows.
 export const mandiPricesRequestSchema = z.object({
   state: z.string().max(100).optional(),
   district: z.string().max(100).optional(),
   commodity: z.string().max(100).optional(),
   market: z.string().max(100).optional(),
   searchQuery: z.string().max(100).optional(),
+  sync: z.boolean().optional(),
+  includeMeta: z.boolean().optional(),
+  limit: z.number().int().min(1).max(10000).optional(),
+  offset: z.number().int().min(0).max(100000).optional(),
 });
 
 // Kisan chat request schema
@@ -44,9 +51,18 @@ export const kisanChatRequestSchema = z.object({
 export const cropDoctorRequestSchema = z.object({
   description: z.string().max(5000).optional(),
   imageBase64: z.string().max(12 * 1024 * 1024).optional(), // 12MB char cap — base64 inflates ~1.33x; binary cap enforced server-side
+  imagesBase64: z.array(z.string().max(12 * 1024 * 1024)).max(4).optional(),
   language: z.string().max(50).optional(),
   storagePath: z.string().max(500).nullable().optional(),   // private bucket object path
   mimeType: z.string().max(50).optional(),
+  farmContext: z.object({
+    crop: z.string().max(200).optional(),
+    variety: z.string().max(200).optional(),
+    stage: z.string().max(200).optional(),
+    area: z.string().max(200).optional(),
+    soil: z.string().max(200).optional(),
+    location: z.string().max(200).optional(),
+  }).optional(),
 });
 
 // Nearby services (mandis / agri shops) request schema

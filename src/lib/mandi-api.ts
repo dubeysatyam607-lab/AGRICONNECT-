@@ -8,11 +8,58 @@ const DEBUG = import.meta.env.DEV;
 const log = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
 const warn = (...args: unknown[]) => { if (DEBUG) console.warn(...args); };
 
+/** Strips AGMARKNET parenthetical qualifiers, e.g. "Black Gram(Urd Beans)(Whole)" -> "Black Gram". */
+export function cleanCropName(raw: string): string {
+  return (raw || "").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Normalizes an AGMARKNET commodity string into a clean base name, fixing the
+ * double-name bug, e.g.:
+ *  - "Black Gram(Urd Beans)(Whole)"           -> "Black Gram"
+ *  - "Black Gram(Urd Beans)(Whole)Black Gram" -> "Black Gram"
+ *  - "Cumin Seed(Jeera)Seed"                  -> "Cumin Seed"
+ *  - "Rice(IR-64)"                            -> "Rice"
+ */
+export function normalizeCommodity(raw: string): string {
+  let s = cleanCropName(raw);
+  if (!s) return "";
+  const parts = s.split(" ");
+  // Largest cut first: an exact repeated base ("Black Gram Black Gram")
+  // outranks a single trailing repeated word ("Cumin Seed Seed").
+  for (let cut = parts.length - 1; cut >= 1; cut--) {
+    const head = parts.slice(0, parts.length - cut).join(" ").toLowerCase();
+    const tail = parts.slice(parts.length - cut).join(" ").toLowerCase();
+    if (tail === head || head.endsWith(" " + tail) || (tail.length > 2 && head.includes(tail))) {
+      s = parts.slice(0, parts.length - cut).join(" ");
+      break;
+    }
+  }
+  return s;
+}
+
+/** Extracts the first parenthetical local name, e.g. "Urd Beans" from "Black Gram(Urd Beans)(Whole)". */
+function extractLocalName(raw: string): string | undefined {
+  const match = raw.match(/\((.*?)\)/);
+  const local = match && match[1] ? match[1].trim() : undefined;
+  return local || undefined;
+}
+
+/** Renders "हिंदी (English)" without duplicating the same word in both languages. */
+function cropDisplay(cleanEn: string, other?: string): string {
+  return other && other !== cleanEn ? `${other} (${cleanEn})` : cleanEn;
+}
+
 export interface MandiPrice {
   id: string;
   crop: string;
   cropHi?: string;
-  cropImage: string;
+  cropImage?: string;
+  localName?: string;
+  originalCommodity?: string;
+  normalizedCommodity?: string;
+  displayCommodity?: string;
+  imageSearchCommodity?: string;
   category: string;
   price: number; // Modal price
   market: string;
@@ -35,12 +82,32 @@ export interface MandiPrice {
 
 export interface MandiResult {
   prices: MandiPrice[];
-  source: "edge" | "cache";
+  source: "edge" | "db" | "cache";
   lastUpdated: string;
   isCached?: boolean;
   cachedAtText?: string;
   isError?: boolean;
   errorMessage?: string;
+  servedFrom?: "database" | "live";
+  stale?: boolean;
+  syncedAt?: string;
+  syncedAtText?: string;
+  rateLimited?: boolean;
+  lastSyncError?: string;
+  availableStates?: string[];
+  availableDistricts?: string[];
+  availableMarkets?: string[];
+  availableCommodities?: string[];
+  total?: number;
+  truncated?: boolean;
+}
+
+export interface FetchMandiOptions {
+  includeMeta?: boolean;
+  sync?: boolean;
+  limit?: number;
+  offset?: number;
+  timeoutMs?: number;
 }
 
 export const HINDI_CROP_NAMES: Record<string, string> = {
@@ -86,6 +153,12 @@ export const HINDI_CROP_NAMES: Record<string, string> = {
   Urad: "उड़द",
   Tur: "अरहर/तुअर",
   Arhar: "अरहर",
+  "Black Gram": "उड़द",
+  "Bengal Gram": "चना",
+  "Green Gram": "मूंग",
+  "Pigeon Pea": "अरहर",
+  "Mung Beans": "मूंग",
+  "Toor Dal": "अरहर",
   Apple: "सेब",
   Pomegranate: "अनार",
   Papaya: "पपीता",
@@ -221,7 +294,10 @@ function dedupeByRecord(prices: MandiPrice[]): MandiPrice[] {
  * mapped to 0 so the UI can show "Not available" instead of an invented number.
  */
 function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
-  const crop = String(record.crop ?? record.commodity ?? "").trim();
+  const rawCrop = String(record.crop ?? record.commodity ?? "").trim();
+  const originalCommodity = String(record.originalCommodity ?? rawCrop ?? "").trim();
+  const normalizedCommodity = String(record.normalizedCommodity ?? record.displayCommodity ?? "").trim() || normalizeCommodity(rawCrop);
+  const crop = String(record.displayCommodity ?? normalizedCommodity ?? "").trim() || rawCrop;
   const toNum = (v: unknown): number => {
     const n = parseFloat(String(v ?? "").replace(/,/g, ""));
     return Number.isFinite(n) ? n : 0;
@@ -257,8 +333,13 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
   const baseItem: MandiPrice = {
     id: uniqueId,
     crop,
-    cropHi: HINDI_CROP_NAMES[crop] || crop,
-    cropImage: getCropImage(crop),
+    cropHi: HINDI_CROP_NAMES[crop] || HINDI_CROP_NAMES[cleanCropName(crop)] || undefined,
+    cropImage: getCropImage(crop) || (cleanCropName(crop) !== crop ? getCropImage(cleanCropName(crop)) : undefined) || undefined,
+    localName: extractLocalName(crop),
+    originalCommodity: originalCommodity || undefined,
+    normalizedCommodity: normalizedCommodity || undefined,
+    displayCommodity: crop || undefined,
+    imageSearchCommodity: String(record.imageSearchCommodity ?? crop).trim() || undefined,
     category: getCropCategory(crop),
     price: Math.round(modalPrice),
     market,
@@ -289,20 +370,30 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
 /**
  * Fetch Mandi prices from Supabase Edge Function gateway (server-side AGMARKNET).
  */
+interface EdgeFetchResult {
+  prices: MandiPrice[];
+  raw: Record<string, unknown> | null;
+}
+
 async function fetchFromEdge(
   searchQuery?: string,
   stateFilter?: string,
   districtFilter?: string,
-  marketFilter?: string
-): Promise<MandiPrice[]> {
-  log(`[Mandi Edge Request] query: '${searchQuery || ""}' state: '${stateFilter || ""}' district: '${districtFilter || ""}' market: '${marketFilter || ""}'`);
+  marketFilter?: string,
+  opts: FetchMandiOptions = {}
+): Promise<EdgeFetchResult> {
+  log(`[Mandi Edge Request] query: '${searchQuery || ""}' state: '${stateFilter || ""}' district: '${districtFilter || ""}' market: '${marketFilter || ""}' sync: ${!!opts.sync}`);
   try {
     const { data: result, error } = await invokeEdgeWithTimeout("mandi-prices", {
       searchQuery: searchQuery || "",
       state: stateFilter || "",
       district: districtFilter || "",
       market: marketFilter || "",
-    });
+      sync: opts.sync ?? false,
+      includeMeta: opts.includeMeta ?? true,
+      limit: opts.limit,
+      offset: opts.offset,
+    }, opts.timeoutMs ?? 45000);
 
     if (error) throw error;
 
@@ -314,7 +405,7 @@ async function fetchFromEdge(
     const uniquePrices = dedupeByRecord(prices);
     if (uniquePrices.length > 0) {
       uniquePrices.sort((a, b) => b.price - a.price);
-      return uniquePrices;
+      return { prices: uniquePrices, raw: result as Record<string, unknown> | null };
     }
     throw new Error("No published prices returned from edge function");
   } catch (err) {
@@ -323,10 +414,22 @@ async function fetchFromEdge(
   }
 }
 
+interface CachedMandiData {
+  prices: MandiPrice[];
+  timestamp: string;
+  servedFrom?: "database" | "live";
+  stale?: boolean;
+  syncedAt?: string;
+  availableStates?: string[];
+  availableDistricts?: string[];
+  availableMarkets?: string[];
+  availableCommodities?: string[];
+}
+
 /**
  * Save real mandi prices to localStorage for offline access.
  */
-function saveCache(cache: { prices: MandiPrice[]; timestamp: string }): void {
+function saveCache(cache: CachedMandiData): void {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
   } catch (e) {
@@ -337,13 +440,23 @@ function saveCache(cache: { prices: MandiPrice[]; timestamp: string }): void {
 /**
  * Read cached real mandi prices from localStorage.
  */
-function readCache(): { prices: MandiPrice[]; timestamp: string } | null {
+function readCache(): CachedMandiData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed?.prices)) return null;
-    return { prices: parsed.prices, timestamp: parsed.timestamp ?? new Date().toISOString() };
+    return {
+      prices: parsed.prices,
+      timestamp: parsed.timestamp ?? new Date().toISOString(),
+      servedFrom: parsed.servedFrom,
+      stale: parsed.stale,
+      syncedAt: parsed.syncedAt,
+      availableStates: parsed.availableStates,
+      availableDistricts: parsed.availableDistricts,
+      availableMarkets: parsed.availableMarkets,
+      availableCommodities: parsed.availableCommodities,
+    };
   } catch {
     return null;
   }
@@ -401,25 +514,67 @@ export async function fetchMandiPrices(
   searchQuery?: string,
   stateFilter?: string,
   districtFilter?: string,
-  marketFilter?: string
+  marketFilter?: string,
+  opts: FetchMandiOptions = {}
 ): Promise<MandiResult> {
   const nowStr = new Date().toISOString();
 
   try {
-    const livePrices = await fetchFromEdge(searchQuery, stateFilter, districtFilter, marketFilter);
+    const { prices: livePrices, raw } = await fetchFromEdge(searchQuery, stateFilter, districtFilter, marketFilter, opts);
     if (livePrices.length > 0) {
       setLatestRealPrices(livePrices);
-      saveCache({ prices: livePrices, timestamp: nowStr });
-      log(`[Mandi UI Render] Serving ${livePrices.length} verified live prices from AGMARKNET via edge`);
-      return {
+
+      const servedFrom = raw?.servedFrom as "database" | "live" | undefined;
+      const derivedStates = Array.from(new Set(livePrices.map((p) => p.state).filter(Boolean)));
+      const derivedDistricts = Array.from(new Set(livePrices.map((p) => p.district).filter(Boolean)));
+      const derivedMarkets = Array.from(new Set(livePrices.map((p) => p.market).filter(Boolean)));
+      const derivedCommodities = Array.from(new Set(livePrices.map((p) => p.crop).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+      const syncedAtText = raw?.syncedAt
+        ? new Date(raw.syncedAt as string).toLocaleString("en-IN", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : undefined;
+
+      const resultMeta: MandiResult = {
         prices: livePrices,
-        source: "edge",
+        source: servedFrom === "database" ? "db" : "edge",
         lastUpdated: nowStr,
         isCached: false,
+        servedFrom,
+        stale: raw?.stale as boolean | undefined,
+        syncedAt: (raw?.syncedAt as string | undefined) ?? undefined,
+        syncedAtText,
+        rateLimited: raw?.rateLimited as boolean | undefined,
+        lastSyncError: (raw?.lastSyncError as string | undefined) ?? undefined,
+        total: (raw?.total as number | undefined) ?? undefined,
+        truncated: raw?.truncated as boolean | undefined,
+        availableStates: (raw?.availableStates as string[] | undefined)?.length ? raw.availableStates as string[] : derivedStates,
+        availableDistricts: (raw?.availableDistricts as string[] | undefined)?.length ? raw.availableDistricts as string[] : derivedDistricts,
+        availableMarkets: (raw?.availableMarkets as string[] | undefined)?.length ? raw.availableMarkets as string[] : derivedMarkets,
+        availableCommodities: (raw?.availableCommodities as string[] | undefined)?.length ? raw.availableCommodities as string[] : derivedCommodities,
       };
+
+      saveCache({
+        prices: livePrices,
+        timestamp: nowStr,
+        servedFrom,
+        stale: raw?.stale as boolean | undefined,
+        syncedAt: (raw?.syncedAt as string | undefined) ?? undefined,
+        availableStates: resultMeta.availableStates,
+        availableDistricts: resultMeta.availableDistricts,
+        availableMarkets: resultMeta.availableMarkets,
+        availableCommodities: resultMeta.availableCommodities,
+      });
+
+      log(`[Mandi UI Render] Serving ${livePrices.length} verified government mandi prices`);
+      return resultMeta;
     }
   } catch (err) {
-    warn("[Mandi Edge Function Failed] Checking cached live data...", err);
+    warn("[Mandi Edge Function Failed] Checking cached government data...", err);
   }
 
   const cache = readCache();
@@ -446,13 +601,28 @@ export async function fetchMandiPrices(
       minute: "2-digit",
     });
 
-    log(`[Mandi UI Render] Serving ${filtered.length} cached live prices synced at ${cachedAtText}`);
+    log(`[Mandi UI Render] Serving ${filtered.length} cached government mandi prices synced at ${cachedAtText}`);
     return {
       prices: filtered,
       source: "cache",
       lastUpdated: cache.timestamp,
       isCached: true,
       cachedAtText,
+      servedFrom: cache.servedFrom,
+      stale: cache.stale,
+      syncedAt: cache.syncedAt,
+      availableStates: cache.availableStates?.length
+        ? cache.availableStates
+        : Array.from(new Set(cache.prices.map((p) => p.state).filter(Boolean))),
+      availableDistricts: cache.availableDistricts?.length
+        ? cache.availableDistricts
+        : Array.from(new Set(cache.prices.map((p) => p.district).filter(Boolean))),
+      availableMarkets: cache.availableMarkets?.length
+        ? cache.availableMarkets
+        : Array.from(new Set(cache.prices.map((p) => p.market).filter(Boolean))),
+      availableCommodities: cache.availableCommodities?.length
+        ? cache.availableCommodities
+        : Array.from(new Set(cache.prices.map((p) => p.crop).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
     };
   }
 
@@ -462,7 +632,7 @@ export async function fetchMandiPrices(
     source: "cache",
     lastUpdated: nowStr,
     isError: true,
-    errorMessage: "Mandi prices are currently unavailable. Please check your connection and try again.",
+    errorMessage: "Government mandi data is temporarily unavailable. Please check your connection and try again.",
   };
 }
 
@@ -519,7 +689,7 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
     return {
       found: false,
       cropName: cropDisplay,
-      cropHi: HINDI_CROP_NAMES[cropDisplay] || cropDisplay,
+      cropHi: HINDI_CROP_NAMES[cropDisplay] || undefined,
       marketName: "",
       stateName: "",
       minPrice: 0,
@@ -535,9 +705,11 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
   if (!rawMandi) {
     const availableMarkets = Array.from(new Set(matchingCrops.map((m) => m.market.replace(/ APMC| Mandi| Market/gi, ""))));
     const firstMatch = matchingCrops[0];
-    const cropHi = firstMatch.cropHi || firstMatch.crop;
-    const cropEn = firstMatch.crop;
-    const cropHinglish = HINGLISH_CROP_NAMES[cropEn] || cropEn;
+    const cropHi = firstMatch.cropHi || undefined;
+    const cropEn = normalizeCommodity(firstMatch.crop);
+    const cropHinglish = HINGLISH_CROP_NAMES[cropEn] || undefined;
+    const cropTitleHi = cropDisplay(cropEn, cropHi);
+    const cropTitleHinglish = cropDisplay(cropEn, cropHinglish);
 
     return {
       found: true,
@@ -554,8 +726,8 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
       msp: firstMatch.msp,
       arrivalDate: firstMatch.arrivalDate,
       arrivalQuantity: firstMatch.arrivalQuantity,
-      messageHi: `किस मंडी का **${cropHi} (${cropEn})** का भाव चाहिए? (जैसे: ${availableMarkets.join(", ")})`,
-      messageHinglish: `Kaunsi mandi ka **${cropHinglish} (${cropEn})** ka bhav chahiye? (Jaise: ${availableMarkets.join(", ")})`,
+      messageHi: `किस मंडी का **${cropTitleHi}** का भाव चाहिए? (जैसे: ${availableMarkets.join(", ")})`,
+      messageHinglish: `Kaunsi mandi ka **${cropTitleHinglish}** ka bhav chahiye? (Jaise: ${availableMarkets.join(", ")})`,
       messageEn: `Which mandi's rate do you need for **${cropEn}**? (Options: ${availableMarkets.join(", ")})`,
     };
   }
@@ -577,9 +749,11 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
     selected = matchingCrops[0];
   }
 
-  const cropHi = selected.cropHi || selected.crop;
-  const cropEn = selected.crop;
-  const cropHinglish = HINGLISH_CROP_NAMES[cropEn] || cropEn;
+  const cropHi = selected.cropHi || undefined;
+  const cropEn = normalizeCommodity(selected.crop);
+  const cropHinglish = HINGLISH_CROP_NAMES[cropEn] || undefined;
+  const cropTitleHi = cropDisplay(cropEn, cropHi);
+  const cropTitleHinglish = cropDisplay(cropEn, cropHinglish);
   const mktName = selected.market;
   const stateName = selected.state;
 
@@ -600,8 +774,8 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
     msp: selected.msp,
     arrivalDate: selected.arrivalDate,
     arrivalQuantity: selected.arrivalQuantity,
-    messageHi: `📍 **${cropHi} (${cropEn})** — ${mktName} (${stateName})\n\n• न्यूनतम भाव: **₹${selected.minPrice.toLocaleString("en-IN")}/क्विंटल**\n• अधिकतम भाव: **₹${selected.maxPrice.toLocaleString("en-IN")}/क्विंटल**\n• मॉडल (औसत) भाव: **₹${selected.price.toLocaleString("en-IN")}/क्विंटल**${selected.msp ? `\n• सरकारी MSP: **₹${selected.msp.toLocaleString("en-IN")}/क्विंटल**` : ""}${arrivalLine}`,
-    messageHinglish: `📍 **${cropHinglish} (${cropEn})** — ${mktName} (${stateName})\n\n• Minimum: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Avg) Bhav: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
+    messageHi: `📍 **${cropTitleHi}** — ${mktName} (${stateName})\n\n• न्यूनतम भाव: **₹${selected.minPrice.toLocaleString("en-IN")}/क्विंटल**\n• अधिकतम भाव: **₹${selected.maxPrice.toLocaleString("en-IN")}/क्विंटल**\n• मॉडल (औसत) भाव: **₹${selected.price.toLocaleString("en-IN")}/क्विंटल**${selected.msp ? `\n• सरकारी MSP: **₹${selected.msp.toLocaleString("en-IN")}/क्विंटल**` : ""}${arrivalLine}`,
+    messageHinglish: `📍 **${cropTitleHinglish}** — ${mktName} (${stateName})\n\n• Minimum: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Avg) Bhav: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
     messageEn: `📍 **${cropEn}** — ${mktName} (${stateName})\n\n• Minimum Price: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum Price: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Average) Price: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
   };
 }

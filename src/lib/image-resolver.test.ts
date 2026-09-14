@@ -130,12 +130,12 @@ describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, St
     expect(res2).toContain("https://");
   });
 
-  it("resolveImage returns exact SVG fallback when no photo found", () => {
+  it("resolveImage does not return a misleading generic photo for an unknown crop (fail-closed)", () => {
     const fallbackRes = resolveImage({
       entityType: "crop",
       entityName: "Exotic Dragon Fruit",
     });
-    expect(fallbackRes).toContain("https://");
+    expect(fallbackRes).not.toMatch(/images\.(pexels|unsplash)\.com/);
   });
 });
 

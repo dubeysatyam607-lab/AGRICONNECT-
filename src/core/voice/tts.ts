@@ -124,8 +124,39 @@ export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   return anyIndian || voices[0] || null;
 }
 
-// Keep track of active audio elements to prevent overlapping audio
+// Persistent reference set to prevent V8 Garbage Collector from reclaiming active HTMLAudioElements
+const activeAudioSet = new Set<HTMLAudioElement>();
 let activeGlobalAudio: HTMLAudioElement | null = null;
+
+export function stopSpeaking(): void {
+  if (activeGlobalAudio) {
+    try {
+      activeGlobalAudio.pause();
+      activeGlobalAudio.currentTime = 0;
+    } catch {
+      // noop
+    }
+    activeGlobalAudio = null;
+  }
+
+  for (const audio of activeAudioSet) {
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch {
+      // noop
+    }
+  }
+  activeAudioSet.clear();
+
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // noop
+    }
+  }
+}
 
 /**
  * Main TTS speaker with Sarvam AI (Subh voice) backend synthesis
@@ -145,8 +176,9 @@ export function speakText(
   let isPaused = false;
   let isStopped = false;
   let currentPlaybackRate = 1.0;
-  let audioElement: HTMLAudioElement | null = null;
-  let audioUrl: string | null = null;
+  let currentChunkIndex = 0;
+  let currentAudioElement: HTMLAudioElement | null = null;
+  let currentAudioUrl: string | null = null;
   let fallbackUtterance: SpeechSynthesisUtterance | null = null;
 
   callbacks.onStart?.(totalChunks);
@@ -154,24 +186,22 @@ export function speakText(
   const sarvamCode = getSarvamLanguageCode(lang);
   const sarvamSpeaker = getSarvamSpeaker(lang);
 
-  // Attempt Sarvam AI TTS via backend API
-  const startSarvamTts = async () => {
+  // Helper to fetch audio for a chunk
+  const fetchChunkAudio = async (chunkText: string): Promise<Blob | null> => {
     try {
       let response: Response | null = null;
-
-      // Try /api/voice/tts first, fallback to /api/tts
       try {
         response = await fetch('/api/voice/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: sanitized,
+            text: chunkText,
             languageCode: sarvamCode,
             speaker: sarvamSpeaker,
           }),
         });
       } catch {
-        // Retry secondary endpoint
+        // Fallback to secondary route
       }
 
       if (!response || !response.ok) {
@@ -179,57 +209,80 @@ export function speakText(
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: sanitized,
+            text: chunkText,
             languageCode: sarvamCode,
             speaker: sarvamSpeaker,
           }),
         });
       }
 
-      if (isStopped) return;
+      if (response && response.ok) {
+        return await response.blob();
+      }
+    } catch (err) {
+      console.warn('[Sarvam TTS] Fetch error:', err);
+    }
+    return null;
+  };
 
-      if (!response.ok) {
-        throw new Error(`Sarvam TTS API returned status ${response.status}`);
+  // Play chunks sequentially to prevent audio truncation on long responses
+  const playNextChunk = async () => {
+    if (isStopped) return;
+
+    if (currentChunkIndex >= totalChunks) {
+      callbacks.onEnd?.();
+      return;
+    }
+
+    const chunkText = chunks[currentChunkIndex] || sanitized;
+    const blob = await fetchChunkAudio(chunkText);
+
+    if (isStopped) return;
+
+    if (!blob) {
+      // Fallback to browser Web Speech API for remaining chunks
+      startSpeechSynthesisFallback();
+      return;
+    }
+
+    try {
+      if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
       }
 
-      const blob = await response.blob();
-      if (isStopped) return;
-
-      audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
-      audioElement = audio;
+      currentAudioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(currentAudioUrl);
+      currentAudioElement = audio;
       activeGlobalAudio = audio;
+      activeAudioSet.add(audio);
       audio.playbackRate = currentPlaybackRate;
 
       audio.onplay = () => {
         if (isStopped) return;
-        callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
-      };
-
-      audio.ontimeupdate = () => {
-        if (isStopped || !audio.duration) return;
-        const progress = audio.currentTime / audio.duration;
-        const currentSentenceIdx = Math.min(
-          totalChunks - 1,
-          Math.floor(progress * totalChunks),
-        );
         callbacks.onProgress?.({
-          charIndex: Math.floor(progress * sanitized.length),
-          sentenceIndex: currentSentenceIdx,
+          charIndex: Math.floor((currentChunkIndex / totalChunks) * sanitized.length),
+          sentenceIndex: currentChunkIndex,
         });
       };
 
       audio.onended = () => {
+        activeAudioSet.delete(audio);
+        if (currentAudioUrl) {
+          URL.revokeObjectURL(currentAudioUrl);
+          currentAudioUrl = null;
+        }
         if (isStopped) return;
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        activeGlobalAudio = null;
-        callbacks.onEnd?.();
+        currentChunkIndex++;
+        playNextChunk();
       };
 
       audio.onerror = () => {
+        activeAudioSet.delete(audio);
+        if (currentAudioUrl) {
+          URL.revokeObjectURL(currentAudioUrl);
+          currentAudioUrl = null;
+        }
         if (isStopped) return;
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        activeGlobalAudio = null;
         startSpeechSynthesisFallback();
       };
 
@@ -254,7 +307,8 @@ export function speakText(
       // noop
     }
 
-    const utterance = new SpeechSynthesisUtterance(sanitized);
+    const remainingText = chunks.slice(currentChunkIndex).join(' ') || sanitized;
+    const utterance = new SpeechSynthesisUtterance(remainingText);
     utterance.lang = sarvamCode || 'hi-IN';
     utterance.rate = currentPlaybackRate * 0.95;
     utterance.pitch = 1.02;
@@ -264,7 +318,7 @@ export function speakText(
 
     utterance.onstart = () => {
       if (isStopped) return;
-      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: 0 });
+      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: currentChunkIndex });
     };
 
     utterance.onend = () => {
@@ -282,13 +336,13 @@ export function speakText(
   };
 
   // Launch Sarvam TTS
-  startSarvamTts();
+  playNextChunk();
 
   return {
     pause: () => {
       isPaused = true;
-      if (audioElement) {
-        audioElement.pause();
+      if (currentAudioElement) {
+        currentAudioElement.pause();
       } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         try {
           window.speechSynthesis.pause();
@@ -300,8 +354,8 @@ export function speakText(
     resume: () => {
       if (!isPaused) return;
       isPaused = false;
-      if (audioElement) {
-        audioElement.play().catch(() => {});
+      if (currentAudioElement) {
+        currentAudioElement.play().catch(() => {});
       } else if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         try {
           window.speechSynthesis.resume();
@@ -312,39 +366,36 @@ export function speakText(
     },
     stop: () => {
       isStopped = true;
-      if (audioElement) {
-        audioElement.pause();
-        audioElement.currentTime = 0;
-        audioElement = null;
+      if (currentAudioElement) {
+        currentAudioElement.pause();
+        currentAudioElement.currentTime = 0;
+        activeAudioSet.delete(currentAudioElement);
+        currentAudioElement = null;
       }
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-        audioUrl = null;
+      if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
       }
-      activeGlobalAudio = null;
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        try {
-          window.speechSynthesis.cancel();
-        } catch {
-          // noop
-        }
-      }
+      stopSpeaking();
       callbacks.onEnd?.();
     },
     replay: () => {
       isStopped = false;
       isPaused = false;
-      if (audioElement) {
-        audioElement.currentTime = 0;
-        audioElement.play().catch(() => {});
+      currentChunkIndex = 0;
+      if (currentAudioElement) {
+        currentAudioElement.currentTime = 0;
+        currentAudioElement.play().catch(() => {
+          playNextChunk();
+        });
       } else {
-        startSarvamTts();
+        playNextChunk();
       }
     },
     setRate: (r: number) => {
       currentPlaybackRate = Math.min(1.5, Math.max(0.7, r));
-      if (audioElement) {
-        audioElement.playbackRate = currentPlaybackRate;
+      if (currentAudioElement) {
+        currentAudioElement.playbackRate = currentPlaybackRate;
       }
       if (fallbackUtterance) {
         fallbackUtterance.rate = currentPlaybackRate * 0.95;
@@ -354,24 +405,4 @@ export function speakText(
     isPaused: () => isPaused,
     getRate: () => currentPlaybackRate,
   };
-}
-
-export function stopSpeaking(): void {
-  if (activeGlobalAudio) {
-    try {
-      activeGlobalAudio.pause();
-      activeGlobalAudio.currentTime = 0;
-    } catch {
-      // noop
-    }
-    activeGlobalAudio = null;
-  }
-
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      // noop
-    }
-  }
 }

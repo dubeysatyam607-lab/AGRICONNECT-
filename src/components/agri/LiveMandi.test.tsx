@@ -156,7 +156,7 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
     fireEvent.change(searchInput, { target: { value: "NonExistentCrop123" } });
 
     await waitFor(() => {
-      expect(screen.getByText(/No Mandi Commodities Found/i)).toBeTruthy();
+      expect(screen.getByText(/No Government mandi records found for this selection/i)).toBeTruthy();
       expect(screen.getByRole("button", { name: /Clear All Filters/i })).toBeTruthy();
     });
   });
