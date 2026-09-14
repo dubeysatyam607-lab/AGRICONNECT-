@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { getCropImage } from "@/lib/crop-images";
-import { searchVerifiedCropImage } from "@/lib/cropImageService";
+import React, { useEffect, useState } from "react";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { getRelevantImage } from "@/lib/imageService";
+import { searchVerifiedCropImage } from "@/lib/cropImageService";
 import { cn } from "@/lib/utils";
 
 export interface CommodityImageProps {
@@ -17,8 +17,9 @@ export interface CommodityImageProps {
 }
 
 /**
- * Mandi crop image component powered by AgriConnect Centralized Image System.
- * Renders verified real agricultural photography for every crop commodity.
+ * Mandi crop image component powered by AgriConnect Centralized Image System & SafeImage Engine.
+ * Guarantees high-resolution real agricultural photography for every crop commodity,
+ * with multi-tiered fallback to category photos and vector SVGs. Zero broken boxes.
  */
 export const CommodityImage: React.FC<CommodityImageProps> = ({
   commodityName,
@@ -45,11 +46,9 @@ export const CommodityImage: React.FC<CommodityImageProps> = ({
   });
 
   const [liveUrl, setLiveUrl] = useState<string | undefined>(undefined);
-  const [imgLoadFailed, setImgLoadFailed] = useState(false);
 
   useEffect(() => {
     setLiveUrl(undefined);
-    setImgLoadFailed(false);
     const key = rawName || cleanName;
     if (!key) return;
 
@@ -62,22 +61,22 @@ export const CommodityImage: React.FC<CommodityImageProps> = ({
     return () => { cancelled = true; };
   }, [rawName, cleanName]);
 
-  const effectiveUrl = (!imgLoadFailed && liveUrl) || curated || getRelevantImage({ entityType: "crop", name: cleanName, category });
   const descriptiveAlt = alt || `${cleanName}${commodityHi ? ` (${commodityHi})` : ""} - Real crop produce`;
+  const initialSrc = liveUrl || curated || src || cleanName;
 
   return (
-    <div className={cn("relative overflow-hidden bg-muted/20", containerClassName || className)}>
-      <img
-        src={effectiveUrl}
-        alt={descriptiveAlt}
-        loading={loading}
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={() => setImgLoadFailed(true)}
-        className={cn("w-full h-full object-cover transition-opacity duration-300", className)}
-      />
-    </div>
+    <SafeImage
+      src={initialSrc}
+      alt={descriptiveAlt}
+      entityName={cleanName}
+      category={category}
+      resolveType="crop"
+      loading={loading}
+      containerClassName={cn("w-full h-full", containerClassName)}
+      className={className}
+    />
   );
 };
 
 export default CommodityImage;
+
