@@ -146,9 +146,9 @@ export function MandiModule() {
       <PageHeader
         title="Mandi Data Management"
         subtitle={
-          loading ? 'Fetching live mandi prices from api.data.gov.in…'
-            : error ? `Live feed error: ${error}`
-            : `${rows.length} live crop-market entries from ${new Set(rows.map((r) => r.state)).size} states`
+          loading ? 'Fetching verified government mandi data…'
+            : error ? `Government data error: ${error}`
+            : `${rows.length} verified crop-market entries from ${new Set(rows.map((r) => r.state)).size} states`
         }
         actions={
           <Button variant="outline" size="sm" onClick={() => { loadData(); loadStats(); }}>

@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX, History, AlertTriangle } from "lucide-react";
+import {
+  Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX,
+  History, AlertTriangle, Plus, Trash2, MessageSquare, CheckCircle, ShieldAlert,
+} from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { useToast } from "@/hooks/use-toast";
@@ -9,21 +12,27 @@ import {
   uploadScanImage,
   classifyEdgeError,
   SCAN_ERROR_KEYS,
+  checkImageQuality,
   type ScanErrorCode,
+  type ImageQualityResult,
 } from "@/lib/crop-scan";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useFarm } from "@/contexts/FarmContext";
 import { fetchScanHistory, deleteScan, type StoredScan } from "@/lib/ai-persistence";
 import { speakText, stopSpeaking, textForSpeech, detectLanguageOf } from "@/core/voice";
 
-// Structured crop scan result (spec §15)
-interface CropScanResult {
+export interface CropScanResult {
   crop?: string | null;
   plant_part?: string | null;
   health_status?: string | null;
   possible_issue?: string | null;
   confidence?: number | null;
   symptoms?: string[];
+  possible_causes?: string[];
+  immediate_actions?: string[];
+  prevention?: string[];
+  questions?: string[];
   recommendations?: string[];
   urgency?: string | null;
   needs_clearer_image?: boolean;
@@ -31,8 +40,19 @@ interface CropScanResult {
   expert_confirm?: string | null;
 }
 
+interface SelectedImageItem {
+  id: string;
+  previewUrl: string;
+  base64Data: string;
+  blob: Blob;
+  role: string; // "Whole plant" | "Leaf" | "Fruit/Stem" | "Close-up"
+  qualityResult?: ImageQualityResult;
+}
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_MB = 8;
+const MAX_IMAGES = 4;
+const IMAGE_ROLES = ["Whole Plant", "Affected Leaf", "Stem/Fruit", "Close-up"];
 
 const HEALTH_LABELS: Record<string, string> = {
   "possible disease": "Possible Disease",
@@ -45,28 +65,43 @@ const HEALTH_LABELS: Record<string, string> = {
 };
 
 const URGENCY_STYLES: Record<string, string> = {
-  low: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  medium: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  high: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-  urgent: "bg-rose-500/15 text-rose-400 border-rose-500/30",
+  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+  medium: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+  high: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30",
+  urgent: "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30",
 };
 
-const CropDoctor: React.FC = () => {
+interface CropDoctorProps {
+  onAskKisan?: (scanResult: CropScanResult) => void;
+}
+
+const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   const [input, setInput] = useState("");
+  const [images, setImages] = useState<SelectedImageItem[]>([]);
   const [result, setResult] = useState<CropScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [qualityWarning, setQualityWarning] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [compressedBlob, setCompressedBlob] = useState<Blob | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<StoredScan[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile } = useFarm();
+  const { languageName, t } = useLanguage();
 
   const speakResultText = useCallback(() => {
     if (!result) return;
     const parts = [
       result.possible_issue,
-      result.symptoms?.join(". "),
-      result.recommendations?.join(". "),
+      result.symptoms?.length ? `Symptoms: ${result.symptoms.join(". ")}` : "",
+      result.immediate_actions?.length ? `Actions: ${result.immediate_actions.join(". ")}` : "",
+      result.recommendations?.length ? result.recommendations.join(". ") : "",
     ].filter(Boolean);
     const text = parts.join(". ");
     if (!text) return;
@@ -87,14 +122,6 @@ const CropDoctor: React.FC = () => {
       speakResultText();
     }
   }, [isSpeaking, speakResultText]);
-  const [autoSpeak, setAutoSpeak] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
-  const [history, setHistory] = useState<StoredScan[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { languageName, t } = useLanguage();
 
   useEffect(() => {
     if (!("speechSynthesis" in window)) return;
@@ -123,9 +150,15 @@ const CropDoctor: React.FC = () => {
     if (!showHistory) loadHistory();
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processFile = async (file: File) => {
+    if (images.length >= MAX_IMAGES) {
+      toast({
+        title: "Maximum photos reached",
+        description: `You can upload up to ${MAX_IMAGES} crop photos per scan.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast({
@@ -147,9 +180,34 @@ const CropDoctor: React.FC = () => {
 
     try {
       const compressed = await compressImageFile(file);
-      setImagePreview(compressed.dataUrl);
-      setImageBase64(compressed.dataUrl);
-      setCompressedBlob(compressed.blob);
+      
+      let qResult: ImageQualityResult = { isUsable: true };
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = compressed.width;
+        canvas.height = compressed.height;
+        qResult = checkImageQuality(canvas);
+      } catch {
+        // fallback for environments without canvas 2d context
+      }
+
+      if (!qResult.isUsable) {
+        setQualityWarning(qResult.warningEn || "Photo is not clear enough. Please take a closer photo in good light.");
+      } else {
+        setQualityWarning(null);
+      }
+
+      const role = IMAGE_ROLES[images.length] || "Crop Photo";
+      const newItem: SelectedImageItem = {
+        id: Math.random().toString(36).substring(2, 9),
+        previewUrl: compressed.dataUrl,
+        base64Data: compressed.dataUrl,
+        blob: compressed.blob,
+        role,
+        qualityResult: qResult,
+      };
+
+      setImages((prev) => [...prev, newItem]);
       setError(null);
     } catch (err: any) {
       toast({
@@ -160,14 +218,23 @@ const CropDoctor: React.FC = () => {
     }
   };
 
-  const handleDiagnosis = async () => {
-    if (!input.trim() && !imageBase64) {
-      toast({ title: "Input required", description: "Please describe the issue or upload an image", variant: "destructive" });
-      return;
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    for (let i = 0; i < Math.min(files.length, MAX_IMAGES - images.length); i++) {
+      await processFile(files[i]);
     }
-    if (!imageBase64) {
-      setError("Please upload a clear photo of the affected leaf or crop to scan it.");
-      toast({ title: t("svc.cropDoctor") || "Photo required", description: "Crop scanning needs a photo.", variant: "destructive" });
+    if (e.target) e.target.value = "";
+  };
+
+  const removeImage = (id: string) => {
+    setImages((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleDiagnosis = async () => {
+    if (images.length === 0) {
+      setError("Please attach at least one crop photo to analyze.");
+      toast({ title: "Photo required", description: "Crop scanning requires a crop photo.", variant: "destructive" });
       return;
     }
 
@@ -175,16 +242,33 @@ const CropDoctor: React.FC = () => {
     setError(null);
     setResult(null);
 
-    await uploadScanImage(user?.id, compressedBlob);
+    // Upload first primary image to private bucket
+    if (images[0]?.blob) {
+      await uploadScanImage(user?.id, images[0].blob);
+    }
 
     try {
+      const payloadImages = images.map((img) => img.base64Data);
+      const farmCtx = {
+        crop: profile.crop,
+        variety: profile.variety,
+        stage: profile.stage,
+        area: profile.farmArea,
+        soil: profile.soilType,
+      };
+
       const { data, error: err, code, timedOut } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
         "crop-doctor",
-        { description: input, imageBase64, language: languageName },
-        15000,
+        {
+          description: input,
+          imagesBase64: payloadImages,
+          imageBase64: payloadImages[0],
+          language: languageName,
+          farmContext: farmCtx,
+        },
+        20000,
       );
 
-      // Honesty contract: an edge failure is NEVER converted into a diagnosis.
       if (err) {
         const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
         const key = SCAN_ERROR_KEYS[edgeCode] || "doctor.error.api";
@@ -206,7 +290,7 @@ const CropDoctor: React.FC = () => {
       setResult(data.result);
 
       if (data.result.needs_clearer_image) {
-        setError("The photo is not clear enough to analyze. Please upload a clearer close-up of the affected part.");
+        setError("Photo is not clear enough for a reliable analysis. Please take a closer photo of the affected leaf/fruit/stem.");
       }
 
       if (autoSpeak && (data.result.possible_issue || data.result.health_status)) {
@@ -216,7 +300,7 @@ const CropDoctor: React.FC = () => {
       loadHistory();
     } catch {
       setIsLoading(false);
-      setError("Something went wrong on our side. Please try again in a moment.");
+      setError("Something went wrong with the analysis. Please try again in a moment.");
     }
   };
 
@@ -224,16 +308,22 @@ const CropDoctor: React.FC = () => {
     stopSpeaking();
     setResult(null);
     setError(null);
+    setQualityWarning(null);
     setInput("");
-    setImagePreview(null);
-    setImageBase64(null);
-    setCompressedBlob(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setImages([]);
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const handleDeleteScan = async (scanId: string) => {
     const ok = await deleteScan(scanId);
     if (ok) setHistory((h) => h.filter((s) => s.id !== scanId));
+  };
+
+  const handleAskKisanAssistant = () => {
+    if (result && onAskKisan) {
+      onAskKisan(result);
+    }
   };
 
   const renderResultCard = () => {
@@ -242,132 +332,211 @@ const CropDoctor: React.FC = () => {
     const clarityWarning = result.needs_clearer_image;
 
     return (
-      <div className="flex-1 bg-card rounded-2xl border border-feature-ai/20 shadow-card p-6 overflow-y-auto mb-6">
-        <div className="flex justify-between items-start mb-4">
+      <div className="flex-1 bg-card rounded-2xl border border-emerald-500/20 shadow-lg p-6 overflow-y-auto mb-6">
+        <div className="flex justify-between items-start mb-4 border-b border-border pb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="text-feature-ai" size={20} />
-            <h3 className="font-bold text-foreground">{t('agr194')}</h3>
+            <Sparkles className="text-emerald-600 dark:text-emerald-400" size={22} />
+            <h3 className="font-extrabold text-foreground text-lg">{t('agr194') || 'AI Crop Analysis Result'}</h3>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleSpeakResponse}
-              className={`p-2 rounded-full transition-colors ${isSpeaking ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground hover:text-primary"}`}
+              className={`p-2 rounded-full transition-colors ${isSpeaking ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "hover:bg-muted text-muted-foreground"}`}
               title={isSpeaking ? "Stop speaking" : "Listen"}
             >
               {isSpeaking ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
-            <button onClick={handleReset} className="p-1 hover:bg-muted rounded-full transition-colors">
+            <button onClick={handleReset} className="p-1.5 hover:bg-muted rounded-full transition-colors">
               <X size={18} className="text-muted-foreground" />
             </button>
           </div>
         </div>
 
-        {imagePreview && (
-          <SafeImage
-            src={imagePreview}
-            alt="Analyzed crop"
-            resolveType="crop"
-            containerClassName="w-full h-32 rounded-lg mb-4 border border-border"
-            className="w-full h-full object-cover"
-          />
+        {/* Display photos gallery */}
+        {images.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            {images.map((img) => (
+              <div key={img.id} className="relative rounded-xl overflow-hidden border border-border h-24 bg-muted">
+                <SafeImage
+                  src={img.previewUrl}
+                  alt={img.role}
+                  resolveType="crop"
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute bottom-1 left-1 right-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded text-center truncate">
+                  {img.role}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
 
         {clarityWarning && (
-          <div className="flex items-start gap-2 mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs">
-            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-            <p>{t('agr195')}</p>
+          <div className="flex items-start gap-2 mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
+            <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-600" />
+            <p>Photo is not clear enough for a reliable analysis. Please take a closer photo of the affected leaf/fruit/stem.</p>
           </div>
         )}
 
-        {/* Crop + plant part */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-muted rounded-xl p-3">
-            <p className="text-[10px] uppercase text-muted-foreground">{t('agr196')}</p>
-            <p className="font-bold text-foreground text-sm">{result.crop || "—"}</p>
+        {/* Crop + Plant part overview */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">Crop Identified</p>
+            <p className="font-extrabold text-foreground text-base mt-0.5">{result.crop || profile.crop || "Crop"}</p>
           </div>
-          <div className="bg-muted rounded-xl p-3">
-            <p className="text-[10px] uppercase text-muted-foreground">{t('agr197')}</p>
-            <p className="font-bold text-foreground text-sm">{result.plant_part || "—"}</p>
+          <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">Plant Part</p>
+            <p className="font-extrabold text-foreground text-base mt-0.5">{result.plant_part || "Leaf / Plant"}</p>
           </div>
         </div>
 
         {/* Health status + confidence */}
-        <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-          <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${URGENCY_STYLES[result.urgency ?? "low"]}`}>
-            {(HEALTH_LABELS[result.health_status ?? ""] ?? result.health_status ?? "Analyzing").toUpperCase()}
-          </span>
-          {confidence != null && (
-            <span className="text-xs font-bold text-muted-foreground">
-              AI confidence: <span className="text-foreground">{confidence}%</span>
+        <div className="flex items-center justify-between gap-2 mb-4 flex-wrap bg-muted/60 p-3 rounded-xl border border-border">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">Status:</span>
+            <span className={`text-xs font-extrabold px-3 py-1 rounded-full border ${URGENCY_STYLES[result.urgency ?? "low"]}`}>
+              {(HEALTH_LABELS[result.health_status ?? ""] ?? result.health_status ?? "Observed").toUpperCase()}
             </span>
+          </div>
+          {confidence != null ? (
+            <div className="text-xs font-bold text-muted-foreground">
+              AI Confidence: <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{confidence}%</span>
+            </div>
+          ) : (
+            <span className="text-xs font-bold text-amber-600 dark:text-amber-400">Moderate / Low Confidence</span>
           )}
         </div>
 
         {confidence == null && (
-          <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs space-y-1">
+          <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs space-y-1">
             <p className="font-bold">AI is not confident in this assessment.</p>
             <p>No confidence score available.</p>
             <p>Not clearly identified — the crop or issue could not be determined.</p>
           </div>
         )}
 
+        {/* Observed Issue */}
         {result.possible_issue && (
-          <p className="text-sm font-semibold text-foreground mb-3 leading-relaxed">{result.possible_issue}</p>
+          <div className="mb-4 bg-card p-4 rounded-xl border border-emerald-500/20">
+            <h4 className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1">Observed Issue / Likely Finding</h4>
+            <p className="text-base font-bold text-foreground leading-relaxed">{result.possible_issue}</p>
+          </div>
         )}
 
+        {/* Observed Symptoms */}
         {!!result.symptoms?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr198')}</h4>
-            <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
-              {result.symptoms.map((s, i) => <li key={i}>{s}</li>)}
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Visible Observed Symptoms</h4>
+            <ul className="space-y-1 text-sm text-foreground">
+              {result.symptoms.map((s, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-emerald-600 font-bold">•</span>
+                  <span>{s}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
 
-        {!!result.recommendations?.length && (
+        {/* Possible Causes */}
+        {!!result.possible_causes?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr199')}</h4>
-            <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
-              {result.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">What This May Indicate</h4>
+            <ul className="space-y-1 text-sm text-foreground">
+              {result.possible_causes.map((c, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-amber-600 font-bold">•</span>
+                  <span>{c}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
 
-        {!!result.next_steps_for_farmer?.length && (
+        {/* Immediate Cultural & Agronomic Actions */}
+        {(!!result.immediate_actions?.length || !!result.recommendations?.length) && (
+          <div className="mb-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl">
+            <h4 className="text-xs font-extrabold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <CheckCircle size={15} /> Immediate Recommended Steps
+            </h4>
+            <ul className="space-y-1.5 text-sm text-foreground">
+              {(result.immediate_actions?.length ? result.immediate_actions : result.recommendations!).map((act, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">{i + 1}.</span>
+                  <span>{act}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Prevention Guidance */}
+        {!!result.prevention?.length && (
           <div className="mb-4">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase mb-1.5">{t('agr200')}</h4>
-            <ul className="list-disc pl-5 text-sm text-foreground space-y-0.5">
-              {result.next_steps_for_farmer.map((s, i) => <li key={i}>{s}</li>)}
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Prevention & Care</h4>
+            <ul className="space-y-1 text-sm text-foreground">
+              {result.prevention.map((p, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-blue-600 font-bold">•</span>
+                  <span>{p}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
 
+        {/* Follow-up Clarifying Questions */}
+        {!!result.questions?.length && (
+          <div className="mb-4 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
+            <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1.5">Follow-up Questions</h4>
+            <ul className="space-y-1 text-xs text-foreground font-medium">
+              {result.questions.map((q, i) => (
+                <li key={i}>❓ {q}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* When to Seek Expert Help */}
         {result.expert_confirm && (
-          <div className="bg-feature-community/10 border border-feature-community/20 rounded-xl p-3 text-xs text-foreground">
-            <span className="font-bold text-feature-community">Seek expert confirmation: </span>
+          <div className="mb-4 bg-purple-500/10 border border-purple-500/20 rounded-xl p-3.5 text-xs text-foreground">
+            <span className="font-extrabold text-purple-700 dark:text-purple-300 block mb-1">When to Seek Expert Help:</span>
             {result.expert_confirm}
           </div>
         )}
 
-        {/* Honesty banner — never a definitive diagnosis */}
-        <div className="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[11px] leading-relaxed flex items-start gap-2">
+        {/* Honesty Banner — AI assessment statement */}
+        <div className="mb-3 p-3 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[11px] leading-relaxed flex items-start gap-2">
           <Info size={14} className="shrink-0 mt-0.5" />
           <p>
-            <strong>{t('doctor.notDiagnosis')}</strong>
+            <strong>{t('doctor.notDiagnosis') || 'AI assessment — not a definitive diagnosis.'}</strong>
           </p>
         </div>
 
-        {/* Trust & Transparency Disclaimer */}
-        <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11px] leading-relaxed flex items-start gap-2">
-          <Info size={14} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
-          <p>
-            <strong>{t('doctor.disclaimer.title') || 'AI-generated result'}:</strong> {t('doctor.disclaimer.desc') || 'This is a preliminary crop analysis. For confirmed chemical treatments or severe infestations, consult your local Krishi Vigyan Kendra (KVK) or block agriculture officer.'}
-          </p>
+        {/* Chemical Safety & Pesticide Label Disclaimer */}
+        <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-800 dark:text-rose-300 text-[11px] leading-relaxed flex items-start gap-2">
+          <ShieldAlert size={16} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+          <div>
+            <p className="font-extrabold">Pesticide & Chemical Safety Notice:</p>
+            <p className="mt-0.5">
+              Confirm diagnosis and local product label before applying any pesticide or fungicide. Chemical choices and application rates should always be verified with your local Krishi Vigyan Kendra (KVK) or Kisan Call Centre (1800-180-1551).
+            </p>
+          </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border">
-          <AgriButton variant="outline" onClick={handleReset} className="w-full">
-            <Scan size={16} /> {t('doctor.analyzeAnother') || 'Analyze Another Crop'}
+        {/* Action Toolbar */}
+        <div className="pt-4 border-t border-border flex flex-col sm:flex-row gap-3">
+          {onAskKisan && (
+            <AgriButton
+              variant="magic"
+              onClick={handleAskKisanAssistant}
+              className="flex-1 py-3 font-bold flex items-center justify-center gap-2"
+            >
+              <MessageSquare size={18} /> Ask Kisan Sahayak about this scan
+            </AgriButton>
+          )}
+          <AgriButton variant="outline" onClick={handleReset} className="py-3 font-bold">
+            <Scan size={16} /> Analyze Another Crop
           </AgriButton>
         </div>
       </div>
@@ -376,27 +545,45 @@ const CropDoctor: React.FC = () => {
 
   return (
     <div className="pb-24 pt-4 px-4 min-h-screen flex flex-col">
+      {/* Hidden inputs for gallery & camera */}
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        onChange={handleFilesSelected}
+        ref={galleryInputRef}
+        className="hidden"
+      />
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        onChange={handleFilesSelected}
+        ref={cameraInputRef}
+        className="hidden"
+      />
+
       <div className="mb-6 flex justify-between items-start">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Scan className="text-primary" /> {t('svc.cropDoctor') || 'Smart Crop Doctor'}
-            <Sparkles size={18} className="text-feature-ai" />
+            <Scan className="text-emerald-600 dark:text-emerald-400" /> {t('svc.cropDoctor') || 'Smart Crop Doctor'}
+            <Sparkles size={18} className="text-amber-500" />
           </h2>
           <p className="text-muted-foreground text-sm">
-            {t('svc.cropDoctorSub') || 'AI-powered disease detection • Upload photo for accurate results'}
+            {t('svc.cropDoctorSub') || 'AI-powered crop disease scan • Take or upload photos for instant analysis'}
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={toggleHistory}
-            className={`p-2 rounded-full transition-colors ${showHistory ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+            className={`p-2 rounded-full transition-colors ${showHistory ? "bg-emerald-500/15 text-emerald-600" : "text-muted-foreground hover:bg-muted"}`}
             title="Scan history"
           >
             <History size={20} />
           </button>
           <button
             onClick={() => setAutoSpeak(!autoSpeak)}
-            className={`p-2 rounded-full transition-colors ${autoSpeak ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+            className={`p-2 rounded-full transition-colors ${autoSpeak ? "bg-emerald-500/15 text-emerald-600" : "text-muted-foreground hover:bg-muted"}`}
             title={autoSpeak ? "Auto voice enabled" : "Auto voice disabled"}
           >
             {autoSpeak ? <Volume2 size={20} /> : <VolumeX size={20} />}
@@ -404,23 +591,23 @@ const CropDoctor: React.FC = () => {
         </div>
       </div>
 
-      {/* Scan history panel */}
+      {/* History drawer panel */}
       {showHistory && (
-        <div className="bg-card rounded-2xl border border-border shadow-card p-4 mb-6 max-h-72 overflow-y-auto">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-foreground text-sm flex items-center gap-2"><History size={16} /> {t('doctor.scanHistory') || 'Scan History'}</h3>
+        <div className="bg-card rounded-2xl border border-border shadow-md p-4 mb-6 max-h-72 overflow-y-auto">
+          <div className="flex items-center justify-between mb-3 border-b border-border pb-2">
+            <h3 className="font-bold text-foreground text-sm flex items-center gap-2"><History size={16} /> Scan History</h3>
             <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground p-1"><X size={16} /></button>
           </div>
           {!user ? (
-            <p className="text-xs text-muted-foreground">{t('agr202')}</p>
+            <p className="text-xs text-muted-foreground">Sign in to sync scan history across your devices.</p>
           ) : historyLoading ? (
-            <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader className="animate-spin" size={14} /> {t('common.loading') || 'Loading scans...'}</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader className="animate-spin" size={14} /> Loading scan history...</p>
           ) : history.length === 0 ? (
-            <p className="text-xs text-muted-foreground">{t('agr203')}</p>
+            <p className="text-xs text-muted-foreground">No scan history saved yet.</p>
           ) : (
             <div className="space-y-2">
               {history.map((scan) => (
-                <div key={scan.id} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-muted">
+                <div key={scan.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/70 hover:bg-muted">
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">
                       {scan.crop || "Crop"} {scan.possible_issue ? `— ${scan.possible_issue}` : ""}
@@ -430,13 +617,15 @@ const CropDoctor: React.FC = () => {
                       {scan.confidence != null ? ` · ${scan.confidence}%` : ""}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteScan(scan.id)}
-                    className="text-muted-foreground hover:text-rose-400 p-1.5 shrink-0"
-                    title="Delete scan"
-                  >
-                    <Trash2Icon />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleDeleteScan(scan.id)}
+                      className="text-muted-foreground hover:text-rose-500 p-1.5 rounded-lg"
+                      title="Delete scan"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -445,121 +634,136 @@ const CropDoctor: React.FC = () => {
       )}
 
       {!result ? (
-        <div className="flex-1 flex flex-col bg-card rounded-2xl border border-border p-6 mb-6 shadow-card">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-feature-ai/15 rounded-full flex items-center justify-center text-feature-ai">
+        <div className="flex-1 flex flex-col bg-card rounded-2xl border border-border p-6 mb-6 shadow-md">
+          {/* Header prompt */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-emerald-500/15 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <Sparkles size={20} />
             </div>
-            <p className="text-sm font-semibold text-foreground">
-              {t('doctor.promptTitle') || 'Describe your crop issue or upload a photo'}
-            </p>
+            <div>
+              <p className="text-sm font-bold text-foreground">Upload 1 to 4 photos of affected crop</p>
+              <p className="text-xs text-muted-foreground">Whole plant, affected leaf, stem/fruit, or close-up</p>
+            </div>
           </div>
 
-          <div className="mb-4">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              capture="environment"
-              onChange={handleImageUpload}
-              ref={fileInputRef}
-              className="hidden"
-            />
+          {/* Quality warning banner */}
+          {qualityWarning && (
+            <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2 font-medium">
+              <AlertTriangle size={15} className="shrink-0 mt-0.5 text-amber-600" />
+              <span>{qualityWarning}</span>
+            </div>
+          )}
 
-            {imagePreview ? (
-              <div className="relative">
-                <SafeImage
-                  src={imagePreview}
-                  alt="Crop preview"
-                  resolveType="crop"
-                  containerClassName="w-full h-40 rounded-xl border border-border"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={() => { setImagePreview(null); setImageBase64(null); setCompressedBlob(null); }}
-                  className="absolute top-2 right-2 bg-background/80 p-2 rounded-full"
-                >
-                  <X size={16} />
-                </button>
+          {/* Image Upload Gallery / Previews */}
+          <div className="mb-4">
+            {images.length > 0 ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {images.map((img) => (
+                    <div key={img.id} className="relative rounded-xl overflow-hidden border border-border h-32 group bg-muted">
+                      <SafeImage
+                        src={img.previewUrl}
+                        alt={img.role}
+                        resolveType="crop"
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute top-2 left-2 bg-black/70 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        {img.role}
+                      </span>
+                      <button
+                        onClick={() => removeImage(img.id)}
+                        className="absolute top-2 right-2 bg-background/80 hover:bg-rose-600 hover:text-white text-muted-foreground p-1.5 rounded-full transition-colors shadow-sm"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {images.length < MAX_IMAGES && (
+                    <button
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-emerald-500 hover:text-emerald-600 transition-colors bg-muted/30"
+                    >
+                      <Plus size={20} />
+                      <span className="text-xs font-bold">Add Photo ({images.length}/{MAX_IMAGES})</span>
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                <Upload size={24} />
-                <span className="text-sm font-bold">{t('agr204')}</span>
-                <span className="text-xs opacity-60">{t('agr205')}</span>
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="h-32 border-2 border-dashed border-emerald-500/40 rounded-xl flex flex-col items-center justify-center gap-2 text-emerald-800 dark:text-emerald-300 bg-emerald-50/40 dark:bg-emerald-950/20 hover:border-emerald-600 transition-all"
+                >
+                  <Camera size={28} className="text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-sm font-extrabold">Take Crop Photo</span>
+                  <span className="text-[10px] opacity-75">Use mobile camera</span>
+                </button>
+
+                <button
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="h-32 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-emerald-500 hover:text-emerald-600 transition-all bg-muted/20"
+                >
+                  <Upload size={28} />
+                  <span className="text-sm font-bold">Choose from Gallery</span>
+                  <span className="text-[10px] opacity-60">JPG, PNG, WebP (up to {MAX_FILE_MB}MB)</span>
+                </button>
+              </div>
             )}
           </div>
 
+          {/* Description input */}
           <textarea
-            className="w-full p-3 rounded-xl border border-border bg-muted focus:border-primary focus:ring-1 focus:ring-primary outline-none text-base sm:text-sm mb-4 min-h-[100px] text-foreground placeholder:text-muted-foreground font-medium"
-            placeholder={t('doctor.placeholder') || "E.g., My wheat leaves are turning yellow at the tips with brown spots..."}
+            className="w-full p-3 rounded-xl border border-border bg-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm mb-4 min-h-[90px] text-foreground placeholder:text-muted-foreground font-medium"
+            placeholder={t('doctor.placeholder') || "Describe symptoms (e.g., yellowing spots on soybean leaf, wilted stems...)"}
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs flex items-start gap-2 font-bold">
-              <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+            <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-700 dark:text-rose-400 text-xs flex items-start gap-2 font-bold">
+              <AlertTriangle size={15} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
+          {/* Scan button */}
           <AgriButton
             variant="magic"
             onClick={handleDiagnosis}
-            disabled={isLoading || (!input.trim() && !imageBase64)}
-            className="w-full py-3 font-bold"
+            disabled={isLoading || images.length === 0}
+            className="w-full py-3.5 font-extrabold text-base"
           >
             {isLoading ? (
               <>
                 <Loader className="animate-spin" size={20} />
-                {t('doctor.analyzing') || 'Analyzing...'}
+                Analyzing crop images with AI...
               </>
             ) : (
               <>
-                <Scan size={20} /> {t('doctor.diagnoseButton') || 'Diagnose with AI ✨'}
+                <Scan size={20} /> Scan & Diagnose Crop ✨
               </>
             )}
           </AgriButton>
-
-          <div className="mt-6 pt-4 border-t border-border text-center">
-            <p className="text-muted-foreground text-xs mb-3 font-semibold">
-              {t('doctor.orCamera') || 'Or take a photo with camera'}
-            </p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="mx-auto w-14 h-14 bg-card rounded-full shadow-soft flex items-center justify-center text-muted-foreground border border-border active:scale-95 transition-transform hover:border-primary hover:text-primary"
-            >
-              <Camera size={24} />
-            </button>
-          </div>
         </div>
       ) : (
         renderResultCard()
       )}
 
-      <div className="bg-feature-community/10 p-4 rounded-xl flex items-start gap-3 border border-feature-community/20">
-        <Info className="text-feature-community shrink-0 mt-0.5" size={20} />
+      {/* Practical Tips */}
+      <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-4 rounded-xl flex items-start gap-3 border border-emerald-500/20 shadow-xs">
+        <Info className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" size={20} />
         <div>
-          <h4 className="font-bold text-feature-community text-sm">{t('agr206')}</h4>
+          <h4 className="font-bold text-emerald-900 dark:text-emerald-300 text-sm">Tips for Accurate Crop Scanning</h4>
           <ul className="text-xs text-foreground mt-1 space-y-1">
-            <li>• {t('doctor.tip1') || 'Upload a clear, close-up photo of affected area'}</li>
-            <li>• {t('doctor.tip2') || 'Mention crop name and growth stage'}</li>
-            <li>• {t('doctor.tip3') || 'Describe color changes, spots, or insects'}</li>
+            <li>• Take a clear, close-up photo of affected leaf or fruit in good daylight.</li>
+            <li>• Avoid direct sun reflection or blurry motion.</li>
+            <li>• Upload multiple photos showing the whole plant and leaf undersides.</li>
           </ul>
         </div>
       </div>
     </div>
   );
 };
-
-const Trash2Icon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
 
 export default CropDoctor;

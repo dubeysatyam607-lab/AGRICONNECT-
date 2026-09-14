@@ -458,7 +458,7 @@ const getTabFromPath = (path: string) => {
       case "ai-chat":
         return <KisanChat onClose={() => setActiveTab("home")} selectedLanguage={kisanChatLanguage} />;
       case "crop-doctor":
-        return <CropDoctor />;
+        return <CropDoctor onAskKisan={() => setActiveTab("ai-chat")} />;
       case "store":
         return <AgriStore onToast={showToast} />;
       case "schemes":

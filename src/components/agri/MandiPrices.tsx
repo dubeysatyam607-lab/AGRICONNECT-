@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Search, MapPin, TrendingUp, RefreshCw, Filter, ShieldCheck, WifiOff } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
-import { AgriImage } from "@/components/ui/agri-image";
+import { CommodityImage } from "@/components/agri/CommodityImage";
 import { ErrorState } from "@/components/ui/error-state";
 import { fetchMandiPrices, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
 
@@ -17,18 +17,20 @@ const MandiPrices: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedState, setSelectedState] = useState("");
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
 
   const fetchMandiData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result: MandiResult = await fetchMandiPrices(searchTerm);
+      const result: MandiResult = await fetchMandiPrices(searchTerm, undefined, undefined, undefined, { includeMeta: true });
 
       if (result.isError) {
         setError(result.errorMessage || t('mandi.hub.failed'));
         setData([]);
       } else {
         setData(result.prices);
+        if (result.availableStates?.length) setAvailableStates(result.availableStates);
         setIsCachedData(!!result.isCached);
         setCachedAtText(result.cachedAtText || null);
         setError(null);
@@ -47,9 +49,10 @@ const MandiPrices: React.FC = () => {
   }, [fetchMandiData]);
 
   const states = useMemo(() => {
-    const uniqueStates = new Set(data.map((item) => item.state).filter(Boolean));
-    return Array.from(uniqueStates).sort();
-  }, [data]);
+    const fromMeta = new Set(availableStates.map(s => s.trim()).filter(Boolean));
+    const fromData = new Set(data.map((item) => item.state).filter(Boolean));
+    return Array.from(new Set<string>([...fromMeta, ...fromData])).sort();
+  }, [availableStates, data]);
 
   const filteredData = useMemo(() => {
     let result = data;
@@ -130,18 +133,19 @@ const MandiPrices: React.FC = () => {
         <ErrorState message={error} onRetry={fetchMandiData} />
       ) : filteredData.length === 0 ? (
         <div className="text-center py-12 bg-card rounded-2xl border border-border">
-          <p className="text-muted-foreground font-medium">{t('agr114')}</p>
+          <p className="text-muted-foreground font-medium">{t('agr114') || "No Government mandi records found for this selection"}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredData.slice(0, 100).map((record) => (
             <AgriCard key={record.id} className="p-0 flex flex-col justify-between overflow-hidden border border-border/80 rounded-2xl">
               <div className="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <AgriImage
+                <CommodityImage
+                  commodityName={record.crop}
+                  commodityHi={record.cropHi}
+                  category={record.category}
                   src={record.cropImage}
                   alt={record.crop}
-                  type="crop"
-                  contextName={record.crop}
                   className="w-full h-full object-cover"
                   containerClassName="absolute inset-0 w-full h-full"
                   loading="lazy"

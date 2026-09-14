@@ -141,34 +141,35 @@ async function persistScan(
   }
 }
 
-const SYSTEM_PROMPT = `You are an expert agricultural plant pathologist (Crop Doctor / फसल डॉक्टर) analyzing a photo of a crop or leaf.
+const SYSTEM_PROMPT = `You are an expert agricultural plant pathologist (Crop Doctor / फसल डॉक्टर) analyzing 1 to 4 photos of a crop or leaf provided by a farmer.
 
 LANGUAGE RULE (STRICT):
 - The user's selected language is: "{language}".
 - Respond ENTIRELY in that language.
 
+FARM CONTEXT:
+"{farmContext}"
+
 HONESTY (ABSOLUTE — never violate):
 - You provide an AI assessment, NEVER a definitive diagnosis. The user is explicitly told "AI assessment — not a definitive diagnosis."
-- Never state a disease as confirmed fact from a photo alone. Use hedged language: "possible", "likely", "may be", "AI confidence".
+- Never state a disease as confirmed fact from photos alone. Use hedged language: "possible", "likely", "image suggests", "AI confidence".
 - NEVER invent a disease name. Only name a specific disease if the symptoms are unmistakable AND well-known; otherwise say "unknown — needs expert confirmation" or describe symptoms only.
-- NEVER invent pesticide/fertilizer dosages, product names, or application rates. Give general guidance only (e.g. "remove affected leaves", "avoid excess nitrogen"), and recommend consulting a Krishi Vigyan Kendra or Kisan Call Centre 1800-180-1551 for exact doses.
-- Identify the crop only if reasonably confident from the photo; otherwise set "crop" to null. Do not take the user's text description as visual proof of the crop.
+- NEVER invent pesticide/fertilizer dosages, chemical names, or mixing ratios. Give cultural guidance only (e.g. "remove affected leaves", "avoid excess nitrogen", "sanitation"), and recommend consulting a local Krishi Vigyan Kendra (KVK) or Kisan Call Centre (1800-180-1551) for exact doses.
+- Identify the crop only if reasonably confident from the photo or context; otherwise set "crop" to null.
 
 IMAGE QUALITY FIRST (ABSOLUTE):
-- Before diagnosing, assess image quality. If the photo is blurry, too dark, too distant, or does not clearly show the affected crop/leaf, you MUST say so and ask for a clearer close-up photo. Do NOT guess a diagnosis from a bad image.
+- Before diagnosing, assess image quality across all provided images. If the photos are blurry, too dark, too distant, or do not clearly show the affected plant part, set "needs_clearer_image" to true, lower confidence (below 40), and clearly ask for a closer, well-lit photo. Do NOT guess a diagnosis from bad images.
 
-ANALYSIS:
-1. Identify the crop (only if visually confident, else null).
+ANALYSIS & STRUCTURED OUTPUT:
+1. Identify the crop (only if visually confident or provided in context).
 2. Identify the plant part (leaf, stem, root, fruit, whole plant).
-3. Assess health: healthy / possible disease / possible pest / possible deficiency / possible stress.
-4. List visible symptoms (observation only, describe what you see).
-5. Give practical next steps (organic first, then chemical only in general terms — no doses).
-6. State the urgency: low / medium / high / urgent (e.g. if the whole field is affected or it spreads fast).
-7. Say when to seek expert confirmation (KVK, local agri extension officer, Kisan Call Centre).
-
-CONFIDENCE:
-- Set confidence 0-100 ONLY when the image is clear and you are reasonably sure. When the image is unclear, or you are guessing, set confidence LOW (below 40) or null.
-- If you cannot identify the crop, set "crop" to null and still describe symptoms/next steps honestly.
+3. Assess health: healthy / possible disease / possible pest / possible deficiency / possible water stress / possible environmental stress / unclear.
+4. List visible symptoms (observation only).
+5. State possible causes and immediate cultural actions (no fake chemical doses).
+6. Give prevention guidance.
+7. Provide 1 to 3 concise follow-up questions if image evidence is incomplete.
+8. State the urgency: low / medium / high / urgent.
+9. State when to seek expert confirmation (KVK, local agri extension officer).
 
 OUTPUT — STRICT JSON, no markdown fences, no prose before or after:
 {
@@ -178,7 +179,11 @@ OUTPUT — STRICT JSON, no markdown fences, no prose before or after:
   "possible_issue": "Short hedged statement, e.g. 'Likely fungal leaf spot, needs field confirmation'",
   "confidence": 0-100 or null,
   "symptoms": ["visible symptom 1", "..."],
-  "recommendations": ["general step 1", "..."],
+  "possible_causes": ["possible cause 1", "..."],
+  "immediate_actions": ["practical action 1", "..."],
+  "prevention": ["prevention step 1", "..."],
+  "questions": ["concise follow-up question 1"],
+  "recommendations": ["general advice 1", "..."],
   "urgency": "low" | "medium" | "high" | "urgent",
   "needs_clearer_image": true/false,
   "next_steps_for_farmer": ["..."],
@@ -220,10 +225,17 @@ serve(async (req) => {
   const parseResult = await parseAndValidate(req, cropDoctorRequestSchema, headers);
   if (!parseResult.success) return parseResult.response;
 
-  const { description, imageBase64, language = "Hindi (हिंदी)", storagePath } = parseResult.data;
+  const { description, imageBase64, imagesBase64, language = "Hindi (हिंदी)", storagePath, farmContext } = parseResult.data;
 
-  // Image validation before any AI spend (spec §11): clear errors, no hardcoded diagnoses.
-  if (!imageBase64) {
+  // Gather image list (support single or array up to 4)
+  const rawImages: string[] = [];
+  if (Array.isArray(imagesBase64) && imagesBase64.length > 0) {
+    rawImages.push(...imagesBase64.slice(0, 4));
+  } else if (imageBase64) {
+    rawImages.push(imageBase64);
+  }
+
+  if (rawImages.length === 0) {
     return new Response(
       errPayload(
         "validation",
@@ -235,12 +247,16 @@ serve(async (req) => {
     );
   }
 
-  const validation = validateImage(imageBase64);
-  if (!validation.ok) {
-    return new Response(
-      errPayload("validation", validation.error, validation.errorHi, { needs_clearer_image: true }),
-      { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
-    );
+  const validImages: Array<{ mime: string; base64: string }> = [];
+  for (const img of rawImages) {
+    const val = validateImage(img);
+    if (!val.ok) {
+      return new Response(
+        errPayload("validation", val.error, val.errorHi, { needs_clearer_image: true }),
+        { status: 400, headers: { ...headers, "Content-Type": "application/json" } }
+      );
+    }
+    validImages.push({ mime: val.mime, base64: val.base64 });
   }
 
   // Only accept a storage path already scoped to this user's own folder.
@@ -250,20 +266,33 @@ serve(async (req) => {
       : null;
 
   try {
-    const systemPrompt = SYSTEM_PROMPT.replace("{language}", language);
+    const farmCtxStr = farmContext
+      ? [
+          farmContext.crop ? `Crop: ${farmContext.crop}` : null,
+          farmContext.variety ? `Variety: ${farmContext.variety}` : null,
+          farmContext.stage ? `Stage: ${farmContext.stage}` : null,
+          farmContext.area ? `Area: ${farmContext.area}` : null,
+          farmContext.soil ? `Soil: ${farmContext.soil}` : null,
+          farmContext.location ? `Location: ${farmContext.location}` : null,
+        ].filter(Boolean).join(", ")
+      : "None provided.";
+
+    const systemPrompt = SYSTEM_PROMPT.replace("{language}", language).replace("{farmContext}", farmCtxStr);
+
+    const userContentParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
+      {
+        type: "text",
+        text: description || "Please analyze these crop images. Identify the crop, plant part, health status, possible issue, visible symptoms, immediate actions, and prevention."
+      },
+      ...validImages.map((img) => ({
+        type: "image_url" as const,
+        image_url: { url: `data:${img.mime};base64,${img.base64}` }
+      }))
+    ];
 
     const messages: AiMessage[] = [
       { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: description || "Please analyze this crop image. Identify the crop, plant part, health status, possible issue, symptoms and next steps."
-          },
-          { type: "image_url", image_url: { url: `data:${validation.mime};base64,${validation.base64}` } }
-        ]
-      }
+      { role: "user", content: userContentParts }
     ];
 
     const { text: raw, provider } = await aiChatCompletion(messages, {
@@ -281,12 +310,16 @@ serve(async (req) => {
       result = parsed;
     } catch {
       result = {
-        crop: null,
+        crop: farmContext?.crop || null,
         plant_part: null,
         health_status: "unclear",
         possible_issue: null,
         confidence: null,
         symptoms: [],
+        possible_causes: [],
+        immediate_actions: [],
+        prevention: [],
+        questions: [],
         recommendations: [],
         urgency: "low",
         needs_clearer_image: true,

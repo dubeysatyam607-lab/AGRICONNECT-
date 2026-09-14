@@ -31,7 +31,7 @@ serve(async (req: Request) => {
       }
     }
 
-    const apiKey = Deno.env.get("PEXELS_API_KEY") || Deno.env.get("VITE_PEXELS_API_KEY");
+    const apiKey = Deno.env.get("PEXELS_API_KEY");
 
     if (!apiKey) {
       // Return empty photos array gracefully so client falls back to curated verified photos

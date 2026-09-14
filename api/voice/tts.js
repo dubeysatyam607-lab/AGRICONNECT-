@@ -5,7 +5,7 @@
  * Supports all 12 AgriConnect Indian Languages using the Subh speaker.
  */
 
-const MAX_TEXT_LENGTH = 1500;
+const MAX_TEXT_LENGTH = 2500;
 const DEFAULT_SPEAKER = process.env.SARVAM_SPEAKER || "shubh";
 
 // Centralized Sarvam language mapping for all 12 AgriConnect languages
@@ -83,7 +83,7 @@ export default async function handler(req, res) {
   // CORS headers
   const origin = req.headers.origin || "";
   const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000", "https://agriconnect-navy-six.vercel.app"];
-  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || /^https:\\/\\/agriconnect-navy-six-[a-zA-Z0-9-]+\\.vercel\\.app$/.test(origin));
+  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || /^https:\/\/agriconnect-navy-six-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin));
   if (isAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }

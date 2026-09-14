@@ -132,6 +132,100 @@ export async function compressImageFile(
   return { dataUrl, blob, width: w, height: h };
 }
 
+export interface ImageQualityResult {
+  isUsable: boolean;
+  issue?: "low_res" | "too_dark" | "overexposed" | "low_contrast";
+  warningEn?: string;
+  warningHi?: string;
+}
+
+/**
+ * Perform client-side quality check on an image canvas:
+ * Inspects resolution, average brightness, and contrast (variance).
+ */
+export function checkImageQuality(canvas: HTMLCanvasElement): ImageQualityResult {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  if (w < 180 || h < 180) {
+    return {
+      isUsable: false,
+      issue: "low_res",
+      warningEn: "Photo resolution is too low. Please take a closer photo of the affected plant part.",
+      warningHi: "फोटो का रिज़ॉल्यूशन बहुत कम है। कृपया प्रभावित पौधे के हिस्से की पास से फोटो लें।",
+    };
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { isUsable: true };
+
+  // Sample center 70% of image to avoid edge backgrounds
+  const startX = Math.floor(w * 0.15);
+  const startY = Math.floor(h * 0.15);
+  const sampleW = Math.floor(w * 0.7);
+  const sampleH = Math.floor(h * 0.7);
+
+  try {
+    const imgData = ctx.getImageData(startX, startY, sampleW, sampleH);
+    const data = imgData.data;
+
+    let totalLuminance = 0;
+    const pixelCount = data.length / 4;
+    const luminances = new Float32Array(pixelCount);
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      // Rec. 709 relative luminance calculation
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      luminances[i / 4] = lum;
+      totalLuminance += lum;
+    }
+
+    const avgLum = totalLuminance / pixelCount;
+
+    // Brightness guards
+    if (avgLum < 22) {
+      return {
+        isUsable: false,
+        issue: "too_dark",
+        warningEn: "Photo is too dark. Please take a well-lit photo of the affected leaf/crop in daylight.",
+        warningHi: "फोटो बहुत अंधेरी है। कृपया दिन की रोशनी में प्रभावित पत्ती/फसल की अच्छी फोटो लें।",
+      };
+    }
+    if (avgLum > 248) {
+      return {
+        isUsable: false,
+        issue: "overexposed",
+        warningEn: "Photo is overexposed/too bright. Please avoid direct harsh glare when taking the photo.",
+        warningHi: "फोटो बहुत अधिक चमकीली है। कृपया फोटो लेते समय तेज धूप के रिफ्लेक्शन से बचें।",
+      };
+    }
+
+    // Variance/contrast check for extreme blur or blank images
+    let sumVariance = 0;
+    for (let i = 0; i < pixelCount; i++) {
+      const diff = luminances[i] - avgLum;
+      sumVariance += diff * diff;
+    }
+    const stdDev = Math.sqrt(sumVariance / pixelCount);
+
+    if (stdDev < 12) {
+      return {
+        isUsable: false,
+        issue: "low_contrast",
+        warningEn: "Photo is too blurry or lacks contrast. Please focus clearly on the leaf symptoms.",
+        warningHi: "फोटो बहुत धुंधली है या लक्षण स्पष्ट नहीं हैं। कृपया पत्तियों के लक्षणों पर स्पष्ट फोकस करें।",
+      };
+    }
+  } catch {
+    // If canvas sampling is blocked by CORS/security, default to usable
+  }
+
+  return { isUsable: true };
+}
+
 /** Stable error classification the UI maps to localized copy. */
 export type ScanErrorCode =
   | "timeout"

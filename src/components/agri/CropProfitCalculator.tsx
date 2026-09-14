@@ -116,13 +116,13 @@ const CROP_DATA: Record<string, {
     labelEn: "Wheat", labelHi: "गेहूं", emoji: "🌾",
     yieldPerAcre: 18, inputCost: 8500, mspFallback: 2275,
     searchKey: "wheat", season: "Rabi (Nov–Apr)", seasonHi: "रबी (नव–अप्रैल)",
-    image: "https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   rice: {
     labelEn: "Rice", labelHi: "चावल", emoji: "🍚",
     yieldPerAcre: 22, inputCost: 11000, mspFallback: 2183,
     searchKey: "rice", season: "Kharif (Jun–Nov)", seasonHi: "खरीफ (जून–नव)",
-    image: "https://images.pexels.com/photos/13888402/pexels-photo-13888402.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/36346840/pexels-photo-36346840.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   maize: {
     labelEn: "Maize", labelHi: "मक्का", emoji: "🌽",
@@ -134,13 +134,13 @@ const CROP_DATA: Record<string, {
     labelEn: "Soybean", labelHi: "सोयाबीन", emoji: "🫘",
     yieldPerAcre: 12, inputCost: 9000, mspFallback: 4600,
     searchKey: "soybean", season: "Kharif (Jun–Oct)", seasonHi: "खरीफ (जून–अक्टू)",
-    image: "https://images.pexels.com/photos/9940116/pexels-photo-9940116.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/36063252/pexels-photo-36063252.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   mustard: {
     labelEn: "Mustard", labelHi: "सरसों", emoji: "🌻",
     yieldPerAcre: 10, inputCost: 7500, mspFallback: 5650,
     searchKey: "mustard", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
-    image: "https://images.pexels.com/photos/29986803/pexels-photo-29986803.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/18346906/pexels-photo-18346906.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   cotton: {
     labelEn: "Cotton", labelHi: "कपास", emoji: "🫧",
@@ -152,7 +152,7 @@ const CROP_DATA: Record<string, {
     labelEn: "Onion", labelHi: "प्याज", emoji: "🧅",
     yieldPerAcre: 80, inputCost: 20000, mspFallback: 800,
     searchKey: "onion", season: "Rabi (Oct–Mar)", seasonHi: "रबी (अक्टू–मार्च)",
-    image: "https://images.pexels.com/photos/533342/pexels-photo-533342.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/4307386/pexels-photo-4307386.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   potato: {
     labelEn: "Potato", labelHi: "आलू", emoji: "🥔",
@@ -164,7 +164,7 @@ const CROP_DATA: Record<string, {
     labelEn: "Gram (Chana)", labelHi: "चना", emoji: "🫘",
     yieldPerAcre: 9, inputCost: 6000, mspFallback: 5440,
     searchKey: "gram", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
-    image: "https://images.pexels.com/photos/36683864/pexels-photo-36683864.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    image: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   groundnut: {
     labelEn: "Groundnut", labelHi: "मूंगफली", emoji: "🥜",

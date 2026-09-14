@@ -42,7 +42,7 @@ const SHORTS_DATA: VideoShort[] = [
     views: '890K',
     likes: 18700,
     cropTag: 'Wheat',
-    thumbnail: 'https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+    thumbnail: 'https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
     youtubeId: 'Z0L-bSmNRuI',
     description: 'Complete wheat cultivation guide from seed selection to harvest by Krishi Vigyan Kendra experts.',
     descriptionHi: 'KVK विशेषज्ञों द्वारा गेहूं की खेती की पूरी जानकारी।',

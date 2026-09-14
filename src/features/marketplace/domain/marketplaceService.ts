@@ -285,7 +285,7 @@ const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
       reviews_count: 31,
     },
     images: [
-      'https://images.pexels.com/photos/7891849/pexels-photo-7891849.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
+      'https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
     ],
     contact_method: 'both',
     verification_status: 'verified',

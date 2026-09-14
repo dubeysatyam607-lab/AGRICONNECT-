@@ -67,18 +67,7 @@ interface LiveMandiProps {
   onNavigateToAuth?: () => void;
 }
 
-const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices", "Oilseeds", "Commercial"];
-
-const INDIAN_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
-];
+const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices", "Oilseeds", "Commercial", "Other"];
 
 const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   const { t, language } = useLanguage();
@@ -103,10 +92,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     min: t("mandi.min") || "Min",
     max: t("mandi.max") || "Max",
     msp: t("mandi.hub.msp") || "MSP",
-    loading: t("mandi.hub.loading") || "Fetching live APMC mandi prices...",
-    failed: t("mandi.hub.failed") || "Live mandi prices are currently unavailable.",
+    loading: t("mandi.hub.loading") || "Fetching latest verified government mandi prices...",
+    failed: t("mandi.hub.failed") || "Government mandi data is temporarily unavailable.",
     retry: t("mandi.hub.retrySync") || "Retry Sync",
-    verifiedSource: t("mandi.hub.verifiedSource") || "Verified Source: api.data.gov.in",
+    verifiedSource: t("mandi.hub.verifiedSource") || "Verified Government Data: api.data.gov.in",
     loadMore: t("mandi.hub.loadMore") || "Load More",
     quintalArrival: t("mandi.hub.quintalArrival") || "क्विंटल आवक",
     mandiOpen: t("mandi.hub.mandiOpen") || "मंडी खुली है",
@@ -140,6 +129,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   };
 
   const [data, setData] = useState<MandiPrice[]>([]);
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
+  const [availableMarkets, setAvailableMarkets] = useState<string[]>([]);
+  const [servedFrom, setServedFrom] = useState<"database" | "live" | undefined>(undefined);
+  const [isStale, setIsStale] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -192,7 +187,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     });
   }, []);
 
-  const fetchMandi = useCallback(async (showSpinner = false) => {
+  const fetchMandi = useCallback(async (showSpinner = false, opts: { sync?: boolean } = {}) => {
     if (showSpinner) setRefreshing(true);
     else setLoading(true);
     setError(null);
@@ -202,14 +197,24 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         undefined,
         selectedState || undefined,
         selectedDistrict || undefined,
-        selectedMandi || undefined
+        selectedMandi || undefined,
+        { includeMeta: true, sync: opts.sync ?? false, timeoutMs: 90000 }
       );
 
       if (result.isError) {
+        // Keep whatever verified records are already on screen when a re-sync
+        // fails (e.g. data.gov.in rate limit) instead of blanking the view.
+        if (data.length === 0) setData([]);
         setError(result.errorMessage || L.failed);
-        setData([]);
+        setRateLimited(true);
       } else {
         setData(result.prices);
+        if (result.availableStates?.length) setAvailableStates(result.availableStates);
+        if (result.availableDistricts?.length) setAvailableDistricts(result.availableDistricts);
+        if (result.availableMarkets?.length) setAvailableMarkets(result.availableMarkets);
+        setServedFrom(result.servedFrom);
+        setIsStale(!!result.stale);
+        setRateLimited(!!result.rateLimited);
         setIsCachedData(!!result.isCached);
         setCachedAtText(result.cachedAtText || null);
         setLastUpdated(result.lastUpdated ? new Date(result.lastUpdated) : new Date());
@@ -217,8 +222,9 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       }
     } catch (err: unknown) {
       console.error("[UI Mandi Fetch Error]:", err);
+      if (data.length === 0) setData([]);
       setError(L.failed);
-      setData([]);
+      setRateLimited(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -228,6 +234,54 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   useEffect(() => {
     fetchMandi();
   }, [fetchMandi]);
+
+  // Force a fresh sync from data.gov.in when the persisted snapshot is stale or
+  // the user taps the "Sync now" retry. Never invents data: if the live API is
+  // rate-limited, the previously-synced government records are kept on screen.
+  const resync = useCallback(() => {
+    setRateLimited(false);
+    void fetchMandi(true, { sync: true });
+  }, [fetchMandi]);
+
+  // Option sources come from the edge function's dynamic discovery meta (never a
+  // hardcoded subset). Data-derived state/district/mandi names are merged so every
+  // option shown is backed by a real record.
+  const states = useMemo(() => {
+    const fromMeta = new Set(availableStates.map(s => s.trim()).filter(Boolean));
+    const fromData = new Set(data.map(c => c.state).filter(Boolean));
+    return Array.from(new Set<string>([...fromMeta, ...fromData])).sort();
+  }, [availableStates, data]);
+  const districts = useMemo(() => {
+    const scoped = new Set(
+      availableDistricts.length
+        ? availableDistricts
+        : data.filter(c => !selectedState || c.state === selectedState).map(c => c.district)
+    );
+    const fromData = new Set(data.filter(c => !selectedState || c.state === selectedState).map(c => c.district).filter(Boolean));
+    return Array.from(new Set<string>([...scoped, ...fromData])).sort();
+  }, [availableDistricts, data, selectedState]);
+  const mandis = useMemo(() => {
+    const scoped = new Set(
+      availableMarkets.length
+        ? availableMarkets
+        : data.map(c => c.market).filter(Boolean)
+    );
+    const fromData = new Set(
+      data
+        .filter(c => (!selectedState || c.state === selectedState) && (!selectedDistrict || c.district === selectedDistrict))
+        .map(c => c.market)
+        .filter(Boolean)
+    );
+    return Array.from(new Set<string>([...scoped, ...fromData])).sort();
+  }, [availableMarkets, data, selectedState, selectedDistrict]);
+
+  // Default to Rajasthan only when the government dataset actually contains it;
+  // otherwise start on "All States" rather than forcing a wrong geographic scope.
+  useEffect(() => {
+    if (!loading && states.length > 0 && selectedState && !states.includes(selectedState)) {
+      setSelectedState("");
+    }
+  }, [loading, states, selectedState]);
 
   const fetchNearby = useCallback(async () => {
     setNearbyLoading(true);
@@ -266,26 +320,11 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`, "_blank");
   };
 
-  // States: prefer the ones actually present in the live dataset, with the
-  // official Union list as the complete fallback (never fabricated data).
-  const states = useMemo(() => {
-    const fromData = new Set(data.map(c => c.state).filter(Boolean));
-    const merged = new Set<string>([...INDIAN_STATES, ...fromData]);
-    return Array.from(merged).sort();
-  }, [data]);
-  const districts = useMemo(() => {
-    let subset = data;
-    if (selectedState) subset = subset.filter(c => c.state === selectedState);
-    return Array.from(new Set(subset.map(c => c.district))).filter(Boolean).sort();
-  }, [data, selectedState]);
-  const mandis = useMemo(() => {
-    let subset = data;
-    if (selectedState) subset = subset.filter(c => c.state === selectedState);
-    if (selectedDistrict) subset = subset.filter(c => c.district === selectedDistrict);
-    return Array.from(new Set(subset.map(c => c.market))).filter(Boolean).sort();
-  }, [data, selectedState, selectedDistrict]);
-
-  // Autocomplete Suggestions
+  // States/districts/mandis come from the government dataset via the edge
+  // function's dynamic discovery meta (never a hardcoded subset). Data-derived
+  // state/district/mandi names are merged so every option shown is backed by a
+  // real record.
+  // Option sources come from the edge function's dynamic discovery meta (never a
   const searchSuggestions = useMemo(() => {
     if (!searchTerm || searchTerm.trim().length < 2) return [];
     const q = searchTerm.toLowerCase();
@@ -753,6 +792,23 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
         </div>
       )}
 
+      {/* Verified government snapshot banner — served from persisted AGMARKNET records */}
+      {!error && !isCachedData && servedFrom === "database" && (
+        <div className="bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-300 px-4 py-2.5 rounded-2xl flex items-center justify-between gap-2 text-xs font-bold animate-fade-in shadow-sm">
+          <span className="flex items-center gap-2 min-w-0">
+            <ShieldCheck size={15} className="shrink-0" />
+            <span className="truncate">
+              Verified Government Data (api.data.gov.in / AGMARKNET)
+              {rateLimited ? " · Live refresh is rate-limited right now; showing the last synced records." : ""}
+            </span>
+          </span>
+          <button onClick={resync} disabled={refreshing} className="underline hover:no-underline font-extrabold shrink-0 ml-2 flex items-center gap-1">
+            <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+            {hi ? "सिंक करें" : "Sync now"}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="min-w-0">
@@ -760,10 +816,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <TrendingUp className="text-emerald-700 dark:text-emerald-400" size={22} /> {L.title}
             <span className={cn(
               "flex items-center gap-1 text-[9px] font-black tracking-widest text-white rounded-md px-1.5 py-0.5",
-              error ? "bg-rose-600" : isCachedData ? "bg-amber-500" : "bg-emerald-600"
+              error ? "bg-rose-600" : isCachedData ? "bg-amber-500" : servedFrom === "live" ? "bg-emerald-600" : "bg-teal-600"
             )}>
-              <span className={cn("w-1.5 h-1.5 rounded-full bg-white", !error && !isCachedData && "animate-live-dot")} />
-              {error ? (hi ? "ऑफ़लाइन" : "OFFLINE") : isCachedData ? (hi ? "कैश्ड" : "CACHED") : refreshing ? "SYNC…" : (hi ? "लाइव मंडी" : "LIVE APMC")}
+              <span className={cn("w-1.5 h-1.5 rounded-full bg-white", !error && servedFrom === "live" && "animate-live-dot")} />
+              {error ? (hi ? "ऑफ़लाइन" : "OFFLINE") : isCachedData ? (hi ? "कैश्ड" : "CACHED") : refreshing ? "SYNC…" : servedFrom === "live" ? (hi ? "लाइव मंडी" : "LIVE APMC") : (hi ? "सत्यापित डेटा" : "VERIFIED DATA")}
             </span>
           </h2>
           <p className="text-sm text-muted-foreground">{L.subtitle}</p>
@@ -929,9 +985,9 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       ) : filtered.length === 0 ? (
         <div className="text-center py-14 px-4 bg-card rounded-2xl border border-dashed border-border my-4 space-y-3 animate-fade-in">
           <Store className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
-          <h4 className="text-base font-bold text-foreground">No mandi commodities found</h4>
+          <h4 className="text-base font-bold text-foreground">No Government mandi records found for this selection</h4>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            No active crop rate records match your current filters or search criteria.
+            The government dataset has no published crop rate for this combination of state, district, mandi or category. Try a different selection.
           </p>
           <AgriButton
             variant="outline"
