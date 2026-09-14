@@ -27,6 +27,7 @@ import {
   MARKETPLACE_CATEGORIES,
   formatPriceWithUnit,
 } from '../domain/marketplaceTypes';
+import { SafeImage } from '@/components/ui/SafeImage';
 
 interface ListingDetailModalProps {
   open: boolean;
@@ -85,9 +86,12 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 rounded-3xl border-border bg-card">
         {/* Top Image Gallery */}
         <div className="relative aspect-video sm:aspect-[21/9] w-full bg-muted overflow-hidden">
-          <img
+          <SafeImage
             src={images[activeImageIdx] || images[0]}
             alt={listing.title}
+            entityName={listing.title}
+            category={listing.category}
+            resolveType="general"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

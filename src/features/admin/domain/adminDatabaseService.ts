@@ -873,11 +873,16 @@ export async function updateUserKyc(
       return { ok: false, error: fetchErr.message };
     }
 
-    const meta = existing?.extended_profile
-      ? (typeof existing.extended_profile === 'string'
+    let meta: Record<string, unknown> = {};
+    if (existing?.extended_profile) {
+      try {
+        meta = typeof existing.extended_profile === 'string'
           ? JSON.parse(existing.extended_profile)
-          : existing.extended_profile)
-      : {};
+          : existing.extended_profile;
+      } catch {
+        meta = {};
+      }
+    }
 
     const updatedMeta = {
       ...meta,

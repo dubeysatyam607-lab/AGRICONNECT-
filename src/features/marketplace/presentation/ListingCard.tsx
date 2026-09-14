@@ -16,6 +16,7 @@ import {
   MARKETPLACE_CATEGORIES,
   formatPriceWithUnit,
 } from '../domain/marketplaceTypes';
+import { SafeImage } from '@/components/ui/SafeImage';
 
 interface ListingCardProps {
   listing: MarketplaceListing;
@@ -47,9 +48,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({
     >
       {/* Thumbnail */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-        <img
+        <SafeImage
           src={primaryImage}
           alt={listing.title}
+          entityName={listing.title}
+          category={listing.category}
+          resolveType="general"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />

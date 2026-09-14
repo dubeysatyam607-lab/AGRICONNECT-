@@ -234,13 +234,19 @@ const CropPanel: React.FC<{
   const calculate = () => {
     const acres = parseFloat(landSize);
     if (!acres || acres <= 0) return;
-    const priceUsed = customPrice ? parseFloat(customPrice) : (livePrice || crop.mspFallback);
+    const parsedCustom = parseFloat(customPrice);
+    if (customPrice && !Number.isFinite(parsedCustom)) {
+      onToast?.(L.customPricePlaceholder);
+      return;
+    }
+    const priceUsed = Number.isFinite(parsedCustom) ? parsedCustom : (livePrice || crop.mspFallback);
     const priceSource: "live" | "msp" = (customPrice || livePrice) ? "live" : "msp";
     const totalYield = crop.yieldPerAcre * acres;
     const totalRevenue = totalYield * priceUsed;
     const totalCost = crop.inputCost * acres;
     const profit = totalRevenue - totalCost;
-    setResult({ totalYield, totalRevenue, totalCost, profit, profitPerAcre: profit / acres, roi: (profit / totalCost) * 100, priceUsed, priceSource });
+    const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+    setResult({ totalYield, totalRevenue, totalCost, profit, profitPerAcre: profit / acres, roi, priceUsed, priceSource });
     onProfit?.(profit);
   };
 

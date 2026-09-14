@@ -6,6 +6,7 @@ import {
   OFFLINE_AGRI_SVG,
   isValidImageUrl,
 } from "@/lib/image-resolver";
+import { getRelevantImage } from "@/lib/imageService";
 import { cn } from "@/lib/utils";
 
 export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -83,8 +84,13 @@ export function SafeImage({
       }
     }
 
-    // 2. Master dictionary exact-entity photograph
-    const exactPhoto = resolveImageUrl(undefined, resolveType, effectiveName);
+    // 2. Master dictionary & imageService exact-entity photograph
+    const exactPhoto = getRelevantImage({
+      entityType: resolveType as any,
+      name: effectiveName,
+      category,
+      src,
+    });
     if (exactPhoto && !list.includes(exactPhoto)) {
       list.push(exactPhoto);
     }
@@ -152,7 +158,6 @@ export function SafeImage({
         loading={nativeLoading}
         decoding="async"
         referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
         className={cn(
           "w-full h-full transition-opacity duration-300",
           cover ? "object-cover" : "object-contain",

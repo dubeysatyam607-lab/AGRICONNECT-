@@ -619,7 +619,7 @@ const findDiseaseKey = (q: string): string | null => {
   if (["yellow", "peeli", "peela", "peele", "pili", "pila", "पीली", "पीला", "पीले", "पीलापन", "chlorosis", "हळदी", "पिवळी", "पिवळे", "ਪੀਲੀ", "પીળા", "হলুদ", "மஞ்சள்", "పసుపు", "ಹಳದಿ", "മഞ്ഞ", "ପତ୍ର ହଳଦିଆ"].some(w => q.includes(w))) {
     return "yellowLeaves";
   }
-  if (["blight", "jhulsa", "झुलसा", "black spot", "धब्बे", "काला धब्बा", "ব্লাস্ট", "পাতাপোড়া", "blast"].some(w => q.includes(w))) {
+  if (["blight", "jhulsa", "झुलसा", "black spot", "black spots", "dhabbe", "dhabba", "kaale dhabbe", "kale dhabbe", "धब्बे", "काला धब्बा", "बिल्कुल धब्बे", "ব্লাস্ট", "পাতাপোড়া", "blast"].some(w => q.includes(w))) {
     return "blight";
   }
   if (["powdery", "mildew", "safed fafund", "सफेद पाउडर", "चूर्णिल"].some(w => q.includes(w))) {
