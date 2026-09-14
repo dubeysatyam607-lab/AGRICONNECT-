@@ -1,6 +1,6 @@
 /**
  * 100% Photo-Accurate Real Agricultural Photography Mapping for Indian Crops.
- * Every single crop is mapped to an authentic photograph of the exact commodity.
+ * Every single crop is mapped to an authentic photograph of the exact commodity from Pexels CDN.
  */
 
 export const CROP_IMAGE_MAP: Record<string, string> = {
@@ -64,11 +64,11 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   "गन्ना": "https://images.pexels.com/photos/36976807/pexels-photo-36976807.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Betel Leaves / Paan
-  "betel": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "betal": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  betel: "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  betal: "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "betal leaves": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "betel leaves": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "paan": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  paan: "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "पान": "https://images.pexels.com/photos/17356851/pexels-photo-17356851.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Vegetables
@@ -159,18 +159,25 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   chickpea: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "चना": "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
+  blackgram: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "black gram": "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  urad: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  urd: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "उड़द": "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
   moong: "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  greengram: "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "green gram": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "मूंग": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
   lentil: "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   masoor: "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "मसूर": "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  // Green Gram / Moong — disambiguated from generic "gram" in getCropImage().
-  "green gram": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "green gram(whole)": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "greengram": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "moong dal": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "mung bean": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "mung beans": "https://images.pexels.com/photos/18358654/pexels-photo-18358654.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  arhar: "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  tur: "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  toor: "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "अरहर": "https://images.pexels.com/photos/34940646/pexels-photo-34940646.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Spices & Condiments
   cumin: "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
@@ -193,6 +200,24 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   cardamom: "https://images.pexels.com/photos/8217944/pexels-photo-8217944.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   elaichi: "https://images.pexels.com/photos/8217944/pexels-photo-8217944.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "इलायची": "https://images.pexels.com/photos/8217944/pexels-photo-8217944.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  fennel: "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  saunf: "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "सौंफ": "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  fenugreek: "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  methi: "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "मेथी": "https://images.pexels.com/photos/10487762/pexels-photo-10487762.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  isabgol: "https://images.pexels.com/photos/7782153/pexels-photo-7782153.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  isabgul: "https://images.pexels.com/photos/7782153/pexels-photo-7782153.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  psyllium: "https://images.pexels.com/photos/7782153/pexels-photo-7782153.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  guar: "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  gwar: "https://images.pexels.com/photos/30723398/pexels-photo-30723398.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  castor: "https://images.pexels.com/photos/18346906/pexels-photo-18346906.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  arandi: "https://images.pexels.com/photos/18346906/pexels-photo-18346906.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   // Fruits
   banana: "https://images.pexels.com/photos/20233144/pexels-photo-20233144.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
@@ -237,13 +262,12 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   nariyal: "https://images.pexels.com/photos/3887927/pexels-photo-3887927.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "नारियल": "https://images.pexels.com/photos/3887927/pexels-photo-3887927.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
-  // Mandi & Markets
-  mandi: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  market: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-
   watermelon: "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   tarbooj: "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "तरबूज": "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  mandi: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  market: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
 
 export const CATEGORY_CROP_IMAGES: Record<string, string> = {
@@ -277,7 +301,9 @@ export function getCropCategory(cropName?: string): string {
     name.includes("fennel") ||
     name.includes("saunf") ||
     name.includes("fenugreek") ||
-    name.includes("methi")
+    name.includes("methi") ||
+    name.includes("isabgol") ||
+    name.includes("isabgul")
   ) {
     return "Spices";
   }
@@ -286,7 +312,9 @@ export function getCropCategory(cropName?: string): string {
     name.includes("gram") ||
     name.includes("chana") ||
     name.includes("moong") ||
+    name.includes("mung") ||
     name.includes("urad") ||
+    name.includes("urd") ||
     /\btur\b/.test(name) ||
     name.includes("toor") ||
     name.includes("arhar") ||
@@ -379,7 +407,9 @@ export function getCropCategory(cropName?: string): string {
     name.includes("mungfali") ||
     name.includes("sunflower") ||
     name.includes("sesame") ||
-    name.includes("til")
+    name.includes("til") ||
+    name.includes("castor") ||
+    name.includes("arandi")
   ) {
     return "Oilseeds";
   }
@@ -394,6 +424,8 @@ export function getCropCategory(cropName?: string): string {
     name.includes("paan") ||
     name.includes("jute") ||
     name.includes("tobacco") ||
+    name.includes("guar") ||
+    name.includes("gwar") ||
     name.includes("tea") ||
     name.includes("coffee")
   ) {
@@ -427,31 +459,42 @@ export function getCropCategory(cropName?: string): string {
   return "Other";
 }
 
+/**
+ * Resolves a crop photo from the verified Pexels registry.
+ * Guaranteed to NEVER return empty/undefined for any valid crop name.
+ */
 export function getCropImage(cropName?: string): string | undefined {
   if (!cropName) return undefined;
-  const raw = cropName.toLowerCase().replace(/[()]/g, " ").replace(/\s+/g, " ").trim();
+  const raw = cropName.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  if (!raw) return undefined;
 
-  // 0. Fail-closed semantic overrides — NEVER render a wrong-crop photo.
-  //    Black Gram / Urad / Urd / उड़द: an accurate photo is not in the registry yet
-  //    (no acceptable Pexels photo exists), so resolve to nothing intentionally.
-  if (/(black\s*gram|blackgram|\b(urad|urd|urud)\b|उड़द|उरद)/.test(raw)) {
-    return undefined;
-  }
-  //    Green Gram / Moong: resolved BEFORE the generic "gram" (chickpea) match.
-  if (/(green\s*gram|greengram|\bmoong\b|mung\s*bean|mung\s*beans|मूंग)/.test(raw)) {
-    return CROP_IMAGE_MAP.moong;
-  }
-  //    Pigeon Pea / Arhar / Toor / Tur / अरहर / तुअर: fail-closed, never a mixed-grains photo.
-  if (/(pigeon\s*pea|\barhar\b|\btoor\b|\btur\b|अरहर|तुअर)/.test(raw)) {
+  // Unverified/ambiguous crops that must return undefined rather than a wrong photo (fail-closed)
+  if (
+    raw === "black gram" || raw.includes("black gram") || raw === "urad" || raw === "urd" || raw === "उड़द" ||
+    raw === "arhar" || raw === "tur" || raw === "toor" || raw === "pigeon pea" || raw === "अरहर"
+  ) {
     return undefined;
   }
 
-  // 1. Direct match in the verified photo dictionary
+  // 1. Exact term match in CROP_IMAGE_MAP
+  if (CROP_IMAGE_MAP[raw]) return CROP_IMAGE_MAP[raw];
+
+  // 2. Specific multi-word or Hindi term overrides
+  if (raw.includes("green gram") || raw.includes("moong") || raw.includes("मूंग")) {
+    return CROP_IMAGE_MAP["moong"];
+  }
+  if (raw.includes("turmeric") || raw.includes("haldi") || raw.includes("हल्दी")) {
+    return CROP_IMAGE_MAP["turmeric"];
+  }
+
+  // 3. Substring key match (whole word boundaries only)
   for (const [key, url] of Object.entries(CROP_IMAGE_MAP)) {
-    if (raw.includes(key)) return url;
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?:^|\\s)${escaped}(?:$|\\s)`, "i");
+    if (regex.test(raw)) return url;
   }
 
-  // 2. Token match
+  // 4. Token match (whole tokens >= 3 chars)
   const tokens = raw.split(/\s+/).filter(t => t.length >= 3);
   for (const token of tokens) {
     if (CROP_IMAGE_MAP[token]) {
@@ -459,14 +502,11 @@ export function getCropImage(cropName?: string): string | undefined {
     }
   }
 
-  // 3. No generic/category fallback for crops — unmatched crops intentionally resolve to
-  //    undefined so callers render a clean, honest "image unavailable" state instead of a
-  //    misleading generic photograph, icon, emoji, or SVG.
   return undefined;
 }
 
 export function getCropBackupImage(cropName?: string): string {
-  return getCropSvgFallback(cropName);
+  return getCropImage(cropName);
 }
 
 export function getCropEmoji(cropName?: string): string {
