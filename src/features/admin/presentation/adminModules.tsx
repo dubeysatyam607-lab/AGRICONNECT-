@@ -28,6 +28,7 @@ import {
   UserCog,
   ClipboardList,
   Sprout,
+  Database,
 } from 'lucide-react';
 import { OverviewModule } from './modules/OverviewModule';
 import { SoilTestingModule } from './modules/SoilTestingModule';
@@ -60,6 +61,7 @@ import { AdminUsersModule } from './modules/AdminUsersModule';
 import { ImageManagementModule } from './modules/ImageManagementModule';
 import { FoundingFarmersModule } from './modules/FoundingFarmersModule';
 import { PaymentVerificationModule } from './modules/PaymentVerificationModule';
+import { AgriDataCenterModule } from './modules/AgriDataCenterModule';
 import { Image as ImageIcon } from 'lucide-react';
 
 export interface AdminModule {
@@ -89,6 +91,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { key: 'push', label: 'Push Notifications', icon: Send, group: 'Operations', component: PushModule },
   { key: 'weather', label: 'Weather Monitoring', icon: CloudSun, group: 'Operations', component: WeatherModule },
   { key: 'mandi', label: 'Mandi Data', icon: Wheat, group: 'Operations', component: MandiModule },
+  { key: 'agriDataCenter', label: 'Agriculture Data Center', icon: Database, group: 'Operations', component: AgriDataCenterModule },
   { key: 'ads', label: 'Advertisements', icon: Megaphone, group: 'Operations', component: AdsModule },
 
   { key: 'payments', label: 'Payments', icon: CreditCard, group: 'Finance', component: PaymentsModule },

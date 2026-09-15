@@ -751,9 +751,20 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
           />
 
           {error && (
-            <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-700 dark:text-rose-400 text-xs flex items-start gap-2 font-bold">
-              <AlertTriangle size={15} className="shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-700 dark:text-rose-400 text-xs flex items-center justify-between gap-2 font-bold">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+              {images.length > 0 && !isLoading && (
+                <button
+                  type="button"
+                  onClick={handleDiagnosis}
+                  className="shrink-0 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1 shadow-xs"
+                >
+                  Retry Scan 🔄
+                </button>
+              )}
             </div>
           )}
 

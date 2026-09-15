@@ -12,8 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const MAX_RAW_IMAGE_MB = 25;
 export const MAX_PAYLOAD_IMAGE_MB = 8;
-export const IMAGE_MAX_DIMENSION = 800;
-export const IMAGE_JPEG_QUALITY = 0.65;
+export const IMAGE_MAX_DIMENSION = 1600;
+export const IMAGE_JPEG_QUALITY = 0.80;
 
 export class ImageInputError extends Error {
   code: string;
@@ -357,7 +357,7 @@ Respond entirely in ${language}.`;
     }
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
