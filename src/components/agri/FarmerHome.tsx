@@ -4,7 +4,7 @@ import {
   CalendarDays, Droplets, Wind, IndianRupee, CloudSun,
   TrendingDown, Leaf, Landmark, AlertTriangle, MapPin,
   Star, ArrowRight, Flame, Sprout,
-  Coins, FlaskConical, Warehouse, Users, Bot, Search,
+  Coins, FlaskConical, Warehouse, Users, Bot,
 } from "lucide-react";
 import DynamicHero from "./DynamicHero";
 import AiInsightCard from "./AiInsightCard";
@@ -250,13 +250,6 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           </div>
         </div>
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => go("search")}
-            className="h-10 w-10 rounded-2xl border border-border bg-background/70 text-muted-foreground hover:text-primary hover:border-primary/40 flex items-center justify-center transition-colors"
-            aria-label="Global search"
-          >
-            <Search size={18} />
-          </button>
           <NotificationBell onNavigate={go} />
           <button
             onClick={() => go("profile")}

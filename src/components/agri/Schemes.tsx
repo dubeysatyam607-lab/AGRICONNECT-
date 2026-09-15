@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Landmark, Sparkles, Search, Filter, Bookmark, BookmarkCheck, Bell, BellRing,
@@ -21,13 +21,6 @@ import {
   SchemeMatchResponse,
   SchemeMatchResult
 } from "@/lib/government-scheme-matcher";
-import {
-  getAgriContent,
-  getAgriFreshness,
-  formatVerifiedLabel,
-  formatSourceLabel,
-  AgriScheme
-} from "@/lib/agri-info";
 
 function readList(key: string): string[] {
   try {
@@ -519,74 +512,6 @@ const BuildingIcon = ({ size }: { size: number }) => (
 );
 
 /* ─────────────────────────────────────────────────────────────
- * DB-powered Scheme Card (honest: only shows fields present in DB)
- * ───────────────────────────────────────────────────────────── */
-const AgriDbSchemeCard = ({ scheme, onToast }: { scheme: AgriScheme; onToast: (m: string) => void }) => {
-  const openUrl = scheme.application_url || scheme.official_url || scheme.source_url;
-  const levelLabel = scheme.level === "state" ? "State Scheme" : scheme.level === "central" ? "Central Scheme" : "Govt Scheme";
-  const benefit = scheme.benefit_amount || scheme.benefits || null;
-  const verified = formatVerifiedLabel(scheme.last_verified_at);
-
-  return (
-    <AgriCard className="p-4 overflow-hidden relative hover:border-primary/40 transition-all shadow-sm">
-      <span className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500" />
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              {scheme.category || "Scheme"}
-            </span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase">
-              {levelLabel}
-            </span>
-            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-              <BadgeCheck size={12} className="text-emerald-600" /> Live Synced
-            </span>
-          </div>
-          <h3 className="font-bold text-foreground text-base mt-2 leading-snug">{scheme.name}</h3>
-          {scheme.description && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{scheme.description}</p>
-          )}
-        </div>
-      </div>
-
-      {benefit && (
-        <div className="mt-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Benefit</p>
-          <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 mt-0.5">{benefit}</p>
-        </div>
-      )}
-
-      {scheme.ministry && (
-        <p className="text-[11px] text-muted-foreground mt-2.5 flex items-center gap-1">
-          <BuildingIcon size={12} /> {scheme.ministry}
-        </p>
-      )}
-      <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-        <ShieldCheck size={12} className="text-emerald-600" />
-        {verified}
-        {scheme.source_name ? <span className="text-muted-foreground/70">from {formatSourceLabel(scheme.source_name)}</span> : null}
-      </p>
-
-      {openUrl ? (
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            onClick={() => { onToast("Opening official portal..."); window.open(openUrl, "_blank", "noopener,noreferrer"); }}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
-          >
-            <ExternalLink size={14} /> Open Official Portal
-          </button>
-        </div>
-      ) : (
-        <p className="mt-3 text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-          <Info size={13} /> No public application link available yet
-        </p>
-      )}
-    </AgriCard>
-  );
-};
-
-/* ─────────────────────────────────────────────────────────────
  * Interactive AI Eligibility Checker Modal
  * ───────────────────────────────────────────────────────────── */
 const EligibilitySheet = ({
@@ -811,57 +736,6 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
   const [categories, setCategories] = useState<string[]>(CATEGORIES);
   const [loading, setLoading] = useState(false);
   const [verifiedSyncDate, setVerifiedSyncDate] = useState("2026-08-06");
-  const [dbOnlySchemes, setDbOnlySchemes] = useState<AgriScheme[]>([]);
-
-  // Live merge: refresh verified dates from the DB catalog and surface
-  // DB-only schemes (e.g. from data.gov.in) with honest fields only.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [content, freshness] = await Promise.all([
-          getAgriContent<AgriScheme[]>("schemes", {}, undefined, { limit: 100 }),
-          getAgriFreshness(),
-        ]);
-        if (cancelled) return;
-        const rows = content.rows || [];
-        if (!rows.length) return;
-
-        const staticKeys = new Set(VERIFIED_GOVERNMENT_SCHEMES.map(s => s.code.trim().toLowerCase()));
-        const overrides: Record<string, string> = {};
-        const extra: AgriScheme[] = [];
-        const newCats = new Set(CATEGORIES);
-
-        for (const row of rows) {
-          const key = (row.short_name || "").trim().toLowerCase();
-          const codeFromTitle = VERIFIED_GOVERNMENT_SCHEMES.find(
-            s => s.title.trim().toLowerCase() === (row.name || "").trim().toLowerCase()
-          )?.code || "";
-          const matchedKey = key && staticKeys.has(key) ? key : codeFromTitle;
-          if (matchedKey && row.last_verified_at) {
-            overrides[matchedKey] = row.last_verified_at;
-          } else if (!matchedKey && row.status !== "closed") {
-            extra.push(row);
-            if (row.category) newCats.add(row.category);
-          }
-        }
-
-        if (Object.keys(overrides).length) {
-          setSchemes(VERIFIED_GOVERNMENT_SCHEMES.map(s => overrides[s.code] ? { ...s, lastVerifiedDate: overrides[s.code] } : s));
-        }
-        if (extra.length) {
-          setDbOnlySchemes(extra);
-          setCategories(Array.from(newCats));
-        }
-        if (freshness.tables.schemes.lastVerifiedAt) {
-          setVerifiedSyncDate(freshness.tables.schemes.lastVerifiedAt.slice(0, 10));
-        }
-      } catch {
-        // Edge function unreachable or offline — curated reference snapshot stays as-is.
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState("All");
@@ -1001,7 +875,7 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
           onClick={() => setView("discover")}
           className={cn("flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-extrabold transition-all", view === "discover" ? "bg-card shadow-xs text-primary" : "text-muted-foreground")}
         >
-          <Search size={14} /> Discover ({schemes.length + dbOnlySchemes.length})
+          <Search size={14} /> Discover ({schemes.length})
         </button>
         <button
           onClick={() => setView("bookmarks")}
@@ -1106,22 +980,6 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
               </div>
             )}
           </div>
-
-          {/* DB-only schemes synced from live data sources */}
-          {dbOnlySchemes.length > 0 && (
-            <div className="mt-5">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Sparkles size={14} className="text-primary" />
-                <h3 className="text-xs font-extrabold uppercase tracking-wide text-foreground">Newly Synced Schemes</h3>
-                <span className="text-[10px] text-muted-foreground font-semibold">· pulled live from data sources</span>
-              </div>
-              <div className="space-y-3.5">
-                {dbOnlySchemes.map(s => (
-                  <AgriDbSchemeCard key={s.id} scheme={s} onToast={onToast} />
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
 

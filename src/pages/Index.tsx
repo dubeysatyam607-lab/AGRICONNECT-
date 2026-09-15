@@ -66,7 +66,6 @@ const AgriMarketplaceHub = lazy(() =>
   import("@/features/marketplace/presentation/AgriMarketplaceHub").then((m) => ({ default: m.AgriMarketplaceHub })),
 );
 const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
-const SearchHub = lazy(() => import("@/components/agri/SearchHub"));
 
 // ── Per-tab SEO Metadata (dynamic title/description for SPA sections) ──
 const TAB_SEO_META: Record<string, { title: string; description: string; path: string; noindex?: boolean }> = {
@@ -258,13 +257,6 @@ const TAB_SEO_META: Record<string, { title: string; description: string; path: s
     path: '/market',
     noindex: true,
   },
-  search: {
-    title: 'Search Agriculture Info — Schemes, MSP, News, Loans & Insurance',
-    description:
-      'Search verified government schemes, MSP prices, agri news, loan rates, and crop insurance data across AgriConnect — powered by live official data sources.',
-    path: '/search',
-    noindex: true,
-  },
 };
 
 const DEFAULT_TAB_META = TAB_SEO_META.home;
@@ -298,8 +290,6 @@ const getTabFromPath = (path: string) => {
       case "/farm-os": return "farm-os";
       case "/mandi":
       case "/mandi-prices": return "mandi";
-      case "/search":
-      case "/global-search": return "search";
       case "/machinery":
       case "/machinery-rental":
       case "/tractors":
@@ -403,7 +393,6 @@ const getTabFromPath = (path: string) => {
       "network": "/network",
       "settings": "/settings",
       "admin": "/admin",
-      "search": "/search",
     };
     const path = tabPaths[activeTab];
     if (path && location.pathname !== path) {
@@ -528,8 +517,6 @@ const getTabFromPath = (path: string) => {
         return <AgriMarketplaceHub onNavigate={handleNavigate} onToast={showToast} />;
       case "admin":
         return <AdminDashboard />;
-      case "search":
-        return <SearchHub onToast={showToast} onNavigate={handleNavigate} />;
       case "settings":
         return (
           <ProfileSettings

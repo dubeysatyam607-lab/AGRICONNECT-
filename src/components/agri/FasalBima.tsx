@@ -1,21 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { Shield, ArrowLeft, ChevronDown, ExternalLink, Calculator, Info } from "lucide-react";
-import { getAgriContent, AgriInsurance, formatVerifiedLabel } from "@/lib/agri-info";
+import { Shield, ArrowLeft, ChevronDown, ExternalLink, Calculator, IndianRupee, Info } from "lucide-react";
 
 interface FasalBimaProps {
   onClose: () => void;
 }
 
 type Lang = "en" | "hi";
-
-// Official PMFBY farmer premium CAPS (share of Sum Insured) per notification.
-const OFFICIAL_CAPS: Record<string, { en: string; hi: string; pct: number }> = {
-  Kharif: { en: "Kharif (food & oilseed crops)", hi: "खरीफ (खाद्य व तिलहन फसलें)", pct: 2.0 },
-  Rabi: { en: "Rabi (food & oilseed crops)", hi: "रबी (खाद्य व तिलहन फसलें)", pct: 1.5 },
-  "Annual & Commercial": { en: "Annual & commercial/horticultural crops", hi: "वार्षिक व व्यावसायिक/बागवानी फसलें", pct: 5.0 },
-};
 
 const CROPS = [
   { key: "wheat", en: "Wheat", hi: "गेहूं", emoji: "🌾", sumInsured: 25000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
@@ -44,20 +36,21 @@ const LABELS: Record<Lang, Record<string, string>> = {
     cropLabel: "Select Crop",
     stateLabel: "Select State",
     landLabel: "Land Size (Acres)",
-    calcBtn: "Calculate Farmer Premium",
-    premium: "Your Farmer Premium",
-    coverage: "Sum Insured",
+    calcBtn: "Calculate Premium",
+    premium: "Your Premium",
+    coverage: "Total Coverage",
+    govt: "Government Subsidy",
     season: "Season",
-    premiumRate: "Premium Cap",
-    capNote: "Farmer premium is paid at the official PMFBY premium cap for the season. The actuarial premium set by your state is usually higher — the Central + State governments subsidize the balance. Exact actuarial rates vary by district & crop and are published on pmfby.gov.in, so the premium shown here is the maximum the farmer legally pays, not a total premium estimate.",
+    premiumRate: "Premium Rate",
+    schemeNote: "Under PM Fasal Bima Yojana (PMFBY), the government subsidizes up to 98.5% of the premium for Rabi & Kharif crops.",
     applyBtn: "Apply on PMFBY Portal",
-    disclaimer: "* Farmer premium = Sum Insured × official PMFBY premium cap (Kharif 2%, Rabi 1.5%, Annual & Commercial 5%). Actual state actuarial rates may differ; visit pmfby.gov.in for the exact published rates for your district.",
+    disclaimer: "* Premium amounts are indicative. Actual premium depends on state-specific actuarial rates. Visit pmfby.gov.in for exact rates.",
+    subsidy: "Central + State subsidy",
+    perAcre: "/acre",
     howItWorks: "How PMFBY Works",
-    step1: "Pay farmer premium at the official cap (1.5%–5% of Sum Insured)",
-    step2: "Government pays the balance of the actuarial premium",
+    step1: "Pay low farmer premium (1.5%–5%)",
+    step2: "Government pays remaining subsidy",
     step3: "Get compensated for crop loss",
-    verifiedLbl: "Premium caps verified from PMFBY notifications",
-    liveLbl: "Premium cap",
   },
   hi: {
     title: "फसल बीमा कैलकुलेटर",
@@ -65,20 +58,21 @@ const LABELS: Record<Lang, Record<string, string>> = {
     cropLabel: "फसल चुनें",
     stateLabel: "राज्य चुनें",
     landLabel: "जमीन का आकार (एकड़)",
-    calcBtn: "किसान प्रीमियम जानें",
-    premium: "आपका किसान प्रीमियम",
-    coverage: "बीमा राशि",
+    calcBtn: "प्रीमियम जानें",
+    premium: "आपका प्रीमियम",
+    coverage: "कुल कवरेज",
+    govt: "सरकारी सब्सिडी",
     season: "मौसम",
-    premiumRate: "प्रीमियम सीमा",
-    capNote: "किसान प्रीमियम मौसम की आधिकारिक PMFBY प्रीमियम सीमा पर दिया जाता है। आपके राज्य द्वारा तय वास्तविक बीमा प्रीमियम (एक्चुअरियल) आमतौर पर अधिक होता है — केंद्र + राज्य सरकारें इसका शेष हिस्सा सब्सिडी देती हैं। सटीक एक्चुअरियल दरें जिले व फसल के अनुसार अलग होती हैं और pmfby.gov.in पर प्रकाशित होती हैं, इसलिए यहाँ दिखाई गई प्रीमियम सबसे अधिक है जो किसान को कानूनी रूप से देना होता है, कुल प्रीमियम का अनुमान नहीं।",
+    premiumRate: "प्रीमियम दर",
+    schemeNote: "PM फसल बीमा योजना (PMFBY) के तहत सरकार रबी और खरीफ फसलों के लिए 98.5% तक प्रीमियम सब्सिडी देती है।",
     applyBtn: "PMFBY पोर्टल पर आवेदन करें",
-    disclaimer: "* किसान प्रीमियम = बीमा राशि × आधिकारिक PMFBY प्रीमियम सीमा (खरीफ 2%, रबी 1.5%, वार्षिक व व्यावसायिक 5%)। राज्य की वास्तविक दरें भिन्न हो सकती हैं; अपने जिले की प्रकाशित दरों के लिए pmfby.gov.in देखें।",
+    disclaimer: "* प्रीमियम राशि संकेतात्मक है। वास्तविक प्रीमियम राज्य-विशिष्ट दरों पर निर्भर करता है। सटीक दरों के लिए pmfby.gov.in देखें।",
+    subsidy: "केंद्र + राज्य सब्सिडी",
+    perAcre: "/एकड़",
     howItWorks: "PMFBY कैसे काम करती है",
-    step1: "किसान प्रीमियम आधिकारिक सीमा पर भरें (बीमा राशि का 1.5%–5%)",
-    step2: "सरकार एक्चुअरियल प्रीमियम का शेष हिस्सा देती है",
+    step1: "कम किसान प्रीमियम (1.5%–5%) भरें",
+    step2: "सरकार शेष सब्सिडी देती है",
     step3: "फसल नुकसान पर मुआवजा पाएं",
-    verifiedLbl: "प्रीमियम सीमाएं PMFBY अधिसूचनाओं से सत्यापित",
-    liveLbl: "प्रीमियम सीमा",
   },
 };
 
@@ -91,61 +85,30 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
   const [showStateDD, setShowStateDD] = useState(false);
   const [result, setResult] = useState<{
     farmerPremium: number;
+    totalPremium: number;
+    govtSubsidy: number;
     coverage: number;
     premiumPerAcre: number;
     premiumRate: number;
   } | null>(null);
-  const [liveInsurance, setLiveInsurance] = useState<AgriInsurance[]>([]);
-  const [liveLoaded, setLiveLoaded] = useState(false);
-
-  // Back the calculator with official PMFBY products from the sync DB when present.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { rows } = await getAgriContent<AgriInsurance[]>("insurance", {}, undefined, { limit: 20 });
-        if (!cancelled) setLiveInsurance(rows);
-      } catch {
-        // Offline or edge unavailable — official premium-cap table remains the default.
-      } finally {
-        if (!cancelled) setLiveLoaded(true);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
   const L = LABELS[lang];
   const crop = CROPS.find(c => c.key === selectedCrop) || CROPS[0];
   const acres = parseFloat(landSize) || 0;
 
-  // Bucket the crop's premium into the matching official notification class.
-  const capBucket = useMemo(() => {
-    return Object.values(OFFICIAL_CAPS).find(c => c.pct === crop.premiumRate) || OFFICIAL_CAPS.Rabi;
-  }, [crop.premiumRate]);
-
-  // Prefer a live product row matching this bucket (same cap or season) —
-  // its verified/source labels are used in the results note.
-  const liveMatch = useMemo(() => {
-    return liveInsurance.find(
-      p => p.premium_cap_percent === crop.premiumRate
-        || p.farmer_premium_rate === crop.premiumRate
-        || (p.season ? p.season === capBucket.en.split(" ")[0] : false),
-    ) || null;
-  }, [liveInsurance, crop.premiumRate, capBucket]);
-
-  const liveVerified = liveMatch ? formatVerifiedLabel(liveMatch.last_verified_at) : null;
-
   const calculate = () => {
     if (!acres || acres <= 0) return;
-    // Farmer premium = Sum Insured × official PMFBY premium cap. The actuarial
-    // premium is state-specific and cannot be derived here, so no subsidy amount
-    // is invented — the government's share is documented in the results note.
+    // PMFBY farmer premium: Kharif max 2%, Rabi max 1.5%, Horticulture max 5%
     const farmerPremiumRate = crop.premiumRate / 100;
     const totalSumInsured = crop.sumInsured * acres;
+    const totalPremium = totalSumInsured * (farmerPremiumRate * 3); // actuarial ~3x farmer rate
     const farmerPremium = totalSumInsured * farmerPremiumRate;
+    const govtSubsidy = totalPremium - farmerPremium;
 
     setResult({
       farmerPremium: Math.round(farmerPremium),
+      totalPremium: Math.round(totalPremium),
+      govtSubsidy: Math.round(govtSubsidy),
       coverage: Math.round(totalSumInsured),
       premiumPerAcre: Math.round(farmerPremium / acres),
       premiumRate: crop.premiumRate,
@@ -290,7 +253,7 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
             <div className="bg-primary p-4 text-center">
               <p className="text-primary-foreground/80 text-sm">{L.premium}</p>
               <p className="text-4xl font-bold text-primary-foreground">{fmt(result.farmerPremium)}</p>
-              <p className="text-primary-foreground/70 text-xs mt-1">{fmt(result.premiumPerAcre)}{lang === "hi" ? "/एकड़" : "/acre"}</p>
+              <p className="text-primary-foreground/70 text-xs mt-1">{fmt(result.premiumPerAcre)}{L.perAcre}</p>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -299,20 +262,14 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
                   <p className="text-lg font-bold text-foreground">{fmt(result.coverage)}</p>
                 </div>
                 <div className="bg-primary/5 rounded-xl p-3 text-center">
-                  <p className="text-xs text-muted-foreground">{L.premiumRate}</p>
-                  <p className="text-lg font-bold text-primary">{result.premiumRate}%</p>
-                  <p className="text-[9px] text-muted-foreground">{lang === "hi" ? capBucket.hi : capBucket.en}</p>
+                  <p className="text-xs text-muted-foreground">{L.govt}</p>
+                  <p className="text-lg font-bold text-primary">{fmt(result.govtSubsidy)}</p>
+                  <p className="text-[9px] text-muted-foreground">{L.subsidy}</p>
                 </div>
               </div>
 
               <div className="bg-muted/30 rounded-xl p-3">
-                <p className="text-xs text-muted-foreground text-center leading-relaxed">{L.capNote}</p>
-                {(liveVerified && liveMatch) || !liveLoaded ? (
-                  <p className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 text-center mt-2 flex items-center justify-center gap-1">
-                    <Shield size={11} /> {L.verifiedLbl}
-                    {liveVerified && liveMatch?.source_name ? ` · ${formatVerifiedLabel(liveMatch.last_verified_at)} · ${liveMatch.source_name}` : ""}
-                  </p>
-                ) : null}
+                <p className="text-xs text-muted-foreground text-center">{L.schemeNote}</p>
               </div>
 
               {/* Apply Button */}
