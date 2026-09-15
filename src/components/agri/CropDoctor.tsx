@@ -13,6 +13,7 @@ import {
   classifyEdgeError,
   SCAN_ERROR_KEYS,
   checkImageQuality,
+  analyzeCropClientSide,
   type ScanErrorCode,
   type ImageQualityResult,
 } from "@/lib/crop-scan";
@@ -271,8 +272,28 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
 
       if (err) {
         const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
-        const key = SCAN_ERROR_KEYS[edgeCode] || "doctor.error.api";
-        const message = edgeCode === "validation" ? err : t(key) || err;
+        
+        // Attempt direct client-side AI fallback if edge service is unconfigured, not deployed, or session error
+        if (edgeCode === "config" || edgeCode === "deploy" || edgeCode === "session" || edgeCode === "api") {
+          const fallbackResult = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
+          if (fallbackResult) {
+            setIsLoading(false);
+            setResult(fallbackResult as CropScanResult);
+            if (fallbackResult.needs_clearer_image) {
+              setError("Photo is not clear enough for a reliable analysis. Please take a closer photo of the affected part.");
+            }
+            if (autoSpeak && (fallbackResult.possible_issue || fallbackResult.health_status)) {
+              setTimeout(speakResultText, 500);
+            }
+            loadHistory();
+            return;
+          }
+        }
+
+        const key = SCAN_ERROR_KEYS[edgeCode];
+        const localized = key ? t(key) : null;
+        // Show validation error verbatim; use localized message for network/timeout/config/quota, or err as fallback
+        const message = edgeCode === "validation" ? err : (localized || err || "Analysis service unavailable. Please check internet connection or retry.");
         setIsLoading(false);
         setError(message);
         loadHistory();
@@ -280,6 +301,15 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       }
 
       if (!data?.result) {
+        // Try fallback if response payload was empty
+        const fallbackResult = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
+        if (fallbackResult) {
+          setIsLoading(false);
+          setResult(fallbackResult as CropScanResult);
+          loadHistory();
+          return;
+        }
+
         setIsLoading(false);
         setError(t("doctor.error.api") || "The AI returned an empty result. Please try again.");
         loadHistory();

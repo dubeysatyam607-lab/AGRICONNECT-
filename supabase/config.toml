@@ -58,6 +58,12 @@ verify_jwt = true
 [functions.price-alert-worker]
 verify_jwt = false
 
+[functions.agri-sync-worker]
+verify_jwt = false
+
+[functions.agri-data]
+verify_jwt = true
+
 [auth.email.templates.confirm_signup]
 subject = "🔐 Your AgriConnect verification code"
 content_path = "./supabase/templates/confirm_signup.html"

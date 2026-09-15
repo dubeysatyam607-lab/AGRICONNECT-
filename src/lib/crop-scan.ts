@@ -12,8 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const MAX_RAW_IMAGE_MB = 25;
 export const MAX_PAYLOAD_IMAGE_MB = 8;
-export const IMAGE_MAX_DIMENSION = 900;
-export const IMAGE_JPEG_QUALITY = 0.7;
+export const IMAGE_MAX_DIMENSION = 800;
+export const IMAGE_JPEG_QUALITY = 0.65;
 
 export class ImageInputError extends Error {
   code: string;
@@ -266,15 +266,30 @@ export function classifyEdgeError(
   if (!online) return "network";
 
   const text = (error || "").toLowerCase();
-  if (text.includes("deploy")) return "deploy";
-  if (text.includes("no ai provider") || text.includes("status 503") || text.includes("not configured")) {
+  if (text.includes("deploy") || text.includes("not deployed") || text.includes("not found")) return "deploy";
+  if (
+    text.includes("no ai provider") ||
+    text.includes("status 503") ||
+    text.includes("status 500") ||
+    text.includes("status 502") ||
+    text.includes("not configured") ||
+    text.includes("check ai provider key")
+  ) {
     return "config";
   }
-  if (text.includes("session expired") || text.includes("unauthorized") || text.includes("status 401")) {
+  if (
+    text.includes("session expired") ||
+    text.includes("unauthorized") ||
+    text.includes("status 401") ||
+    text.includes("invalid or expired token") ||
+    text.includes("missing authorization header") ||
+    text.includes("expired token") ||
+    text.includes("invalid token")
+  ) {
     return "session";
   }
-  if (text.includes("credit") || text.includes("quota") || text.includes("limit exceeded")) return "quota";
-  if (text.includes("too many") || text.includes("rate limit")) return "rate_limit";
+  if (text.includes("credit") || text.includes("quota") || text.includes("limit exceeded") || text.includes("status 402")) return "quota";
+  if (text.includes("too many") || text.includes("rate limit") || text.includes("status 429")) return "rate_limit";
   if (
     text.includes("invalid image") ||
     text.includes("unsupported image") ||
@@ -288,6 +303,88 @@ export function classifyEdgeError(
   }
   if (text && text.length > 0) return "api";
   return "unknown";
+}
+
+/**
+ * Direct client-side Gemini API fallback for crop diagnosis when edge function is unreachable or not configured.
+ */
+export async function analyzeCropClientSide(
+  imagesBase64: string[],
+  description: string,
+  language: string,
+  farmContext?: Record<string, unknown>,
+): Promise<Record<string, unknown> | null> {
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "") as string;
+  if (!apiKey || apiKey.trim().length < 10 || apiKey.includes("your_gemini_key")) return null;
+
+  try {
+    const prompt = `You are an expert plant pathologist analyzing ${imagesBase64.length} crop images.
+Farmer description: "${description || "None"}"
+Selected language: "${language}"
+Farm Context: ${JSON.stringify(farmContext || {})}
+
+Analyze the crop image and output STRICT JSON only (no markdown, no backticks, no prose):
+{
+  "crop": "Crop name or null",
+  "plant_part": "Leaf/Stem/Fruit/Whole plant",
+  "health_status": "possible disease | possible pest | possible deficiency | possible water stress | possible environmental stress | healthy | unclear",
+  "possible_issue": "Short description of diagnosis",
+  "confidence": 85,
+  "symptoms": ["Symptom 1", "Symptom 2"],
+  "possible_causes": ["Cause 1"],
+  "immediate_actions": ["Action 1", "Action 2"],
+  "prevention": ["Prevention 1"],
+  "questions": ["Follow up question"],
+  "recommendations": ["Recommendation"],
+  "urgency": "low",
+  "needs_clearer_image": false,
+  "next_steps_for_farmer": ["Step 1"],
+  "expert_confirm": "When to consult extension officer"
+}
+Respond entirely in ${language}.`;
+
+    const parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [
+      { text: prompt },
+    ];
+
+    for (const b64 of imagesBase64) {
+      const match = b64.match(/^data:([^;,]+);base64,(.+)$/s);
+      if (match) {
+        parts.push({ inlineData: { mimeType: match[1], data: match[2] } });
+      } else {
+        parts.push({ inlineData: { mimeType: "image/jpeg", data: b64 } });
+      }
+    }
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 1536 },
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      if (errText.includes("API_KEY_INVALID") || errText.includes("API key not valid")) {
+        console.warn("Client-side Gemini API key is invalid:", apiKey);
+      }
+      return null;
+    }
+
+    const data = await res.json();
+    const candidate = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!candidate) return null;
+
+    const trimmed = candidate.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    return JSON.parse(trimmed) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 }
 
 export interface CropScanUploadResult {

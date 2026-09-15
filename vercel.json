@@ -9,8 +9,17 @@
     },
     "api/images/search.js": {
       "maxDuration": 15
+    },
+    "api/cron/agri-sync.js": {
+      "maxDuration": 120
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/agri-sync",
+      "schedule": "10 3,15 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -88,6 +97,10 @@
     {
       "source": "/api/images/search",
       "destination": "/api/images/search.js"
+    },
+    {
+      "source": "/api/cron/agri-sync",
+      "destination": "/api/cron/agri-sync.js"
     },
     {
       "source": "/((?!api/|assets/|sw.js|favicon.ico|manifest.json|robots.txt|sitemap.xml).*)",

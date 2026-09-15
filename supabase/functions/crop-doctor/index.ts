@@ -84,7 +84,8 @@ function validateImage(imageBase64: string): { ok: true; mime: string; base64: s
   return { ok: true, mime, base64: b64 };
 }
 
-async function logUsage(userId: string, provider?: string) {
+async function logUsage(userId?: string | null, provider?: string) {
+  if (!userId) return;
   try {
     await supabaseAdmin.rpc("ai_log_usage", {
       p_user_id: userId,
@@ -111,13 +112,14 @@ async function createSignedImageUrl(storagePath: string | null | undefined): Pro
 }
 
 async function persistScan(
-  userId: string,
+  userId: string | null | undefined,
   result: Record<string, unknown>,
   mime?: string,
   language?: string,
   storagePath?: string | null,
   imageUrl?: string | null,
 ) {
+  if (!userId) return;
   try {
     const { error } = await supabaseAdmin.from("crop_scans").insert({
       user_id: userId,
@@ -198,11 +200,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers });
 
   const authResult = await validateAuth(req);
-  if (!authResult.authenticated) {
-    return authErrorResponse(authResult.error || "Unauthorized", headers);
-  }
+  const isAuthenticated = authResult.authenticated;
 
-  const rateLimitResult = await checkRateLimit(authResult.userId!, 'crop-doctor', RATE_LIMIT_CONFIG);
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rateLimitId = isAuthenticated ? authResult.userId! : `guest:${ip}`;
+  const rateLimitConfig = isAuthenticated ? { maxRequests: 10, windowMs: 60 * 1000 } : { maxRequests: 5, windowMs: 60 * 1000 };
+
+  const rateLimitResult = await checkRateLimit(rateLimitId, 'crop-doctor', rateLimitConfig);
   if (!rateLimitResult.allowed) {
     return new Response(
       errPayload(
@@ -328,12 +332,12 @@ serve(async (req) => {
       };
     }
 
-    await logUsage(authResult.userId!, provider);
+    await logUsage(authResult.userId, provider);
 
     // Persist with a server-generated signed URL for the private bucket so the
     // user's own scan history can show the photo without a public bucket.
     const signedUrl = await createSignedImageUrl(safeStoragePath);
-    await persistScan(authResult.userId!, result, validImages[0]?.mime, language, safeStoragePath, signedUrl);
+    await persistScan(authResult.userId, result, validImages[0]?.mime, language, safeStoragePath, signedUrl);
 
     return new Response(
       JSON.stringify({ result }),

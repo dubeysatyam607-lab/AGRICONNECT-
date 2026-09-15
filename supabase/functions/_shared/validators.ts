@@ -79,6 +79,27 @@ export const contactRequestSchema = z.object({
   reveal: z.boolean().optional().default(false),
 });
 
+// Live Agriculture Information System (agri-data) request schema
+export const agriDataContentTypes = ["schemes", "news", "msp", "insurance", "loans"] as const;
+export const agriDataRequestSchema = z.object({
+  action: z.enum(["content", "search", "freshness", "report", "sync"]).default("content"),
+  type: z.enum(agriDataContentTypes).optional(),
+  q: z.string().max(200).optional(),
+  filters: z.object({
+    category: z.string().max(100).optional(),
+    level: z.enum(["central", "state"]).optional(),
+    state: z.string().max(100).optional(),
+    season: z.string().max(100).optional(),
+    year: z.string().max(20).optional(),
+    crop: z.string().max(100).optional(),
+    loanType: z.enum(["kcc", "crop_loan", "term_loan", "machinery_loan", "other"]).optional(),
+    status: z.string().max(50).optional(),
+  }).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).max(1000).optional(),
+  jobs: z.array(z.enum(["scheme", "news", "msp"])).max(5).optional(),
+});
+
 // Validation error response helper
 export function validationErrorResponse(error: z.ZodError, corsHeaders: Record<string, string>) {
   const errors = error.errors.map(e => `${e.path.join('.')}: ${e.message}`);

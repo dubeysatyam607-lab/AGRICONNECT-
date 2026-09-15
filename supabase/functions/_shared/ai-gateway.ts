@@ -51,7 +51,7 @@ function configuredProviders(): Provider[] {
   const providers: Provider[] = [];
 
   const geminiKey = Deno.env.get("GEMINI_API_KEY");
-  if (geminiKey && geminiKey.startsWith("AIza")) {
+  if (geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes("your_gemini_key")) {
     providers.push({
       name: "gemini",
       key: geminiKey,
