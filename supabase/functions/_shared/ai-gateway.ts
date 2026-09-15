@@ -56,7 +56,7 @@ function configuredProviders(): Provider[] {
       name: "gemini",
       key: geminiKey,
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      defaultModel: "gemini-2.0-flash",
+      defaultModel: "gemini-3.6-flash",
     });
   }
 
@@ -76,7 +76,7 @@ function configuredProviders(): Provider[] {
       name: "lovable",
       key: lovableKey,
       baseUrl: "https://ai.gateway.lovable.dev/v1",
-      defaultModel: "google/gemini-2.0-flash",
+      defaultModel: "google/gemini-3.6-flash",
     });
   }
 

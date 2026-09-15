@@ -85,6 +85,8 @@ supabase functions deploy agri-market
 supabase functions deploy agri-news
 supabase functions deploy contact-seller
 supabase functions deploy price-alert-worker
+supabase functions deploy agri-sync-worker
+supabase functions deploy agri-data
 ```
 
 ---
@@ -127,6 +129,106 @@ SELECT cron.schedule(
 ```
 
 **Get Service Role Key:** Supabase Dashboard → Project Settings → API → `service_role` key
+
+---
+
+## 🌾 Agriculture Information System (Schemes · News · MSP · Insurance · Loans)
+
+Live pipeline: `agri-sync-worker` (edge) fetches official/allowlisted sources on a schedule → stores normalized rows in
+Supabase → `agri-data` (edge) serves the app (Government Benefits, Kisan Khabar, Fasal Bima, Loan Calculator, Global
+Search) and the **Agriculture Data Center** admin module. All records carry `last_verified_at` + `source_name` /
+`source_url` and are never invented client-side.
+
+### Required env vars (Edge Functions)
+
+| Variable | Value | Source |
+|----------|-------|--------|
+| `CRON_SECRET` | `your_random_long_secret` | Generate with `openssl rand -hex 32`; must ALSO match `CRON_SECRET` on Vercel |
+| `SUPABASE_SERVICE_ROLE_KEY` | `sb_secret_...` | Supabase Dashboard → Settings → API → `service_role` |
+
+### Optional env vars
+
+| Variable | Value | Purpose |
+|----------|-------|---------|
+| `DATA_GOV_API_KEY` | `your_data_gov_in_api_key` | data.gov.in API for MSP sync; **without it the MSP job is honestly skipped** (no guessed prices) |
+| `MSP_RESOURCE_IDS` | comma-separated resource ids | Optional override of default data.gov.in MSP resources |
+| `NEWS_API_KEY` | `your_newsapi_key` | Optional supplementary news; non-government feeds are labeled Level-4 (not official) |
+
+The official PIB RSS feeds (`https://www.pib.gov.in/Rsss.aspx`) and PM-KISAN / PMFBY / RBI source rows are seeded in the
+migration and need NO keys.
+
+### Deploy
+
+```bash
+supabase functions deploy agri-sync-worker
+supabase functions deploy agri-data
+```
+
+> `agri-sync-worker` is deployed with `verify_jwt = false` (cron + service-role calls). `agri-data` is deployed with
+> `verify_jwt = true` (browser JWTs) — service-role calls still pass because the service role token is itself a valid JWT.
+
+### DB Migration
+
+```bash
+supabase db push
+```
+
+New tables: `schemes`, `scheme_versions` (change history snapshots), `agri_news`, `msp_prices`, `insurance_products`,
+`loan_products`, `data_sources` (seed registry of allowlisted official feeds), `data_sync_logs`.
+
+### Scheduled Sync — Option A: Vercel Cron (already wired)
+
+`vercel.json` defines `api/cron/agri-sync` at schedule `"10 3,15 * * *"` (twice daily). Set the **`CRON_SECRET`** env var
+in Vercel (identical to the Supabase value) so the endpoint can authenticate to `agri-sync-worker`.
+
+### Scheduled Sync — Option B: pg_cron (Supabase)
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+SELECT cron.schedule(
+  'agri-sync-worker',
+  '10 3,15 * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://yrebxnpilkfeaofykvhq.supabase.co/functions/v1/agri-sync-worker',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer YOUR_SERVICE_ROLE_KEY',
+      'x-cron-secret', 'YOUR_CRON_SECRET',
+      'Content-Type', 'application/json'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+```
+
+### Manual sync (from the app)
+
+Admin Dashboard → **Operations → Agriculture Data Center** → *Sync Schemes / Sync News / Sync MSP / Sync All*.
+
+### Verification
+
+```bash
+# Headless content fetch (human check)
+curl -X POST "https://<ref>.supabase.co/functions/v1/agri-data" \
+  -H "Authorization: Bearer <anon_key>" -H "Content-Type: application/json" \
+  -d '{"action":"content","type":"schemes","limit":5}'
+
+# Freshness table
+curl -X POST "https://<ref>.supabase.co/functions/v1/agri-data" \
+  -H "Authorization: Bearer <anon_key>" -H "Content-Type: application/json" \
+  -d '{"action":"freshness"}'
+
+# Manual worker run with service role
+curl -X POST "https://<ref>.supabase.co/functions/v1/agri-sync-worker" \
+  -H "Authorization: Bearer <service_role_key>" -H "Content-Type: application/json" \
+  -d '{"jobs":["scheme","news","msp"]}'
+```
+
+**Honesty rules in effect:** every UI card shows verification proof (`Verified <date>` + source); when the DB is empty the
+UI shows *"Verified information currently unavailable"* instead of fabricated data; the Fasal Bima calculator only uses
+official premium-cap math and never invents actuarial premiums.
 
 ---
 
@@ -261,6 +363,8 @@ RAZORPAY_KEY_ID=rzp_test_xxx
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 SUPABASE_URL=https://yrebxnpilkfeaofykvhq.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+CRON_SECRET=your_long_random_secret
+DATA_GOV_API_KEY=your_govt_data_api_key
 VAPID_PRIVATE_KEY=your_vapid_private_key
 VAPID_PUBLIC_KEY=your_vapid_public_key
 ```
