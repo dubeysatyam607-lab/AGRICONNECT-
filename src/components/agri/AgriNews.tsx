@@ -1,57 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck, ShieldCheck } from "lucide-react";
+import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck } from "lucide-react";
 import { fetchLiveAgriNews, LiveAgriNewsArticle } from "@/lib/news-api";
-import { getAgriContent, AgriNews as DbAgriNews } from "@/lib/agri-info";
 import { trackAgriEvent } from "@/lib/google-analytics";
 
 import { SafeImage } from "@/components/ui/SafeImage";
 
 const CATEGORIES = ["All", "Policy & MSP", "Weather & Monsoon", "Schemes & Subsidy", "Market & Mandi", "Agritech & Innovation"];
-
-const UI_CATEGORY_MAP: Record<string, LiveAgriNewsArticle['category']> = {
-  "PM-KISAN": "Schemes & Subsidy",
-  "PMFBY": "Schemes & Subsidy",
-  "MSP & Prices": "Policy & MSP",
-  "Weather & Monsoon": "Weather & Monsoon",
-  "Fertilizers": "Policy & MSP",
-  "Irrigation": "Schemes & Subsidy",
-  "Credit & Loans": "Schemes & Subsidy",
-  "Government Schemes": "Schemes & Subsidy",
-  "General": "Schemes & Subsidy",
-};
-
-function formatEditorialTime(date: Date): string {
-  const diff = Date.now() - date.getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${Math.max(1, mins)}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
-
-// Adapt DB rows (agri_news, synced from official/allowlisted sources) to the
-// existing article card shape. Only real fields are carried — nothing invented.
-function mapDbNewsRow(n: DbAgriNews): LiveAgriNewsArticle {
-  const publishedAt = n.published_at || n.last_verified_at || new Date().toISOString();
-  const d = new Date(publishedAt);
-  const isValid = !isNaN(d.getTime());
-  return {
-    id: `agrinews-${n.id}`,
-    title: n.title,
-    description: n.summary || (n.content || "").slice(0, 220),
-    source: n.source_name || "Government Press",
-    author: "",
-    publishedAt: isValid ? publishedAt : new Date().toISOString(),
-    formattedTime: isValid ? formatEditorialTime(d) : "",
-    category: UI_CATEGORY_MAP[n.category || ""] || "Schemes & Subsidy",
-    url: n.canonical_url || n.source_url || "",
-    imageUrl: n.image_url || "",
-    isAgricultureVerified: true,
-  };
-}
 
 const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: LiveAgriNewsArticle) => void }) => {
   return (
@@ -109,7 +64,6 @@ const AgriNews: React.FC = () => {
   const [articles, setArticles] = useState<LiveAgriNewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [usingDb, setUsingDb] = useState(false);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -117,28 +71,9 @@ const AgriNews: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Primary source: DB agri_news (PIB & allowlisted official sources).
-      const { rows } = await getAgriContent<DbAgriNews[]>("news", {}, undefined, { noCache: true, limit: 60 });
-      if (rows.length > 0) {
-        setArticles(rows.map(mapDbNewsRow).filter(a => a.title));
-        setUsingDb(true);
-        return;
-      }
-      setUsingDb(false);
       const data = await fetchLiveAgriNews();
       setArticles(data);
     } catch (e: any) {
-      // Fallback: external agri-news feed (cached-first).
-      try {
-        setUsingDb(false);
-        const fallback = await fetchLiveAgriNews();
-        if (fallback.length) {
-          setArticles(fallback);
-          return;
-        }
-      } catch {
-        // fall through to error state
-      }
       setError(e?.message || 'Could not load the latest news.');
       setArticles([]);
     } finally {
@@ -147,7 +82,25 @@ const AgriNews: React.FC = () => {
   };
 
   useEffect(() => {
-    loadNews();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchLiveAgriNews();
+        if (!cancelled) {
+          setArticles(data);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.message || 'Could not load the latest news.');
+          setArticles([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredArticles = useMemo(() => {
@@ -162,7 +115,6 @@ const AgriNews: React.FC = () => {
   }, [articles, activeCategory, query]);
 
   const handleNewsClick = (news: LiveAgriNewsArticle) => {
-    if (!news.url) return;
     trackAgriEvent('read_agri_news', { news_title: news.title, source: news.source });
     window.open(news.url, '_blank', 'noopener,noreferrer');
   };
@@ -176,15 +128,7 @@ const AgriNews: React.FC = () => {
             <Newspaper className="text-primary" size={26} /> Kisan Khabar
           </h2>
           <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1">
-            {usingDb ? (
-              <>
-                <ShieldCheck size={13} className="text-emerald-600" /> Live from official press releases & verified sources
-              </>
-            ) : (
-              <>
-                <BadgeCheck size={13} className="text-emerald-600" /> Live Agriculture & MSP News Portal
-              </>
-            )}
+            <BadgeCheck size={13} className="text-emerald-600" /> Live Agriculture & MSP News Portal
           </p>
         </div>
         <button
