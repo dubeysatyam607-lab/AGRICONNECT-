@@ -38,17 +38,38 @@ export async function invokeEdgeWithTimeout<T = Record<string, unknown>>(
       signal: controller.signal,
     } as never);
     if (error) {
-      // `error` carries the edge function's JSON payload on non-2xx responses.
-      const payload = (error as { message?: string; context?: unknown }).context as
-        | { error?: string; code?: string }
-        | undefined;
-      const rawMsg = payload?.error || (error as { message?: string }).message || "Request failed";
-      const code = payload?.code ?? null;
+      let payloadError: string | undefined;
+      let payloadCode: string | undefined;
 
-      // Detect common Supabase proxy errors and translate to actionable messages.
+      const contextObj = (error as { context?: unknown }).context;
+      if (contextObj && typeof contextObj === "object") {
+        if ("json" in contextObj && typeof (contextObj as any).json === "function") {
+          try {
+            const res = (contextObj as Response).clone ? (contextObj as Response).clone() : (contextObj as Response);
+            const json = await res.json().catch(() => null);
+            if (json && typeof json === "object") {
+              payloadError = json.error || json.message;
+              payloadCode = json.code;
+            }
+          } catch {
+            // fallback if json reading fails
+          }
+        } else {
+          payloadError = (contextObj as { error?: string; message?: string }).error || (contextObj as { message?: string }).message;
+          payloadCode = (contextObj as { code?: string }).code;
+        }
+      }
+
+      const rawMsg = payloadError || (error as { message?: string }).message || "Request failed";
+      const code = payloadCode ?? null;
+
+      // Detect common Supabase proxy & AI key errors and translate to actionable messages.
       const lower = rawMsg.toLowerCase();
       if (lower.includes("function") && (lower.includes("not found") || lower.includes("not deployed"))) {
         return { data: null, error: "This feature is not yet deployed. Please deploy the edge functions first.", code: "deploy", timedOut: false };
+      }
+      if (lower.includes("api_key_invalid") || lower.includes("api key not valid") || lower.includes("invalid_argument")) {
+        return { data: null, error: "The configured Gemini AI key is invalid or expired. Please update GEMINI_API_KEY in .env with a valid Google AI Studio key.", code: "config", timedOut: false };
       }
       if (lower.includes("temporary issue") || lower.includes("hit a temporary")) {
         return { data: null, error: "AI service is not responding. Make sure edge functions are deployed and AI keys are configured.", code: "config", timedOut: false };
@@ -56,8 +77,8 @@ export async function invokeEdgeWithTimeout<T = Record<string, unknown>>(
       if (lower.includes("status 401") || lower.includes("unauthorized")) {
         return { data: null, error: "Session expired. Please sign in again.", code: "session", timedOut: false };
       }
-      if (lower.includes("status 503") || lower.includes("no ai provider")) {
-        return { data: null, error: "AI is not configured. The administrator needs to set an AI provider key.", code: "config", timedOut: false };
+      if (lower.includes("status 503") || lower.includes("status 500") || lower.includes("no ai provider") || lower.includes("not configured")) {
+        return { data: null, error: rawMsg !== (error as { message?: string }).message ? rawMsg : "AI provider key is not configured or invalid. Please check GEMINI_API_KEY in .env or Supabase secrets.", code: code || "config", timedOut: false };
       }
 
       return { data: null, error: rawMsg, code, timedOut: false };

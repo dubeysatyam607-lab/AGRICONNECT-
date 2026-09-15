@@ -292,34 +292,30 @@ async function invokeTool(fnName: string, body: unknown): Promise<unknown> {
 }
 
 /** Heuristic intent detection — maps a question to the tools it needs. */
-function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme"> {
+const WEATHER_WORDS = ["weather", "rain", "mausam", "मौसम", "बारिश", "बरसात", "temperature", "तापमान", "forecast"];
+const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya", "daam", "dam", "दाम", "khaareed", "खरीद", "बेच", "quintal", "क्विंटल", "qtl", "market", "bazaar", "arhat", "arhatiya", "आढ़त", "आढ़तिया", "moong", "moongfali", "chana", "masoor", "groundnut", "cotton", "kapas", "कपास", "sugarcane", "ganna", "गन्ना", "rice", "chawal", "चावल", "maize", "makka", "मक्का", "bajra", "बाजरा", "jowar", "ज्वार", "arhar", "अरहर", "urad", "उड़द", "mustard", "sarson", "सरसों", "potato", "aalu", "आलू", "pyaz", "प्याज", "mirch", "मिर्च", "adrak", "अदरक", "lehsun", "लहसुन", "palak", "पालक", "bhindi", "भिंडी", "baigan", "बैंगन", "gobi", "गोभी", "torai", "तोरई", "lauki", "लौकी", "kaddu", "कद्दू", "watermelon", "tarbooj", "तरबूज", "angoor", "अंगूर", "seb", "सेब", "kela", "केला", "nimbu", "नींबू", "nariyal", "नारियल", "papita", "पपीता"];
+const schemeWords = ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "kcc", "pmfby", "loan", "कर्ज", "ऋण", "बीमा", "insurance", "msp", "समर्थन मूल्य"];
+const INFO_WORDS = [
+  "scheme", "yojana", "subsidy", "सब्सिडी", "योजना", "pm kisan", "pmkisan",
+  "pmfby", "fasal bima", "फसल बीमा", "bima", "बीमा", "insurance",
+  "loan", "kcc", "कर्ज", "ऋण", "किसान क्रेडिट", "क्रेडिट",
+  "msp", "समर्थन मूल्य", "support price", "rate kya", "भाव",
+  "news", "khabar", "खबर", "समाचार", "release", "installment",
+];
+function wordHit(text: string, words: string[]): boolean {
   const t = text.toLowerCase();
-  const needs: Array<"weather" | "mandi" | "scheme"> = [];
-  const mandiWords = ["mandi", "bhav", "rate", "price", "मंडी", "भाव", "कीमत", "दर", "बाज़ार", "बाजार", "sell", "bech", "tamatr", "tamatar", "gehu", "soya", "daam", "dam", "दाम", "khaareed", "खरीद", "बेच", "quintal", "क्विंटल", "qtl", "market", "bazaar", "arhat", "arhatiya", "आढ़त", "आढ़तिया", "moong", "moongfali", "chana", "masoor", "groundnut", "cotton", "kapas", "कपास", "sugarcane", "ganna", "गन्ना", "rice", "chawal", "चावल", "maize", "makka", "मक्का", "bajra", "बाजरा", "jowar", "ज्वार", "arhar", "अरहर", "urad", "उड़द", "mustard", "sarson", "सरसों", "potato", "aalu", "आलू", "pyaz", "प्याज", "mirch", "मिर्च", "adrak", "अदरक", "lehsun", "लहसुन", "palak", "पालक", "bhindi", "भिंडी", "baigan", "बैंगन", "gobi", "गोभी", "torai", "तोरई", "lauki", "लौकी", "kaddu", "कद्दू", "watermelon", "tarbooj", "तरबूज", "angoor", "अंगूर", "seb", "सेब", "kela", "केला", "nimbu", "नींबू", "nariyal", "नारियल", "papita", "पपीता"];
-  const weatherWords = ["weather", "rain", "mausam", "मौसम", "बारिश", "बरसात", "temperature", "तापमान", "forecast"];
-  const schemeWords = ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "kcc", "pmfby", "loan"];
-
-  for (const w of weatherWords) {
+  for (const w of words) {
     const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
-      needs.push("weather");
-      break;
-    }
+    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) return true;
   }
-  for (const w of mandiWords) {
-    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
-      needs.push("mandi");
-      break;
-    }
-  }
-  for (const w of schemeWords) {
-    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (new RegExp(`(^|\\s|[.,!?;])${escaped}($|\\s|[.,!?;])`, 'i').test(t)) {
-      needs.push("scheme");
-      break;
-    }
-  }
+  return false;
+}
+function detectToolNeeds(text: string): Array<"weather" | "mandi" | "scheme" | "info"> {
+  const needs: Array<"weather" | "mandi" | "scheme" | "info"> = [];
+  if (wordHit(text, WEATHER_WORDS)) needs.push("weather");
+  if (wordHit(text, mandiWords)) needs.push("mandi");
+  if (wordHit(text, schemeWords)) needs.push("scheme");
+  if (wordHit(text, INFO_WORDS) || wordHit(text, schemeWords)) needs.push("info");
   return needs;
 }
 
@@ -329,6 +325,7 @@ async function runTools(
 ): Promise<{ toolsContext: string; toolsUsed: string[]; detectedCrop: string | null }> {
   const needs = detectToolNeeds(userMessage);
   const cropInfo = extractMentionedCrop(userMessage);
+  const latestUserText = userMessage;
 
   const toolsUsed: string[] = [];
   const blocks: string[] = [];
@@ -377,14 +374,64 @@ async function runTools(
     }
   }
 
-  if (needs.includes("scheme")) {
-    toolsUsed.push("get_government_schemes");
-    const data = await invokeTool("scheme-finder", { action: "schemes", category: "All" });
-    if (data && Array.isArray((data as { schemes?: unknown[] }).schemes)) {
-      const schemes = (data as { schemes: unknown[] }).schemes.slice(0, 5);
-      blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: ${JSON.stringify(schemes)}\n(Current government schemes — only mention what is listed here, do not invent scheme names or amounts.)`);
-    } else {
-      blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: UNAVAILABLE\n(Govt scheme data is currently unavailable — say so, do NOT invent scheme names.)`);
+  if (needs.includes("scheme") || needs.includes("info")) {
+    // Verified scheme, insurance, loan and MSP data served from the agri-data
+    // engine (DB-backed, source-provenanced). NEVER fabricate scheme details.
+    const infoTypes = ["schemes", "insurance", "loans"];
+    if (wordHit(latestUserText, ["msp", "समर्थन मूल्य", "support price"])) infoTypes.push("msp");
+    if (wordHit(latestUserText, ["news", "khabar", "खबर", "समाचार", "release", "installment"])) infoTypes.push("news");
+
+    for (const type of infoTypes) {
+      const data = await invokeTool("agri-data", { action: "content", type, limit: 5 });
+      const rows = data && Array.isArray((data as { rows?: unknown[] }).rows) ? (data as { rows: unknown[] }).rows : [];
+      if (type === "schemes") {
+        const schemes = rows.slice(0, 5).map((s: any) => ({
+          name: s.name,
+          category: s.category,
+          benefits: s.benefits,
+          benefit_amount: s.benefit_amount,
+          application_url: s.application_url,
+          source: s.source_name,
+          verified: s.last_verified_at,
+        }));
+        if (schemes.length) {
+          toolsUsed.push("get_government_schemes");
+          blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: ${JSON.stringify(schemes)}\n(Verified scheme records — quote only these, do not invent scheme names, amounts or sources.)`);
+        } else {
+          blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: UNAVAILABLE\n(Govt scheme data is currently unavailable — say so, do NOT invent scheme names.)`);
+        }
+      } else if (type === "insurance") {
+        const products = rows.slice(0, 3).map((p: any) => ({
+          scheme: p.scheme_name,
+          season: p.season,
+          farmer_premium_rate: p.farmer_premium_rate,
+          official_url: p.official_url,
+          source_verified: p.last_verified_at,
+        }));
+        toolsUsed.push("get_insurance");
+        blocks.push(`CROP_INSURANCE_TOOL_RESULT: ${JSON.stringify(products)}\n(Official farmer premium rate caps — do not invent any premium or claim figures.)`);
+      } else if (type === "loans") {
+        const loans = rows.slice(0, 3).map((l: any) => ({
+          scheme: l.scheme_name,
+          loan_type: l.loan_type,
+          interest_rate: l.interest_rate,
+          subvention: l.subvention,
+          prompt_payment_incentive: l.prompt_payment_incentive,
+          effective_rate: l.effective_rate,
+          source_url: l.source_url,
+          verified: l.last_verified_at,
+        }));
+        toolsUsed.push("get_loan_rates");
+        blocks.push(`LOAN_RATES_TOOL_RESULT: ${JSON.stringify(loans)}\n(Govt subvention policy rates — tell the farmer the final rate varies by bank and must be verified with their lender. Do not invent rates.)`);
+      } else if (type === "msp") {
+        const msps = rows.slice(0, 10).map((m: any) => ({ crop: m.crop, season: m.season, year: m.marketing_year, msp: m.msp, unit: m.unit, verified: m.last_verified_at }));
+        toolsUsed.push("get_msp_rates");
+        blocks.push(`MSP_TOOL_RESULT: ${JSON.stringify(msps)}\n(Official MSP rates — quote only these verified values, do not invent any MSP.)`);
+      } else if (type === "news") {
+        const news = rows.slice(0, 5).map((n: any) => ({ title: n.title, summary: n.summary, source: n.source_name, official: n.official_source, published_at: n.published_at, url: n.source_url }));
+        toolsUsed.push("get_agri_news");
+        blocks.push(`AGRI_NEWS_TOOL_RESULT: ${JSON.stringify(news)}\n(Latest verified agriculture news — summarize only these items, with their source names. Do not fabricate news.)`);
+      }
     }
   }
 
