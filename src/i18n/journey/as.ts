@@ -1295,6 +1295,8 @@ export const as: JourneyDict = {
   "home.kisanSaathiAsk": "কিষাণ সাথীক সোধক",
   "home.askHint": "আপোনাৰ ভাষাত কৃষি বিশেষজ্ঞৰ সৈতে কথা কওক",
   "home.planToday": "আজিৰ খেতিৰ কামৰ পৰিকল্পনা কৰক",
+  "home.todayNeeds": "আজি আপোনাৰ পথাৰৰ বাবে প্ৰয়োজনীয়",
+  "home.todayNeedsOpen": "খোলক",
   "home.openFarmOs": "ফাৰ্ম OS খোলক",
   "home.openWeather": "সম্পূৰ্ণ বতৰ",
   "home.wxLive": "আপোনাৰ ওচৰৰ লাইভ বতৰ",

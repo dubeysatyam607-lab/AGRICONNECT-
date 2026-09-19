@@ -1297,6 +1297,8 @@ export const gu: JourneyDict = {
   "home.kisanSaathiAsk": "કિસાન સાથીને પૂછો",
   "home.askHint": "તમારી ભાષામાં ખેડૂત નિષ્ણાત સાથે વાત કરો",
   "home.planToday": "આજના ખેતરના કામનું આયોજન કરો",
+  "home.todayNeeds": "આજ તમારા ખેતર માટે જરૂરી",
+  "home.todayNeedsOpen": "ખોલો",
   "home.openFarmOs": "ફાર્મ OS ખોલો",
   "home.openWeather": "સંપૂર્ણ હવામાન",
   "home.wxLive": "તમારી નજીકનું લાઇવ હવામાન",

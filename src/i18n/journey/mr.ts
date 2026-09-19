@@ -1297,6 +1297,8 @@ export const mr: JourneyDict = {
   "home.kisanSaathiAsk": "किसान साथीला विचारा",
   "home.askHint": "तुमच्या भाषेत किसान तज्ज्ञाशी बोला",
   "home.planToday": "आजच्या शेतकामाचा बेत करा",
+  "home.todayNeeds": "आज तुमच्या शेतासाठी आवश्यक",
+  "home.todayNeedsOpen": "उघडा",
   "home.openFarmOs": "फार्म OS उघडा",
   "home.openWeather": "संपूर्ण हवामान",
   "home.wxLive": "तुमच्या जवळचे लाइव्ह हवामान",

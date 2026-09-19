@@ -1297,6 +1297,8 @@ export const en: JourneyDict = {
   "home.kisanSaathiAsk": "Ask Kisan Saathi",
   "home.askHint": "Talk to a kisan expert in your language",
   "home.planToday": "Plan today's field work",
+  "home.todayNeeds": "Today’s farm needs",
+  "home.todayNeedsOpen": "Open",
   "home.openFarmOs": "Open Farm OS",
   "home.openWeather": "Full weather",
   "home.wxLive": "Live weather near you",

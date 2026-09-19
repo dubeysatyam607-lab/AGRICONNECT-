@@ -1297,6 +1297,8 @@ export const te: JourneyDict = {
   "home.kisanSaathiAsk": "కిసాన్ సాథీని అడగండి",
   "home.askHint": "మీ భాషలో రైతు నిపుణుడితో మాట్లాడండి",
   "home.planToday": "నేటి వ్యవసాయ పనిని ప్రణాళిక చేయండి",
+  "home.todayNeeds": "నేడు మీ పొలానికి అవసరం",
+  "home.todayNeedsOpen": "తెరవండి",
   "home.openFarmOs": "ఫాం OS తెరవండి",
   "home.openWeather": "పూర్తి వాతావరణం",
   "home.wxLive": "మీ సమీపంలోని లైవ్ వాతావరణం",

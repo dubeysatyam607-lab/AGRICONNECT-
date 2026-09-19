@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
   IndianRupee, Landmark, MapPin,
-  ArrowRight, Coins, FlaskConical, Warehouse, Sprout,
+  ArrowRight, Coins, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
 } from "lucide-react";
 import AiInsightCard from "./AiInsightCard";
 import FarmStatusCard from "./FarmStatusCard";
@@ -12,6 +12,7 @@ import QuickActionsGrid from "./QuickActionsGrid";
 import TodayTasks from "./TodayTasks";
 import { FirstDayBoard } from "./FirstDayBoard";
 import { FarmHero } from "./FarmHero";
+import { TodayNeeds, type FarmNeed } from "./TodayNeeds";
 import { WeatherHero } from "./WeatherHero";
 import { NotificationBell } from "@/features/notifications/presentation/components/NotificationBell";
 import { AdvisorBriefCard } from "@/features/ai-advisor/presentation/components/AdvisorBriefCard";
@@ -37,6 +38,56 @@ import { Logo } from "@/components/ui/Logo";
 interface FarmerHomeProps {
   onNavigate: (tab: string) => void;
   onBookTractor: (tractor: (typeof INITIAL_TRACTORS)[number]) => void;
+}
+
+/**
+ * SectionErrorBoundary — one failing widget must never blank the whole Home
+ * tab. When a single section throws (e.g. transient weather/mandi/3D error),
+ * this degrades just that section to a compact retry card instead of letting
+ * the error bubble to the top-level chunk boundary ("This section couldn't
+ * load … Retry").
+ */
+interface SectionErrorBoundaryProps {
+  label: string;
+  children: ReactNode;
+}
+interface SectionErrorBoundaryState {
+  hasError: boolean;
+}
+class SectionErrorBoundary extends Component<
+  SectionErrorBoundaryProps,
+  SectionErrorBoundaryState
+> {
+  constructor(props: SectionErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(): SectionErrorBoundaryState {
+    return { hasError: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.warn(`[SectionErrorBoundary] "${this.props.label}" recovered:`, error);
+  }
+  private reset = () => this.setState({ hasError: false });
+  render() {
+    if (!this.state.hasError) return this.props.children;
+    return (
+      <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-marigold/25 bg-marigold/8 px-4 py-5 text-center">
+        <Sprout className="h-6 w-6 text-amber-700" aria-hidden="true" strokeWidth={1.6} />
+        <p className="text-[13px] font-semibold text-foreground">
+          {this.props.label} section wasn&apos;t available
+        </p>
+        <button
+          type="button"
+          onClick={this.reset}
+          className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-marigold/40 bg-white/60 px-4 py-1.5 text-[12.5px] font-bold text-amber-800"
+        >
+          <ChevronRight size={13} className="rotate-180" aria-hidden="true" />
+          Retry section
+        </button>
+      </div>
+    );
+  }
 }
 
 const QUICK_ACTIONS = [
@@ -248,42 +299,104 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
 
         {/* Welcome hero — field green band with greeting, farm chip and CTA */}
         <div className="reveal">
-          <FarmHero
-            dateStr={dateStr}
-            greeting={greeting}
-            firstName={firstName}
-            cropLabel={advice.cropLabel}
-            farmTag={farmTag}
-            adviceLine={advice.heroLine}
-            onAsk={() => go("ai-chat")}
-            onOpenFarm={() => go("farm-os")}
-          />
+          <SectionErrorBoundary label="Hero">
+            <FarmHero
+              dateStr={dateStr}
+              greeting={greeting}
+              firstName={firstName}
+              cropLabel={advice.cropLabel}
+              farmTag={farmTag}
+              adviceLine={advice.heroLine}
+              onAsk={() => go("ai-chat")}
+              onOpenFarm={() => go("farm-os")}
+              weatherChip={
+                wl?.live && weather.formatTemp
+                  ? { temp: weather.formatTemp(wl.live.temp), condition: wl.live.condition }
+                  : undefined
+              }
+              mandiChip={
+                Array.isArray(mandiPrices) && mandiPrices[0]
+                  ? { crop: mandiPrices[0].crop, price: String(mandiPrices[0].price) }
+                  : undefined
+              }
+            />
+          </SectionErrorBoundary>
         </div>
 
         {/* Live weather hero band */}
         <div className="reveal stagger-1">
-          <WeatherHero
-            wl={wl}
-            loading={weather.loading}
-            formatTemp={weather.formatTemp}
-            refreshing={weather.refreshing}
-            onRefresh={weather.refreshLocation}
-            onOpenDetails={() => setWeatherOpen(true)}
-            onOpenLocation={() => setLocationSheetOpen(true)}
-            loadingCityText={locState?.city && locState.city !== 'Current Location' ? locState.city : undefined}
-            interpretation={advice.heroLine}
-          />
+          <SectionErrorBoundary label="Weather">
+            <WeatherHero
+              wl={wl}
+              loading={weather.loading}
+              formatTemp={weather.formatTemp}
+              refreshing={weather.refreshing}
+              onRefresh={weather.refreshLocation}
+              onOpenDetails={() => setWeatherOpen(true)}
+              onOpenLocation={() => setLocationSheetOpen(true)}
+              loadingCityText={locState?.city && locState.city !== 'Current Location' ? locState.city : undefined}
+              interpretation={advice.heroLine}
+            />
+          </SectionErrorBoundary>
         </div>
+
+        {/* What matters today — the story strip bridging hero → product */}
+        <TodayNeeds
+          needs={[
+            {
+              id: "weather",
+              labelKey: "svc.weather",
+              icon: CloudSun,
+              href: () => setWeatherOpen(true),
+              accent: "bg-sky-100 text-sky-800",
+              value: wl?.live ? `${weather.formatTemp(wl.live.temp)} · ${wl.live.condition}` : undefined,
+              sub: wl?.live ? undefined : undefined,
+            },
+            {
+              id: "mandi",
+              labelKey: "nav.mandi",
+              icon: TrendingUp,
+              href: () => go("mandi"),
+              accent: "bg-marigold/20 text-amber-800",
+              value: Array.isArray(mandiPrices) && mandiPrices[0]
+                ? `₹${mandiPrices[0].price}`
+                : undefined,
+              sub: Array.isArray(mandiPrices) && mandiPrices[0]
+                ? mandiPrices[0].crop
+                : undefined,
+            },
+            {
+              id: "crop",
+              labelKey: "home.farmTitle",
+              icon: Sprout,
+              href: () => go("farm-os"),
+              accent: "bg-emerald-100 text-emerald-800",
+              value: advice?.cropLabel ?? undefined,
+              sub: undefined,
+            },
+            {
+              id: "saathi",
+              labelKey: "home.kisanSaathi",
+              icon: MessageCircleHeart,
+              href: () => go("ai-chat"),
+              accent: "bg-rose-100 text-rose-800",
+              value: undefined,
+              sub: undefined,
+            },
+          ]}
+        />
 
         {/* Today's mandi — warm full-width band */}
         <div className="reveal stagger-2 mt-7">
-          <MandiPreview
-            items={mandiPrices}
-            loading={mandiLoading}
-            error={mandiError}
-            onOpen={() => go("mandi")}
-            onRetry={loadMandi}
-          />
+          <SectionErrorBoundary label="Mandi">
+            <MandiPreview
+              items={mandiPrices}
+              loading={mandiLoading}
+              error={mandiError}
+              onOpen={() => go("mandi")}
+              onRetry={loadMandi}
+            />
+          </SectionErrorBoundary>
         </div>
 
         <div className="mt-7 lg:grid lg:grid-cols-3 lg:items-start lg:gap-7">
@@ -316,16 +429,22 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           <div className="order-first flex flex-col gap-7 lg:order-2">
             {/* Quick actions — काम की चीज़ें */}
             <div className="reveal">
-              <QuickActionsGrid actions={[...QUICK_ACTIONS]} onGo={go} />
+              <SectionErrorBoundary label="Quick actions">
+                <QuickActionsGrid actions={[...QUICK_ACTIONS]} onGo={go} />
+              </SectionErrorBoundary>
             </div>
 
             <div className="reveal stagger-1">
-              <AdvisorBriefCard onNavigate={go} />
+              <SectionErrorBoundary label="Advisor">
+                <AdvisorBriefCard onNavigate={go} />
+              </SectionErrorBoundary>
             </div>
 
             {/* Kisan Saathi */}
             <div className="reveal stagger-2">
-              <KisanSaathiCard onOpen={() => go("ai-chat")} />
+              <SectionErrorBoundary label="Kisan Saathi">
+                <KisanSaathiCard onOpen={() => go("ai-chat")} />
+              </SectionErrorBoundary>
             </div>
           </div>
         </div>

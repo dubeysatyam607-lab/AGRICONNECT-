@@ -1297,6 +1297,8 @@ export const kn: JourneyDict = {
   "home.kisanSaathiAsk": "ಕಿಸಾನ್ ಸಾಥಿಯನ್ನು ಕೇಳಿ",
   "home.askHint": "ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಕೃಷಿ ತಜ್ಞರೊಂದಿಗೆ ಮಾತನಾಡಿ",
   "home.planToday": "ಇಂದಿನ ಕೃಷಿ ಕೆಲಸವನ್ನು ಯೋಜಿಸಿ",
+  "home.todayNeeds": "ಇಂದು ನಿಮ್ಮ ಜಮೀನಿಗೆ ಬೇಕಾದ",
+  "home.todayNeedsOpen": "ತೆರೆಯಿರಿ",
   "home.openFarmOs": "ಫಾರ್ಮ್ OS ತೆರೆಯಿರಿ",
   "home.openWeather": "ಪೂರ್ಣ ಹವಾಮಾನ",
   "home.wxLive": "ನಿಮ್ಮ ಹತ್ತಿರದ ಲೈವ್ ಹವಾಮಾನ",

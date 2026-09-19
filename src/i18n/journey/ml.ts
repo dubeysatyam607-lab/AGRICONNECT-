@@ -1297,6 +1297,8 @@ export const ml: JourneyDict = {
   "home.kisanSaathiAsk": "കിസാൻ സാഥിയോട് ചോദിക്കുക",
   "home.askHint": "നിങ്ങളുടെ ഭാഷയിൽ കർഷക വിദഗ്ദ്ധനോട് സംസാരിക്കുക",
   "home.planToday": "ഇന്നത്തെ കൃഷിപ്പണി ആസൂത്രണം ചെയ്യുക",
+  "home.todayNeeds": "ഇന്ന് നിങ്ങളുടെ കൃഷിയിടത്തിന് ആവശ്യം",
+  "home.todayNeedsOpen": "തുറക്കുക",
   "home.openFarmOs": "ഫാം OS തുറക്കുക",
   "home.openWeather": "പൂർണ്ണ കാലാവസ്ഥ",
   "home.wxLive": "നിങ്ങൾക്ക് സമീപമുള്ള തത്സമയ കാലാവസ്ഥ",
