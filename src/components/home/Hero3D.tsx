@@ -1,9 +1,8 @@
-import React, { Suspense, Component, useState, useEffect, type ReactNode } from "react";
+import React, { Suspense, Component, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import HeroFarmScene from "./HeroFarmScene";
 import HeroFallback from "./hero-fallback";
-
-type Hero3DState = "initial" | "loading" | "ready" | "error" | "unsupported";
+import { useHero3DController } from "./hero/useHero3DController";
 
 interface ErrorBoundaryProps {
   fallback: ReactNode;
@@ -40,54 +39,34 @@ class Hero3DErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-function isWebGLAvailable(): boolean {
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(
-      window.WebGLRenderingContext &&
-      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-    );
-  } catch {
-    return false;
-  }
-}
-
 export const Hero3D: React.FC = () => {
-  const [heroState, setHeroState] = useState<Hero3DState>("initial");
-  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
+  const {
+    state,
+    isReducedMotion,
+    handleSceneReady,
+    handleSceneError,
+    handleRetry,
+  } = useHero3DController();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setIsReducedMotion(mediaQuery.matches);
-      const handler = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
-      mediaQuery.addEventListener("change", handler);
-      return () => mediaQuery.removeEventListener("change", handler);
-    }
-  }, []);
+  const is3DActive = state.status === "READY" || state.status === "DEGRADED";
+  const showFallbackOnly = state.status === "UNSUPPORTED" || state.status === "FAILED";
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !isWebGLAvailable()) {
-      setHeroState("unsupported");
-    } else {
-      setHeroState("loading");
-    }
-  }, []);
-
-  if (heroState === "unsupported" || heroState === "error") {
-    return <HeroFallback />;
+  if (showFallbackOnly) {
+    return (
+      <HeroFallback />
+    );
   }
 
   return (
     <Hero3DErrorBoundary
       fallback={<HeroFallback />}
-      onError={() => setHeroState("error")}
+      onError={() => handleSceneError("SHADER_FAILED")}
     >
       <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10" aria-hidden="true">
         {/* First-Paint Fallback — always present initially, smoothly fades out over 600ms when 3D is ready */}
         <div
           className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-            heroState === "ready" ? "opacity-0 pointer-events-none" : "opacity-100"
+            is3DActive ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
         >
           <HeroFallback />
@@ -96,7 +75,7 @@ export const Hero3D: React.FC = () => {
         {/* 3D Canvas — smoothly fades in over 600ms when ready */}
         <div
           className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-            heroState === "ready" ? "opacity-100" : "opacity-0"
+            is3DActive ? "opacity-100" : "opacity-0"
           }`}
         >
           <Suspense fallback={null}>
@@ -106,7 +85,7 @@ export const Hero3D: React.FC = () => {
               style={{ pointerEvents: "none" }}
               gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false }}
               onCreated={() => {
-                setHeroState("ready");
+                handleSceneReady();
               }}
             >
               <HeroFarmScene isReducedMotion={isReducedMotion} />
