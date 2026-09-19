@@ -1,12 +1,14 @@
-import React, { Suspense, Component, type ReactNode } from "react";
+import React, { Suspense, Component, useState, useEffect, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import HeroFarmScene from "./HeroFarmScene";
 import HeroFallback from "./hero-fallback";
-import FarmSceneLoader from "./FarmSceneLoader";
+
+type Hero3DState = "initial" | "loading" | "ready" | "error" | "unsupported";
 
 interface ErrorBoundaryProps {
   fallback: ReactNode;
   children: ReactNode;
+  onError?: () => void;
 }
 
 interface ErrorBoundaryState {
@@ -24,7 +26,10 @@ class Hero3DErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: unknown) {
-    console.warn("[Hero3D] WebGL / 3D Canvas error caught:", error);
+    console.warn("[Hero3D] WebGL / 3D Canvas rendering issue caught silently:", error);
+    if (this.props.onError) {
+      this.props.onError();
+    }
   }
 
   render() {
@@ -48,24 +53,68 @@ function isWebGLAvailable(): boolean {
 }
 
 export const Hero3D: React.FC = () => {
-  if (typeof window === "undefined" || !isWebGLAvailable()) {
+  const [heroState, setHeroState] = useState<Hero3DState>("initial");
+  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      setIsReducedMotion(mediaQuery.matches);
+      const handler = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
+      mediaQuery.addEventListener("change", handler);
+      return () => mediaQuery.removeEventListener("change", handler);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isWebGLAvailable()) {
+      setHeroState("unsupported");
+    } else {
+      setHeroState("loading");
+    }
+  }, []);
+
+  if (heroState === "unsupported" || heroState === "error") {
     return <HeroFallback />;
   }
 
   return (
-    <Hero3DErrorBoundary fallback={<HeroFallback />}>
+    <Hero3DErrorBoundary
+      fallback={<HeroFallback />}
+      onError={() => setHeroState("error")}
+    >
       <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10" aria-hidden="true">
-        <Suspense fallback={<FarmSceneLoader />}>
-          <Canvas
-            camera={{ position: [0, 0.5, 3], fov: 45 }}
-            className="pointer-events-none h-full w-full"
-            style={{ pointerEvents: "none" }}
-            gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false }}
-          >
-            <HeroFarmScene />
-          </Canvas>
-        </Suspense>
-        {/* Subtle agricultural data scan line over the 3D scene */}
+        {/* First-Paint Fallback — always present initially, smoothly fades out over 600ms when 3D is ready */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            heroState === "ready" ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+        >
+          <HeroFallback />
+        </div>
+
+        {/* 3D Canvas — smoothly fades in over 600ms when ready */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            heroState === "ready" ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <Suspense fallback={null}>
+            <Canvas
+              camera={{ position: [0, 0.5, 3], fov: 45 }}
+              className="pointer-events-none h-full w-full"
+              style={{ pointerEvents: "none" }}
+              gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false }}
+              onCreated={() => {
+                setHeroState("ready");
+              }}
+            >
+              <HeroFarmScene isReducedMotion={isReducedMotion} />
+            </Canvas>
+          </Suspense>
+        </div>
+
+        {/* Agricultural data scan line */}
         <div className="animate-field-scan pointer-events-none absolute inset-x-2 h-px bg-white/50" />
       </div>
     </Hero3DErrorBoundary>

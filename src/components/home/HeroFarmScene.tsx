@@ -4,13 +4,14 @@ import * as THREE from "three";
 
 interface FieldRowsProps {
   count?: number;
+  isReducedMotion?: boolean;
 }
 
-const FieldRows: React.FC<FieldRowsProps> = ({ count = 9 }) => {
+const FieldRows: React.FC<FieldRowsProps> = ({ count = 9, isReducedMotion = false }) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
-    if (!groupRef.current) return;
+    if (!groupRef.current || isReducedMotion) return;
     const t = state.clock.getElapsedTime();
     groupRef.current.children.forEach((child, i) => {
       const mesh = child as THREE.Mesh;
@@ -49,11 +50,15 @@ const FarmTerrain: React.FC = () => {
   );
 };
 
-export const HeroFarmScene: React.FC = () => {
+interface HeroFarmSceneProps {
+  isReducedMotion?: boolean;
+}
+
+export const HeroFarmScene: React.FC<HeroFarmSceneProps> = ({ isReducedMotion = false }) => {
   const lightRef = useRef<THREE.DirectionalLight>(null);
 
   useFrame((state) => {
-    if (lightRef.current) {
+    if (lightRef.current && !isReducedMotion) {
       const t = state.clock.getElapsedTime();
       lightRef.current.position.x = 3 + Math.sin(t * 0.5) * 0.5;
     }
@@ -71,7 +76,7 @@ export const HeroFarmScene: React.FC = () => {
       />
       <pointLight position={[-2, 1, 2]} intensity={0.5} color="#22c55e" />
       <FarmTerrain />
-      <FieldRows count={9} />
+      <FieldRows count={9} isReducedMotion={isReducedMotion} />
     </>
   );
 };
