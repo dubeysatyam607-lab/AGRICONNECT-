@@ -20,6 +20,6 @@ export const StarRating: React.FC<StarRatingProps> = ({ rating, reviews, showCou
       ))}
     </span>
     <span className="text-xs font-bold text-foreground">{rating.toFixed(1)}</span>
-    {showCount && <span className="text-[10px] font-semibold text-muted-foreground">({reviews})</span>}
+    {showCount && <span className="text-xs font-semibold text-muted-foreground">({reviews})</span>}
   </span>
 );

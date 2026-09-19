@@ -30,7 +30,7 @@ const FF_COLUMNS: DataColumn<FoundingFarmerRecord>[] = [
     render: (r) => (
       <div>
         <p className="font-medium text-foreground">{r.user_name || 'Unknown'}</p>
-        <p className="text-[10px] text-muted-foreground">{r.user_id.slice(0, 8)}...</p>
+        <p className="text-xs text-muted-foreground">{r.user_id.slice(0, 8)}...</p>
       </div>
     ),
   },
@@ -41,7 +41,7 @@ const FF_COLUMNS: DataColumn<FoundingFarmerRecord>[] = [
     header: 'Plan',
     render: (r) => (
       <span className={cn(
-        'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold',
+        'inline-block px-2 py-0.5 rounded-full text-xs font-bold',
         r.plan === 'pro' ? 'bg-primary/10 text-primary' : 'bg-emerald-500/10 text-emerald-600'
       )}>
         {r.plan === 'pro' ? 'Pro' : 'Plus'}
@@ -184,7 +184,7 @@ export function FoundingFarmersModule({ onNavigate }: { onNavigate: (key: string
       />
 
       {/* Config Panel */}
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
         <div className="flex items-center gap-2 mb-4">
           <Sprout size={18} className="text-primary" />
           <h3 className="font-bold text-sm text-foreground">Program Configuration</h3>
@@ -193,8 +193,8 @@ export function FoundingFarmersModule({ onNavigate }: { onNavigate: (key: string
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-2.5">
             <div>
-              <p className="text-xs font-extrabold text-foreground">Program Active</p>
-              <p className="text-[10px] font-semibold text-muted-foreground">
+              <p className="text-xs font-semibold text-foreground">Program Active</p>
+              <p className="text-xs font-semibold text-muted-foreground">
                 {editConfig.is_active ? 'Open for new members' : 'Closed to new members'}
               </p>
             </div>
@@ -275,9 +275,9 @@ export function FoundingFarmersModule({ onNavigate }: { onNavigate: (key: string
           { label: 'Pro FF', value: proCount, color: 'text-primary' },
           { label: 'Revenue', value: fmtINR(totalRevenue), color: 'text-amber-600' },
         ].map((kpi, i) => (
-          <div key={i} className="bg-card rounded-2xl border border-border p-3 text-center">
-            <p className={cn('text-lg font-extrabold', kpi.color)}>{kpi.value}</p>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">{kpi.label}</p>
+          <div key={i} className="bg-card rounded-xl border border-border p-3 text-center">
+            <p className={cn('text-lg font-semibold', kpi.color)}>{kpi.value}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase">{kpi.label}</p>
           </div>
         ))}
       </div>

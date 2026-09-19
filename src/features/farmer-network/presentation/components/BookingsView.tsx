@@ -44,25 +44,25 @@ export const BookingsView: React.FC<BookingsViewProps> = ({ bookings, onStatus, 
 
       <div className="mt-3 space-y-3">
         {list.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-14 text-center">
             <CalendarDays size={30} className="mb-2 text-muted-foreground/40" />
             <p className="text-sm font-bold text-foreground">{t('fnet.empty.title')}</p>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('fnet.empty.bookings')}</p>
           </div>
         ) : (
           list.map((booking) => (
-            <article key={booking.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
+            <article key={booking.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-black text-foreground">{booking.service}</h3>
-                  <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">{booking.providerName}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{booking.service}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-muted-foreground">{booking.providerName}</p>
                 </div>
-                <span className={cn('rounded-full px-2.5 py-1 text-[10px] font-black', STATUS_STYLE[booking.status])}>
+                <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', STATUS_STYLE[booking.status])}>
                   {t(`fnet.status.${booking.status}`)}
                 </span>
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-muted-foreground">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-muted-foreground">
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5">
                   <CalendarDays size={10} className="text-forest" />
                   {booking.date}
@@ -77,21 +77,21 @@ export const BookingsView: React.FC<BookingsViewProps> = ({ bookings, onStatus, 
               {booking.invoice && (
                 <div className="mt-3 rounded-xl border border-border bg-background/60 p-3">
                   <div className="flex items-center justify-between">
-                    <p className="flex items-center gap-1.5 text-[11px] font-black text-foreground">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                       <FileText size={12} className="text-forest" />
                       {booking.invoice.id}
                     </p>
-                    <span className="text-[10px] font-semibold text-muted-foreground">{new Date(booking.invoice.issuedAt).toLocaleDateString('en-IN')}</span>
+                    <span className="text-xs font-semibold text-muted-foreground">{new Date(booking.invoice.issuedAt).toLocaleDateString('en-IN')}</span>
                   </div>
                   <ul className="mt-2 space-y-1">
                     {booking.invoice.items.map((item, i) => (
-                      <li key={i} className="flex justify-between text-[11px] font-semibold text-muted-foreground">
+                      <li key={i} className="flex justify-between text-xs font-semibold text-muted-foreground">
                         <span>{item.label}</span>
                         <span>{item.amount}</span>
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs font-black text-foreground">
+                  <div className="mt-2 flex justify-between border-t border-border pt-2 text-xs font-semibold text-foreground">
                     <span>{t('fnet.booking.total')}</span>
                     <span>{booking.invoice.total}</span>
                   </div>

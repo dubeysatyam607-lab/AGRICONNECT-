@@ -76,7 +76,7 @@ export const EquipmentSection: React.FC<EquipmentSectionProps> = ({ data }) => {
     return (
       <div className="pb-24">
         <div className="flex justify-end mb-3">
-          <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-extrabold text-primary-foreground shadow-glow hover:bg-primary/90 active:scale-95 transition-all">
+          <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground  hover:bg-primary/90 active:scale-95 transition-all">
             <Plus size={14} /> {t('prof.addEquipment')}
           </button>
         </div>
@@ -94,32 +94,32 @@ export const EquipmentSection: React.FC<EquipmentSectionProps> = ({ data }) => {
   return (
     <div className="space-y-4 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.equipment')}</h2>
-        <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-extrabold text-primary-foreground shadow-glow hover:bg-primary/90 active:scale-95 transition-all">
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.equipment')}</h2>
+        <button onClick={openAdd} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground  hover:bg-primary/90 active:scale-95 transition-all">
           <Plus size={14} /> {t('prof.addEquipment')}
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {data.equipment.map((item) => (
-          <div key={item.id} className="group rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-soft">
+          <div key={item.id} className="group rounded-xl border border-border bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-soft">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-feature-tractor/10 text-feature-tractor">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-feature-tractor/10 text-feature-tractor">
                   <Wrench size={20} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-extrabold text-foreground truncate">{item.name}</p>
-                  <p className="text-[11px] font-semibold text-muted-foreground">{item.category} · {item.since}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                  <p className="text-xs font-semibold text-muted-foreground">{item.category} · {item.since}</p>
                 </div>
               </div>
-              <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-extrabold ${STATUS_TONE[item.status]}`}>
+              <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${STATUS_TONE[item.status]}`}>
                 <CircleDot size={10} /> {t(`equip.status.${item.status}`) || item.status}
               </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between gap-2">
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${CONDITION_TONE[item.condition]}`}>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${CONDITION_TONE[item.condition]}`}>
                 {t(`equip.condition.${item.condition}`) || item.condition}
               </span>
               <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -132,7 +132,7 @@ export const EquipmentSection: React.FC<EquipmentSectionProps> = ({ data }) => {
               </div>
             </div>
 
-            {item.notes && <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{item.notes}</p>}
+            {item.notes && <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-2">{item.notes}</p>}
           </div>
         ))}
       </div>
@@ -215,10 +215,10 @@ export const EquipmentSection: React.FC<EquipmentSectionProps> = ({ data }) => {
           </div>
 
           <SheetFooter className="mt-6 flex gap-3 sm:justify-end">
-            <button onClick={() => setFormOpen(false)} className="rounded-full px-5 py-2.5 text-xs font-extrabold text-muted-foreground hover:bg-muted transition-colors">
+            <button onClick={() => setFormOpen(false)} className="rounded-full px-5 py-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors">
               {t('prof.cancel')}
             </button>
-            <button onClick={handleSave} className="rounded-full bg-primary px-6 py-2.5 text-xs font-extrabold text-primary-foreground shadow-glow hover:bg-primary/90 active:scale-95 transition-all">
+            <button onClick={handleSave} className="rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-primary-foreground  hover:bg-primary/90 active:scale-95 transition-all">
               {t('prof.save')}
             </button>
           </SheetFooter>

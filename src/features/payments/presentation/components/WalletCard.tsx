@@ -47,27 +47,27 @@ export function WalletCard({
   const unread = getUnreadNotificationCount();
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-5 text-white shadow-glow">
+    <div className="relative overflow-hidden rounded-xl bg-emerald-900 p-5 text-white ">
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
       <div className="pointer-events-none absolute -bottom-12 -left-6 h-28 w-28 rounded-full bg-white/5" />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ">
             <Wallet size={17} />
           </span>
-          <span className="text-sm font-extrabold">{t('pay.wallet')}</span>
+          <span className="text-sm font-semibold">{t('pay.wallet')}</span>
         </div>
         {unread > 0 && (
-          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-black text-emerald-800">
+          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-emerald-800">
             {unread}
           </span>
         )}
       </div>
 
       <div className="mt-5">
-        <p className="text-[11px] font-bold text-emerald-100/90">{t('pay.balance')}</p>
-        <p className="mt-0.5 text-3xl font-black tracking-tight">{fmtMoney(balance)}</p>
+        <p className="text-xs font-bold text-emerald-100/90">{t('pay.balance')}</p>
+        <p className="mt-0.5 text-3xl font-semibold tracking-tight">{fmtMoney(balance)}</p>
       </div>
 
       <div className="mt-5 flex items-center gap-2">
@@ -88,7 +88,7 @@ export function WalletCard({
                   key={a}
                   onClick={() => setAmount(a)}
                   className={cn(
-                    'rounded-xl border-2 px-3 py-1.5 text-xs font-extrabold transition-all',
+                    'rounded-xl border-2 px-3 py-1.5 text-xs font-semibold transition-all',
                     amount === a ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -132,8 +132,8 @@ export function WalletTxList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-sm font-extrabold text-foreground">{t('pay.recentWallet')}</h3>
-        <button onClick={onNavigate} className="text-[11px] font-bold text-primary">
+        <h3 className="text-sm font-semibold text-foreground">{t('pay.recentWallet')}</h3>
+        <button onClick={onNavigate} className="text-xs font-bold text-primary">
           {t('pay.viewAll')}
         </button>
       </div>

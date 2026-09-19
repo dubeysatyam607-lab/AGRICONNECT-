@@ -52,10 +52,10 @@ const NutrientGauge: React.FC<{ label: string; labelHi: string; value: number; u
   const sc = statusColors[status];
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
+    <div className="bg-card rounded-xl border border-border p-4 shadow-card">
       <div className="flex items-center justify-between mb-2">
-        <p className="font-bold text-foreground text-sm">{lang === "hi" ? labelHi : label}</p>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-bold`} style={{ backgroundColor: sc, color: "hsl(0 0% 100%)" }}>
+        <p className="font-semibold text-foreground text-sm">{lang === "hi" ? labelHi : label}</p>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold`} style={{ backgroundColor: sc, color: "hsl(0 0% 100%)" }}>
           {statusLabels[status]}
         </span>
       </div>
@@ -70,7 +70,7 @@ const NutrientGauge: React.FC<{ label: string; labelHi: string; value: number; u
         <div className="absolute top-0 h-full w-0.5 bg-primary/40" style={{ left: "70%" }} />
       </div>
       <div className="flex justify-between items-center">
-        <p className="text-2xl font-bold" style={{ color: sc }}>{value}</p>
+        <p className="text-2xl font-semibold" style={{ color: sc }}>{value}</p>
         <p className="text-xs text-muted-foreground">{unit}</p>
       </div>
     </div>
@@ -201,7 +201,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
   return (
     <div className="pb-24 pt-4 min-h-screen">
       {/* Header */}
-      <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
+      <div className="relative mx-4 mb-5 rounded-xl overflow-hidden h-36 shadow-lg">
         <SafeImage
           src="https://images.pexels.com/photos/8851253/pexels-photo-8851253.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940"
           alt="Soil testing"
@@ -210,20 +210,20 @@ Keep it practical and farmer-friendly. Use simple language.`;
           category="soil"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40" />
+        <div className="absolute inset-0 bg-primary/80" />
         <div className="absolute inset-0 flex items-center justify-between px-5">
           <div>
             <button onClick={onClose} className="flex items-center gap-1 text-primary-foreground/80 text-sm mb-1">
               <ArrowLeft size={14} /> {lang === "hi" ? "वापस" : "Back"}
             </button>
-            <h2 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-primary-foreground flex items-center gap-2">
               <FlaskConical size={20} /> {L.title}
             </h2>
             <p className="text-primary-foreground/80 text-sm">{L.subtitle}</p>
           </div>
           <button
             onClick={() => setLang(l => l === "en" ? "hi" : "en")}
-            className="bg-primary-foreground/20 px-3 py-1.5 rounded-full text-primary-foreground text-xs font-bold backdrop-blur-sm"
+            className="bg-primary-foreground/20 px-3 py-1.5 rounded-full text-primary-foreground text-xs font-semibold "
           >
             {lang === "en" ? "हिंदी" : "English"}
           </button>
@@ -232,8 +232,8 @@ Keep it practical and farmer-friendly. Use simple language.`;
 
       <div className="px-4 space-y-4">
         {/* NPK Input Form */}
-        <div className="bg-card rounded-2xl border border-border p-4 shadow-card space-y-3">
-          <h3 className="font-bold text-foreground flex items-center gap-2">
+        <div className="bg-card rounded-xl border border-border p-4 shadow-card space-y-3">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Sprout size={16} className="text-primary" />
             {lang === "hi" ? "मृदा परीक्षण मान दर्ज करें" : "Enter Soil Test Values"}
           </h3>
@@ -248,7 +248,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
                 placeholder="e.g. 320"
                 className="mt-1 w-full p-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 text-center"
               />
-              <p className="text-[9px] text-muted-foreground mt-0.5">{L.nHint}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{L.nHint}</p>
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-medium">{L.p}</label>
@@ -259,7 +259,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
                 placeholder="e.g. 18"
                 className="mt-1 w-full p-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 text-center"
               />
-              <p className="text-[9px] text-muted-foreground mt-0.5">{L.pHint}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{L.pHint}</p>
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-medium">{L.k}</label>
@@ -270,7 +270,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
                 placeholder="e.g. 200"
                 className="mt-1 w-full p-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 text-center"
               />
-              <p className="text-[9px] text-muted-foreground mt-0.5">{L.kHint}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{L.kHint}</p>
             </div>
           </div>
 
@@ -286,7 +286,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
               max="14"
               className="mt-1 w-full p-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30"
             />
-            <p className="text-[10px] text-muted-foreground mt-0.5">{L.phHint}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{L.phHint}</p>
           </div>
 
           <AgriButton
@@ -304,7 +304,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
           <>
             {/* Nutrient Gauges */}
             <div>
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Zap size={16} className="text-primary" />
                 {lang === "hi" ? "पोषक तत्व स्तर" : "Nutrient Levels"}
               </h3>
@@ -329,8 +329,8 @@ Keep it practical and farmer-friendly. Use simple language.`;
             </div>
 
             {/* Recommended Crops */}
-            <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+            <div className="bg-card rounded-xl border border-border p-4 shadow-card">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Leaf size={16} className="text-primary" />
                 {L.recommendedCrops}
               </h3>
@@ -344,8 +344,8 @@ Keep it practical and farmer-friendly. Use simple language.`;
             </div>
 
             {/* Fertilizer Advice */}
-            <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+            <div className="bg-card rounded-xl border border-border p-4 shadow-card">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Droplets size={16} className="text-primary" />
                 {L.fertilizers}
               </h3>
@@ -360,8 +360,8 @@ Keep it practical and farmer-friendly. Use simple language.`;
             </div>
 
             {/* AI Recommendation */}
-            <div className="bg-primary/5 rounded-2xl border border-primary/20 p-4">
-              <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
+            <div className="bg-primary/5 rounded-xl border border-primary/20 p-4">
+              <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                 <AlertTriangle size={16} className="text-primary" />
                 {L.aiInsight}
               </h3>

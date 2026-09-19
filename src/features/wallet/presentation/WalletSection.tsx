@@ -180,10 +180,10 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
 
   if (!user) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border p-8 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Wallet size={22} /></span>
-        <p className="text-sm font-extrabold text-foreground">{t('wallet.signInTitle')}</p>
-        <p className="text-[11px] font-semibold text-muted-foreground">{t('wallet.signInHint')}</p>
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border p-8 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary"><Wallet size={22} /></span>
+        <p className="text-sm font-semibold text-foreground">{t('wallet.signInTitle')}</p>
+        <p className="text-xs font-semibold text-muted-foreground">{t('wallet.signInHint')}</p>
         <Button size="sm" onClick={onNavigateToAuth}>{t('wallet.signIn')}</Button>
       </div>
     );
@@ -192,33 +192,33 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
   return (
     <div className="mt-4 space-y-4">
       {/* Balance card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-green-800 p-5 text-white shadow-float">
+      <div className="relative overflow-hidden rounded-xl bg-emerald-900 p-5 text-white shadow-float">
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
         <div className="absolute right-10 top-12 h-16 w-16 rounded-full bg-white/5" />
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-100/90">{t('wallet.availableBalance')}</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-emerald-100/90">{t('wallet.availableBalance')}</p>
           <Wallet size={18} className="text-emerald-100" />
         </div>
-        <p className="mt-1 text-3xl font-black tracking-tight">
+        <p className="mt-1 text-3xl font-semibold tracking-tight">
           {loadingState === 'loading' ? '…' : fmt(summary?.available_balance ?? 0)}
         </p>
         {pending > 0 && (
-          <p className="mt-1 text-[10px] font-bold text-amber-200">
+          <p className="mt-1 text-xs font-bold text-amber-200">
             {t('wallet.pending')}: {fmt(pending)}
           </p>
         )}
-        <div className="mt-4 grid grid-cols-2 gap-2 text-[10px] font-bold text-emerald-50/90">
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-bold text-emerald-50/90">
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="opacity-80">{t('wallet.totalEarned')}</p>
-            <p className="text-sm font-black text-white">{fmt(summary?.total_earned ?? 0)}</p>
+            <p className="text-sm font-semibold text-white">{fmt(summary?.total_earned ?? 0)}</p>
           </div>
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="opacity-80">{t('wallet.totalSpent')}</p>
-            <p className="text-sm font-black text-white">{fmt(summary?.total_spent ?? 0)}</p>
+            <p className="text-sm font-semibold text-white">{fmt(summary?.total_spent ?? 0)}</p>
           </div>
         </div>
         {(summary?.promo_credit ?? 0) > 0 && (
-          <p className="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-100">
+          <p className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-100">
             <Gift size={11} /> {t('wallet.promoCredit')}: {fmt(summary?.promo_credit ?? 0)}
           </p>
         )}
@@ -226,15 +226,15 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
 
       {/* Graceful sync state — never expose raw errors to users */}
       {loadingState === 'error' && (
-        <div className="rounded-2xl border border-border bg-card p-5 text-center shadow-card animate-fade-in">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 mx-auto">
+        <div className="rounded-xl border border-border bg-card p-5 text-center shadow-card">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 mx-auto">
             <Wallet size={22} />
           </span>
-          <h3 className="mt-3 text-sm font-extrabold text-foreground">Wallet Coming Soon</h3>
-          <p className="mt-1 text-[11px] font-semibold text-muted-foreground leading-relaxed">
+          <h3 className="mt-3 text-sm font-semibold text-foreground">Wallet Coming Soon</h3>
+          <p className="mt-1 text-xs font-semibold text-muted-foreground leading-relaxed">
             Add money, pay for services, and track your farm spending — all in one place. Setting up for you...
           </p>
-          <p className="mt-2 text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
+          <p className="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
             Sync pending
           </p>
@@ -257,33 +257,33 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
       {/* Recent activity */}
       <div>
         <div className="mb-2 flex items-center justify-between px-1">
-          <h3 className="text-sm font-extrabold text-foreground">{t('wallet.recentActivity')}</h3>
-          <span className="text-[10px] font-bold text-primary">{t('wallet.transactions')}</span>
+          <h3 className="text-sm font-semibold text-foreground">{t('wallet.recentActivity')}</h3>
+          <span className="text-xs font-bold text-primary">{t('wallet.transactions')}</span>
         </div>
         <div className="space-y-2">
           {loadingState === 'loading' && recent.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-border p-5 text-center text-[11px] font-semibold text-muted-foreground">{t('wallet.loading')}</p>
+            <p className="rounded-xl border border-dashed border-border p-5 text-center text-xs font-semibold text-muted-foreground">{t('wallet.loading')}</p>
           )}
           {recent.length === 0 && loadingState === 'idle' && (
-            <p className="rounded-2xl border border-dashed border-border p-5 text-center text-[11px] font-semibold text-muted-foreground">{t('wallet.noHistory')}</p>
+            <p className="rounded-xl border border-dashed border-border p-5 text-center text-xs font-semibold text-muted-foreground">{t('wallet.noHistory')}</p>
           )}
           {recent.map((w) => {
             const Icon = TYPE_ICON[w.type] ?? Wallet;
             const credit = w.direction === 'in';
             return (
-              <div key={w.id} className="interactive-card flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card cursor-default">
+              <div key={w.id} className="interactive-card flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-card cursor-default">
                 <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', credit ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground')}>
                   <Icon size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-extrabold text-foreground">{w.description ?? TYPE_LABEL[w.type] ?? w.type}</p>
-                  <p className="text-[10px] font-semibold text-muted-foreground">
+                  <p className="truncate text-xs font-semibold text-foreground">{w.description ?? TYPE_LABEL[w.type] ?? w.type}</p>
+                  <p className="text-xs font-semibold text-muted-foreground">
                     {new Date(w.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                     {' · '}{w.status}
                     {w.reference_id ? ` · ${String(w.reference_id).slice(0, 10)}` : ''}
                   </p>
                 </div>
-                <span className={cn('text-sm font-black', credit ? 'text-emerald-600' : 'text-foreground')}>
+                <span className={cn('text-sm font-semibold', credit ? 'text-emerald-600' : 'text-foreground')}>
                   {credit ? '+' : '−'}{fmt(w.amount)}
                 </span>
               </div>
@@ -302,16 +302,16 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-muted-foreground">{t('wallet.amount')}</label>
+              <label className="text-xs font-semibold text-muted-foreground">{t('wallet.amount')}</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground">₹</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">₹</span>
                 <Input
                   type="number"
                   min={1}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="100"
-                  className="pl-7 text-sm font-black"
+                  className="pl-7 text-sm font-semibold"
                   disabled={adding}
                 />
               </div>
@@ -325,7 +325,7 @@ export function WalletSection({ onToast, onNavigateToAuth }: WalletSectionProps)
               </div>
             )}
             {!adding && (
-              <button onClick={() => setShowAdd(false)} className="mx-auto flex items-center gap-1 text-[11px] font-bold text-muted-foreground mt-2">
+              <button onClick={() => setShowAdd(false)} className="mx-auto flex items-center gap-1 text-xs font-bold text-muted-foreground mt-2">
                 <X size={12} /> {t('wallet.cancel')}
               </button>
             )}

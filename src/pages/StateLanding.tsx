@@ -1,4 +1,5 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { LineChartIcon, Sparkles, Languages } from 'lucide-react';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage } from '@/lib/seo-config';
 import { localBusinessSchema, breadcrumbSchema, faqSchema } from '@/lib/structured-data';
@@ -132,7 +133,7 @@ const StateLanding: React.FC = () => {
       />
 
       <main className="min-h-screen bg-background pb-20">
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <nav aria-label="Breadcrumb" className="text-sm text-emerald-100/70 mb-4">
               <ol className="flex flex-wrap items-center gap-1.5">
@@ -143,7 +144,7 @@ const StateLanding: React.FC = () => {
                 <li className="text-emerald-50 font-medium">{name}</li>
               </ol>
             </nav>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               {title}
             </h1>
             <p className="text-emerald-100/85 mt-4 text-lg max-w-3xl leading-relaxed">{description}</p>
@@ -166,15 +167,15 @@ const StateLanding: React.FC = () => {
               { label: 'Coverage', value: isCity ? name : state },
               { label: 'Cost', value: 'Free' },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl border border-border bg-card p-5 text-center shadow-card">
-                <p className="text-xl font-black text-foreground">{s.value}</p>
+              <div key={s.label} className="rounded-xl border border-border bg-card p-5 text-center shadow-card">
+                <p className="text-xl font-semibold text-foreground">{s.value}</p>
                 <p className="text-xs font-semibold text-muted-foreground mt-1">{s.label}</p>
               </div>
             ))}
           </section>
 
           {/* Main content */}
-          <section className="rounded-2xl border border-border bg-card p-6 shadow-card mb-10" aria-labelledby="content-heading">
+          <section className="rounded-xl border border-border bg-card p-6 shadow-card mb-10" aria-labelledby="content-heading">
             <h2 id="content-heading" className="text-2xl font-bold text-foreground mb-4">
               {meta.noun} in {name} — Everything You Need
             </h2>
@@ -185,13 +186,13 @@ const StateLanding: React.FC = () => {
               mother tongue — {isCity ? `${state}'s regional language` : region}.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              {[
-                { icon: '📊', title: `Live ${meta.noun}`, desc: `Real-time ${meta.noun.toLowerCase()} data for ${name} updated daily.` },
-                { icon: '🤖', title: 'AI Insights', desc: `Smart alerts and trend analysis for ${name} farmers.` },
-                { icon: '🗣️', title: 'Local Language', desc: `Information in ${isCity ? `${state}'s language` : '12 Indian languages'}.` },
+              {[ 
+                { icon: <LineChartIcon className="h-5 w-5" />, title: `Live ${meta.noun}`, desc: `Real-time ${meta.noun.toLowerCase()} data for ${name} updated daily.` },
+                { icon: <Sparkles className="h-5 w-5" />, title: 'AI Insights', desc: `Smart alerts and trend analysis for ${name} farmers.` },
+                { icon: <Languages className="h-5 w-5" />, title: 'Local Language', desc: `Information in ${isCity ? `${state}'s language` : '12 Indian languages'}.` },
               ].map((f) => (
                 <div key={f.title} className="rounded-xl bg-muted/40 p-4">
-                  <span className="text-2xl" aria-hidden="true">{f.icon}</span>
+                  <span className="flex text-emerald-700" aria-hidden="true">{f.icon}</span>
                   <h3 className="font-bold text-foreground mt-2 text-sm">{f.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{f.desc}</p>
                 </div>
@@ -237,7 +238,7 @@ const StateLanding: React.FC = () => {
           )}
 
           {/* CTA */}
-          <section className="rounded-2xl gradient-hero text-primary-foreground p-8 text-center">
+          <section className="rounded-xl gradient-hero text-primary-foreground p-8 text-center">
             <h2 className="text-2xl font-bold">
               Get Live {meta.noun} for {name} — Free
             </h2>

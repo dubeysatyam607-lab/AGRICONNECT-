@@ -49,7 +49,7 @@ const LOAN_SCHEMES: LoanScheme[] = [
 const LoanSchemeCard = ({ scheme }: { scheme: LoanScheme }) => {
   const { t } = useLanguage();
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-card hover:shadow-soft transition-shadow overflow-hidden flex">
+    <div className="bg-card rounded-xl border border-border shadow-card hover:shadow-soft transition-shadow overflow-hidden flex">
       <div className="w-24 h-full min-h-[100px] relative bg-muted shrink-0">
         <SafeImage
           src={scheme.imageUrl}
@@ -179,13 +179,13 @@ const LoanCalculator: React.FC = () => {
               <p className="text-3xl font-bold text-primary mt-1">
                 {result && validation.valid ? `₹${Math.round(result.emi).toLocaleString('en-IN')}` : hi ? "जानकारी उपलब्ध नहीं" : "Not available"}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 @ {ratePct}% p.a. {hi ? "(ब्याज अवधि के बाद)" : "(effective, post-subvention)"}
               </p>
             </div>
 
             {verifiedRate && (
-              <div className="mt-3 flex items-start gap-2 text-[11px] text-muted-foreground">
+              <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
                 <ShieldCheck size={14} className="text-primary mt-0.5 shrink-0" />
                 <p>
                   {hi
@@ -211,7 +211,7 @@ const LoanCalculator: React.FC = () => {
         ))}
       </div>
 
-      <p className="text-[11px] text-muted-foreground mt-4">
+      <p className="text-xs text-muted-foreground mt-4">
         {hi
           ? "दरें सरकारी नीति/पोर्टल के सत्यापित रिकॉर्ड पर आधारित हैं। वास्तविक ब्याज दर बैंक की एमसीएलआर के अनुसार भिन्न हो सकती है।"
           : "Rates shown reflect verified government policy records. Actual applied rates depend on your bank's lending terms."}

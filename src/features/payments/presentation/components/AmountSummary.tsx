@@ -45,11 +45,11 @@ export function AmountSummary({ purpose, subtotal, method, gstRate, couponCode, 
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       {!compact && (
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-extrabold text-foreground">{t('pay.summary')}</span>
-          <span className="text-[11px] font-bold text-muted-foreground">{t('pay.secure')}</span>
+          <span className="text-sm font-semibold text-foreground">{t('pay.summary')}</span>
+          <span className="text-xs font-bold text-muted-foreground">{t('pay.secure')}</span>
         </div>
       )}
 
@@ -81,8 +81,8 @@ export function AmountSummary({ purpose, subtotal, method, gstRate, couponCode, 
       <div className="my-3 h-px bg-border" />
 
       <div className="flex items-center justify-between text-sm">
-        <span className="font-extrabold text-foreground">{t('pay.total')}</span>
-        <span className="text-lg font-black text-foreground">{fmtMoney(amounts.total)}</span>
+        <span className="font-semibold text-foreground">{t('pay.total')}</span>
+        <span className="text-lg font-semibold text-foreground">{fmtMoney(amounts.total)}</span>
       </div>
 
       <div className="mt-4">
@@ -108,15 +108,15 @@ export function AmountSummary({ purpose, subtotal, method, gstRate, couponCode, 
           </Button>
         </div>
         {check && !check.ok && (
-          <p className="mt-1.5 text-[11px] font-bold text-red-600">{check.reason}</p>
+          <p className="mt-1.5 text-xs font-bold text-red-600">{check.reason}</p>
         )}
         {check?.ok && (
-          <p className="mt-1.5 text-[11px] font-bold text-emerald-600">
+          <p className="mt-1.5 text-xs font-bold text-emerald-600">
             {t('pay.saved')} {fmtMoney(check.discount ?? 0)}
           </p>
         )}
         {couponCode && couponCode !== applied && (
-          <div className={cn('mt-1.5 text-[11px] font-bold', applied ? 'text-emerald-600' : 'text-muted-foreground')}>
+          <div className={cn('mt-1.5 text-xs font-bold', applied ? 'text-emerald-600' : 'text-muted-foreground')}>
             {t('pay.couponApplied')}
           </div>
         )}

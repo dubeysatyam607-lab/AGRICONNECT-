@@ -40,20 +40,20 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
   return (
     <div className="space-y-5 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.tasks')}</h2>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.tasks')}</h2>
       </div>
 
       {/* Week strip calendar */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
-        <p className="text-xs font-extrabold text-foreground mb-3">{t('prof.thisWeek')}</p>
+      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+        <p className="text-xs font-semibold text-foreground mb-3">{t('prof.thisWeek')}</p>
         <div className="grid grid-cols-7 gap-1.5">
           {week.map((d, i) => {
             const count = countsFor(d.iso);
             const isToday = i === 0;
             return (
-              <div key={d.iso} className={`flex flex-col items-center gap-1 rounded-2xl py-2.5 ${isToday ? 'bg-primary text-primary-foreground shadow-glow' : 'bg-muted/50'}`}>
-                <span className={`text-[10px] font-bold ${isToday ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>{d.label}</span>
-                <span className="text-sm font-extrabold">{d.day}</span>
+              <div key={d.iso} className={`flex flex-col items-center gap-1 rounded-xl py-2.5 ${isToday ? 'bg-primary text-primary-foreground ' : 'bg-muted/50'}`}>
+                <span className={`text-xs font-bold ${isToday ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>{d.label}</span>
+                <span className="text-sm font-semibold">{d.day}</span>
                 <span className={`h-1.5 w-1.5 rounded-full ${count > 0 ? (isToday ? 'bg-secondary' : 'bg-primary') : 'bg-transparent'}`} />
               </div>
             );
@@ -68,15 +68,15 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder={t('prof.taskPh')}
-          className="flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
+          className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="rounded-2xl border border-border bg-card px-3 py-3 text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
+          className="rounded-xl border border-border bg-card px-3 py-3 text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
-        <button onClick={handleAdd} aria-label={t('prof.addTask')} className="rounded-2xl bg-primary px-4 text-primary-foreground shadow-glow hover:bg-primary/90 active:scale-95 transition-all">
+        <button onClick={handleAdd} aria-label={t('prof.addTask')} className="rounded-xl bg-primary px-4 text-primary-foreground  hover:bg-primary/90 active:scale-95 transition-all">
           <Plus size={18} />
         </button>
       </div>
@@ -87,7 +87,7 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`rounded-full px-4 py-1.5 text-xs font-extrabold transition-all ${view === v ? 'bg-primary text-primary-foreground shadow-glow' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${view === v ? 'bg-primary text-primary-foreground ' : 'text-muted-foreground hover:text-foreground'}`}
           >
             {v === 'today' ? t('prof.today') : v === 'upcoming' ? t('prof.upcoming') : t('prof.completed')}
           </button>
@@ -95,7 +95,7 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
       </div>
 
       {/* Task list */}
-      <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+      <div className="rounded-xl border border-border bg-card shadow-card divide-y divide-border/60">
         {list.length === 0 ? (
           <div className="p-6">
             <EmptyState compact emoji="✅" title={t('prof.noTasks')} description={t('prof.noTasksHint')} />
@@ -112,10 +112,10 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
               </button>
               <div className="min-w-0 flex-1">
                 <p className={`text-sm font-semibold ${task.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{task.label}</p>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   {task.date}
                   {task.source === 'ai' && (
-                    <span className="inline-flex items-center gap-0.5 rounded-full bg-feature-ai/10 px-1.5 py-px text-[9px] font-extrabold text-feature-ai uppercase">
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-feature-ai/10 px-1.5 py-px text-xs font-semibold text-feature-ai uppercase">
                       <Sparkles size={8} /> {t('prof.aiSuggested')}
                     </span>
                   )}
@@ -133,10 +133,10 @@ export const TaskManagerSection: React.FC<TaskManagerSectionProps> = ({ data }) 
 
       {/* AI suggested tasks */}
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground flex items-center gap-2">
           <Sparkles size={15} className="text-feature-ai" /> {t('prof.aiSuggested')}
         </h3>
-        <div className="rounded-2xl border border-feature-ai/20 bg-feature-ai/5 p-4">
+        <div className="rounded-xl border border-feature-ai/20 bg-feature-ai/5 p-4">
           <ul className="space-y-2">
             {data.recommendations.tasks.map((task, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-foreground">

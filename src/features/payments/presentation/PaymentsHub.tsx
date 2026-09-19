@@ -156,8 +156,8 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
             </button>
           )}
           <div>
-            <h1 className="text-lg font-black text-foreground">{t('pay.title')}</h1>
-            <p className="text-[11px] font-semibold text-muted-foreground">{t('pay.subtitle')}</p>
+            <h1 className="text-lg font-semibold text-foreground">{t('pay.title')}</h1>
+            <p className="text-xs font-semibold text-muted-foreground">{t('pay.subtitle')}</p>
           </div>
         </div>
         <div className="relative">
@@ -172,16 +172,16 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
             )}
           </button>
           {showNotifications && (
-            <div className="absolute right-0 z-50 mt-2 w-72 rounded-2xl border border-border bg-card p-2 shadow-2xl">
+            <div className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-border bg-card p-2 ">
               <div className="flex items-center justify-between px-2 py-1.5">
-                <span className="text-xs font-black text-foreground">{t('pay.notifications')}</span>
-                <button onClick={markAllNotificationsRead} className="text-[10px] font-bold text-primary">
+                <span className="text-xs font-semibold text-foreground">{t('pay.notifications')}</span>
+                <button onClick={markAllNotificationsRead} className="text-xs font-bold text-primary">
                   {t('pay.markAllRead')}
                 </button>
               </div>
               <div className="max-h-64 space-y-1 overflow-y-auto">
                 {store.notifications.length === 0 && (
-                  <p className="px-2 py-4 text-center text-[11px] font-semibold text-muted-foreground">{t('pay.noNotifs')}</p>
+                  <p className="px-2 py-4 text-center text-xs font-semibold text-muted-foreground">{t('pay.noNotifs')}</p>
                 )}
                 {store.notifications.map((n) => (
                   <button
@@ -192,8 +192,8 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
                       n.read ? 'opacity-60' : 'bg-muted/50',
                     )}
                   >
-                    <p className="text-[11px] font-extrabold text-foreground">{n.title}</p>
-                    <p className="text-[10px] font-semibold text-muted-foreground">{n.body}</p>
+                    <p className="text-xs font-semibold text-foreground">{n.title}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">{n.body}</p>
                   </button>
                 ))}
               </div>
@@ -203,7 +203,7 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
       </div>
 
       {/* Tabs */}
-      <nav className="sticky top-0 z-30 -mx-4 mt-3 bg-background/85 px-4 py-2 backdrop-blur-lg">
+      <nav className="sticky top-0 z-30 -mx-4 mt-3 bg-background/85 px-4 py-2 ">
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {(Object.keys(TAB_ICONS) as HubTab[]).map((key) => {
             const Icon = TAB_ICONS[key];
@@ -213,9 +213,9 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
                 key={key}
                 onClick={() => setTab(key)}
                 className={cn(
-                  'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-extrabold transition-all',
+                  'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all',
                   active
-                    ? 'border-primary bg-primary text-primary-foreground shadow-glow'
+                    ? 'border-primary bg-primary text-primary-foreground '
                     : 'border-border bg-card text-muted-foreground hover:text-foreground shadow-card',
                 )}
               >
@@ -236,19 +236,19 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
       {tab === 'pay' && (
         <div className="mt-4 space-y-4">
           <div>
-            <Label className="text-xs font-extrabold text-muted-foreground">{t('pay.whatFor')}</Label>
+            <Label className="text-xs font-semibold text-muted-foreground">{t('pay.whatFor')}</Label>
             <div className="mt-2 grid grid-cols-3 gap-2">
               {(['marketplace', 'rental', 'pay-per-acre'] as PaymentPurpose[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPurpose(p)}
                   className={cn(
-                    'rounded-2xl border-2 p-3 text-left transition-all',
+                    'rounded-xl border-2 p-3 text-left transition-all',
                     purpose === p ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40',
                   )}
                 >
-                  <p className="text-xs font-black text-foreground">{t(`pay.purpose_${p}`)}</p>
-                  <p className="mt-0.5 text-[9px] font-bold leading-tight text-muted-foreground">{t(`pay.purpose_${p}_desc`)}</p>
+                  <p className="text-xs font-semibold text-foreground">{t(`pay.purpose_${p}`)}</p>
+                  <p className="mt-0.5 text-xs font-bold leading-tight text-muted-foreground">{t(`pay.purpose_${p}_desc`)}</p>
                 </button>
               ))}
             </div>
@@ -257,7 +257,7 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
           {purpose === 'marketplace' ? (
             <div className="space-y-1.5">
               <Label className="text-xs font-bold">{t('pay.orderTotal')}</Label>
-              <Input type="number" min={1} value={amount || ''} onChange={(e) => setAmount(Number(e.target.value))} className="text-sm font-black" />
+              <Input type="number" min={1} value={amount || ''} onChange={(e) => setAmount(Number(e.target.value))} className="text-sm font-semibold" />
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -265,11 +265,11 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
                 <>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-bold">{t('pay.acres')}</Label>
-                    <Input type="number" min={0.5} step={0.5} value={qty || ''} onChange={(e) => setQty(Number(e.target.value))} className="text-sm font-black" />
+                    <Input type="number" min={0.5} step={0.5} value={qty || ''} onChange={(e) => setQty(Number(e.target.value))} className="text-sm font-semibold" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-bold">{t('pay.ratePerAcre')}</Label>
-                    <Input type="number" min={1} value={rate || ''} onChange={(e) => setRate(Number(e.target.value))} className="text-sm font-black" />
+                    <Input type="number" min={1} value={rate || ''} onChange={(e) => setRate(Number(e.target.value))} className="text-sm font-semibold" />
                   </div>
                 </>
               ) : (
@@ -289,11 +289,11 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold">{t('pay.qty')}</Label>
-                      <Input type="number" min={1} value={qty || ''} onChange={(e) => setQty(Number(e.target.value))} className="text-sm font-black" />
+                      <Input type="number" min={1} value={qty || ''} onChange={(e) => setQty(Number(e.target.value))} className="text-sm font-semibold" />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold">{t('pay.rate')} /{unit}</Label>
-                      <Input type="number" min={1} value={rate || ''} onChange={(e) => setRate(Number(e.target.value))} className="text-sm font-black" />
+                      <Input type="number" min={1} value={rate || ''} onChange={(e) => setRate(Number(e.target.value))} className="text-sm font-semibold" />
                     </div>
                   </div>
                 </>
@@ -338,7 +338,7 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
       {tab === 'invoices' && (
         <div className="mt-4 space-y-2.5">
           {store.invoices.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-border p-6 text-center text-xs font-semibold text-muted-foreground">
+            <p className="rounded-xl border border-dashed border-border p-6 text-center text-xs font-semibold text-muted-foreground">
               {t('pay.noInvoices')}
             </p>
           )}
@@ -349,20 +349,20 @@ export function PaymentsHub({ onNavigate, onToast }: PaymentsHubProps) {
                 setSelectedInvoice(inv);
                 setInvoiceOpen(true);
               }}
-              className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5 text-left shadow-card transition-all hover:border-primary/40"
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-left shadow-card transition-all hover:border-primary/40"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                 <ReceiptText size={17} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-black text-foreground">{inv.number}</p>
-                <p className="truncate text-[10px] font-semibold text-muted-foreground">
+                <p className="text-xs font-semibold text-foreground">{inv.number}</p>
+                <p className="truncate text-xs font-semibold text-muted-foreground">
                   {inv.lines[0]?.description ?? ''} • {new Date(inv.issuedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-black text-foreground">{fmtMoney(inv.total)}</p>
-                <span className={cn('rounded-full px-2 py-0.5 text-[9px] font-extrabold', inv.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : inv.status === 'Refunded' ? 'bg-sky-100 text-sky-700' : 'bg-muted text-muted-foreground')}>
+                <p className="text-sm font-semibold text-foreground">{fmtMoney(inv.total)}</p>
+                <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', inv.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : inv.status === 'Refunded' ? 'bg-sky-100 text-sky-700' : 'bg-muted text-muted-foreground')}>
                   {inv.status}
                 </span>
               </div>
@@ -426,7 +426,7 @@ function TransactionHistory({
             key={f}
             onClick={() => setStatusFilter(f)}
             className={cn(
-              'shrink-0 rounded-full px-3 py-1.5 text-[11px] font-extrabold',
+              'shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold',
               statusFilter === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
             )}
           >
@@ -436,7 +436,7 @@ function TransactionHistory({
       </div>
 
       {filtered.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-border p-6 text-center text-xs font-semibold text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-xs font-semibold text-muted-foreground">
           {t('pay.noHistory')}
         </p>
       )}
@@ -446,7 +446,7 @@ function TransactionHistory({
         const canRefund = tx.status === 'Success';
         const canRetry = tx.status === 'Failed';
         return (
-          <div key={tx.id} className="rounded-2xl border border-border bg-card shadow-card">
+          <div key={tx.id} className="rounded-xl border border-border bg-card shadow-card">
             <button
               onClick={() => setExpanded(open ? null : tx.id)}
               className="flex w-full items-center gap-3 p-3.5 text-left"
@@ -455,13 +455,13 @@ function TransactionHistory({
                 {tx.purpose === 'wallet' ? <Wallet size={17} /> : tx.purpose === 'subscription' ? <Sparkles size={17} /> : <ListOrdered size={17} />}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-extrabold text-foreground">{tx.description}</p>
-                <p className="text-[10px] font-semibold text-muted-foreground">
+                <p className="truncate text-xs font-semibold text-foreground">{tx.description}</p>
+                <p className="text-xs font-semibold text-muted-foreground">
                   {tx.id} • {new Date(tx.initiatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-sm font-black text-foreground">{fmtMoney(tx.total)}</p>
+                <p className="text-sm font-semibold text-foreground">{fmtMoney(tx.total)}</p>
                 <PayStatusBadge status={tx.status} />
               </div>
               <ChevronDown size={14} className={cn('shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
@@ -469,7 +469,7 @@ function TransactionHistory({
 
             {open && (
               <div className="border-t border-border/60 p-3.5">
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <Detail label={t('pay.method')} value={tx.method.toUpperCase()} />
                   <Detail label={t('pay.gateway')} value={tx.gateway.toUpperCase()} />
                   <Detail label={t('pay.subtotal')} value={fmtMoney(tx.subtotal)} />
@@ -482,11 +482,11 @@ function TransactionHistory({
 
                 {tx.attempts.length > 1 && (
                   <div className="mt-3 space-y-1.5">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('pay.attemptLog')}</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('pay.attemptLog')}</p>
                     {tx.attempts.map((a, i) => (
-                      <div key={a.id} className="flex items-center justify-between rounded-lg bg-muted/40 px-2.5 py-1.5 text-[10px]">
+                      <div key={a.id} className="flex items-center justify-between rounded-lg bg-muted/40 px-2.5 py-1.5 text-xs">
                         <span className="font-bold text-muted-foreground">{t('pay.attempt')} {i + 1} • {a.method.toUpperCase()}</span>
-                        <span className={cn('font-extrabold', a.status === 'Success' ? 'text-emerald-600' : a.status === 'Failed' ? 'text-red-600' : 'text-amber-600')}>
+                        <span className={cn('font-semibold', a.status === 'Success' ? 'text-emerald-600' : a.status === 'Failed' ? 'text-red-600' : 'text-amber-600')}>
                           {a.status}{a.failureReason ? ` — ${a.failureReason}` : ''}
                         </span>
                       </div>
@@ -525,7 +525,7 @@ function TransactionHistory({
           </DialogHeader>
           <div className="space-y-3 pt-1">
             <p className="text-xs font-semibold text-muted-foreground">
-              {refundFor?.description} • <span className="font-black text-foreground">{refundFor ? fmtMoney(refundFor.total) : ''}</span>
+              {refundFor?.description} • <span className="font-semibold text-foreground">{refundFor ? fmtMoney(refundFor.total) : ''}</span>
             </p>
             <div className="space-y-1.5">
               <Label className="text-xs font-bold">{t('pay.refundReason')}</Label>
@@ -565,8 +565,8 @@ function TransactionHistory({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col rounded-lg bg-muted/40 px-2.5 py-1.5">
-      <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <span className="text-[11px] font-extrabold text-foreground">{value}</span>
+      <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold text-foreground">{value}</span>
     </div>
   );
 }

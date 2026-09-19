@@ -15,14 +15,14 @@ export const SoilTestPackageCard: React.FC<SoilTestPackageCardProps> = ({ pkg, o
 
   return (
     <AgriCard
-      className={`relative flex flex-col justify-between p-6 rounded-2xl transition-all duration-300 hover:shadow-xl border ${
+      className={`relative flex flex-col justify-between p-6 rounded-xl transition-all duration-300 hover: border ${
         pkg.popular
-          ? 'border-emerald-500/50 dark:border-emerald-500/40 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent shadow-md'
+          ? 'border-emerald-500/50 dark:border-emerald-500/40 bg-emerald-700 shadow-md'
           : 'border-border/60 hover:border-emerald-400/40'
       }`}
     >
       {pkg.popular && (
-        <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 tracking-wide">
+        <div className="absolute -top-3.5 right-6 bg-emerald-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 tracking-wide">
           <Sparkles className="w-3.5 h-3.5" />
           {t('soil.badge.mostPopular') || 'Most Popular'}
         </div>
@@ -48,7 +48,7 @@ export const SoilTestPackageCard: React.FC<SoilTestPackageCardProps> = ({ pkg, o
 
         <div className="my-4 pb-4 border-b border-border/50">
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-extrabold text-foreground tracking-tight">
+            <span className="text-3xl font-semibold text-foreground tracking-tight">
               ₹{pkg.price.toFixed(0)}
             </span>
             <span className="text-xs text-muted-foreground font-medium">

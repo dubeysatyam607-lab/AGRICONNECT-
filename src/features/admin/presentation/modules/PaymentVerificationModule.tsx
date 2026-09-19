@@ -212,7 +212,7 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
       render: (r) => (
         <div>
           <p className="font-medium text-foreground">{r.user_name}</p>
-          <p className="text-[10px] text-muted-foreground">{r.phone || r.email || r.user_id.slice(0, 8)}</p>
+          <p className="text-xs text-muted-foreground">{r.phone || r.email || r.user_id.slice(0, 8)}</p>
         </div>
       ),
       sortValue: (r) => r.user_name,
@@ -284,18 +284,18 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
       />
 
       {/* UPI Config */}
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-card">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="mb-3 flex items-center gap-2">
           <Banknote size={17} className="text-primary" />
-          <h3 className="text-sm font-black text-foreground">UPI Configuration</h3>
+          <h3 className="text-sm font-semibold text-foreground">UPI Configuration</h3>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-[11px] font-black text-muted-foreground">UPI ID</label>
+            <label className="mb-1 block text-xs font-semibold text-muted-foreground">UPI ID</label>
             <Input value={upiId} onChange={(e) => setUpiId(e.target.value)} className="font-mono text-xs font-bold" placeholder="yourname@okbank" />
           </div>
           <div>
-            <label className="mb-1 block text-[11px] font-black text-muted-foreground">Payee Name</label>
+            <label className="mb-1 block text-xs font-semibold text-muted-foreground">Payee Name</label>
             <Input value={payeeName} onChange={(e) => setPayeeName(e.target.value)} className="text-xs font-bold" />
           </div>
           <div className="flex items-end">
@@ -314,9 +314,9 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
           { label: 'Approved', value: approved.length, color: 'text-emerald-600' },
           { label: 'Rejected', value: rejected.length, color: 'text-red-600' },
         ].map((kpi, i) => (
-          <div key={i} className="rounded-2xl border border-border bg-card p-3 text-center">
-            <p className={cn('text-lg font-extrabold', kpi.color)}>{kpi.value}</p>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">{kpi.label}</p>
+          <div key={i} className="rounded-xl border border-border bg-card p-3 text-center">
+            <p className={cn('text-lg font-semibold', kpi.color)}>{kpi.value}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase">{kpi.label}</p>
           </div>
         ))}
       </div>
@@ -328,7 +328,7 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
             key={tb}
             onClick={() => setTab(tb)}
             className={cn(
-              'rounded-full px-4 py-1.5 text-xs font-black transition',
+              'rounded-full px-4 py-1.5 text-xs font-semibold transition',
               tab === tb ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-primary/10',
             )}
           >
@@ -361,7 +361,7 @@ export function PaymentVerificationModule({ onNavigate }: { onNavigate: (key: st
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex max-h-[50vh] flex-col items-center justify-center overflow-auto rounded-2xl border border-dashed border-border bg-muted/30 p-3">
+          <div className="flex max-h-[50vh] flex-col items-center justify-center overflow-auto rounded-xl border border-dashed border-border bg-muted/30 p-3">
             {proofUrl ? (
               <img src={proofUrl} alt="Payment proof" className="max-h-[46vh] rounded-xl object-contain" />
             ) : (

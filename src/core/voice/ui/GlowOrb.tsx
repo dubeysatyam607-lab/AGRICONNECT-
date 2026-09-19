@@ -40,7 +40,7 @@ export const GlowOrb: React.FC<GlowOrbProps> = ({
       </>
     )}
     <div
-      className="relative rounded-full bg-gradient-to-tr from-primary via-primary to-secondary flex items-center justify-center text-white shadow-[0_0_40px_rgba(34,139,34,0.35)]"
+      className="relative rounded-full bg-emerald-700 flex items-center justify-center text-white "
       style={{ width: size * 0.55, height: size * 0.55 }}
     >
       {children}

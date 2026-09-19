@@ -32,30 +32,30 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({ data }) =>
   return (
     <div className="space-y-5 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.activities')}</h2>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.activities')}</h2>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {tiles.map((tile) => {
           const Icon = tile.icon;
           return (
-            <div key={tile.key} className="rounded-2xl border border-border bg-card p-4 shadow-card text-center transition-all hover:-translate-y-0.5 hover:shadow-soft">
-              <span className={`mx-auto inline-flex h-10 w-10 items-center justify-center rounded-2xl ${tile.tone}`}>
+            <div key={tile.key} className="rounded-xl border border-border bg-card p-4 shadow-card text-center transition-all hover:-translate-y-0.5 hover:shadow-soft">
+              <span className={`mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl ${tile.tone}`}>
                 <Icon size={19} />
               </span>
-              <p className="mt-2 text-xl font-extrabold text-foreground tabular-nums">{tile.value}</p>
-              <p className="text-[11px] font-bold text-muted-foreground">{tile.label}</p>
+              <p className="mt-2 text-xl font-semibold text-foreground tabular-nums">{tile.value}</p>
+              <p className="text-xs font-bold text-muted-foreground">{tile.label}</p>
             </div>
           );
         })}
       </div>
 
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground">{t('prof.recentActivity')}</h3>
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground">{t('prof.recentActivity')}</h3>
         {data.activities.length === 0 ? (
           <EmptyState compact emoji="🕘" title={t('prof.noActivity')} description={t('prof.noActivityHint')} />
         ) : (
-          <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+          <div className="rounded-xl border border-border bg-card shadow-card divide-y divide-border/60">
             {data.activities.slice(0, 8).map((a) => (
               <div key={a.id} className="flex items-center gap-3 p-3.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground text-lg">
@@ -63,9 +63,9 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({ data }) =>
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-foreground truncate">{a.title}</p>
-                  {a.meta && <p className="text-[11px] text-muted-foreground">{a.meta}</p>}
+                  {a.meta && <p className="text-xs text-muted-foreground">{a.meta}</p>}
                 </div>
-                <span className="shrink-0 text-[10px] font-bold text-muted-foreground">{a.date}</span>
+                <span className="shrink-0 text-xs font-bold text-muted-foreground">{a.date}</span>
               </div>
             ))}
           </div>

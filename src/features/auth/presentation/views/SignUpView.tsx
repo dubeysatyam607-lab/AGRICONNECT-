@@ -70,14 +70,14 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
             >
               {t('common.back')}
             </button>
-            <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+            <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
               <ShieldCheck size={13} /> {t('auth.freeRegistration') || 'Free Registration'}
             </span>
           </div>
 
           {/* Header */}
           <FadeIn className="mt-6 text-center">
-            <h1 className="text-2xl font-black tracking-tight text-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               {t('auth.signup.title')}
             </h1>
             <p className="mt-1.5 text-xs font-medium text-muted-foreground">
@@ -88,12 +88,12 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
           {/* Registration Form */}
           <FadeIn delayMs={100} className="mt-6">
             {fieldError && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-shake">
+              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold ">
                 ⚠️ {fieldError}
               </div>
             )}
             {state.error && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-shake">
+              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold ">
                 ⚠️ {state.error}
               </div>
             )}
@@ -101,7 +101,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
             <form onSubmit={handleSubmit} className="space-y-3.5">
               {/* Full Name */}
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t('auth.signup.fullNameLabel')}
                 </label>
                 <div className="relative">
@@ -112,14 +112,14 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
                     placeholder="Ramesh Kumar"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
+                    className="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
                   />
                 </div>
               </div>
 
               {/* Email Address */}
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t('auth.signup.emailLabel')}
                 </label>
                 <div className="relative">
@@ -131,7 +131,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
                     placeholder="farmer@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
+                    className="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
                     autoFocus
                   />
                 </div>
@@ -139,11 +139,11 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
 
               {/* Mobile Number (optional profile info) */}
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t('auth.signup.mobileLabel')}
                 </label>
-                <div className="flex items-stretch overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15 transition-all">
-                  <span className="flex items-center gap-1 border-r border-border bg-slate-50 dark:bg-slate-800/50 px-4 text-sm font-black text-foreground">
+                <div className="flex items-stretch overflow-hidden rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-card focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15 transition-all">
+                  <span className="flex items-center gap-1 border-r border-border bg-slate-50 dark:bg-slate-800/50 px-4 text-sm font-semibold text-foreground">
                     🇮🇳 +91
                   </span>
                   <input
@@ -178,7 +178,7 @@ export const SignUpView: React.FC<ISignUpViewProps> = ({
         <SlideUp delayMs={200} className="mt-6 text-center">
           <p className="text-xs font-medium text-muted-foreground">
             {t('auth.signup.alreadyHaveAccount')}{' '}
-            <button onClick={onSwitchToSignIn} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
+            <button onClick={onSwitchToSignIn} className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
               {t('auth.signup.signInLink')}
             </button>
           </p>

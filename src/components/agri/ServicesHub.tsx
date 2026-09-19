@@ -3,7 +3,7 @@ import {
   ArrowLeft, Scan, CalendarDays, Sprout, Droplets, Tractor, Combine, RefreshCcw, Shovel,
   TrendingUp, ShoppingBag, Truck, Warehouse, Coins, ShieldCheck, Landmark, Calculator,
   GraduationCap, Users, BellRing, Newspaper, ChevronRight, Sparkles, BookOpen,
-  Bot, Navigation, Milk, HardHat, Search, X, Inbox, Users2,
+  Bot, Navigation, Milk, HardHat, Search, X, Inbox, Users2, HeartPulse, Cog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,14 +21,14 @@ interface ServiceItem {
 }
 
 interface Group {
-  emoji: string;
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
   titleKey: string;
   items: ServiceItem[];
 }
 
 const GROUP_DATA: Group[] = [
   {
-    emoji: "✨",
+    icon: HeartPulse,
     titleKey: "svc.hub.group.aiCropCare",
     items: [
       { id: "farm-os", icon: Sparkles, labelKey: "svc.hub.aiCropCare.farmOs.label", subKey: "svc.hub.aiCropCare.farmOs.sub", tint: "bg-feature-ai/12 text-feature-ai" },
@@ -40,7 +40,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "🚜",
+    icon: Cog,
     titleKey: "svc.hub.group.machinery",
     items: [
       { id: "tractors", icon: Tractor, labelKey: "svc.hub.machinery.tractors.label", subKey: "svc.hub.machinery.tractors.sub", tint: "bg-feature-labor/12 text-feature-labor" },
@@ -50,7 +50,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "🛒",
+    icon: ShoppingBag,
     titleKey: "svc.hub.group.marketplace",
     items: [
       { id: "mandi", icon: TrendingUp, labelKey: "svc.hub.marketplace.mandi.label", subKey: "svc.hub.marketplace.mandi.sub", tint: "bg-feature-mandi/12 text-feature-mandi" },
@@ -61,7 +61,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "💰",
+    icon: Coins,
     titleKey: "svc.hub.group.financeInsurance",
     items: [
       { id: "loans", icon: Coins, labelKey: "svc.hub.financeInsurance.loans.label", subKey: "svc.hub.financeInsurance.loans.sub", tint: "bg-feature-loans/12 text-feature-loans" },
@@ -71,7 +71,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "🏛️",
+    icon: Landmark,
     titleKey: "svc.hub.group.government",
     items: [
       { id: "schemes", icon: Landmark, labelKey: "svc.hub.government.schemes.label", subKey: "svc.hub.government.schemes.sub", tint: "bg-feature-schemes/12 text-feature-schemes" },
@@ -79,7 +79,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "🚚",
+    icon: Truck,
     titleKey: "svc.hub.group.transportStorage",
     items: [
       { id: "transport", icon: Truck, labelKey: "svc.hub.transportStorage.transport.label", subKey: "svc.hub.transportStorage.transport.sub", tint: "bg-feature-transport/12 text-feature-transport" },
@@ -87,7 +87,7 @@ const GROUP_DATA: Group[] = [
     ],
   },
   {
-    emoji: "👷",
+    icon: HardHat,
     titleKey: "svc.hub.group.labour",
     items: [
       { id: "labor", icon: HardHat, labelKey: "svc.hub.labour.labor.label", subKey: "svc.hub.labour.labor.sub", tint: "bg-feature-labor/12 text-feature-labor" },
@@ -137,7 +137,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
   return (
     <div className="relative min-h-screen pb-36">
       {/* Sticky header */}
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/60 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-background border-b border-border/60 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 flex items-center gap-3">
         <button
           onClick={() => go("home")}
           className="p-2 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
@@ -146,10 +146,10 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-display font-bold text-[19px] text-foreground tracking-tight leading-none">
+          <h1 className=" font-bold text-[19px] text-foreground tracking-tight leading-none">
             {t("svc.hub.title")}
           </h1>
-          <p className="text-[11px] font-semibold text-muted-foreground mt-0.5 truncate">
+          <p className="text-xs font-semibold text-muted-foreground mt-0.5 truncate">
             {t("svc.hub.subtitle", { n: totalServices })}
           </p>
         </div>
@@ -165,7 +165,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("svc.hub.searchPlaceholder")}
-              className="w-full rounded-2xl border border-border bg-card pl-10 pr-9 py-3 text-base font-medium text-foreground placeholder:text-muted-foreground/70 outline-none transition-all focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:shadow-card"
+              className="w-full rounded-xl border border-border bg-card pl-10 pr-9 py-3 text-base font-medium text-foreground placeholder:text-muted-foreground/70 outline-none transition-all focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:shadow-card"
               aria-label={t("svc.hub.search")}
             />
             {query && (
@@ -210,9 +210,9 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
             >
               <h2
                 id={`group-${gi}`}
-                className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.14em] mb-3 px-1"
+                className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.14em] mb-3 px-1 flex items-center gap-1.5"
               >
-                <span className="mr-1.5" aria-hidden="true">{group.emoji}</span>
+                <span aria-hidden="true"><group.icon size={13} /></span>
                 {group.title}
               </h2>
               <div className={cn("grid gap-2.5", group.items.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
@@ -222,12 +222,12 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ onNavigate }) => {
                     onClick={() => go(item.id)}
                     className="group relative flex flex-col items-start gap-2.5 rounded-[20px] border border-border bg-card p-3.5 text-left shadow-card hover-lift active:scale-[0.97] transition-transform"
                   >
-                    <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl", item.tint)}>
+                    <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", item.tint)}>
                       <item.icon size={19} />
                     </span>
                     <span className="leading-tight">
                       <span className="block text-[13px] font-bold text-foreground leading-tight">{item.label}</span>
-                      <span className="block text-[11px] font-semibold text-muted-foreground mt-0.5 leading-snug">{item.sub}</span>
+                      <span className="block text-xs font-semibold text-muted-foreground mt-0.5 leading-snug">{item.sub}</span>
                     </span>
                     <ChevronRight
                       size={15}

@@ -21,14 +21,14 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
   return (
     <div className="mt-4 flex flex-col gap-3">
       {/* Hero: health + twin summary */}
-      <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-emerald-500/5 p-4 shadow-card">
+      <div className="rounded-xl border border-border bg-emerald-700 p-4 shadow-card">
         <div className="flex items-center gap-4">
           <HealthRing score={health.score} />
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
               {health.score >= 75 ? t('fos.health.good') : health.score >= 55 ? t('fos.health.fair') : t('fos.health.attention')}
             </p>
-            <h2 className="font-display text-xl font-black tracking-tight text-foreground">{activeFarm.name}</h2>
+            <h2 className=" text-xl font-semibold tracking-tight text-foreground">{activeFarm.name}</h2>
             <p className="truncate text-xs font-semibold text-muted-foreground">
               {activeCrop
                 ? `${activeCrop.crop} · ${t(`fos.stage.${activeCrop.stage}`)} · ${activeFarm.areaAcres} ${t('fos.unit.acres')}`
@@ -36,7 +36,7 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
             </p>
             <div className="mt-2 flex items-center gap-2">
               <TrendDots trend={health.trend} />
-              <span className="text-[10px] font-bold text-muted-foreground">{t('fos.health.trend')}</span>
+              <span className="text-xs font-bold text-muted-foreground">{t('fos.health.trend')}</span>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
       <section>
         <SectionHead title={t('fos.rec.today')} actionLabel={t('fos.tab.calendar')} onAction={() => onView('calendar')} />
         {todayRecs.length === 0 ? (
-          <p className="rounded-2xl border border-border bg-card px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
+          <p className="rounded-xl border border-border bg-card px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
             {t('fos.rec.none')}
           </p>
         ) : (
@@ -73,7 +73,7 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
                 <button
                   key={r.id}
                   onClick={() => onView('calendar')}
-                  className="flex items-start gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-card transition-colors hover:border-emerald-300 dark:hover:border-emerald-600"
+                  className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left shadow-card transition-colors hover:border-emerald-300 dark:hover:border-emerald-600"
                 >
                   <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
                     <Icon size={16} />
@@ -82,10 +82,10 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-bold leading-snug text-foreground">{r.title}</span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                      <span className={cn('rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide', priorityStyles[r.priority])}>
+                      <span className={cn('rounded-full px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide', priorityStyles[r.priority])}>
                         {t(`fos.rec.priority.${r.priority}`)}
                       </span>
-                      <span className="text-[10px] font-bold text-muted-foreground">
+                      <span className="text-xs font-bold text-muted-foreground">
                         {t('fos.rec.confidence')} {r.confidence}%
                       </span>
                     </span>
@@ -102,18 +102,18 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
       {nextTask && (
         <section>
           <SectionHead title={t('fos.cal.title')} actionLabel={t('fos.seeAll')} onAction={() => onView('calendar')} />
-          <div className="flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-br from-amber-500/10 to-card p-3.5 shadow-card">
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-amber-500 p-3.5 shadow-card">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
               <CalendarClock size={17} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] font-bold text-foreground">{nextTask.title}</p>
-              <p className="text-[11px] font-bold text-muted-foreground">
+              <p className="text-xs font-bold text-muted-foreground">
                 {formatDay(nextTask.date)}
               </p>
             </div>
             {nextTask.autoAdjust && (
-              <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-700 dark:text-violet-300">
+              <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
                 {t('fos.cal.auto')}
               </span>
             )}
@@ -127,16 +127,16 @@ export const OverviewView: React.FC<Props> = ({ data, onView }) => {
 const MiniStat: React.FC<{ icon: React.ComponentType<{ size?: number; className?: string }>; value: string; label: string; tint: string }> = ({ icon: Icon, value, label, tint }) => (
   <div className="flex flex-col items-center gap-0.5 text-center">
     <Icon size={14} className={tint} />
-    <span className="max-w-full truncate text-[11px] font-black text-foreground">{value}</span>
-    <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+    <span className="max-w-full truncate text-xs font-semibold text-foreground">{value}</span>
+    <span className="max-w-full truncate text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
   </div>
 );
 
 export const SectionHead: React.FC<{ title: string; actionLabel?: string; onAction?: () => void }> = ({ title, actionLabel, onAction }) => (
   <div className="mb-2 flex items-center justify-between">
-    <h3 className="font-display text-sm font-black uppercase tracking-wide text-foreground">{title}</h3>
+    <h3 className=" text-sm font-semibold uppercase tracking-wide text-foreground">{title}</h3>
     {actionLabel && onAction && (
-      <button onClick={onAction} className="flex items-center gap-0.5 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+      <button onClick={onAction} className="flex items-center gap-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
         {actionLabel} <ArrowRight size={11} />
       </button>
     )}

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Send, Sparkles } from 'lucide-react';
+import {
+  Heart, MessageCircle, Send, Sparkles,
+  CircleHelp, Lightbulb, Camera, Clapperboard, Trophy, Landmark, BrainCircuit,
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
 import { cn } from '@/lib/utils';
@@ -15,8 +18,14 @@ const KIND_STYLE: Record<CommunityKind, string> = {
   ai: 'gradient-ai text-primary-foreground',
 };
 
-const KIND_ICON: Record<CommunityKind, string> = {
-  question: '❓', tip: '💡', photo: '📷', video: '🎥', success: '🏆', gov: '🏛️', ai: '🤖',
+const KIND_ICON: Record<CommunityKind, React.ReactNode> = {
+  question: <CircleHelp className="h-4 w-4" aria-hidden="true" />,
+  tip: <Lightbulb className="h-4 w-4" aria-hidden="true" />,
+  photo: <Camera className="h-4 w-4" aria-hidden="true" />,
+  video: <Clapperboard className="h-4 w-4" aria-hidden="true" />,
+  success: <Trophy className="h-4 w-4" aria-hidden="true" />,
+  gov: <Landmark className="h-4 w-4" aria-hidden="true" />,
+  ai: <BrainCircuit className="h-4 w-4" aria-hidden="true" />,
 };
 
 interface CommunityViewProps {
@@ -46,18 +55,18 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ posts, onPost, onL
   return (
     <div className="mt-4">
       {/* Compose */}
-      <div className="rounded-2xl border border-border bg-card p-3.5 shadow-card">
+      <div className="rounded-xl border border-border bg-card p-3.5 shadow-card">
         <div className="flex gap-1.5">
           {COMPOSE_KINDS.map((k) => (
             <button
               key={k}
               onClick={() => setKind(k)}
               className={cn(
-                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors',
+                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold transition-colors',
                 kind === k ? 'bg-forest text-primary-foreground' : 'border border-border text-muted-foreground',
               )}
             >
-              <span aria-hidden>{KIND_ICON[k]}</span>
+              <span aria-hidden className="flex">{KIND_ICON[k]}</span>
               {t(`fnet.kind.${k}`)}
             </button>
           ))}
@@ -89,17 +98,17 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ posts, onPost, onL
         {list.map((post) => {
           const ago = timeAgo(t, post.createdAt);
           return (
-            <article key={post.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
+            <article key={post.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
               <div className="flex items-center gap-2.5">
-                <span className={cn('flex h-9 w-9 items-center justify-center rounded-xl text-base', KIND_STYLE[post.kind])}>
-                  <span aria-hidden>{KIND_ICON[post.kind]}</span>
+                <span className={cn('flex h-9 w-9 items-center justify-center rounded-xl', KIND_STYLE[post.kind])}>
+                  <span aria-hidden className="flex">{KIND_ICON[post.kind]}</span>
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="truncate text-xs font-black text-foreground">{post.author}</h3>
+                    <h3 className="truncate text-xs font-semibold text-foreground">{post.author}</h3>
                     {post.ai && <Sparkles size={12} className="shrink-0 text-violet-500" />}
                   </div>
-                  <p className="text-[10px] font-semibold text-muted-foreground">
+                  <p className="text-xs font-semibold text-muted-foreground">
                     {t(`fnet.kind.${post.kind}`)} · {ago}
                   </p>
                 </div>
@@ -111,14 +120,14 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ posts, onPost, onL
                     onLike(post.id);
                     onToast?.(t('fnet.toast.liked'));
                   }}
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground hover:text-rose-500"
+                  className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-rose-500"
                 >
                   <Heart size={13} />
                   {post.likes}
                 </button>
                 <button
                   onClick={() => onToast?.(t('fnet.toast.comment'))}
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground hover:text-forest"
+                  className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-forest"
                 >
                   <MessageCircle size={13} />
                   {post.comments}

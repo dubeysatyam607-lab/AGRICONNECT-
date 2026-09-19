@@ -126,7 +126,7 @@ export const SoilTestStatusTimeline: React.FC<SoilTestStatusTimelineProps> = ({
 
   if (currentStatus === 'cancelled') {
     return (
-      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-2xl p-4 flex items-center gap-3">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl p-4 flex items-center gap-3">
         <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
         <div>
           <div className="font-bold text-sm text-red-900 dark:text-red-300">
@@ -191,13 +191,13 @@ export const SoilTestStatusTimeline: React.FC<SoilTestStatusTimelineProps> = ({
                   >
                     {t(step.titleKey) || step.defaultTitle}
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs sm:text-xs text-muted-foreground mt-0.5">
                     {historyEntry?.note || t(step.descKey) || step.defaultDesc}
                   </p>
                 </div>
 
                 {historyEntry?.created_at && (
-                  <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
+                  <span className="text-xs text-muted-foreground shrink-0 font-medium">
                     {formatDate(historyEntry.created_at, {
                       day: 'numeric',
                       month: 'short',

@@ -253,7 +253,7 @@ const CropPanel: React.FC<{
   const fmt = (v: number) => "₹" + Math.abs(v).toLocaleString("en-IN");
 
   return (
-    <div className={`bg-card rounded-2xl border-2 ${highlight ? "border-primary" : "border-border"} overflow-hidden shadow-card`}>
+    <div className={`bg-card rounded-xl border-2 ${highlight ? "border-primary" : "border-border"} overflow-hidden shadow-card`}>
       {/* crop image header */}
       <div className="relative h-28 overflow-hidden">
         <AgriImage
@@ -264,10 +264,10 @@ const CropPanel: React.FC<{
           loading="lazy"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
         <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
           <div>
-            <p className="text-white font-bold text-sm">{lang === "hi" ? crop.labelHi : crop.labelEn} {crop.emoji}</p>
+            <p className="text-white font-bold text-sm">{lang === "hi" ? crop.labelHi : crop.labelEn} </p>
             <p className="text-white/70 text-xs">{lang === "hi" ? crop.seasonHi : crop.season}</p>
           </div>
           {showRemove && onRemove && (
@@ -381,7 +381,7 @@ const CropPanel: React.FC<{
                 const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
                 window.open(url, "_blank", "noopener,noreferrer");
               }}
-              className="mt-3 w-full py-2 rounded-xl bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-95"
+              className="mt-3 w-full py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors "
             >
               <Share2 size={13} />
               {lang === "hi" ? "WhatsApp पर शेयर करें" : "Share on WhatsApp"}
@@ -422,14 +422,14 @@ const CropProfitCalculator: React.FC<CropProfitCalculatorProps> = ({ onToast }) 
   return (
     <div className="pb-24 pt-4 min-h-screen">
       {/* Hero */}
-      <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
+      <div className="relative mx-4 mb-5 rounded-xl overflow-hidden h-36 shadow-lg">
         <AgriImage
           type="crops"
           contextName="Crop profit calculator"
           alt="Agricultural crop field farming profit calculation"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-primary/80 pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-between px-5">
           <div>
             <h2 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
@@ -440,7 +440,7 @@ const CropProfitCalculator: React.FC<CropProfitCalculatorProps> = ({ onToast }) 
           {/* Language toggle */}
           <button
             onClick={() => setLang(lang === "en" ? "hi" : "en")}
-            className="flex items-center gap-1.5 bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-sm transition-colors"
+            className="flex items-center gap-1.5 bg-primary-foreground/20 hover:bg-primary-foreground/30 text-primary-foreground rounded-full px-3 py-1.5 text-xs font-semibold  transition-colors"
           >
             <Languages size={14} />
             {lang === "en" ? "हिंदी" : "English"}
@@ -450,7 +450,7 @@ const CropProfitCalculator: React.FC<CropProfitCalculatorProps> = ({ onToast }) 
 
       <div className="px-4 space-y-4">
         {/* Land size */}
-        <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
+        <div className="bg-card rounded-xl border border-border p-4 shadow-card">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
             {L.landLabel}
           </label>
@@ -526,7 +526,7 @@ const CropProfitCalculator: React.FC<CropProfitCalculatorProps> = ({ onToast }) 
             {cropKeys.length < 3 && (
               <button
                 onClick={addCrop}
-                className="w-full py-3 border-2 border-dashed border-primary/40 rounded-2xl text-primary text-sm font-medium flex items-center justify-center gap-2 hover:border-primary hover:bg-primary/5 transition-colors"
+                className="w-full py-3 border-2 border-dashed border-primary/40 rounded-xl text-primary text-sm font-medium flex items-center justify-center gap-2 hover:border-primary hover:bg-primary/5 transition-colors"
               >
                 <Plus size={16} /> {L.addCrop}
               </button>

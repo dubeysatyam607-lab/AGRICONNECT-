@@ -46,8 +46,8 @@ export const LanguageStep: React.FC<{ selected: Language; onSelect: (l: Language
       <div className="grid grid-cols-3 gap-2">
         {LANGUAGES.map((lang) => (
           <Chip key={lang.code} active={selected === lang.code} onClick={() => handleSelect(lang.code)} className="flex-col py-3.5">
-            <span className="text-base font-extrabold text-slate-800">{lang.native}</span>
-            <span className={`text-[10px] font-bold ${selected === lang.code ? 'text-emerald-600' : 'text-slate-400'}`}>{lang.name}</span>
+            <span className="text-base font-semibold text-slate-800">{lang.native}</span>
+            <span className={`text-xs font-bold ${selected === lang.code ? 'text-emerald-600' : 'text-slate-400'}`}>{lang.name}</span>
           </Chip>
         ))}
       </div>
@@ -57,7 +57,7 @@ export const LanguageStep: React.FC<{ selected: Language; onSelect: (l: Language
           disabled={!selected}
           onClick={onNext}
         />
-        <p className="mt-3 text-center text-[11px] text-slate-400">{interpolate(t('onb.lang.currently'), { lang: languageName })}</p>
+        <p className="mt-3 text-center text-xs text-slate-400">{interpolate(t('onb.lang.currently'), { lang: languageName })}</p>
       </div>
     </div>
   );

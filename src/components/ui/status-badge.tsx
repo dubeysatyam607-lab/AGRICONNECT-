@@ -21,7 +21,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
   return (
     <span
       className={cn(
-        "px-2.5 py-1 rounded-full text-xs font-semibold",
+        "px-2 py-1 rounded text-xs font-semibold",
         statusStyles[status] || "bg-muted text-muted-foreground",
         className
       )}

@@ -37,10 +37,10 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
   return (
     <div className="mt-4 space-y-4">
       {/* AI banner */}
-      <div className="rounded-2xl gradient-ai p-4 text-primary-foreground shadow-colorful">
+      <div className="rounded-xl gradient-ai p-4 text-primary-foreground ">
         <div className="flex items-center gap-2">
           <Bot size={16} />
-          <h2 className="text-sm font-black">{t('fnet.ai.title')}</h2>
+          <h2 className="text-sm font-semibold">{t('fnet.ai.title')}</h2>
         </div>
         <p className="mt-1.5 text-xs font-semibold leading-relaxed opacity-90">
           {interpolate(t('fnet.ai.subtitle'), { crop })}
@@ -50,7 +50,7 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
             <button
               key={d}
               onClick={() => { onGoTab('community'); onToast?.(d); }}
-              className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold backdrop-blur hover:bg-white/25"
+              className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-bold  hover:bg-white/25"
             >
               {d}
             </button>
@@ -74,12 +74,12 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
             <Avatar user={provider} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className="truncate text-xs font-black text-foreground">{provider.name}</span>
-                <span className="shrink-0 text-[10px] font-black text-forest">{provider.pricing}</span>
+                <span className="truncate text-xs font-semibold text-foreground">{provider.name}</span>
+                <span className="shrink-0 text-xs font-semibold text-forest">{provider.pricing}</span>
               </div>
               <div className="mt-0.5 flex items-center gap-2">
                 <StarRating rating={provider.rating} reviews={provider.reviews} size={10} showCount={false} />
-                <span className="truncate text-[10px] font-semibold text-muted-foreground">{reasons.join(' · ')}</span>
+                <span className="truncate text-xs font-semibold text-muted-foreground">{reasons.join(' · ')}</span>
               </div>
             </div>
           </button>
@@ -101,10 +101,10 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
           >
             <Avatar user={provider} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-black text-foreground">
+              <p className="truncate text-xs font-semibold text-foreground">
                 {provider.name} · <span className="text-forest">{provider.pricing}</span>
               </p>
-              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
             </div>
           </button>
         ))}
@@ -125,8 +125,8 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
           >
             <Avatar user={provider} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-black text-foreground">{provider.name}</p>
-              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
+              <p className="truncate text-xs font-semibold text-foreground">{provider.name}</p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
             </div>
           </button>
         ))}
@@ -147,10 +147,10 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
           >
             <Avatar user={buyer} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-black text-foreground">
+              <p className="truncate text-xs font-semibold text-foreground">
                 {buyer.name} · <span className="text-violet-500">{buyer.lookingFor}</span>
               </p>
-              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
             </div>
           </button>
         ))}
@@ -171,8 +171,8 @@ export const AiRecommendations: React.FC<AiRecommendationsProps> = ({
           >
             <Avatar user={farmer} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-black text-foreground">{farmer.name}</p>
-              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
+              <p className="truncate text-xs font-semibold text-foreground">{farmer.name}</p>
+              <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{reasons.join(' · ')}</p>
             </div>
           </button>
         ))}
@@ -189,15 +189,15 @@ const RecSection: React.FC<{
   onCta: () => void;
   children: React.ReactNode;
 }> = ({ icon: Icon, tint, title, cta, onCta, children }) => (
-  <section className="rounded-2xl border border-border bg-card p-3.5 shadow-card">
+  <section className="rounded-xl border border-border bg-card p-3.5 shadow-card">
     <div className="flex items-center justify-between">
-      <h3 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-muted-foreground">
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         <span className={cn('flex h-6 w-6 items-center justify-center rounded-lg', tint)}>
           <Icon size={13} />
         </span>
         {title}
       </h3>
-      <button onClick={onCta} className="flex items-center gap-0.5 text-[11px] font-bold text-forest hover:underline">
+      <button onClick={onCta} className="flex items-center gap-0.5 text-xs font-bold text-forest hover:underline">
         {cta}
         <ArrowRight size={11} />
       </button>

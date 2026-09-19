@@ -87,13 +87,13 @@ export const SoilHealthParametersCard: React.FC<SoilHealthParametersCardProps> =
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <h4 className="text-xs font-bold text-foreground">{meta.label}</h4>
-                    <p className="text-[10px] text-muted-foreground">{meta.sub}</p>
+                    <p className="text-xs text-muted-foreground">{meta.sub}</p>
                   </div>
                   {getStatusBadge(item.status)}
                 </div>
 
                 <div className="my-2 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-extrabold text-foreground tracking-tight">
+                  <span className="text-2xl font-semibold text-foreground tracking-tight">
                     {item.value}
                   </span>
                   <span className="text-xs text-muted-foreground font-semibold">
@@ -101,14 +101,14 @@ export const SoilHealthParametersCard: React.FC<SoilHealthParametersCardProps> =
                   </span>
                 </div>
 
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   <span className="font-medium">{t('soil.benchmark') || 'Standard Target'}:</span>{' '}
                   <span className="text-foreground font-semibold">{item.benchmark}</span>
                 </div>
               </div>
 
               {item.interpretation && (
-                <div className="mt-3 pt-2.5 border-t border-border/40 text-[11px] text-muted-foreground italic">
+                <div className="mt-3 pt-2.5 border-t border-border/40 text-xs text-muted-foreground italic">
                   {item.interpretation}
                 </div>
               )}
@@ -119,7 +119,7 @@ export const SoilHealthParametersCard: React.FC<SoilHealthParametersCardProps> =
 
       {/* Fertilizer & Crop Action Plan */}
       {report.recommendations && (
-        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-900/40 rounded-2xl p-5">
+        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-900/40 rounded-xl p-5">
           <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-2 mb-3">
             <Leaf className="w-4 h-4 text-emerald-600" />
             {t('soil.recommendation.title') || 'Laboratory Tailored Action & Fertilizer Schedule'}
@@ -158,7 +158,7 @@ export const SoilHealthParametersCard: React.FC<SoilHealthParametersCardProps> =
                       <span className="font-bold text-foreground">{f.item}</span>
                       <span className="text-muted-foreground ml-2">({f.timing})</span>
                     </div>
-                    <span className="font-extrabold text-emerald-700 dark:text-emerald-400 shrink-0">
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-400 shrink-0">
                       {f.dosePerAcre}
                     </span>
                   </div>

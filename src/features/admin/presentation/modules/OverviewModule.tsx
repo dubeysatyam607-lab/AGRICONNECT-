@@ -76,7 +76,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-red-200 bg-red-50 dark:bg-red-500/10 dark:border-red-500/30 px-6 py-16 text-center">
           <AlertTriangle className="h-10 w-10 text-red-500" />
           <div>
-            <p className="text-lg font-black text-foreground">{t('adm14')}</p>
+            <p className="text-lg font-semibold text-foreground">{t('adm14')}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {error === 'ADMIN_ROLE_REQUIRED'
                 ? 'Your account does not have the admin role. Contact a platform admin.'
@@ -117,7 +117,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           subtitle={`Real-time platform metrics · Last updated: ${lastRefreshed.toLocaleTimeString('en-IN')}`}
         />
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/50 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/50 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             LIVE
           </span>
@@ -135,14 +135,14 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
         <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-800 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
           <Activity className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            <span className="font-black">{t('adm15')}</span> The platform has no activity yet — metrics will populate live as farmers sign up, book tractors, and submit requests. Unmeasured channels (AI, payments, ratings) show 0 until tracking is connected.
+            <span className="font-semibold">{t('adm15')}</span> The platform has no activity yet — metrics will populate live as farmers sign up, book tractors, and submit requests. Unmeasured channels (AI, payments, ratings) show 0 until tracking is connected.
           </p>
         </div>
       )}
 
       {/* ALL 18 KPI CARDS GRID */}
       <div>
-        <h2 className="mb-3 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Platform Overview KPIs (18 Core Indicators)
         </h2>
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -177,7 +177,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-foreground">{t('adm16')}</p>
-              <p className="text-[11px] text-muted-foreground">{t('adm17')}</p>
+              <p className="text-xs text-muted-foreground">{t('adm17')}</p>
             </div>
             <button onClick={() => onNavigate('appAnalytics')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Analytics <ArrowRight className="h-3 w-3" />
@@ -212,7 +212,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-foreground">{t('adm18')}</p>
-              <p className="text-[11px] text-muted-foreground">{t('adm19')}</p>
+              <p className="text-xs text-muted-foreground">{t('adm19')}</p>
             </div>
             <button onClick={() => onNavigate('reports')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Reports <ArrowRight className="h-3 w-3" />
@@ -241,7 +241,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-foreground">{t('adm20')}</p>
-              <p className="text-[11px] text-muted-foreground">{t('adm21')}</p>
+              <p className="text-xs text-muted-foreground">{t('adm21')}</p>
             </div>
             <button onClick={() => onNavigate('tractorRentals')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Rentals <ArrowRight className="h-3 w-3" />
@@ -263,7 +263,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-foreground">{t('adm22')}</p>
-              <p className="text-[11px] text-muted-foreground">{t('adm23')}</p>
+              <p className="text-xs text-muted-foreground">{t('adm23')}</p>
             </div>
             <button onClick={() => onNavigate('farmers')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
               Farmers <ArrowRight className="h-3 w-3" />
@@ -299,7 +299,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
                   <item.icon className="h-4.5 w-4.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-lg font-black leading-none text-foreground">{fmtNumber(item.count)}</p>
+                  <p className="text-lg font-semibold leading-none text-foreground">{fmtNumber(item.count)}</p>
                   <p className="mt-1 truncate text-xs font-semibold text-muted-foreground">{item.label}</p>
                 </div>
                 <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />
@@ -324,7 +324,7 @@ export function OverviewModule({ onNavigate }: { onNavigate: (key: string) => vo
                   <AdminStatusBadge status={log.action} className="shrink-0" />
                   <div className="min-w-0">
                     <p className="line-clamp-2 text-xs font-medium text-foreground">{log.summary}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{log.actor} · {timeAgo(log.timestamp)}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{log.actor} · {timeAgo(log.timestamp)}</p>
                   </div>
                 </div>
               ))}

@@ -85,7 +85,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, 
               🔒
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-foreground">{t('chpw.title')}</h2>
+              <h2 className="text-base font-semibold text-foreground">{t('chpw.title')}</h2>
               <p className="text-xs text-muted-foreground">{t('chpw.subtitle')}</p>
             </div>
           </div>
@@ -100,17 +100,17 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, 
         </div>
 
         {sessionError && (
-          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium">
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium">
             ⚠️ {sessionError}
           </div>
         )}
         {state.error && (
-          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium animate-shake">
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium ">
             ⚠️ {state.error}
           </div>
         )}
         {fieldError && (
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-medium animate-shake">
+          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-medium ">
             ⚠️ {fieldError}
           </div>
         )}
@@ -128,7 +128,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, 
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
             />
           </div>
           )}
@@ -144,7 +144,7 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, 
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
             />
             <PasswordStrength password={newPassword} />
           </div>
@@ -160,14 +160,14 @@ export const ChangePasswordView: React.FC<IChangePasswordViewProps> = ({ token, 
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className={`w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border text-sm font-medium transition-all focus:outline-none focus:ring-2 ${
+              className={`w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border text-sm font-medium transition-all focus:outline-none focus:ring-2 ${
                 confirmPassword && confirmPassword !== newPassword
                   ? 'border-rose-500 focus:ring-rose-500'
                   : 'border-slate-200 dark:border-slate-700 focus:ring-emerald-500'
               }`}
             />
             {confirmPassword && confirmPassword !== newPassword && (
-              <p className="text-[11px] text-rose-500 font-bold pt-0.5">⚠️ {t('chpw.mismatch')}</p>
+              <p className="text-xs text-rose-500 font-bold pt-0.5">⚠️ {t('chpw.mismatch')}</p>
             )}
           </div>
 

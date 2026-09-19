@@ -1,5 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Home, LineChartIcon, Truck, CloudSun, Landmark, CircleHelp } from "lucide-react";
 import { SeoHead } from "@/components/seo/SeoHead";
 import { canonical, ogImage } from "@/lib/seo-config";
 
@@ -38,11 +39,11 @@ const NotFound = () => {
         jsonLd={jsonLd}
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white flex flex-col items-center justify-center px-6 py-20">
-        <p className="text-7xl md:text-8xl font-black text-emerald-400/60" aria-hidden="true">
+      <div className="min-h-screen bg-emerald-900 text-white flex flex-col items-center justify-center px-6 py-20">
+        <p className="text-7xl md:text-8xl font-semibold text-emerald-400/60" aria-hidden="true">
           {isGone ? '410' : '404'}
         </p>
-        <h1 className="text-2xl md:text-4xl font-black tracking-tight mt-4 text-center">
+        <h1 className="text-2xl md:text-4xl font-semibold tracking-tight mt-4 text-center">
           {isGone ? 'This Page Has Been Removed' : 'Page Not Found'}
         </h1>
         <p className="text-emerald-100/80 mt-3 max-w-xl text-center leading-relaxed">
@@ -53,19 +54,21 @@ const NotFound = () => {
 
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl w-full">
           {[
-            { to: '/', label: '🌾 Home' },
-            { to: '/mandi-prices/rajasthan', label: '📊 Mandi Bhav' },
-            { to: '/tractor-rental/jaipur', label: '🚜 Tractor Rental' },
-            { to: '/weather/jaipur', label: '⛅ Weather' },
-            { to: '/schemes/rajasthan', label: '🏛️ Schemes' },
-            { to: '/faq', label: '❓ FAQ' },
+            { to: '/', label: 'Home', icon: <Home className="h-4 w-4" /> },
+            { to: '/mandi-prices/rajasthan', label: 'Mandi Bhav', icon: <LineChartIcon className="h-4 w-4" /> },
+            { to: '/tractor-rental/jaipur', label: 'Tractor Rental', icon: <Truck className="h-4 w-4" /> },
+            { to: '/weather/jaipur', label: 'Weather', icon: <CloudSun className="h-4 w-4" /> },
+            { to: '/schemes/rajasthan', label: 'Schemes', icon: <Landmark className="h-4 w-4" /> },
+            { to: '/faq', label: 'FAQ', icon: <CircleHelp className="h-4 w-4" /> },
           ].map((link) => (
             <Link
               key={link.to + link.label}
               to={link.to}
-              className="rounded-xl bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3 text-sm font-semibold text-center hover:bg-white/20 transition-colors"
+              className="rounded-xl bg-white/10  border border-white/15 px-4 py-3 text-sm font-semibold text-center hover:bg-white/20 transition-colors"
             >
-              {link.label}
+              <span className="inline-flex items-center justify-center gap-2">
+                {link.icon} {link.label}
+              </span>
             </Link>
           ))}
         </div>

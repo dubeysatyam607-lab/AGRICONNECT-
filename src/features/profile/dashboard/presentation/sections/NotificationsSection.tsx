@@ -31,18 +31,18 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({ data
   return (
     <div className="space-y-5 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.notifications')}</h2>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.notifications')}</h2>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+      <div className="rounded-xl border border-border bg-card shadow-card divide-y divide-border/60">
         {GROUPS.map((g) => (
           <div key={g.key} className="flex items-center gap-4 p-4">
-            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${TONES[g.key]}`}>
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${TONES[g.key]}`}>
               {g.icon}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-extrabold text-foreground">{t(g.title)}</p>
-              <p className="text-[11px] text-muted-foreground leading-snug">{t(g.desc)}</p>
+              <p className="text-sm font-semibold text-foreground">{t(g.title)}</p>
+              <p className="text-xs text-muted-foreground leading-snug">{t(g.desc)}</p>
             </div>
             <Switch
               checked={data.notifPrefs[g.key]}
@@ -55,21 +55,21 @@ export const NotificationsSection: React.FC<NotificationsSectionProps> = ({ data
 
       <button
         onClick={() => onNavigate('notification-settings')}
-        className="w-full inline-flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-card hover:bg-muted/40 transition-colors"
+        className="w-full inline-flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-card hover:bg-muted/40 transition-colors"
       >
         <span className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600 dark:text-emerald-400">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-600 dark:text-emerald-400">
             <Send size={18} />
           </span>
           <span className="text-left">
-            <span className="block text-sm font-extrabold text-foreground">{t('prof.managePush')}</span>
-            <span className="block text-[11px] text-muted-foreground">{t('prof.pushDesc')}</span>
+            <span className="block text-sm font-semibold text-foreground">{t('prof.managePush')}</span>
+            <span className="block text-xs text-muted-foreground">{t('prof.pushDesc')}</span>
           </span>
         </span>
         <ArrowRight size={16} className="text-muted-foreground shrink-0" />
       </button>
 
-      <div className="rounded-2xl border border-feature-ai/20 bg-feature-ai/5 p-4 flex items-start gap-3">
+      <div className="rounded-xl border border-feature-ai/20 bg-feature-ai/5 p-4 flex items-start gap-3">
         <Bell size={18} className="mt-0.5 shrink-0 text-feature-ai" />
         <p className="text-xs text-muted-foreground leading-relaxed">{t('prof.notifInfo')}</p>
       </div>

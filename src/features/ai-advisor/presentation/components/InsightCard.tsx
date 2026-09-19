@@ -61,7 +61,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
   return (
     <article
       className={cn(
-        'rounded-2xl border border-border bg-card p-4 shadow-card transition-all',
+        'rounded-xl border border-border bg-card p-4 shadow-card transition-all',
         insight.severity === 'critical' && !insight.acked && 'bg-rose-500/[0.03]',
         insight.acked && 'opacity-70',
         'border-l-4',
@@ -69,21 +69,21 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
       )}
     >
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-ai text-primary-foreground shadow-colorful">
+        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-ai text-primary-foreground ">
           <Icon size={18} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t(`adv.type.${insight.type}`)}
             </span>
-            <span className={cn('rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide', style.badge)}>
+            <span className={cn('rounded-full px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide', style.badge)}>
               {style.label}
             </span>
-            <span className="ml-auto text-[10px] font-semibold text-muted-foreground">{when}</span>
+            <span className="ml-auto text-xs font-semibold text-muted-foreground">{when}</span>
           </div>
 
-          <h3 className="mt-1 text-sm font-black text-foreground">{title}</h3>
+          <h3 className="mt-1 text-sm font-semibold text-foreground">{title}</h3>
           <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{body}</p>
 
           {/* FIX 6: Trust signal instead of raw confidence % */}
@@ -92,7 +92,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
               'h-1.5 w-1.5 rounded-full',
               insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 55 ? 'bg-amber-500' : 'bg-rose-500',
             )} />
-            <span className="text-[10px] font-black text-muted-foreground">
+            <span className="text-xs font-semibold text-muted-foreground">
               {insight.confidence >= 80
                 ? 'Verified recommendation'
                 : insight.confidence >= 65
@@ -104,7 +104,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
           {/* Why (reasoning) */}
           <button
             onClick={() => setShowWhy((v) => !v)}
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-foreground"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-foreground"
           >
             <BrainCircuit size={12} />
             {t('adv.why')}
@@ -145,7 +145,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({ insight, onNavigate })
               </button>
             )}
             {insight.acked && (
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{t('adv.acked')}</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{t('adv.acked')}</span>
             )}
           </div>
         </div>

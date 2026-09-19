@@ -10,8 +10,8 @@ const AgriCard = React.forwardRef<HTMLDivElement, AgriCardProps>(
     <div
       ref={ref}
       className={cn(
-        "bg-card rounded-2xl shadow-card border border-border p-4 transition-all duration-200",
-        highlight && "border-primary/30 shadow-glow",
+        "bg-card rounded-xl border border-border p-4",
+        highlight && "border-primary/30",
         className
       )}
       {...props}

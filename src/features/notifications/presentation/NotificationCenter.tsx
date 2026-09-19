@@ -80,16 +80,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
       {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl gradient-hero text-primary-foreground shadow-colorful">
+          <span className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground ">
             <Bell size={19} />
             {unread > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-rose-600 text-white text-xs font-semibold flex items-center justify-center">
                 {unread}
               </span>
             )}
           </span>
           <div>
-            <h1 className="font-display text-xl font-black tracking-tight text-foreground">{t('notif.center.title')}</h1>
+            <h1 className=" text-xl font-semibold tracking-tight text-foreground">{t('notif.center.title')}</h1>
             <p className="text-xs font-semibold text-muted-foreground">
               {unread > 0
                 ? `${unread} ${t('notif.center.unread')}`
@@ -101,7 +101,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
           {unread > 0 && (
             <button
               onClick={markAllRead}
-              className="inline-flex items-center gap-1 rounded-xl border border-border bg-background/60 px-2.5 py-2 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1 rounded-xl border border-border bg-background/60 px-2.5 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
             >
               <CheckCheck size={14} />
               {t('notif.center.markAll')}
@@ -122,34 +122,34 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
 
       {/* Status strip */}
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-2xl border border-border bg-card p-3 shadow-card">
+        <div className="rounded-xl border border-border bg-card p-3 shadow-card">
           <div className="flex items-center gap-2 text-muted-foreground">
             <BellRing size={14} className="text-sky-500" />
-            <span className="text-[10px] font-black uppercase tracking-wider">{t('notif.center.unread')}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('notif.center.unread')}</span>
           </div>
-          <p className="mt-1 text-xl font-black text-foreground">{unread}</p>
+          <p className="mt-1 text-xl font-semibold text-foreground">{unread}</p>
         </div>
         <button
           onClick={() => setDnd({ ...prefs.dnd, enabled: !prefs.dnd.enabled })}
           className={cn(
-            'rounded-2xl border p-3 text-left shadow-card transition-colors',
+            'rounded-xl border p-3 text-left shadow-card transition-colors',
             inQuietHours ? 'border-indigo-400/60 bg-indigo-500/10' : 'border-border bg-card',
           )}
         >
           <div className="flex items-center gap-2 text-muted-foreground">
             <Moon size={14} className={inQuietHours ? 'text-indigo-500' : ''} />
-            <span className="text-[10px] font-black uppercase tracking-wider">DND</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">DND</span>
           </div>
-          <p className={cn('mt-1 text-sm font-black', inQuietHours ? 'text-indigo-600 dark:text-indigo-400' : 'text-foreground')}>
+          <p className={cn('mt-1 text-sm font-semibold', inQuietHours ? 'text-indigo-600 dark:text-indigo-400' : 'text-foreground')}>
             {prefs.dnd.enabled ? t('notif.center.dndOn') : t('notif.center.dndOff')}
           </p>
         </button>
-        <div className={cn('rounded-2xl border border-border bg-card p-3 shadow-card', queue > 0 && 'border-orange-400/50')}>
+        <div className={cn('rounded-xl border border-border bg-card p-3 shadow-card', queue > 0 && 'border-orange-400/50')}>
           <div className="flex items-center gap-2 text-muted-foreground">
             <WifiOff size={14} className={queue > 0 ? 'text-orange-500' : ''} />
-            <span className="text-[10px] font-black uppercase tracking-wider">{t('notif.center.queue')}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">{t('notif.center.queue')}</span>
           </div>
-          <p className="mt-1 text-xl font-black text-foreground">{queue}</p>
+          <p className="mt-1 text-xl font-semibold text-foreground">{queue}</p>
         </div>
       </div>
 
@@ -168,10 +168,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
 
       {/* Settings panel */}
       {showSettings && (
-        <section className="mt-4 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-card">
+        <section className="mt-4 space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
           <div className="flex items-center gap-2">
             <Settings2 size={16} className="text-muted-foreground" />
-            <h2 className="font-display text-sm font-black text-foreground">{t('notif.center.settings')}</h2>
+            <h2 className=" text-sm font-semibold text-foreground">{t('notif.center.settings')}</h2>
           </div>
 
           {/* Delivery */}
@@ -199,7 +199,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-foreground">{t('notif.center.push')}</p>
-              <p className="text-[11px] text-muted-foreground">{t('notif.center.pushHint')}</p>
+              <p className="text-xs text-muted-foreground">{t('notif.center.pushHint')}</p>
             </div>
             <Switch
               checked={prefs.pushEnabled && permission === 'granted'}
@@ -222,7 +222,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
                 <Moon size={15} className={prefs.dnd.enabled ? 'text-indigo-500' : 'text-muted-foreground'} />
                 <div>
                   <p className="text-sm font-bold text-foreground">{t('notif.center.dnd')}</p>
-                  <p className="text-[11px] text-muted-foreground">{t('notif.center.dndHint')}</p>
+                  <p className="text-xs text-muted-foreground">{t('notif.center.dndHint')}</p>
                 </div>
               </div>
               <Switch checked={prefs.dnd.enabled} onCheckedChange={(on) => setDnd({ ...prefs.dnd, enabled: on })} />
@@ -230,7 +230,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
             {prefs.dnd.enabled && (
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="block">
-                  <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('notif.center.from')}</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('notif.center.from')}</span>
                   <Select
                     value={prefs.dnd.start}
                     onValueChange={(v) => setDnd({ ...prefs.dnd, start: v })}
@@ -240,7 +240,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
                   </Select>
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('notif.center.to')}</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('notif.center.to')}</span>
                   <Select
                     value={prefs.dnd.end}
                     onValueChange={(v) => setDnd({ ...prefs.dnd, end: v })}
@@ -275,7 +275,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
                   >
                     <Icon size={15} className={enabled ? 'text-forest' : 'text-muted-foreground'} />
                     <span className="text-xs font-bold text-foreground">{t(`notif.category.${cat}`)}</span>
-                    {categories[cat] > 0 && <span className="ml-auto rounded-full bg-muted px-1.5 text-[10px] font-black text-muted-foreground">{categories[cat]}</span>}
+                    {categories[cat] > 0 && <span className="ml-auto rounded-full bg-muted px-1.5 text-xs font-semibold text-muted-foreground">{categories[cat]}</span>}
                   </button>
                 );
               })}
@@ -327,7 +327,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
           )}
         >
           {t('notif.center.filters.unread')}
-          {unread > 0 && <span className="ml-1.5 rounded-full bg-rose-600 px-1.5 text-[10px] font-black text-white">{unread}</span>}
+          {unread > 0 && <span className="ml-1.5 rounded-full bg-rose-600 px-1.5 text-xs font-semibold text-white">{unread}</span>}
         </button>
         {visibleCategories.map((cat) => (
           <button
@@ -346,10 +346,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
       {/* Pending (scheduled / DND-held) */}
       {pending.length > 0 && (
         <section className="mt-4" aria-label={t('notif.center.scheduled')}>
-          <h2 className="mb-2 flex items-center gap-1.5 px-1 text-[11px] font-black uppercase tracking-wider text-muted-foreground">
+          <h2 className="mb-2 flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Moon size={12} className="text-indigo-500" />
             {t('notif.center.scheduledList')}
-            <span className="rounded-full bg-indigo-500/15 px-1.5 text-[10px] font-black text-indigo-600 dark:text-indigo-400">{pending.length}</span>
+            <span className="rounded-full bg-indigo-500/15 px-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">{pending.length}</span>
           </h2>
           <div className="space-y-2.5">
             {pending.map((n) => (
@@ -368,7 +368,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ onNaviga
       {/* List */}
       <section className="mt-4 space-y-2.5" aria-label={t('notif.center.title')}>
         {list.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
             <BellRing size={36} className="mb-3 text-muted-foreground/40" />
             <p className="text-sm font-bold text-foreground">{t('notif.center.empty')}</p>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('notif.center.emptyHint')}</p>

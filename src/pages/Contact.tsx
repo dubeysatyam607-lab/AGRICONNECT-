@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Phone, MessageCircle, Mail, Building2, CircleCheck } from 'lucide-react';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage, SITE_CONFIG } from '@/lib/seo-config';
 import { organizationSchema } from '@/lib/structured-data';
@@ -75,13 +76,13 @@ const Contact: React.FC = () => {
       />
 
       <main className="min-h-screen bg-background pb-20">
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: t('nav.home'), path: '/' }, { label: t('legal.contact.title') }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight">{t('legal.contact.title')}</h1>
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">{t('legal.contact.title')}</h1>
             <p className="text-emerald-100/80 mt-3 max-w-2xl text-lg">
               {t('legal.contact.heroSubtitle')}
             </p>
@@ -96,14 +97,14 @@ const Contact: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {[
-                { icon: '📞', title: t('legal.contact.helplineTitle'), lines: ['+91-7067820256', t('legal.contact.helplineHours')] },
-                { icon: '💬', title: t('legal.contact.whatsappTitle'), lines: [t('legal.contact.whatsappLine')] },
-                { icon: '✉️', title: t('legal.contact.emailTitle'), lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
-                { icon: '🏢', title: t('legal.contact.officeTitle'), lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
+                { icon: <Phone className="h-4 w-4" />, title: t('legal.contact.helplineTitle'), lines: ['+91-7067820256', t('legal.contact.helplineHours')] },
+                { icon: <MessageCircle className="h-4 w-4" />, title: t('legal.contact.whatsappTitle'), lines: [t('legal.contact.whatsappLine')] },
+                { icon: <Mail className="h-4 w-4" />, title: t('legal.contact.emailTitle'), lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
+                { icon: <Building2 className="h-4 w-4" />, title: t('legal.contact.officeTitle'), lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
               ].map((c) => (
-                <div key={c.title} className="rounded-2xl border border-border bg-card p-5 shadow-card">
+                <div key={c.title} className="rounded-xl border border-border bg-card p-5 shadow-card">
                   <h3 className="font-bold text-foreground flex items-center gap-2">
-                    <span aria-hidden="true">{c.icon}</span> {c.title}
+                    <span aria-hidden="true" className="text-emerald-700">{c.icon}</span> {c.title}
                   </h3>
                   {c.lines.map((line) => (
                     <p key={line} className="text-muted-foreground text-sm mt-1">{line}</p>
@@ -112,7 +113,7 @@ const Contact: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-6 rounded-2xl gradient-hero text-primary-foreground p-6 shadow-card">
+            <div className="mt-6 rounded-xl gradient-hero text-primary-foreground p-6 shadow-card">
               <h3 className="font-bold text-lg">{t('legal.contact.exploreFirst')}</h3>
               <p className="text-sm text-primary-foreground/80 mt-1">
                 {t('legal.contact.faqHint')}
@@ -132,8 +133,8 @@ const Contact: React.FC = () => {
               {t('legal.contact.sendMessage')}
             </h2>
             {submitted ? (
-              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center" role="status" aria-live="polite">
-                <span className="text-4xl" aria-hidden="true">✅</span>
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center" role="status" aria-live="polite">
+                <CircleCheck className="w-10 h-10 text-emerald-600 mx-auto" strokeWidth={1.5} aria-hidden="true" />
                 <h3 className="font-bold text-foreground mt-3 text-lg">{t('legal.contact.messageReceived')}</h3>
                 <p className="text-muted-foreground mt-2">
                   {t('legal.contact.thanksNote', { name: form.name || t('legal.contact.defaultName') })}
@@ -146,7 +147,7 @@ const Contact: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 shadow-card space-y-4">
+              <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-6 shadow-card space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-1.5">{t('legal.contact.fullName')}</label>
                   <input

@@ -95,10 +95,10 @@ export const DialogContainer: React.FC = () => {
   const activeDialog = dialogs[dialogs.length - 1];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 ">
+      <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-xl p-6  border border-slate-200 dark:border-slate-800 space-y-4 ">
         <div className="space-y-1">
-          <h3 className="font-extrabold text-lg text-foreground tracking-tight">{activeDialog.title}</h3>
+          <h3 className="font-semibold text-lg text-foreground tracking-tight">{activeDialog.title}</h3>
           {activeDialog.description && (
             <p className="text-sm text-muted-foreground leading-relaxed">{activeDialog.description}</p>
           )}
@@ -108,17 +108,17 @@ export const DialogContainer: React.FC = () => {
           {activeDialog.cancelText !== null && (
             <button
               onClick={() => activeDialog.onCancel?.()}
-              className="px-4 py-2 rounded-2xl text-xs font-bold text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               {activeDialog.cancelText || 'Cancel'}
             </button>
           )}
           <button
             onClick={() => activeDialog.onConfirm?.()}
-            className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold shadow-md transition-all active:scale-95 ${
+            className={`px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md transition-all active:scale-95 ${
               activeDialog.variant === 'danger'
                 ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/20'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white '
             }`}
           >
             {activeDialog.confirmText || 'Confirm'}

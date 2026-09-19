@@ -23,12 +23,12 @@ interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = ({ user, size = 'md', className }) => {
-  const box = size === 'lg' ? 'h-12 w-12 text-sm' : size === 'sm' ? 'h-8 w-8 text-[10px]' : 'h-10 w-10 text-xs';
+  const box = size === 'lg' ? 'h-12 w-12 text-sm' : size === 'sm' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-xs';
   return (
     <div className={cn('relative shrink-0', className)}>
       <div
         className={cn(
-          'flex items-center justify-center rounded-2xl font-black tracking-tight',
+          'flex items-center justify-center rounded-xl font-semibold tracking-tight',
           box,
           TINTS[user.type],
         )}
@@ -64,7 +64,7 @@ interface BadgeChipProps {
 export const BadgeChip: React.FC<BadgeChipProps> = ({ badge, label }) => (
   <span
     className={cn(
-      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
+      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold',
       badge === 'farmer' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
       badge === 'provider' && 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
       badge === 'dealer' && 'bg-sky-500/10 text-sky-700 dark:text-sky-300',

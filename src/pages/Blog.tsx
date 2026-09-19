@@ -131,13 +131,13 @@ const Blog: React.FC = () => {
 
       <main className="min-h-screen bg-background pb-20">
         {/* Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Blogs' }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               Farming Blog
             </h1>
             <p className="text-emerald-100/85 mt-4 max-w-3xl text-lg leading-relaxed">
@@ -154,10 +154,10 @@ const Blog: React.FC = () => {
               <Link
                 key={a.title}
                 to={a.to}
-                className="group rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors flex flex-col"
+                className="group rounded-xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors flex flex-col"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
                     {a.category}
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">
@@ -176,7 +176,7 @@ const Blog: React.FC = () => {
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl bg-muted/40 border border-border p-6 text-center">
+          <div className="mt-10 rounded-xl bg-muted/40 border border-border p-6 text-center">
             <BookOpen className="mx-auto h-6 w-6 text-emerald-600" aria-hidden="true" />
             <h2 className="mt-2 font-bold text-foreground">Want deeper guides?</h2>
             <p className="mt-1 text-sm text-muted-foreground">

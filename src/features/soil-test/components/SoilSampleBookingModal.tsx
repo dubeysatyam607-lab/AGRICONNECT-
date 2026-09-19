@@ -132,7 +132,7 @@ export const SoilSampleBookingModal: React.FC<SoilSampleBookingModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="p-6 pb-4 bg-gradient-to-r from-emerald-700 to-teal-800 text-white rounded-t-lg">
+        <DialogHeader className="p-6 pb-4 bg-emerald-900 text-white rounded-t-lg">
           <div className="flex items-center gap-2">
             <FlaskConical className="w-5 h-5 text-emerald-300" />
             <DialogTitle className="text-lg sm:text-xl font-bold text-white">
@@ -184,21 +184,21 @@ export const SoilSampleBookingModal: React.FC<SoilSampleBookingModalProps> = ({
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-sm text-foreground">{pkg.name}</span>
                             {pkg.popular && (
-                              <Badge className="bg-emerald-600 text-white text-[10px] py-0 px-2">
+                              <Badge className="bg-emerald-600 text-white text-xs py-0 px-2">
                                 {isHindi ? 'सर्वाधिक लोकप्रिय' : 'Most Popular'}
                               </Badge>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground">{pkg.params}</p>
-                          <div className="flex items-center gap-2 text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                          <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                             <Clock className="w-3.5 h-3.5" />
                             <span>{isHindi ? 'रिपोर्ट समय:' : 'TAT:'} {pkg.tat}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-base font-extrabold text-foreground">₹{pkg.price}</span>
+                          <span className="text-base font-semibold text-foreground">₹{pkg.price}</span>
                           {lab.isGovtSubsidized && (
-                            <span className="block text-[10px] text-emerald-600 font-semibold">
+                            <span className="block text-xs text-emerald-600 font-semibold">
                               {isHindi ? 'सरकारी छूट उपलब्ध' : 'Govt Subsidized'}
                             </span>
                           )}
@@ -225,7 +225,7 @@ export const SoilSampleBookingModal: React.FC<SoilSampleBookingModalProps> = ({
                   >
                     <Truck className="w-4 h-4 mx-auto text-emerald-600" />
                     <div className="font-bold text-xs">{isHindi ? 'घर से पिकअप' : 'Doorstep Pickup'}</div>
-                    <div className="text-[10px] text-muted-foreground">₹{lab.homeCollectionFee || 50}</div>
+                    <div className="text-xs text-muted-foreground">₹{lab.homeCollectionFee || 50}</div>
                   </div>
 
                   <div
@@ -238,7 +238,7 @@ export const SoilSampleBookingModal: React.FC<SoilSampleBookingModalProps> = ({
                   >
                     <MapPin className="w-4 h-4 mx-auto text-emerald-600" />
                     <div className="font-bold text-xs">{isHindi ? 'लैब में जमा करें' : 'Direct Lab Drop'}</div>
-                    <div className="text-[10px] text-muted-foreground">{isHindi ? 'निःशुल्क (Free)' : 'Free'}</div>
+                    <div className="text-xs text-muted-foreground">{isHindi ? 'निःशुल्क (Free)' : 'Free'}</div>
                   </div>
                 </div>
               </div>

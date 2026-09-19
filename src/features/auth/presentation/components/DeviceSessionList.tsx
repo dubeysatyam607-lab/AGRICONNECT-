@@ -19,10 +19,10 @@ export const DeviceSessionList: React.FC<{ onClose?: () => void }> = ({ onClose 
   };
 
   return (
-    <div className="space-y-4 animate-fade-in p-1">
+    <div className="space-y-4 p-1">
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
         <div>
-          <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
             <span>🛡️</span> Active Device Sessions
           </h3>
           <p className="text-xs text-muted-foreground">
@@ -43,7 +43,7 @@ export const DeviceSessionList: React.FC<{ onClose?: () => void }> = ({ onClose 
           state.activeSessions.map((sess) => (
             <div
               key={sess.id}
-              className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
+              className={`p-3.5 rounded-xl border transition-all flex items-center justify-between ${
                 sess.isCurrentDevice
                   ? 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-950/20'
                   : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
@@ -57,12 +57,12 @@ export const DeviceSessionList: React.FC<{ onClose?: () => void }> = ({ onClose 
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-foreground">{sess.deviceName}</span>
                     {sess.isCurrentDevice && (
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-extrabold uppercase tracking-wider">
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-xs font-semibold uppercase tracking-wider">
                         This Device
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                     <span>IP: {sess.ipAddress || 'Unknown'}</span>
                     <span>•</span>
                     <span>
@@ -77,7 +77,7 @@ export const DeviceSessionList: React.FC<{ onClose?: () => void }> = ({ onClose 
       </div>
 
       <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <p className="text-[11px] text-rose-500 font-medium">
+        <p className="text-xs text-rose-500 font-medium">
           Recognize an unfamiliar device? Sign out everywhere immediately.
         </p>
         <AppButton

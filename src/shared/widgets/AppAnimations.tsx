@@ -13,7 +13,7 @@ export const FadeIn: React.FC<{ children: React.ReactNode; delayMs?: number; cla
   return (
     <div
       style={{ animationDelay: `${delayMs}ms` }}
-      className={`animate-fade-in fill-mode-both ${className}`}
+      className={`fill-mode-both ${className}`}
     >
       {children}
     </div>
@@ -28,7 +28,7 @@ export const SlideUp: React.FC<{ children: React.ReactNode; delayMs?: number; cl
   return (
     <div
       style={{ animationDelay: `${delayMs}ms` }}
-      className={`animate-slide-up fill-mode-both ${className}`}
+      className={` fill-mode-both ${className}`}
     >
       {children}
     </div>
@@ -43,7 +43,7 @@ export const ScaleIn: React.FC<{ children: React.ReactNode; delayMs?: number; cl
   return (
     <div
       style={{ animationDelay: `${delayMs}ms` }}
-      className={`animate-scale-in fill-mode-both ${className}`}
+      className={` fill-mode-both ${className}`}
     >
       {children}
     </div>
@@ -58,7 +58,7 @@ export const StaggerContainer: React.FC<{ children: React.ReactNode[]; staggerMs
   return (
     <div className={className}>
       {React.Children.map(children, (child, index) => (
-        <div style={{ animationDelay: `${index * staggerMs}ms` }} className="animate-slide-up fill-mode-both">
+        <div style={{ animationDelay: `${index * staggerMs}ms` }} className=" fill-mode-both">
           {child}
         </div>
       ))}

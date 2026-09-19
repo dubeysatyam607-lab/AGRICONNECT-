@@ -63,7 +63,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
   return (
     <article
       className={cn(
-        'relative rounded-2xl border bg-card p-3.5 shadow-card transition-all',
+        'relative rounded-xl border bg-card p-3.5 shadow-card transition-all',
         !notification.read && 'border-l-4',
         SEVERITY_RING[notification.severity],
         !notification.read ? 'bg-muted/40' : 'opacity-90',
@@ -76,20 +76,20 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t(`notif.category.${notification.category}`)}
             </span>
             {severityLabel && (
               <span
                 className={cn(
-                  'rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide',
+                  'rounded-full px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
                   notification.severity === 'critical' ? 'bg-rose-600 text-white' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
                 )}
               >
                 {severityLabel}
               </span>
             )}
-            <span className="ml-auto text-[10px] font-semibold text-muted-foreground">
+            <span className="ml-auto text-xs font-semibold text-muted-foreground">
               {isPending ? (
                 <span className="inline-flex items-center gap-1 text-sky-600 dark:text-sky-400">
                   <Clock size={11} />
@@ -99,7 +99,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                 timeAgo(notification.createdAt, localeFor(language))
               )}
             </span>
-            {!notification.read && <span className="h-2 w-2 shrink-0 rounded-full bg-sky-500 animate-live-pulse" />}
+            {!notification.read && <span className="h-2 w-2 shrink-0 rounded-full bg-sky-500 " />}
           </div>
 
           <p className={cn('mt-1 text-[13px] leading-snug text-foreground', notification.read ? 'font-semibold' : 'font-bold')}>
@@ -129,7 +129,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
             {!notification.read && (
               <button
                 onClick={() => onRead(notification.id)}
-                className="rounded-lg px-2 py-1.5 text-[11px] font-bold text-muted-foreground hover:text-foreground"
+                className="rounded-lg px-2 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
               >
                 {t('notif.action.markRead')}
               </button>

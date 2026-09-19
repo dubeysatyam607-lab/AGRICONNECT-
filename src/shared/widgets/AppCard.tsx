@@ -21,17 +21,17 @@ export const AppCard: React.FC<IAppCardProps> = ({
   onClick,
   ...props
 }) => {
-  const baseStyles = 'rounded-3xl transition-all duration-300 relative overflow-hidden';
+  const baseStyles = 'rounded-xl transition-all duration-300 relative overflow-hidden';
 
   const variantStyles: Record<string, string> = {
     surface: 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm',
-    glass: 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-slate-800/60 shadow-lg shadow-slate-900/5',
-    elevated: 'bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/10 border border-transparent dark:border-slate-800',
+    glass: 'bg-white/70 dark:bg-slate-900/70  border border-white/40 dark:border-slate-800/60 shadow-lg shadow-slate-900/5',
+    elevated: 'bg-white dark:bg-slate-900  shadow-slate-900/10 border border-transparent dark:border-slate-800',
     outlined: 'bg-transparent border-2 border-slate-200 dark:border-slate-800 shadow-none',
   };
 
   const interactiveStyles = isInteractive
-    ? 'cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] group'
+    ? 'cursor-pointer hover: hover:-translate-y-1 active:scale-[0.98] group'
     : '';
 
   const paddingStyles: Record<string, string> = {

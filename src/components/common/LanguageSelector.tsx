@@ -26,7 +26,7 @@ export const LanguageSelector: React.FC = () => {
     <div className="relative z-50">
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-2xl glass-dock px-3.5 py-2 text-xs font-bold text-foreground border border-border shadow-sm hover:scale-105 transition-all tap-bounce"
+        className="flex items-center gap-1.5 rounded-xl glass-dock px-3.5 py-2 text-xs font-bold text-foreground border border-border shadow-sm hover:scale-105 transition-all tap-bounce"
         aria-label={t('onb.lang.title') || 'Choose language'}
       >
         <Globe size={15} className="text-emerald-600 dark:text-emerald-400" />
@@ -35,17 +35,17 @@ export const LanguageSelector: React.FC = () => {
 
       {open && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60  p-4 animate-in fade-in duration-200"
           onClick={() => setOpen(false)}
         >
           <div 
-            className="bg-card border border-border rounded-3xl shadow-2xl p-6 w-full max-w-sm max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl  p-6 w-full max-w-sm max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <Globe size={18} className="text-emerald-600 dark:text-emerald-400" />
-                <h2 className="text-base font-extrabold text-foreground">
+                <h2 className="text-base font-semibold text-foreground">
                   {t('onb.lang.title') || 'Choose Language / भाषा चुनें'}
                 </h2>
               </div>
@@ -65,9 +65,9 @@ export const LanguageSelector: React.FC = () => {
                   <li key={code}>
                     <button
                       onClick={() => handleSelect(code)}
-                      className={`w-full flex items-center justify-between text-left rounded-2xl px-4 py-3 text-sm font-bold transition-all tap-bounce ${
+                      className={`w-full flex items-center justify-between text-left rounded-xl px-4 py-3 text-sm font-bold transition-all tap-bounce ${
                         isSelected 
-                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/25' 
+                          ? 'bg-emerald-700 text-white shadow-md ' 
                           : 'hover:bg-muted/70 text-foreground'
                       }`}
                     >
@@ -81,7 +81,7 @@ export const LanguageSelector: React.FC = () => {
 
             <button
               onClick={() => setOpen(false)}
-              className="mt-2 w-full rounded-2xl bg-muted py-2.5 text-xs font-bold text-foreground hover:bg-muted/80 transition-colors"
+              className="mt-2 w-full rounded-xl bg-muted py-2.5 text-xs font-bold text-foreground hover:bg-muted/80 transition-colors"
             >
               {t('common.close') || t('common.back') || 'Done'}
             </button>

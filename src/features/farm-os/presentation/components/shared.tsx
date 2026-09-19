@@ -53,7 +53,7 @@ export const calendarIcons: Record<CalendarType, React.ComponentType<{ size?: nu
 };
 
 export const EmptyState: React.FC<{ icon: React.ComponentType<{ size?: number; className?: string }>; text: string }> = ({ icon: Icon, text }) => (
-  <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-card/50 px-4 py-8 text-center">
+  <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-card/50 px-4 py-8 text-center">
     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
       <Icon size={17} />
     </span>
@@ -84,8 +84,8 @@ export const HealthRing: React.FC<{ score: number; size?: number }> = ({ score, 
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-2xl font-black tracking-tight text-foreground">{pct}</span>
-        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">/ 100</span>
+        <span className=" text-2xl font-semibold tracking-tight text-foreground">{pct}</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">/ 100</span>
       </div>
     </div>
   );

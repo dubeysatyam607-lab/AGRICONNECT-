@@ -52,13 +52,13 @@ export const FarmDetailsStep: React.FC<{
               return (
                 <Chip key={size.label} active={data.farmSize === size.value} onClick={() => pickSize(size.value, size.unit)} className="flex-col py-3">
                   <span className="text-sm">{parts.range}</span>
-                  <span className="text-[10px] font-bold text-slate-400">{sizeCategoryLabel[parts.category] ?? parts.category}</span>
+                  <span className="text-xs font-bold text-slate-400">{sizeCategoryLabel[parts.category] ?? parts.category}</span>
                 </Chip>
               );
             })}
           </div>
           {data.farmSize !== '' && (
-            <p className="mt-2 text-[11px] font-bold text-emerald-600">
+            <p className="mt-2 text-xs font-bold text-emerald-600">
               {interpolate(t('onb.farm.confirmed'), { size: data.farmSize, unit: t(`opt:${data.landUnit}`) })}
             </p>
           )}

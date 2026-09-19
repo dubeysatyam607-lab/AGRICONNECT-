@@ -209,7 +209,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
         {/* Success Confirmation Screen */}
         {createdOrderNumber ? (
           <div className="py-6 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300 mx-auto flex items-center justify-center animate-bounce">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300 mx-auto flex items-center justify-center ">
               <CheckCircle2 className="w-9 h-9" />
             </div>
             <div className="space-y-1">
@@ -279,7 +279,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                                 {isHindi ? pkg.hindiName : pkg.name}
                               </h4>
                               {pkg.popular && (
-                                <Badge className="bg-emerald-600 text-white text-[10px] py-0 px-2">
+                                <Badge className="bg-emerald-600 text-white text-xs py-0 px-2">
                                   {isHindi ? 'सर्वाधिक लोकप्रिय' : 'Most Popular'}
                                 </Badge>
                               )}
@@ -292,7 +292,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                               {pkg.parameters.map((param, i) => (
                                 <span
                                   key={i}
-                                  className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-muted-foreground"
+                                  className="text-xs px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-muted-foreground"
                                 >
                                   {param}
                                 </span>
@@ -301,13 +301,13 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                           </div>
 
                           <div className="text-right shrink-0">
-                            <div className="text-lg font-extrabold text-emerald-600">₹{pkg.price}</div>
+                            <div className="text-lg font-semibold text-emerald-600">₹{pkg.price}</div>
                             {pkg.originalPrice && (
                               <div className="text-xs text-muted-foreground line-through">
                                 ₹{pkg.originalPrice}
                               </div>
                             )}
-                            <span className="text-[10px] text-muted-foreground block mt-1">
+                            <span className="text-xs text-muted-foreground block mt-1">
                               {pkg.turnaroundDays} {isHindi ? 'दिन में' : 'days'}
                             </span>
                           </div>
@@ -513,7 +513,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-sm font-bold">{isHindi ? 'कुल देय राशि:' : 'Total Amount:'}</span>
-                    <span className="text-xl font-extrabold text-emerald-600">₹{selectedPkg.price}</span>
+                    <span className="text-xl font-semibold text-emerald-600">₹{selectedPkg.price}</span>
                   </div>
                 </div>
 

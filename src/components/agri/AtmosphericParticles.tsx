@@ -58,9 +58,9 @@ const AtmosphericParticles: React.FC = () => {
               <path d="M17 8C8 10 5 16 5 22C11 22 17 19 19 10C19.5 7.5 19 5.5 17 4C15.5 2 13.5 1.5 11 2C2 4 -1 10 1 18" />
             </svg>
           ) : p.type === "sunbeam" ? (
-            <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-300/30 via-amber-400/15 to-transparent blur-md animate-pulse" />
+            <div className="w-full h-full rounded-full bg-amber-500 blur-md animate-pulse" />
           ) : (
-            <div className="w-full h-full rounded-full bg-amber-400/60 dark:bg-amber-300/50 shadow-[0_0_10px_rgba(251,191,36,0.7)]" />
+            <div className="w-full h-full rounded-full bg-amber-400/60 dark:bg-amber-300/50 " />
           )}
         </div>
       ))}

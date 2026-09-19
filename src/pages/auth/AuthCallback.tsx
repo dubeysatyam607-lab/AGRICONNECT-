@@ -118,23 +118,23 @@ export const AuthCallback: React.FC = () => {
   }, [navigate, hi]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-emerald-900 text-white flex flex-col items-center justify-center px-6">
       <SeoHead title="Signing In — AgriConnect" description="Completing your AgriConnect sign-in." noindex />
       <div className="relative flex flex-col items-center max-w-sm w-full text-center">
         <div className="relative flex items-center justify-center mb-6">
           <span className="absolute inline-flex h-24 w-24 animate-ping rounded-full bg-emerald-400/20" style={{ animationDuration: '2s' }} />
-          <Logo size={72} className="drop-shadow-2xl shadow-emerald-500/40 animate-pulse" />
+          <Logo size={72} className="drop-  animate-pulse" />
         </div>
         
         {errorMsg ? (
           <div className="w-full space-y-4">
-            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold animate-shake">
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold ">
               ⚠️ {errorMsg}
             </div>
             <button
               type="button"
               onClick={() => navigate('/auth/login', { replace: true })}
-              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-extrabold py-3 px-4 shadow-lg shadow-emerald-900/40 transition-colors"
+              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-3 px-4 shadow-lg  transition-colors"
             >
               {hi ? 'साइन इन पर वापस जाएं' : 'Back to Sign In'}
             </button>

@@ -82,13 +82,13 @@ export const SoilSamplingGuideModal: React.FC<SoilSamplingGuideModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-xl">
         <DialogHeader className="mb-4">
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
             {t('soil.guide.eyebrow') || 'Standard ICAR Scientific Protocol'}
           </div>
-          <DialogTitle className="text-xl font-extrabold text-foreground">
+          <DialogTitle className="text-xl font-semibold text-foreground">
             {t('soil.guide.title') || 'Visual Soil Sampling Guide (Mitti Namuna Vidhi)'}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -97,12 +97,12 @@ export const SoilSamplingGuideModal: React.FC<SoilSamplingGuideModalProps> = ({
         </DialogHeader>
 
         {/* Visual Zig-zag representation diagram */}
-        <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-2xl p-5 mb-6">
+        <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
               {t('soil.guide.diagramTitle') || 'Field Pattern Illustration (Zig-Zag "W" Path)'}
             </span>
-            <span className="text-[11px] bg-emerald-600 text-white font-semibold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-emerald-600 text-white font-semibold px-2 py-0.5 rounded-full">
               5 Spots · 15 cm Depth
             </span>
           </div>
@@ -119,15 +119,15 @@ export const SoilSamplingGuideModal: React.FC<SoilSamplingGuideModalProps> = ({
                 key={idx}
                 className="bg-white/80 dark:bg-card/80 border border-emerald-300/60 dark:border-emerald-700/60 rounded-xl p-2.5 shadow-sm flex flex-col items-center"
               >
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center mb-1">
+                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-semibold flex items-center justify-center mb-1">
                   {idx + 1}
                 </div>
                 <div className="text-xs font-bold text-foreground">{spot.label}</div>
-                <div className="text-[10px] text-muted-foreground">{spot.sub}</div>
+                <div className="text-xs text-muted-foreground">{spot.sub}</div>
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-emerald-800 dark:text-emerald-300 text-center mt-2">
+          <p className="text-xs text-emerald-800 dark:text-emerald-300 text-center mt-2">
             Collect ~200g from each of the 5 spots, mix into 1 composite 500g sample.
           </p>
         </div>
@@ -146,7 +146,7 @@ export const SoilSamplingGuideModal: React.FC<SoilSamplingGuideModalProps> = ({
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       STEP {s.step}
                     </span>
                     <h4 className="text-xs font-bold text-foreground">{s.title}</h4>
@@ -159,7 +159,7 @@ export const SoilSamplingGuideModal: React.FC<SoilSamplingGuideModalProps> = ({
         </div>
 
         {/* Do's and Don'ts */}
-        <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-2xl p-4 mb-4">
+        <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-xl p-4 mb-4">
           <h4 className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5 mb-3">
             <AlertTriangle className="w-4 h-4 text-amber-600" />
             {t('soil.guide.precautions') || 'Critical Precautions (Savdhaniya)'}

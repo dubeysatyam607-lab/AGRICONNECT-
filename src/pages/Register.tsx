@@ -73,28 +73,22 @@ export const Register = () => {
   ];
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-4 py-12">
+    <div className="relative min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <SeoHead title="Sign Up — AgriConnect" description="Create your AgriConnect account to access AI farming tools, live mandi prices, and crop disease detection." noindex />
 
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md animate-fade-in">
+      <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Logo variant="full" className="h-10" />
         </div>
 
         {/* Card */}
-        <div className="rounded-3xl border border-border bg-card/80 backdrop-blur-xl shadow-card p-6 sm:p-8">
+        <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
           <div className="text-center mb-6">
-            <h1 className="font-display font-bold text-2xl tracking-tight text-foreground">
+            <h1 className="type-h1">
               {hi ? 'खाता बनाएँ' : 'Create Account'}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="type-small text-muted-foreground mt-1">
               {hi ? 'कृषि तकनीक से जुड़ें' : 'Join the farming revolution'}
             </p>
           </div>
@@ -114,9 +108,9 @@ export const Register = () => {
                   required={f.required}
                   autoComplete={f.name === 'confirmPassword' ? 'new-password' : f.name}
                   className={cn(
-                    "pl-10 h-12 rounded-xl bg-background/60 border-border/60 text-sm font-medium",
-                    "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40",
-                    "transition-all duration-200"
+                    "pl-10 h-12 rounded-lg bg-card border-border type-body",
+                    "focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40",
+                    "transition-colors"
                   )}
                 />
               </div>
@@ -131,9 +125,9 @@ export const Register = () => {
                 value={form.language}
                 onChange={handleChange}
                 className={cn(
-                  "w-full h-12 pl-10 pr-4 rounded-xl bg-background/60 border border-border/60 text-sm font-medium",
+                  "w-full h-12 pl-10 pr-4 rounded-lg bg-card border border-border type-body",
                   "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40",
-                  "transition-all duration-200 appearance-none text-foreground"
+                  "transition-colors appearance-none text-foreground"
                 )}
               >
                 {LANGUAGE_OPTIONS.map((opt) => (
@@ -146,11 +140,9 @@ export const Register = () => {
               type="submit"
               disabled={loading}
               className={cn(
-                "w-full h-12 rounded-xl font-bold text-sm gap-2",
+                "w-full h-12 rounded-lg font-semibold type-body gap-2",
                 "bg-primary text-primary-foreground hover:bg-primary/90",
-                "active:scale-[0.98] transition-all duration-200",
-                "shadow-md shadow-primary/20"
-              )}
+                "transition-colors"              )}
             >
               {loading ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -163,11 +155,11 @@ export const Register = () => {
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-[13px] text-muted-foreground">
+          <p className="mt-5 text-center type-small text-muted-foreground">
             {hi ? 'पहले से खाता है?' : 'Already have an account?'}{' '}
             <button
               onClick={() => navigate('/auth')}
-              className="font-bold text-primary hover:text-primary/80 transition-colors"
+              className="font-semibold text-primary hover:underline transition-colors"
             >
               {hi ? 'लॉग इन करें' : 'Sign In'}
             </button>

@@ -38,14 +38,14 @@ export const InterestsStep: React.FC<{
                   : [...data.interests, interest.id];
                 set({ interests: next });
               }}
-              className={`flex items-center gap-3 rounded-2xl border-2 bg-white p-4 text-left transition-all duration-150 active:scale-[0.98] ${
+              className={`flex items-center gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all duration-150 active:scale-[0.98] ${
                 active ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-slate-200 hover:border-emerald-300'
               }`}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-lime-100 text-xl">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-xl">
                 {interest.emoji}
               </span>
-              <span className="flex-1 text-sm font-extrabold text-slate-800">{interest.label}</span>
+              <span className="flex-1 text-sm font-semibold text-slate-800">{interest.label}</span>
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
                   active ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-transparent'

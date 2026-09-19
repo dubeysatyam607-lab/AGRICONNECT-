@@ -36,7 +36,7 @@ const SEASONS: ICalendarSeason[] = [
   {
     id: "kharif",
     icon: "🌧️",
-    color: "from-green-600/80 to-emerald-500/60",
+    color: " ",
     bgColor: "bg-green-50 dark:bg-green-950/20",
     borderColor: "border-green-300 dark:border-green-700",
     image: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
@@ -52,7 +52,7 @@ const SEASONS: ICalendarSeason[] = [
   {
     id: "rabi",
     icon: "❄️",
-    color: "from-amber-600/80 to-yellow-500/60",
+    color: " ",
     bgColor: "bg-amber-50 dark:bg-amber-950/20",
     borderColor: "border-amber-300 dark:border-amber-700",
     image: "https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
@@ -68,7 +68,7 @@ const SEASONS: ICalendarSeason[] = [
   {
     id: "zaid",
     icon: "☀️",
-    color: "from-orange-600/80 to-red-500/60",
+    color: " ",
     bgColor: "bg-orange-50 dark:bg-orange-950/20",
     borderColor: "border-orange-300 dark:border-orange-700",
     image: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
@@ -171,7 +171,7 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
         {/* ── Season Guide Tab ── */}
         <TabsContent value="seasons" className="px-4 space-y-6">
           {SEASONS.map((season) => (
-            <div key={season.id} className={`rounded-2xl overflow-hidden border ${season.borderColor}`}>
+            <div key={season.id} className={`rounded-xl overflow-hidden border ${season.borderColor}`}>
               {/* Season Banner */}
               <div className="relative h-32 overflow-hidden">
                 <AgriImage
@@ -181,12 +181,12 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
                   alt={`${t(`crop.${season.id}`)} farming season`}
                   className="w-full h-full object-cover"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-r ${season.color} pointer-events-none`} />
+                <div className={`absolute inset-0 bg-emerald-700 ${season.color} pointer-events-none`} />
                 <div className="absolute inset-0 flex items-center px-5 pointer-events-none">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-2xl">{season.icon}</span>
-                      <h3 className="text-white text-2xl font-black">
+                      <h3 className="text-white text-2xl font-semibold">
                         {t(`crop.${season.id}`)}
                       </h3>
                     </div>
@@ -204,7 +204,7 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
                   <button
                     key={c.id}
                     onClick={() => setExpandedCrop(expandedCrop === `${season.id}-${c.id}` ? null : `${season.id}-${c.id}`)}
-                    className="bg-card rounded-2xl overflow-hidden border border-border text-left shadow-sm hover:shadow-md transition-shadow"
+                    className="bg-card rounded-xl overflow-hidden border border-border text-left shadow-sm hover:shadow-md transition-shadow"
                   >
                     {/* Crop Photo */}
                     <div className="h-24 overflow-hidden relative">
@@ -216,9 +216,9 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
                       {farmer.cropIdSet.has(c.id) && (
-                        <span className="absolute top-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm">
+                        <span className="absolute top-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground shadow-sm">
                           ★ {t('crop.yourCrop')}
                         </span>
                       )}

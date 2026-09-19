@@ -26,7 +26,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
         <div className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-amber-500/20 blur-[130px]" />
         <div className="relative flex flex-col items-center">
           <span className="absolute inline-flex h-32 w-32 animate-ping rounded-full bg-emerald-400/20" style={{ animationDuration: '2.4s' }} />
-          <Logo size={72} className="drop-shadow-2xl shadow-emerald-500/40" />
+          <Logo size={72} className="drop- " />
         </div>
         <span className="sr-only">Loading</span>
       </div>

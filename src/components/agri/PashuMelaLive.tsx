@@ -443,7 +443,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
         {filteredListings.map((animal) => {
           const cattleName = `${animal.breed} ${animal.type}`;
           return (
-            <div key={animal.id} className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+            <div key={animal.id} className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
               {/* Full-width image */}
               <div className="relative h-52 overflow-hidden bg-slate-900/40">
                 <SafeImage
@@ -454,7 +454,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                   alt={`${animal.breed} ${animal.type}`}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-emerald-700" />
                 {animal.is_verified && (
                   <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
                     ✓ Verified
@@ -469,7 +469,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                       <MapPin size={12} /> {animal.location}
                     </p>
                   </div>
-                  <span className="text-xl font-bold text-white bg-primary/80 px-3 py-1 rounded-xl backdrop-blur-sm">
+                  <span className="text-xl font-bold text-white bg-primary/80 px-3 py-1 rounded-xl ">
                     ₹{animal.price.toLocaleString()}
                   </span>
                 </div>

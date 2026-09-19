@@ -103,14 +103,14 @@ const SnackbarItem: React.FC<{ item: ISnackbarMessage; onDismiss: () => void }> 
 
   const bgClasses: Record<SnackbarVariant, string> = {
     default: 'bg-slate-900 text-white dark:bg-slate-800 border-slate-700',
-    success: 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/20',
+    success: 'bg-emerald-600 text-white border-emerald-500 ',
     error: 'bg-rose-600 text-white border-rose-500 shadow-rose-500/20',
-    warning: 'bg-amber-600 text-white border-amber-500 shadow-amber-500/20',
+    warning: 'bg-amber-600 text-white border-amber-500 ',
   };
 
   return (
     <div
-      className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-2xl shadow-xl border backdrop-blur-md animate-slide-up transition-all duration-300 ${bgClasses[item.variant]}`}
+      className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-xl  border   transition-all duration-300 ${bgClasses[item.variant]}`}
     >
       <div className="flex-1 text-sm">
         {item.title && <p className="font-bold tracking-tight text-xs uppercase mb-0.5 opacity-90">{item.title}</p>}

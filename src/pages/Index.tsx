@@ -1,6 +1,8 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "@/components/agri/BottomNav";
+import { DesktopSidebar } from "@/components/agri/DesktopSidebar";
+import { Leaf } from "lucide-react";
 import { ChunkErrorBoundary } from "@/components/ui/ChunkErrorBoundary";
 import ToastNotification from "@/components/agri/ToastNotification";
 import { useToastNotification } from "@/hooks/use-toast-notification";
@@ -560,7 +562,7 @@ const getTabFromPath = (path: string) => {
 
       {/* Floating Action Area for PWA Install & Sync Badge */}
       {!isFullScreen && (
-        <div className="fixed bottom-24 right-4 z-50 pointer-events-none flex flex-col gap-3 items-end">
+        <div className="fixed bottom-24 right-4 z-50 pointer-events-none flex flex-col gap-3 items-end lg:bottom-6">
           {queueCount > 0 && (
             <div className="pointer-events-auto bg-orange-500 text-white text-xs font-bold px-3 py-2 rounded-full shadow-lg flex items-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -570,6 +572,16 @@ const getTabFromPath = (path: string) => {
               {queueCount} Offline Updates
             </div>
           )}
+          {activeTab !== "ai-chat" && (
+            <button
+              onClick={() => setActiveTab("ai-chat")}
+              aria-label="Ask Kisan Saathi"
+              className="pointer-events-auto group flex min-h-[44px] items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Leaf size={18} aria-hidden="true" />
+              <span className="hidden type-small font-semibold sm:inline">Kisan Saathi</span>
+            </button>
+          )}
           <div className="pointer-events-auto">
             <InstallPWAButton />
           </div>
@@ -577,27 +589,37 @@ const getTabFromPath = (path: string) => {
       )}
       
       {/* Full-width responsive container */}
-      <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-screen-2xl px-4 sm:px-6 md:px-8 pb-28 sm:pb-32"}>
-        <h1 className="sr-only">AgriConnect Dashboard</h1>
-        <Suspense fallback={
-          <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
-            <span className="h-10 w-10 rounded-full border-3 border-emerald-600 border-t-transparent animate-spin mb-3" />
-            <span className="text-sm font-bold text-emerald-800">Loading AgriConnect Dashboard...</span>
-          </div>
-        }>
-          <ChunkErrorBoundary key={activeTab} label={activeTab}>
-            {renderContent()}
-          </ChunkErrorBoundary>
-        </Suspense>
-      </main>
+      <div className={isFullScreen ? "" : "lg:flex lg:items-start"}>
+        {!isFullScreen && (
+          <DesktopSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        )}
+        <div className={isFullScreen ? "" : "min-w-0 flex-1"}>
+          <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-screen-2xl px-4 sm:px-6 md:px-8 pb-28 sm:pb-32 lg:pb-12"}>
+            <h1 className="sr-only">AgriConnect Dashboard</h1>
+            <Suspense fallback={
+              <div className="min-h-[60vh] flex items-center justify-center p-6">
+                <div className="flex items-center gap-3">
+                  <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+                  <span className="text-sm font-medium text-muted-foreground">Loading…</span>
+                </div>
+              </div>
+            }>
+              <ChunkErrorBoundary key={activeTab} label={activeTab}>
+                {renderContent()}
+              </ChunkErrorBoundary>
+            </Suspense>
+          </main>
+
+          {!isFullScreen && (
+            <Suspense fallback={null}>
+              <AgriConnectFooter />
+            </Suspense>
+          )}
+        </div>
+      </div>
 
       {!isFullScreen && (
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
-      )}
-      {!isFullScreen && (
-        <Suspense fallback={null}>
-          <AgriConnectFooter />
-        </Suspense>
       )}
     </div>
   );

@@ -240,7 +240,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
 
       {/* Filters */}
       {showFilters && (
-        <AgriCard className="p-4 animate-fade-in">
+        <AgriCard className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-foreground text-sm">{t('agr68')}</h4>
             {hasActiveFilters && (
@@ -424,7 +424,7 @@ const AuditLogs: React.FC<AuditLogsProps> = ({ onNavigate, compact = false }) =>
 
               {/* Expanded Details */}
               {expandedLog === log.id && (log.old_data || log.new_data) && (
-                <div className="mt-3 pt-3 border-t border-border space-y-3 animate-fade-in">
+                <div className="mt-3 pt-3 border-t border-border space-y-3">
                   {log.old_data && (
                     <div>
                       <p className="text-xs font-medium text-red-600 mb-1">{t('agr76')}</p>

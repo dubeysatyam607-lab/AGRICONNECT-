@@ -51,12 +51,12 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ data }) => {
   return (
     <div className="space-y-5 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.analytics')}</h2>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.analytics')}</h2>
       </div>
 
       {/* Income vs expense */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <p className="text-sm font-extrabold text-foreground flex items-center gap-2 mb-1">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <p className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
           <Wallet size={16} className="text-emerald-600" /> {t('prof.incomeExpense')}
         </p>
         <div className="flex gap-4 mb-3 text-xs">
@@ -78,8 +78,8 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ data }) => {
       </div>
 
       {/* Water usage */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <p className="text-sm font-extrabold text-foreground flex items-center gap-2 mb-3">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <p className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
           <Droplets size={16} className="text-sky-600" /> {t('prof.waterUsage')}
         </p>
         <div className="h-40">
@@ -102,20 +102,20 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ data }) => {
       </div>
 
       {/* Growth timeline */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <p className="text-sm font-extrabold text-foreground flex items-center gap-2 mb-4">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+        <p className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
           <Sprout size={16} className="text-lime-600" /> {t('prof.growthTimeline')}
         </p>
         <div className="flex items-center justify-between relative">
           <div className="absolute top-3 left-3 right-3 h-0.5 bg-muted" />
           <div
-            className="absolute top-3 left-3 h-0.5 bg-gradient-to-r from-lime-500 to-emerald-600 transition-[width] duration-1000 ease-out"
+            className="absolute top-3 left-3 h-0.5 bg-emerald-700 transition-[width] duration-1000 ease-out"
             style={{ width: `${(currentStageIdx / (stageDots.length - 1)) * 100}%` }}
           />
           {stageDots.map((s, i) => (
             <div key={s} className="relative z-10 flex flex-col items-center gap-1.5 flex-1">
               <span className={`h-3 w-3 rounded-full border-2 ${i <= currentStageIdx ? 'border-emerald-600 bg-emerald-600' : 'border-muted bg-card'}`} />
-              <span className={`text-[9px] font-bold text-center leading-tight ${i === currentStageIdx ? 'text-foreground' : 'text-muted-foreground'}`}>
+              <span className={`text-xs font-bold text-center leading-tight ${i === currentStageIdx ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {t(`opt:${s}`) || s}
               </span>
             </div>
@@ -125,21 +125,21 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({ data }) => {
 
       {/* Yield estimate */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <p className="text-xs font-extrabold text-muted-foreground flex items-center gap-1.5">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
             <Gauge size={14} className="text-amber-600" /> {t('prof.estimatedYield')}
           </p>
-          <p className="mt-2 text-3xl font-extrabold text-foreground tabular-nums">
+          <p className="mt-2 text-3xl font-semibold text-foreground tabular-nums">
             {yieldQtl} <span className="text-sm font-bold text-muted-foreground">{t('prof.qtl')}</span>
           </p>
           <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-marigold transition-[width] duration-1000 ease-out" style={{ width: `${data.stageProgress}%` }} />
+            <div className="h-full rounded-full bg-amber-500 transition-[width] duration-1000 ease-out" style={{ width: `${data.stageProgress}%` }} />
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">{t('prof.yieldProgress')} {data.stageProgress}%</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t('prof.yieldProgress')} {data.stageProgress}%</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <p className="text-sm font-extrabold text-foreground flex items-center gap-2 mb-3">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
             <TrendingUp size={16} className="text-feature-mandi" /> {t('prof.marketTrend')}
           </p>
           <div className="h-24">

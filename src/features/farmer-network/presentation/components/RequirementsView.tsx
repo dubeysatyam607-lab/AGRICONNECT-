@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { AlertCircle, ClipboardList, MapPin, Plus, Send } from 'lucide-react';
+import {
+  AlertCircle, ClipboardList, MapPin, Plus, Send,
+  Tractor, HardHat, Wheat, Truck, Handshake, Sprout, FlaskConical, ThermometerSnowflake, ListTodo,
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
 import { cn } from '@/lib/utils';
 import type { RequirementPost, RequirementType } from '../../domain/networkTypes';
 
-const TYPES: Array<{ key: RequirementType; icon: string }> = [
-  { key: 'tractor', icon: '🚜' },
-  { key: 'labour', icon: '👷' },
-  { key: 'harvester', icon: '🌾' },
-  { key: 'transport', icon: '🚚' },
-  { key: 'buyer', icon: '🤝' },
-  { key: 'seeds', icon: '🌱' },
-  { key: 'fertilizer', icon: '🧪' },
-  { key: 'cold-storage', icon: '❄️' },
+const TYPES: Array<{ key: RequirementType; icon: React.ReactNode }> = [
+  { key: 'tractor', icon: <Tractor className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'labour', icon: <HardHat className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'harvester', icon: <Wheat className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'transport', icon: <Truck className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'buyer', icon: <Handshake className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'seeds', icon: <Sprout className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'fertilizer', icon: <FlaskConical className="h-4 w-4" aria-hidden="true" /> },
+  { key: 'cold-storage', icon: <ThermometerSnowflake className="h-4 w-4" aria-hidden="true" /> },
 ];
 
 const URGENCY_DOT: Record<RequirementPost['urgency'], string> = {
@@ -65,7 +68,7 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
 
       <button
         onClick={() => setOpenForm(true)}
-        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-forest/40 bg-forest/5 px-3 py-2.5 text-xs font-black text-forest hover:bg-forest/10"
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-forest/40 bg-forest/5 px-3 py-2.5 text-xs font-semibold text-forest hover:bg-forest/10"
       >
         <Plus size={14} />
         {t('fnet.req.post')}
@@ -73,7 +76,7 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
 
       <div className="mt-3 space-y-3">
         {list.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-14 text-center">
             <ClipboardList size={30} className="mb-2 text-muted-foreground/40" />
             <p className="text-sm font-bold text-foreground">{t('fnet.empty.title')}</p>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('fnet.empty.reqs')}</p>
@@ -82,15 +85,15 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
           list.map((req) => {
             const ago = timeAgoLabel(t, req.createdAt);
             return (
-              <article key={req.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
+              <article key={req.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-base">
-                      {TYPES.find((x) => x.key === req.type)?.icon ?? '📋'}
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-emerald-800">
+                      {TYPES.find((x) => x.key === req.type)?.icon ?? <ListTodo className="h-4 w-4" aria-hidden="true" />}
                     </span>
                     <div>
-                      <h3 className="text-sm font-black leading-tight text-foreground">{req.title}</h3>
-                      <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
+                      <h3 className="text-sm font-semibold leading-tight text-foreground">{req.title}</h3>
+                      <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
                         {req.postedByName} · {ago}
                       </p>
                     </div>
@@ -100,7 +103,7 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
 
                 <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">{req.description}</p>
 
-                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
                   <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5">
                     <MapPin size={10} className="text-forest" />
                     {req.location}
@@ -117,7 +120,7 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-muted-foreground">
+                  <span className="text-xs font-bold text-muted-foreground">
                     {interpolate(t('fnet.req.responses'), { count: req.responses })}
                   </span>
                   {req.open ? (
@@ -132,7 +135,7 @@ export const RequirementsView: React.FC<RequirementsViewProps> = ({ requirements
                       {t('fnet.req.respond')}
                     </button>
                   ) : (
-                    <span className="text-[11px] font-bold text-muted-foreground/60">{t('fnet.req.closed')}</span>
+                    <span className="text-xs font-bold text-muted-foreground/60">{t('fnet.req.closed')}</span>
                   )}
                 </div>
               </article>
@@ -178,9 +181,9 @@ const RequirementForm: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 shadow-soft sm:rounded-3xl">
+      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 shadow-soft sm:rounded-xl">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-black text-foreground">{t('fnet.req.formTitle')}</h4>
+          <h4 className="text-sm font-semibold text-foreground">{t('fnet.req.formTitle')}</h4>
           <button onClick={onClose} className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-bold text-muted-foreground" aria-label={t('common.back')}>
             ✕
           </button>
@@ -193,7 +196,7 @@ const RequirementForm: React.FC<{
                 key={key}
                 onClick={() => setType(key)}
                 className={cn(
-                  'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors',
+                  'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold transition-colors',
                   type === key ? 'bg-forest text-primary-foreground' : 'border border-border text-muted-foreground',
                 )}
               >
@@ -222,7 +225,7 @@ const RequirementForm: React.FC<{
                 key={u}
                 onClick={() => setUrgency(u)}
                 className={cn(
-                  'flex-1 rounded-xl px-3 py-2 text-[11px] font-bold transition-colors',
+                  'flex-1 rounded-xl px-3 py-2 text-xs font-bold transition-colors',
                   urgency === u ? 'bg-forest text-primary-foreground' : 'border border-border text-muted-foreground',
                 )}
               >
@@ -255,7 +258,7 @@ const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block">
-    <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{label}</span>
+    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
     <div className="mt-1">{children}</div>
   </label>
 );

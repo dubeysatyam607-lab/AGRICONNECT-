@@ -208,7 +208,7 @@ export function FarmerDetailDrawer({
                   <AdminStatusBadge status={farmer.verification} />
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground mt-1">
-                  User ID: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[11px]">{farmer.id}</code>
+                  User ID: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">{farmer.id}</code>
                 </SheetDescription>
               </div>
             </div>
@@ -227,25 +227,25 @@ export function FarmerDetailDrawer({
             <TabsContent value="overview" className="space-y-4 pt-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border bg-muted/40 p-3">
-                  <p className="text-[11px] font-semibold text-muted-foreground">Phone Number</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Phone Number</p>
                   <p className="text-sm font-bold text-foreground mt-0.5 flex items-center gap-1.5">
                     <Phone className="h-3.5 w-3.5 text-primary" /> {farmer.phone}
                   </p>
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-3">
-                  <p className="text-[11px] font-semibold text-muted-foreground">Location</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Location</p>
                   <p className="text-sm font-bold text-foreground mt-0.5 flex items-center gap-1.5 truncate">
                     <MapPin className="h-3.5 w-3.5 text-primary" /> {[farmer.village, farmer.district, farmer.state].filter(Boolean).join(', ') || 'India'}
                   </p>
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-3">
-                  <p className="text-[11px] font-semibold text-muted-foreground">Joined Date</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Joined Date</p>
                   <p className="text-sm font-bold text-foreground mt-0.5 flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5 text-primary" /> {shortDate(farmer.joined)} ({timeAgo(farmer.joined)})
                   </p>
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-3">
-                  <p className="text-[11px] font-semibold text-muted-foreground">Rating</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Rating</p>
                   <p className="text-sm font-bold text-foreground mt-0.5">
                     ⭐ {farmer.rating || '5.0'} / 5.0
                   </p>
@@ -256,20 +256,20 @@ export function FarmerDetailDrawer({
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Platform Activity</p>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">{bookingCount}</p>
-                    <p className="text-[10px] text-muted-foreground">Tractor Bookings</p>
+                    <p className="text-lg font-semibold text-foreground">{bookingCount}</p>
+                    <p className="text-xs text-muted-foreground">Tractor Bookings</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">{scanCount}</p>
-                    <p className="text-[10px] text-muted-foreground">Crop Scans</p>
+                    <p className="text-lg font-semibold text-foreground">{scanCount}</p>
+                    <p className="text-xs text-muted-foreground">Crop Scans</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">{conversationCount}</p>
-                    <p className="text-[10px] text-muted-foreground">AI Chats</p>
+                    <p className="text-lg font-semibold text-foreground">{conversationCount}</p>
+                    <p className="text-xs text-muted-foreground">AI Chats</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-2.5">
-                    <p className="text-lg font-black text-foreground">{fmtINR(walletBalance)}</p>
-                    <p className="text-[10px] text-muted-foreground">Wallet</p>
+                    <p className="text-lg font-semibold text-foreground">{fmtINR(walletBalance)}</p>
+                    <p className="text-xs text-muted-foreground">Wallet</p>
                   </div>
                 </div>
               </div>
@@ -313,7 +313,7 @@ export function FarmerDetailDrawer({
                     <Wallet className="h-5 w-5 text-emerald-600" />
                     <div>
                       <p className="text-xs text-muted-foreground">AgriPay Wallet Balance</p>
-                      <p className="text-xl font-black text-foreground">{fmtINR(walletBalance)}</p>
+                      <p className="text-xl font-semibold text-foreground">{fmtINR(walletBalance)}</p>
                     </div>
                   </div>
                   <Button
@@ -368,7 +368,7 @@ export function FarmerDetailDrawer({
                   <div className="flex items-center justify-between pt-1">
                     <div>
                       <p className="text-xs font-semibold text-foreground">{subscription.plan}</p>
-                      <p className="text-[11px] text-muted-foreground">Status: {subscription.status}</p>
+                      <p className="text-xs text-muted-foreground">Status: {subscription.status}</p>
                     </div>
                     <Badge variant="outline" className={`text-xs font-bold ${
                       subscription.status === 'active' ? 'text-emerald-600 border-emerald-500/30' :
@@ -391,18 +391,18 @@ export function FarmerDetailDrawer({
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl border bg-muted/40 p-3 text-center">
                   <Tractor className="mx-auto h-5 w-5 text-amber-600 mb-1" />
-                  <p className="text-lg font-black text-foreground">{bookingCount}</p>
-                  <p className="text-[10px] text-muted-foreground">Tractor Bookings</p>
+                  <p className="text-lg font-semibold text-foreground">{bookingCount}</p>
+                  <p className="text-xs text-muted-foreground">Tractor Bookings</p>
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-3 text-center">
                   <ScanLine className="mx-auto h-5 w-5 text-green-600 mb-1" />
-                  <p className="text-lg font-black text-foreground">{scanCount}</p>
-                  <p className="text-[10px] text-muted-foreground">Crop Scans</p>
+                  <p className="text-lg font-semibold text-foreground">{scanCount}</p>
+                  <p className="text-xs text-muted-foreground">Crop Scans</p>
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-3 text-center">
                   <Bot className="mx-auto h-5 w-5 text-teal-600 mb-1" />
-                  <p className="text-lg font-black text-foreground">{conversationCount}</p>
-                  <p className="text-[10px] text-muted-foreground">AI Conversations</p>
+                  <p className="text-lg font-semibold text-foreground">{conversationCount}</p>
+                  <p className="text-xs text-muted-foreground">AI Conversations</p>
                 </div>
               </div>
             </TabsContent>

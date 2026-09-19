@@ -70,15 +70,15 @@ export const FarmerNetworkHub: React.FC<FarmerNetworkHubProps> = ({ onNavigate, 
               <ArrowLeft size={15} />
             </button>
           )}
-          <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 shadow-colorful dark:text-amber-300">
+          <span className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700  dark:text-amber-300">
             <Handshake size={19} />
             <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-400 ring-2 ring-background">
               <ShieldCheck size={8} className="text-white" />
             </span>
           </span>
           <div>
-            <h1 className="font-display text-lg font-black tracking-tight text-foreground">{t('fnet.title')}</h1>
-            <p className="text-[11px] font-semibold text-muted-foreground">
+            <h1 className=" text-lg font-semibold tracking-tight text-foreground">{t('fnet.title')}</h1>
+            <p className="text-xs font-semibold text-muted-foreground">
               {state.myVillage} · {state.myCrop}
             </p>
           </div>
@@ -90,7 +90,7 @@ export const FarmerNetworkHub: React.FC<FarmerNetworkHubProps> = ({ onNavigate, 
         >
           <MessageCircle size={15} />
           {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black text-white">
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-xs font-semibold text-white">
               {unreadCount}
             </span>
           )}
@@ -119,7 +119,7 @@ export const FarmerNetworkHub: React.FC<FarmerNetworkHubProps> = ({ onNavigate, 
             <Icon size={13} />
             {label}
             {badge ? (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black text-white">
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-xs font-semibold text-white">
                 {badge}
               </span>
             ) : null}
@@ -185,11 +185,11 @@ const StatCard: React.FC<{
   label: string;
   tint: string;
 }> = ({ icon: Icon, value, label, tint }) => (
-  <div className="flex flex-col items-center rounded-2xl border border-border bg-card px-2 py-3 text-center shadow-card">
+  <div className="flex flex-col items-center rounded-xl border border-border bg-card px-2 py-3 text-center shadow-card">
     <span className={cn('flex h-8 w-8 items-center justify-center rounded-xl', tint)}>
       <Icon size={14} />
     </span>
-    <span className="mt-1.5 text-base font-black leading-none text-foreground">{value}</span>
-    <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+    <span className="mt-1.5 text-base font-semibold leading-none text-foreground">{value}</span>
+    <span className="mt-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
   </div>
 );

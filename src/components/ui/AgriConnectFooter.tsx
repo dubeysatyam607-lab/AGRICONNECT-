@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Mail, Phone, Instagram, Linkedin, Youtube, Twitter, Sun, Moon, Languages,
-  Heart, Check, ArrowRight, Sparkles,
+  Heart, Check, ArrowRight, Cookie, ChevronDown,
 } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { useThemeManager } from '@/core/theme/ThemeManager';
@@ -47,13 +47,13 @@ const SOCIALS = [
 
 const Column = ({ title, links }: { title: string; links: { to: string; label: string }[] }) => (
   <nav aria-label={title} className="min-w-0">
-    <h3 className="text-[13px] font-black uppercase tracking-[0.14em] text-foreground">{title}</h3>
+    <h3 className="type-small font-semibold uppercase  text-foreground">{title}</h3>
     <ul className="mt-5 space-y-3">
       {links.map((l) => (
         <li key={l.label}>
           <Link
             to={l.to}
-            className="group inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
+            className="group inline-flex items-center gap-1.5 type-small font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
           >
             <span className="h-px w-0 bg-primary transition-all duration-300 group-hover:w-3" aria-hidden="true" />
             {l.label}
@@ -119,30 +119,20 @@ const AgriConnectFooter: React.FC = () => {
   };
 
   return (
-    <>
-      <style>{`
-        @keyframes footerFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes footerPop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
-        .footer-fade-up { animation: footerFadeUp .6s cubic-bezier(.22,1,.36,1) both; }
-        .footer-pop { animation: footerPop .45s cubic-bezier(.22,1,.36,1) both; }
-      `}</style>
-
-      <footer className="border-t border-border bg-card/40 relative overflow-hidden" aria-label="Footer">
+    <footer className="border-t border-border bg-card/40 relative overflow-hidden" aria-label="Footer">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           {/* ── Newsletter ─────────────────────────────────── */}
           <section aria-labelledby="newsletter-heading" className="pt-10">
-            <div className="relative overflow-hidden rounded-[28px] gradient-hero text-primary-foreground px-6 py-8 sm:px-10 sm:py-9 shadow-glow">
-              <span className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-secondary/25 blur-3xl" aria-hidden="true" />
-              <span className="absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+            <div className="relative overflow-hidden rounded-xl border border-border bg-card px-6 py-8 sm:px-10 sm:py-9">
               <div className="relative grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-center">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider">
-                    <Sparkles className="h-3.5 w-3.5" /> Farmer First
+                  <div className="inline-flex items-center gap-1.5 rounded bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                    Kisan updates for you
                   </div>
-                  <h2 id="newsletter-heading" className="mt-3 font-display text-2xl sm:text-3xl font-semibold tracking-tight">
+                  <h2 id="newsletter-heading" className="mt-3 type-h2">
                     Stay Updated
                   </h2>
-                  <p className="mt-2 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
+                  <p className="mt-2 max-w-md type-small text-muted-foreground">
                     Get farming tips, government schemes, mandi updates and AI recommendations
                     directly in your inbox.
                   </p>
@@ -150,13 +140,13 @@ const AgriConnectFooter: React.FC = () => {
 
                 <form onSubmit={submitNewsletter} noValidate className="w-full" aria-label="Newsletter subscription">
                   {subscribed ? (
-                    <div className="footer-pop flex items-center gap-3 rounded-2xl bg-white/10 border border-white/20 px-5 py-4 backdrop-blur" role="status" aria-live="polite">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-emerald-950">
-                        <Check className="h-5 w-5" strokeWidth={3} />
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted px-5 py-4" role="status" aria-live="polite">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Check className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="text-sm font-bold">You&apos;re subscribed! 🎉</p>
-                        <p className="text-xs text-primary-foreground/75">Kisan updates will reach your inbox soon.</p>
+                        <p className="type-small font-semibold">You&apos;re subscribed!</p>
+                        <p className="type-meta">Kisan updates will reach your inbox soon.</p>
                       </div>
                     </div>
                   ) : (
@@ -175,19 +165,19 @@ const AgriConnectFooter: React.FC = () => {
                           placeholder="Enter your email address"
                           aria-invalid={error ? true : undefined}
                           aria-describedby={error ? 'newsletter-error' : undefined}
-                          className="h-12 w-full flex-1 rounded-2xl border border-white/20 bg-white/10 px-4 text-sm font-medium text-white placeholder:text-white/50 outline-none backdrop-blur focus:border-white/50 focus:ring-2 focus:ring-white/30 transition"
+                          className="h-12 w-full flex-1 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                         />
                         <button
                           type="submit"
                           disabled={subscribing}
-                          className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white text-emerald-900 px-6 text-sm font-bold shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {subscribing ? 'Subscribing…' : 'Subscribe'}
-                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                       {error && (
-                        <p id="newsletter-error" role="alert" className="mt-2 text-xs font-semibold text-amber-200">
+                        <p id="newsletter-error" role="alert" className="mt-2 text-xs font-semibold text-destructive">
                           {error}
                         </p>
                       )}
@@ -201,17 +191,17 @@ const AgriConnectFooter: React.FC = () => {
           {/* ── Main grid ──────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:flex lg:items-start lg:justify-between lg:gap-16 lg:py-16">
             {/* Brand */}
-            <div className="col-span-2 sm:col-span-3 lg:flex-1 lg:max-w-sm footer-fade-up">
+            <div className="col-span-2 sm:col-span-3 lg:flex-1 lg:max-w-sm ">
               <Link to="/" className="inline-flex items-center gap-2.5" aria-label="AgriConnect Home">
                 <Logo size={40} />
-                <span className="font-display text-xl font-black tracking-tight text-foreground">
+                <span className=" text-xl font-semibold tracking-tight text-foreground">
                   Agri<span className="text-emerald-700 dark:text-emerald-400">Connect</span>
                 </span>
               </Link>
-              <p className="mt-4 font-display text-[17px] font-semibold leading-snug text-foreground">
+              <p className="mt-4  type-h3 font-semibold leading-snug text-foreground">
                 Empowering Farmers with AI, Smart Technology &amp; Better Decisions.
               </p>
-              <p className="mt-3 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
+              <p className="mt-3 max-w-sm type-small leading-relaxed text-muted-foreground">
                 Live mandi bhav, AI crop assistance, hyperlocal weather, government schemes and a
                 farmer-first marketplace — free in 12 Indian languages.
               </p>
@@ -220,21 +210,21 @@ const AgriConnectFooter: React.FC = () => {
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 rounded-xl gradient-hero text-primary-foreground px-5 py-2.5 text-sm font-bold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-glow"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:"
                 >
                   Open the App
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link
                   to="/features#ai-assistant"
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold text-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold text-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:"
                 >
                   Ask Kisan AI
                 </Link>
               </div>
 
               {/* Contact */}
-              <div className="mt-6 space-y-2.5 text-[13px]">
+              <div className="mt-6 space-y-2.5 type-small">
                 <a href="mailto:hello.agriconnect@gmail.com" className="group inline-flex items-center gap-2.5 font-medium text-muted-foreground hover:text-foreground transition-colors">
                   <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary"><Mail className="h-4 w-4" /></span>
                   <span>hello.agriconnect@gmail.com</span>
@@ -247,13 +237,13 @@ const AgriConnectFooter: React.FC = () => {
             </div>
 
             {/* Link columns */}
-            <div className="footer-fade-up" style={{ animationDelay: '80ms' }}>
+            <div className="" style={{ animationDelay: '80ms' }}>
               <Column title="Quick Links" links={QUICK_LINKS} />
             </div>
-            <div className="footer-fade-up" style={{ animationDelay: '160ms' }}>
+            <div className="" style={{ animationDelay: '160ms' }}>
               <Column title="Resources" links={RESOURCES} />
             </div>
-            <div className="footer-fade-up" style={{ animationDelay: '240ms' }}>
+            <div className="" style={{ animationDelay: '240ms' }}>
               <Column title="Company" links={COMPANY} />
             </div>
           </div>
@@ -261,7 +251,7 @@ const AgriConnectFooter: React.FC = () => {
           {/* ── Social + Download band ──────────────────────── */}
           <div className="flex flex-col gap-6 border-t border-border/70 py-8 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase  text-muted-foreground">
                 Follow AgriConnect
               </p>
               <ul className="mt-3 flex flex-wrap items-center gap-2.5" aria-label="Social media">
@@ -272,7 +262,7 @@ const AgriConnectFooter: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={s.label}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover: focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     >
                       <s.icon className="h-[18px] w-[18px]" />
                     </a>
@@ -282,29 +272,21 @@ const AgriConnectFooter: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div
-                className="relative inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card select-none opacity-90"
-              >
+              <div className="inline-flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-2.5 select-none">
                 <PlayBadge />
                 <span className="text-left leading-tight">
-                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">Google Play</span>
-                  <span className="block text-[13px] font-bold">Android App</span>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">Google Play</span>
+                  <span className="block type-small font-semibold">Android App</span>
                 </span>
-                <span className="absolute -top-2 right-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
-                  Coming Soon
-                </span>
+                <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground">Soon</span>
               </div>
-              <div
-                className="relative inline-flex items-center gap-2.5 rounded-2xl bg-foreground text-background px-4 py-2.5 shadow-card select-none opacity-90"
-              >
+              <div className="inline-flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-2.5 select-none">
                 <AppleBadge />
                 <span className="text-left leading-tight">
-                  <span className="block text-[9.5px] font-semibold uppercase tracking-wider opacity-70">App Store</span>
-                  <span className="block text-[13px] font-bold">iOS App</span>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">App Store</span>
+                  <span className="block type-small font-semibold">iOS App</span>
                 </span>
-                <span className="absolute -top-2 right-2 rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-950">
-                  Coming Soon
-                </span>
+                <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-semibold text-muted-foreground">Soon</span>
               </div>
             </div>
           </div>
@@ -326,7 +308,7 @@ const AgriConnectFooter: React.FC = () => {
                 aria-label="Manage cookie and privacy preferences"
                 className="rounded-full border border-border bg-card px-2.5 py-1 hover:border-primary/40 hover:text-foreground transition-colors cursor-pointer"
               >
-                🍪 Privacy & Cookie Settings
+                <Cookie className="h-3.5 w-3.5" aria-hidden="true" /> Privacy & Cookie Settings
               </button>
               <span className="rounded-full border border-border bg-card px-2.5 py-1">v{APP_VERSION}</span>
               <span className="rounded-full border border-border bg-card px-2.5 py-1">Updated {LAST_UPDATED}</span>
@@ -345,7 +327,7 @@ const AgriConnectFooter: React.FC = () => {
                       <option key={code} value={code}>{name}</option>
                     ))}
                   </select>
-                  <span className="pointer-events-none absolute right-2 text-muted-foreground" aria-hidden="true">▾</span>
+                  <ChevronDown className="pointer-events-none absolute right-2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </label>
               )}
 
@@ -365,7 +347,6 @@ const AgriConnectFooter: React.FC = () => {
           </div>
         </div>
       </footer>
-    </>
   );
 };
 

@@ -134,9 +134,9 @@ export const FarmOnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onCom
           </button>
           <div className="flex items-center gap-2">
             <span className="text-lg">🌱</span>
-            <span className="text-sm font-extrabold tracking-tight text-emerald-700">AgriConnect</span>
+            <span className="text-sm font-semibold tracking-tight text-emerald-700">AgriConnect</span>
           </div>
-          <span className="text-[11px] font-bold text-slate-300">{step + 1}/{total}</span>
+          <span className="text-xs font-bold text-slate-300">{step + 1}/{total}</span>
         </div>
 
         {/* Progress bar */}
@@ -145,18 +145,18 @@ export const FarmOnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onCom
             <span
               key={s.label}
               className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                i <= step ? 'bg-gradient-to-r from-emerald-500 to-lime-400' : 'bg-slate-200'
+                i <= step ? 'bg-emerald-700' : 'bg-slate-200'
               }`}
             />
           ))}
         </div>
 
         {/* Step content */}
-        <div key={step} className="mt-6 flex-1 animate-fade-in fill-mode-both">
+        <div key={step} className="mt-6 flex-1 fill-mode-both">
           {current.render}
         </div>
 
-        <p className="mt-6 pb-1 text-center text-[10px] font-medium text-slate-300">
+        <p className="mt-6 pb-1 text-center text-xs font-medium text-slate-300">
           {t('onb.footer')}
         </p>
       </div>

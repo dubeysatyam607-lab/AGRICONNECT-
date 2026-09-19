@@ -135,20 +135,20 @@ const CattleMarket: React.FC = () => {
   return (
     <div className="pb-24 pt-4 px-4 overflow-y-auto min-h-screen max-w-5xl mx-auto space-y-4">
       {/* Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden h-48 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-48 shadow-lg">
         <AgriImage
           src="https://images.pexels.com/photos/30147594/pexels-photo-30147594.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
           alt="Livestock market"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-900/70 to-emerald-950/80" />
+        <div className="absolute inset-0 bg-emerald-900" />
         <div className="absolute inset-0 flex items-center justify-between px-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white flex items-center gap-2">
-              <Milk className="text-emerald-400" size={24} /> Pashu Mela
+            <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+              <Milk className="text-primary-foreground/80" size={24} /> Pashu Mela
             </h2>
-            <p className="text-emerald-100 text-sm">{t('agr78')}</p>
-            <p className="text-emerald-300 text-xs font-semibold">{cattleList.length} verified animals available across India</p>
+            <p className="text-primary-foreground/90 text-sm">{t('agr78')}</p>
+            <p className="text-primary-foreground/80 text-xs font-semibold">{cattleList.length} verified animals available across India</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <AgriButton
@@ -164,7 +164,7 @@ const CattleMarket: React.FC = () => {
                 }
                 setShowSellDialog(true);
               }}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-md"
+              className="bg-primary hover:bg-primary text-white font-semibold shadow-md"
             >
               <PlusCircle size={15} /> + पशु बेचें (Sell Cattle)
             </AgriButton>
@@ -181,7 +181,7 @@ const CattleMarket: React.FC = () => {
       </div>
 
       {/* Search & Categories Bar */}
-      <div className="bg-card p-3 rounded-2xl border border-border shadow-sm space-y-2">
+      <div className="bg-card p-3 rounded-xl border border-border shadow-sm space-y-2">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
@@ -189,7 +189,7 @@ const CattleMarket: React.FC = () => {
             placeholder="Search breed, cow, buffalo, goat, city..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus-visible:ring-ring"
           />
         </div>
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -198,9 +198,9 @@ const CattleMarket: React.FC = () => {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={cn(
-                "px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors",
+                "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors",
                 selectedCategory === cat
-                  ? "bg-emerald-600 text-white shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground"
               )}
             >
@@ -212,9 +212,9 @@ const CattleMarket: React.FC = () => {
 
       {/* Cards List / Empty State */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-card rounded-3xl border border-dashed border-border space-y-3">
+        <div className="text-center py-16 px-4 bg-card rounded-xl border border-dashed border-border space-y-3">
           <Milk className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
-          <h4 className="text-base font-bold text-foreground">No livestock listings found</h4>
+          <h4 className="text-base font-semibold text-foreground">No livestock listings found</h4>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             No active cattle listings match your search. Be the first farmer to list livestock for buyers across your state!
           </p>
@@ -236,7 +236,7 @@ const CattleMarket: React.FC = () => {
           {filtered.map((animal) => (
             <div
               key={animal.id}
-              className="bg-card rounded-2xl shadow-card border border-border overflow-hidden hover:shadow-lg transition-all"
+              className="bg-card rounded-xl shadow-card border border-border overflow-hidden hover:shadow-lg transition-all"
             >
               {/* Full-width image */}
               <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -247,17 +247,17 @@ const CattleMarket: React.FC = () => {
                   alt={`${animal.breed} ${animal.type} dairy cattle`}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
                 <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
                   <div>
-                    <h4 className="font-extrabold text-white text-lg leading-tight drop-shadow">
+                    <h4 className="font-semibold text-white text-lg leading-tight drop-shadow">
                       {animal.breed} {animal.type}
                     </h4>
                     <p className="text-white/90 text-xs flex items-center gap-1 mt-0.5 font-medium">
-                      <MapPin size={12} className="text-emerald-400" /> {animal.location}
+                      <MapPin size={12} className="text-primary-foreground/80" /> {animal.location}
                     </p>
                   </div>
-                  <span className="text-lg font-black text-white bg-emerald-600 px-3 py-1 rounded-xl shadow-md">
+                  <span className="text-lg font-semibold text-white bg-primary px-3 py-1 rounded-xl shadow-md">
                     ₹{animal.price.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -266,19 +266,19 @@ const CattleMarket: React.FC = () => {
               {/* Info */}
               <div className="p-4 space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold">
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                     🥛 {animal.milk}
                   </span>
                   <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold">
                     <Clock size={12} /> {animal.age}
                   </span>
                   <span className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold">
-                    👤 {animal.sellerName} <BadgeCheck size={14} className="text-emerald-600" />
+                    👤 {animal.sellerName} <BadgeCheck size={14} className="text-primary" />
                   </span>
                 </div>
 
                 <AgriButton
-                  className="w-full font-bold"
+                  className="w-full font-semibold"
                   onClick={() => handleContactSeller(animal)}
                 >
                   <Phone size={15} /> Contact Farmer / पशुपालक से संपर्क करें
@@ -294,7 +294,7 @@ const CattleMarket: React.FC = () => {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Milk className="text-emerald-600" size={20} /> पशु बिक्री हेतु सूचीबद्ध करें (List Cattle for Sale)
+              <Milk className="text-primary" size={20} /> पशु बिक्री हेतु सूचीबद्ध करें (List Cattle for Sale)
             </DialogTitle>
           </DialogHeader>
           <CattleAssetForm />
@@ -317,9 +317,9 @@ const CattleMarket: React.FC = () => {
                   className="w-16 h-16 rounded-lg object-cover"
                 />
                 <div>
-                  <p className="font-bold text-foreground">{selectedAnimal.breed} {selectedAnimal.type}</p>
+                  <p className="font-semibold text-foreground">{selectedAnimal.breed} {selectedAnimal.type}</p>
                   <p className="text-sm text-muted-foreground">{selectedAnimal.location}</p>
-                  <p className="text-primary font-bold">₹{selectedAnimal.price.toLocaleString()}</p>
+                  <p className="text-primary font-semibold">₹{selectedAnimal.price.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -358,7 +358,7 @@ const CattleMarket: React.FC = () => {
                 {!showTokenQr ? (
                   <AgriButton
                     variant="outline"
-                    className="w-full text-xs font-bold border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                    className="w-full text-xs font-semibold border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
                     onClick={() => setShowTokenQr(true)}
                   >
                     <QrCode size={14} /> Pay Token Advance via Official QR (₹500)

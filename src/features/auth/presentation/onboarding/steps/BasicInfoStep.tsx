@@ -48,7 +48,7 @@ export const BasicInfoStep: React.FC<{
           <FieldLabel emoji="🗺️">{t('onb.basic.state')}</FieldLabel>
           <div className="grid grid-cols-3 gap-2">
             {INDIAN_STATES.map((s) => (
-              <Chip key={s} active={data.state === s} onClick={() => set({ state: s })} className="px-2 py-2.5 text-[11px]">
+              <Chip key={s} active={data.state === s} onClick={() => set({ state: s })} className="px-2 py-2.5 text-xs">
                 {s}
               </Chip>
             ))}

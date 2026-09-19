@@ -75,7 +75,7 @@ export const DataDeclaration: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <ShieldCheck size={14} /> Transparency & Privacy Pledge
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground">
             Data Declaration & Farmer Rights
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -91,7 +91,7 @@ export const DataDeclaration: React.FC = () => {
         </div>
 
         {/* Highlight Guarantee Box */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+        <div className="p-5 sm:p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
           <h2 className="text-base font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
             <CheckCircle size={18} className="text-emerald-600 dark:text-emerald-400" />
             Our 3 Core Guarantees to Every Farmer
@@ -119,7 +119,7 @@ export const DataDeclaration: React.FC = () => {
             return (
               <div
                 key={idx}
-                className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm space-y-3"
+                className="p-6 rounded-xl bg-card border border-border/80 shadow-sm space-y-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">

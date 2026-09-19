@@ -136,7 +136,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
-            <h2 className="mt-5 text-2xl font-black tracking-tight text-foreground">
+            <h2 className="mt-5 text-2xl font-semibold tracking-tight text-foreground">
               {t('auth.otp.emailVerifiedSuccess')}
             </h2>
           </div>
@@ -150,36 +150,36 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
           <div className="flex items-center justify-between">
             <button
               onClick={onBack}
-              className="flex items-center gap-1 text-xs font-extrabold text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={16} /> {t('common.back')}
             </button>
-            <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+            <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
               <ShieldCheck size={13} /> {t('auth.otp.badge')}
             </span>
           </div>
 
           {/* Icon Header */}
           <FadeIn className="mt-8 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-xl shadow-emerald-500/20 text-white">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-emerald-700   text-white">
               <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="6" y="2" width="12" height="20" rx="3" />
                 <path d="M11 6h2" />
                 <path d="M12 18h.01" />
               </svg>
             </div>
-            <h1 className="mt-5 text-2xl font-black tracking-tight text-foreground">
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-foreground">
               {t('auth.otp.title')}
             </h1>
             <p className="mx-auto mt-2 max-w-xs text-xs font-medium text-muted-foreground">
               {t('auth.otp.codeSentTo')}{' '}
-              <span className="font-extrabold text-foreground">{maskTarget(target, type)}</span>
+              <span className="font-semibold text-foreground">{maskTarget(target, type)}</span>
             </p>
           </FadeIn>
 
           {/* Error Banner */}
           {state.error && (
-            <div className="mt-5 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-shake">
+            <div className="mt-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs font-bold text-rose-600 dark:text-rose-400 ">
               ⚠️ {state.error}
             </div>
           )}
@@ -199,7 +199,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                   value={digit}
                   onChange={(e) => handleInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className={`h-14 w-full max-w-[3.4rem] flex-1 rounded-2xl border-2 bg-card text-center text-xl font-black text-foreground shadow-sm outline-none transition-all focus:ring-4 ${
+                  className={`h-14 w-full max-w-[3.4rem] flex-1 rounded-xl border-2 bg-card text-center text-xl font-semibold text-foreground shadow-sm outline-none transition-all focus:ring-4 ${
                     digit
                       ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/15'
                       : 'border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-emerald-500/15'
@@ -242,7 +242,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                       type="button"
                       onClick={handleResend}
                       disabled={state.isLoading}
-                      className="flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
                     >
                       <RotateCw size={13} className={state.isLoading ? "animate-spin" : ""} /> {t('auth.otp.resend')}
                     </button>
@@ -252,7 +252,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
                 >
                   {type === 'email' ? t('auth.otp.changeEmail') : t('auth.otp.changeNumber')}
                 </button>
@@ -262,7 +262,7 @@ export const OtpVerificationView: React.FC<IOtpVerificationViewProps> = ({
         </div>
 
         {/* Footer */}
-        <p className="pt-6 text-center text-[10px] font-medium text-muted-foreground/70">
+        <p className="pt-6 text-center text-xs font-medium text-muted-foreground/70">
           🔒 {t('auth.otp.encryptionFooter')}
         </p>
       </div>

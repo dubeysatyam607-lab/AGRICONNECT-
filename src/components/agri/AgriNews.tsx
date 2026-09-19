@@ -16,7 +16,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
       role="button"
       tabIndex={0}
       aria-label={`Read ${news.title}`}
-      className="bg-card p-0 rounded-2xl border border-border shadow-card hover:shadow-soft transition-all cursor-pointer overflow-hidden flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary group"
+      className="bg-card p-0 rounded-xl border border-border shadow-card hover:shadow-soft transition-all cursor-pointer overflow-hidden flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary group"
     >
       <div className="w-full h-44 relative bg-muted shrink-0 overflow-hidden">
         <SafeImage 
@@ -29,7 +29,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
           className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          <span className="bg-primary text-primary-foreground shadow-xs text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="bg-primary text-primary-foreground  text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             {news.category}
           </span>
         </div>
@@ -37,7 +37,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
       
       <div className="p-4 pt-3 flex flex-col justify-between flex-1">
         <div>
-          <h3 className="font-extrabold text-foreground text-base mb-1.5 leading-snug group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-foreground text-base mb-1.5 leading-snug group-hover:text-primary transition-colors">
             {news.title}
           </h3>
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-3">
@@ -124,17 +124,17 @@ const AgriNews: React.FC = () => {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-black text-foreground flex items-center gap-2 tracking-tight">
+          <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2 tracking-tight">
             <Newspaper className="text-primary" size={26} /> Kisan Khabar
           </h2>
           <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1">
-            <BadgeCheck size={13} className="text-emerald-600" /> Live Agriculture & MSP News Portal
+            <BadgeCheck size={13} className="text-primary" /> Live Agriculture & MSP News Portal
           </p>
         </div>
         <button
           onClick={loadNews}
           disabled={loading}
-          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all shadow-xs"
+          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all "
           aria-label="Refresh news"
         >
           <RefreshCw size={16} className={loading ? "animate-spin text-primary" : ""} />
@@ -148,7 +148,7 @@ const AgriNews: React.FC = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search wheat, MSP, monsoon, solar pump, mandi news..."
-          className="w-full h-11 pl-9 pr-4 rounded-2xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-medium shadow-xs"
+          className="w-full h-11 pl-9 pr-4 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-medium "
         />
       </div>
 
@@ -160,7 +160,7 @@ const AgriNews: React.FC = () => {
             onClick={() => setActiveCategory(cat)}
             className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all ${
               activeCategory === cat
-                ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                ? "bg-primary text-primary-foreground border-primary "
                 : "border-border text-muted-foreground bg-card hover:border-primary/40"
             }`}
           >
@@ -173,7 +173,7 @@ const AgriNews: React.FC = () => {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-card rounded-2xl border border-border p-4 animate-pulse">
+            <div key={i} className="bg-card rounded-xl border border-border p-4 animate-pulse">
               <div className="w-full h-40 bg-muted rounded-xl mb-3" />
               <div className="h-4 w-3/4 bg-muted rounded-full mb-2" />
               <div className="h-3 w-1/2 bg-muted rounded-full" />
@@ -187,7 +187,7 @@ const AgriNews: React.FC = () => {
           ))}
 
           {filteredArticles.length === 0 && error && (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
               <p className="text-base font-bold text-foreground">Could not load news</p>
               <p className="text-xs text-muted-foreground mt-1">{error}</p>
@@ -201,7 +201,7 @@ const AgriNews: React.FC = () => {
           )}
 
           {filteredArticles.length === 0 && !error && (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border p-6">
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6">
               <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
               <p className="text-base font-bold text-foreground">No news found</p>
               <p className="text-xs text-muted-foreground mt-1">Try a different search or category.</p>

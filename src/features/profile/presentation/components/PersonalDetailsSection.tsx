@@ -24,9 +24,9 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4">
       <div className="border-b border-slate-200 dark:border-slate-800 pb-2">
-        <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
           <span>👤</span> {t('pdetail.personalIdentity')}
         </h3>
         <p className="text-xs text-muted-foreground">{t('pdetail.personalIdentitySub')}</p>
@@ -44,7 +44,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
             value={personal.fullName}
             onChange={(e) => handleFieldChange('fullName', e.target.value)}
             placeholder="e.g., Rajesh Kumar Singh"
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
           />
         </div>
 
@@ -52,7 +52,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
         <div className="space-y-1">
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
             <span>{t('pdetail.mobileNumber')}</span>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{t('pdetail.verifiedMobile')}</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">{t('pdetail.verifiedMobile')}</span>
           </label>
           <input
             type="tel"
@@ -60,7 +60,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
             value={personal.mobileNumber}
             onChange={(e) => handleFieldChange('mobileNumber', e.target.value)}
             placeholder="+91 9876543210"
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
           />
         </div>
 
@@ -74,7 +74,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
             value={personal.emailAddress || ''}
             onChange={(e) => handleFieldChange('emailAddress', e.target.value)}
             placeholder="farmer@krishi.in"
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
           />
         </div>
 
@@ -84,7 +84,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
           <select
             value={personal.gender}
             onChange={(e) => handleFieldChange('gender', e.target.value as GenderType)}
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
           >
             <option value="Male">{t('pdetail.genderMale')}</option>
             <option value="Female">{t('pdetail.genderFemale')}</option>
@@ -100,7 +100,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
             type="date"
             value={personal.dateOfBirth || ''}
             onChange={(e) => handleFieldChange('dateOfBirth', e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
           />
         </div>
 
@@ -110,7 +110,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <span>{t('pdetail.aadhaarCard')}</span>
               {personal.isAadhaarVerified && (
-                <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold border border-emerald-500/20">
+                <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-500/20">
                   {t('pdetail.verifiedBadge')}
                 </span>
               )}
@@ -119,7 +119,7 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAadhaar(!showAadhaar)}
-                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
               >
                 {showAadhaar ? t('pdetail.hide') : t('pdetail.reveal')}
               </button>
@@ -135,9 +135,9 @@ export const PersonalDetailsSection: React.FC<IPersonalDetailsSectionProps> = ({
               handleFieldChange('isAadhaarVerified', raw.length === 12);
             }}
             placeholder={t('pdetail.aadhaarPlaceholder')}
-            className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all font-mono tracking-wider"
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all font-mono tracking-wider"
           />
-          <p className="text-[10px] text-muted-foreground pt-0.5">
+          <p className="text-xs text-muted-foreground pt-0.5">
             {t('pdetail.aadhaarPrivacy')}
           </p>
         </div>

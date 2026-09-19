@@ -39,16 +39,16 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="border-b border-slate-200 dark:border-slate-800 pb-2">
-        <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
           <span>🌾</span> {t('pdetail.landSoil')}
         </h3>
         <p className="text-xs text-muted-foreground">{t('pdetail.landSoilSub')}</p>
       </div>
 
       {/* Land Area and Unit Selector */}
-      <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
         <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
           {t('pdetail.landAreaUnit')}
         </label>
@@ -62,7 +62,7 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
               required
               value={specs.totalArea}
               onChange={(e) => handleFieldChange('totalArea', parseFloat(e.target.value) || 0)}
-              className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-extrabold text-foreground"
+              className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-lg font-semibold text-foreground"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
               {t(`opt:${specs.landUnit}`)}
@@ -72,7 +72,7 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
           <select
             value={specs.landUnit}
             onChange={(e) => handleFieldChange('landUnit', e.target.value as FarmLandUnit)}
-            className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-foreground"
+            className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-foreground"
           >
             <option value="Acres">{t('opt:Acres')}</option>
             <option value="Hectares">{t('opt:Hectares')}</option>
@@ -81,7 +81,7 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
             <option value="Kanal">{t('opt:Kanal')}</option>
           </select>
         </div>
-        <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1">
+        <div className="text-xs text-muted-foreground flex items-center justify-between pt-1">
           <span>{t('pdetail.conversion')}</span>
           <span>{t('pdetail.conversion2')}</span>
         </div>
@@ -100,17 +100,17 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
                 key={st.type}
                 type="button"
                 onClick={() => handleFieldChange('soilType', st.type)}
-                className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
                   isSelected
                     ? 'ring-2 ring-emerald-500 border-emerald-500 bg-emerald-500/10 shadow-sm'
                     : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-extrabold text-foreground">{t(st.key)}</span>
+                  <span className="text-xs font-semibold text-foreground">{t(st.key)}</span>
                   {isSelected && <span className="text-emerald-500 text-xs font-bold">✓</span>}
                 </div>
-                <span className="text-[10px] text-muted-foreground leading-tight">{t(`${st.key}Desc`)}</span>
+                <span className="text-xs text-muted-foreground leading-tight">{t(`${st.key}Desc`)}</span>
               </button>
             );
           })}
@@ -130,7 +130,7 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
                 key={it.type}
                 type="button"
                 onClick={() => handleFieldChange('irrigationType', it.type)}
-                className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
                   isSelected
                     ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-500/10 shadow-sm'
                     : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'
@@ -138,9 +138,9 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base">{it.icon}</span>
-                  <span className="text-xs font-extrabold text-foreground">{t(it.key)}</span>
+                  <span className="text-xs font-semibold text-foreground">{t(it.key)}</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground">{t(`${it.key}Desc`)}</span>
+                <span className="text-xs text-muted-foreground">{t(`${it.key}Desc`)}</span>
               </button>
             );
           })}
@@ -157,7 +157,7 @@ export const FarmAgriSpecsSection: React.FC<IFarmAgriSpecsSectionProps> = ({ spe
           value={specs.primaryWaterSource || ''}
           onChange={(e) => handleFieldChange('primaryWaterSource', e.target.value)}
           placeholder="e.g., 5 HP Solar Powered Submersible Tube Well, 200ft bore"
-          className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
+          className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium transition-all"
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { AppButton } from '@/shared/widgets/AppButton';
 import { AppException } from '@/core/errors/AppException';
 
@@ -37,11 +38,11 @@ export const RetryState: React.FC<IRetryStateProps> = ({
       : error?.message || 'Unable to load data at this time. Please try again.';
 
   return (
-    <div className="w-full py-12 px-6 flex flex-col items-center justify-center text-center bg-rose-50/50 dark:bg-rose-950/20 rounded-3xl border border-rose-200 dark:border-rose-900/40 animate-fade-in my-4">
-      <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-3xl mb-4 shadow-sm">
-        ⚠️
+    <div className="w-full py-12 px-6 flex flex-col items-center justify-center text-center bg-rose-50/50 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/40 my-4">
+      <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4 shadow-sm">
+        <TriangleAlert className="h-7 w-7" strokeWidth={1.8} aria-hidden="true" />
       </div>
-      <h3 className="text-lg font-extrabold text-foreground tracking-tight mb-1">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground tracking-tight mb-1">{title}</h3>
       <p className="text-sm text-rose-700 dark:text-rose-300 max-w-md leading-relaxed mb-6">{errorMessage}</p>
       <AppButton variant="primary" size="md" isLoading={isRetrying} onClick={handleRetry}>
         Try Again

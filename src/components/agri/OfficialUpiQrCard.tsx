@@ -52,21 +52,21 @@ export const OfficialUpiQrCard: React.FC<OfficialUpiQrCardProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center rounded-2xl border border-primary/25 bg-gradient-to-b from-primary/5 via-emerald-50/20 to-transparent dark:from-primary/10 dark:via-emerald-950/20 p-4 text-center ${className}`}>
+    <div className={`flex flex-col items-center justify-center rounded-xl border border-primary/25 bg-primary/5 p-4 text-center ${className}`}>
       {/* Official Merchant Header */}
-      <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+      <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
         <ShieldCheck size={14} className="text-emerald-600" />
         <span>Official AgriConnect Payment QR</span>
       </div>
 
       {amount !== undefined && amount > 0 && (
-        <div className="mt-2 text-xl font-black text-foreground">
+        <div className="mt-2 text-xl font-semibold text-foreground">
           ₹{amount.toLocaleString('en-IN')}
         </div>
       )}
 
       {/* QR Code Container */}
-      <div className="mt-3 relative rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/10">
+      <div className="mt-3 relative rounded-xl bg-white p-3 shadow-md ring-1 ring-black/10">
         {!imgError ? (
           <img
             src={OFFICIAL_UPI_CONFIG.qrImagePath}
@@ -81,11 +81,11 @@ export const OfficialUpiQrCard: React.FC<OfficialUpiQrCardProps> = ({
 
       {/* Payee Details */}
       <div className="mt-3 space-y-0.5">
-        <p className="text-xs font-black text-foreground">{OFFICIAL_UPI_CONFIG.payeeName}</p>
+        <p className="text-xs font-semibold text-foreground">{OFFICIAL_UPI_CONFIG.payeeName}</p>
         <p className="font-mono text-xs font-bold text-primary">{OFFICIAL_UPI_CONFIG.upiId}</p>
       </div>
 
-      <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
+      <p className="mt-1 text-xs font-semibold text-muted-foreground">
         Scan with Google Pay, PhonePe, Paytm, BHIM, or any UPI App
       </p>
 

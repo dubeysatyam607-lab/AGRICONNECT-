@@ -1,5 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Search, Tractor, ArrowDownAZ, Clock } from 'lucide-react';
+import {
+  Search, Tractor, ArrowDownAZ, Clock,
+  Sprout, Combine, Wheat, Hexagon, FlaskConical, ThermometerSnowflake, Truck,
+  HardHat, Wrench, PawPrint, UserRound,
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { EntityCard } from './EntityCard';
@@ -8,19 +12,19 @@ import type { ServiceCategory, ServiceProvider } from '../../domain/networkTypes
 
 type SortMode = 'recommended' | 'price' | 'fastest';
 
-const CATEGORIES: Array<{ key: ServiceCategory | 'all'; icon: string }> = [
-  { key: 'all', icon: '🌾' },
-  { key: 'tractor', icon: '🚜' },
-  { key: 'harvesting', icon: '🌾' },
-  { key: 'threshing', icon: '🪘' },
-  { key: 'drone', icon: '🛸' },
-  { key: 'soil-testing', icon: '🧪' },
-  { key: 'cold-storage', icon: '❄️' },
-  { key: 'transport', icon: '🚚' },
-  { key: 'labour', icon: '👷' },
-  { key: 'mechanic', icon: '🔧' },
-  { key: 'veterinary', icon: '🐄' },
-  { key: 'consultant', icon: '🧑‍🌾' },
+const CATEGORIES: Array<{ key: ServiceCategory | 'all'; icon: React.ReactNode }> = [
+  { key: 'all', icon: <Sprout className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'tractor', icon: <Tractor className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'harvesting', icon: <Combine className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'threshing', icon: <Wheat className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'drone', icon: <Hexagon className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'soil-testing', icon: <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'cold-storage', icon: <ThermometerSnowflake className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'transport', icon: <Truck className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'labour', icon: <HardHat className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'mechanic', icon: <Wrench className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'veterinary', icon: <PawPrint className="h-3.5 w-3.5" aria-hidden="true" /> },
+  { key: 'consultant', icon: <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> },
 ];
 
 interface ProvidersViewProps {
@@ -102,7 +106,7 @@ export const ProvidersView: React.FC<ProvidersViewProps> = ({ providers, onToast
       {/* List */}
       <div className="mt-3 space-y-3">
         {list.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-14 text-center">
             <Search size={30} className="mb-2 text-muted-foreground/40" />
             <p className="text-sm font-bold text-foreground">{t('fnet.empty.title')}</p>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('fnet.empty.providers')}</p>

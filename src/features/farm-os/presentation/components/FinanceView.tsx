@@ -67,22 +67,22 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
       <section>
         <SectionHead title={t('fos.fin.byCategory')} />
         {totalCat === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-card/50 px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
             {t('fos.fin.empty')}
           </p>
         ) : (
-          <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5 shadow-card">
             {CATS.map((c) => {
               const v = finance.byCategory[c];
               const pct = Math.round((v / totalCat) * 100);
               return (
                 <div key={c} className="flex items-center gap-2.5">
-                  <span className="w-28 shrink-0 truncate text-[11px] font-bold text-muted-foreground">{t(`fos.fin.cat.${c}`)}</span>
+                  <span className="w-28 shrink-0 truncate text-xs font-bold text-muted-foreground">{t(`fos.fin.cat.${c}`)}</span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                     <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(v / maxCat) * 100}%` }} />
                   </div>
-                  <span className="w-16 shrink-0 text-right text-[11px] font-black text-foreground">{inr(v)}</span>
-                  <span className="w-8 shrink-0 text-right text-[10px] font-bold text-muted-foreground">{pct}%</span>
+                  <span className="w-16 shrink-0 text-right text-xs font-semibold text-foreground">{inr(v)}</span>
+                  <span className="w-8 shrink-0 text-right text-xs font-bold text-muted-foreground">{pct}%</span>
                 </div>
               );
             })}
@@ -94,18 +94,18 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
       <section>
         <SectionHead title={t('fos.fin.sales')} />
         {sales.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-card/50 px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-6 text-center text-xs font-semibold text-muted-foreground">
             {t('fos.fin.saleEmpty')}
           </p>
         ) : (
           <div className="flex flex-col gap-2">
             {sales.map((s) => (
-              <div key={s.id} className="flex items-center justify-between rounded-2xl border border-border bg-card px-3.5 py-3 shadow-card">
+              <div key={s.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-3.5 py-3 shadow-card">
                 <div>
                   <p className="text-[13px] font-bold text-foreground">{s.crop}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground">{s.qty} {s.unit} × ₹{s.pricePerUnit.toLocaleString('en-IN')}</p>
+                  <p className="text-xs font-bold text-muted-foreground">{s.qty} {s.unit} × ₹{s.pricePerUnit.toLocaleString('en-IN')}</p>
                 </div>
-                <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{inr(s.qty * s.pricePerUnit)}</span>
+                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{inr(s.qty * s.pricePerUnit)}</span>
               </div>
             ))}
           </div>
@@ -114,19 +114,19 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
 
       {/* Add buttons */}
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={() => setSheet('expense')} className="rounded-xl border border-dashed border-emerald-300 bg-emerald-500/5 py-3 text-sm font-black text-emerald-700 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300">
+        <button onClick={() => setSheet('expense')} className="rounded-xl border border-dashed border-emerald-300 bg-emerald-500/5 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300">
           + {t('fos.fin.addExpense')}
         </button>
-        <button onClick={() => setSheet('sale')} className="rounded-xl border border-dashed border-sky-300 bg-sky-500/5 py-3 text-sm font-black text-sky-700 transition-colors hover:bg-sky-500/10 dark:text-sky-300">
+        <button onClick={() => setSheet('sale')} className="rounded-xl border border-dashed border-sky-300 bg-sky-500/5 py-3 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-500/10 dark:text-sky-300">
           + {t('fos.fin.addSale')}
         </button>
       </div>
 
       {sheet && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4" onClick={() => setSheet(null)}>
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 shadow-xl" onClick={(ev) => ev.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-4 " onClick={(ev) => ev.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-display text-sm font-black tracking-tight text-foreground">
+              <h3 className=" text-sm font-semibold tracking-tight text-foreground">
                 {sheet === 'expense' ? t('fos.fin.addExpense') : t('fos.fin.addSale')}
               </h3>
               <button onClick={() => setSheet(null)} className="rounded-full p-1 text-muted-foreground hover:bg-muted">
@@ -141,7 +141,7 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
                       key={c}
                       onClick={() => setCat(c)}
                       className={cn(
-                        'rounded-full px-2.5 py-1 text-[10px] font-black transition-colors',
+                        'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
                         cat === c ? 'bg-forest text-primary-foreground' : 'border border-border bg-background text-muted-foreground hover:text-foreground',
                       )}
                     >
@@ -162,7 +162,7 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
                   placeholder={t('fos.fin.amountPh')}
                   className="mb-4 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:border-emerald-400 focus:outline-none"
                 />
-                <button onClick={submitExpense} disabled={!label.trim() || !Number(amount)} className="w-full rounded-xl bg-forest py-2.5 text-sm font-black text-primary-foreground disabled:opacity-40">
+                <button onClick={submitExpense} disabled={!label.trim() || !Number(amount)} className="w-full rounded-xl bg-forest py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40">
                   {t('fos.fin.submit')}
                 </button>
               </>
@@ -191,11 +191,11 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
                   />
                 </div>
                 {Number(qty) > 0 && Number(price) > 0 && (
-                  <p className="mb-3 text-right text-sm font-black text-emerald-700 dark:text-emerald-300">
+                  <p className="mb-3 text-right text-sm font-semibold text-emerald-700 dark:text-emerald-300">
                     = {inr(Number(qty) * Number(price))}
                   </p>
                 )}
-                <button onClick={submitSale} disabled={!crop.trim() || !Number(qty) || !Number(price)} className="w-full rounded-xl bg-forest py-2.5 text-sm font-black text-primary-foreground disabled:opacity-40">
+                <button onClick={submitSale} disabled={!crop.trim() || !Number(qty) || !Number(price)} className="w-full rounded-xl bg-forest py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40">
                   {t('fos.fin.submit')}
                 </button>
               </>
@@ -208,11 +208,11 @@ export const FinanceView: React.FC<Props> = ({ data, onToast }) => {
 };
 
 const Kpi: React.FC<{ icon: React.ComponentType<{ size?: number; className?: string }>; value: string; label: string; tint: string }> = ({ icon: Icon, value, label, tint }) => (
-  <div className="rounded-2xl border border-border bg-card p-3 shadow-card">
+  <div className="rounded-xl border border-border bg-card p-3 shadow-card">
     <span className={cn('mb-2 flex h-8 w-8 items-center justify-center rounded-lg', tint)}>
       <Icon size={15} />
     </span>
-    <p className="truncate text-sm font-black tracking-tight text-foreground">{value}</p>
-    <p className="truncate text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{label}</p>
+    <p className="truncate text-sm font-semibold tracking-tight text-foreground">{value}</p>
+    <p className="truncate text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</p>
   </div>
 );

@@ -35,15 +35,15 @@ export const ScoreRing: React.FC<ScoreRingProps> = ({ value, label, color = '#15
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xl font-extrabold tracking-tight text-foreground tabular-nums">
+          <span className="text-xl font-semibold tracking-tight text-foreground tabular-nums">
             {clamped}
           </span>
         </div>
         {icon && <span className="absolute -top-1 -right-1">{icon}</span>}
       </div>
       <div className="text-center leading-tight">
-        <p className="text-xs font-extrabold text-foreground">{label}</p>
-        {sub && <p className="text-[10px] text-muted-foreground font-medium">{sub}</p>}
+        <p className="text-xs font-semibold text-foreground">{label}</p>
+        {sub && <p className="text-xs text-muted-foreground font-medium">{sub}</p>}
       </div>
     </div>
   );

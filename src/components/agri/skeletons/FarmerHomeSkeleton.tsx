@@ -4,7 +4,7 @@ export default function FarmerHomeSkeleton() {
   return (
     <div className="min-h-screen bg-background p-4 space-y-4 animate-pulse">
       {/* Hero banner skeleton */}
-      <div className="rounded-3xl bg-card border border-border p-5 space-y-3">
+      <div className="rounded-xl bg-card border border-border p-5 space-y-3">
         <Skeleton className="h-5 w-40" />
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-48" />
@@ -40,7 +40,7 @@ export default function FarmerHomeSkeleton() {
       </div>
 
       {/* Weather widget */}
-      <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 p-4">
+      <div className="rounded-2xl bg-primary/10 border border-primary/10 p-4">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <Skeleton className="h-3 w-20 bg-primary/15" />

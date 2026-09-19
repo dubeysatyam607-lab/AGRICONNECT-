@@ -178,7 +178,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
             </DialogHeader>
             <div className="space-y-4 pt-4">
               {showCurrentPrice && (
-                <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/8 px-3.5 py-2.5 text-sm">
+                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3.5 py-2.5 text-sm">
                   <Zap size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span className="text-muted-foreground">
                     {newAlert.commodity} is at{' '}
@@ -296,7 +296,7 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
-                      "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0",
+                      "w-11 h-11 rounded-xl flex items-center justify-center shrink-0",
                       isAbove ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
                     )}>
                       {isAbove ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
@@ -309,27 +309,27 @@ const PriceAlerts: React.FC<PriceAlertsProps> = ({ onNavigateToAuth, initialComm
                     </div>
                   </div>
                   <span className={cn(
-                    "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black",
+                    "shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
                     alert.is_active
                       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                       : "bg-muted text-muted-foreground"
                   )}>
-                    <span className={cn("h-1.5 w-1.5 rounded-full", alert.is_active ? "bg-emerald-500 animate-live-pulse" : "bg-muted-foreground")} />
+                    <span className={cn("h-1.5 w-1.5 rounded-full", alert.is_active ? "bg-emerald-500 " : "bg-muted-foreground")} />
                     {alert.is_active ? 'Active' : 'Paused'}
                   </span>
                 </div>
 
                 {showGap && gap !== null && (
                   <div className="mt-3">
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground mb-1">
+                    <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-1">
                       <span>Current: {formatINR(currentPrice!)}</span>
-                      <span className={cn("font-black", gap >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                      <span className={cn("font-semibold", gap >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                         {gap >= 0 ? `₹${gap.toLocaleString('en-IN')} to go` : `₹${Math.abs(gap).toLocaleString('en-IN')} past target`}
                       </span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${Math.min(100, Math.max(4, (alert.target_price / (currentPrice! * 1.3)) * 100))}%` }}
                       />
                     </div>

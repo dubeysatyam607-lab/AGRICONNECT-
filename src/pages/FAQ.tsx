@@ -159,14 +159,14 @@ const FAQ: React.FC = () => {
       />
 
       <main className="min-h-screen bg-background pb-20">
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20 text-center">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'FAQ' }]}
               className="justify-center"
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
               Frequently Asked Questions
             </h1>
             <p className="text-emerald-100/80 mt-3 max-w-2xl mx-auto text-lg">
@@ -180,7 +180,7 @@ const FAQ: React.FC = () => {
             {EXTENDED_FAQS.map((faq, idx) => {
               const panelId = `faq-panel-${idx}`;
               return (
-                <div key={faq.q} className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+                <div key={faq.q} className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
                   <button
                     onClick={() => toggle(idx)}
                     aria-expanded={open === idx}
@@ -208,7 +208,7 @@ const FAQ: React.FC = () => {
             })}
           </div>
 
-          <div className="mt-10 rounded-2xl gradient-hero text-primary-foreground p-6 text-center">
+          <div className="mt-10 rounded-xl gradient-hero text-primary-foreground p-6 text-center">
             <h2 className="font-bold text-xl">Still have questions?</h2>
             <p className="text-sm text-primary-foreground/80 mt-2">
               Our kisan support team is happy to help.

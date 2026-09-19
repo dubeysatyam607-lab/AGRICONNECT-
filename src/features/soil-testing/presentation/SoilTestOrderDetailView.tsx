@@ -78,8 +78,8 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6 animate-pulse">
         <div className="h-6 w-32 bg-muted rounded-lg" />
-        <div className="h-28 bg-muted rounded-2xl" />
-        <div className="h-64 bg-muted rounded-2xl" />
+        <div className="h-28 bg-muted rounded-xl" />
+        <div className="h-64 bg-muted rounded-xl" />
       </div>
     );
   }
@@ -128,7 +128,7 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
       </div>
 
       {/* Main Order Header Card */}
-      <AgriCard className="p-6 rounded-2xl border border-border/70 bg-card shadow-sm relative overflow-hidden">
+      <AgriCard className="p-6 rounded-xl border border-border/70 bg-card shadow-sm relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
               </span>
             </div>
 
-            <h1 className="text-2xl font-black text-foreground tracking-tight mt-2">
+            <h1 className="text-2xl font-semibold text-foreground tracking-tight mt-2">
               {order.order_number}
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -186,14 +186,14 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-[11px] text-muted-foreground font-semibold">
+                <div className="text-xs text-muted-foreground font-semibold">
                   {t('soil.assignedTechnician') || 'Assigned Pickup Technician'}
                 </div>
                 <div className="text-xs font-bold text-foreground">
                   {order.assigned_agent_name}
                 </div>
                 {order.confirmed_pickup_date && (
-                  <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                  <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                     Scheduled: {order.confirmed_pickup_date} ({order.pickup_time_slot || 'Standard slot'})
                   </div>
                 )}
@@ -217,13 +217,13 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Status Timeline Card (2 Cols) */}
         <div className="md:col-span-2 space-y-6">
-          <AgriCard className="p-6 rounded-2xl border border-border/70 bg-card shadow-sm">
+          <AgriCard className="p-6 rounded-xl border border-border/70 bg-card shadow-sm">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/40">
-              <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-600" />
                 {t('soil.timeline.title') || 'Real-time Lab Progress Timeline'}
               </h3>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                 {order.order_status.replace(/_/g, ' ').toUpperCase()}
               </span>
             </div>
@@ -237,14 +237,14 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
 
           {/* Structured Report / Health Card */}
           {isReportReady && structuredResults && (
-            <AgriCard className="p-6 rounded-2xl border border-border/70 bg-card shadow-sm">
+            <AgriCard className="p-6 rounded-xl border border-border/70 bg-card shadow-sm">
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-border/40">
                 <div>
-                  <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <FlaskConical className="w-4 h-4 text-emerald-600" />
                     {t('soil.healthCard.title') || 'Official Soil Health Report Parameters'}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Tested by {order.lab_name || 'AgriConnect Certified Central Laboratory'}
                   </p>
                 </div>
@@ -267,7 +267,7 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
 
         {/* Order & Farm Details Sidebar (1 Col) */}
         <div className="space-y-4">
-          <AgriCard className="p-5 rounded-2xl border border-border/70 bg-card shadow-sm text-xs space-y-4">
+          <AgriCard className="p-5 rounded-xl border border-border/70 bg-card shadow-sm text-xs space-y-4">
             <h4 className="font-bold text-foreground pb-2 border-b border-border/50 flex items-center gap-2">
               <User className="w-4 h-4 text-emerald-600" />
               Farmer & Farm Details
@@ -309,7 +309,7 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
             </div>
           </AgriCard>
 
-          <AgriCard className="p-5 rounded-2xl border border-border/70 bg-card shadow-sm text-xs space-y-3">
+          <AgriCard className="p-5 rounded-xl border border-border/70 bg-card shadow-sm text-xs space-y-3">
             <h4 className="font-bold text-foreground pb-2 border-b border-border/50">
               Payment & Fee Breakdown
             </h4>
@@ -326,7 +326,7 @@ export const SoilTestOrderDetailView: React.FC<SoilTestOrderDetailViewProps> = (
               </span>
             </div>
 
-            <div className="flex justify-between text-xs font-extrabold text-foreground pt-2 border-t border-border/50">
+            <div className="flex justify-between text-xs font-semibold text-foreground pt-2 border-t border-border/50">
               <span>Total Paid</span>
               <span className="text-emerald-600 dark:text-emerald-400">₹{order.total_amount.toFixed(2)}</span>
             </div>

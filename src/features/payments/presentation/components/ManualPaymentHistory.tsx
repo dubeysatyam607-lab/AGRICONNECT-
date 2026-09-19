@@ -68,22 +68,22 @@ export function ManualPaymentHistory({ userId }: { userId: string }) {
     d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-card">
       <div className="flex items-center gap-2">
         <ReceiptText size={16} className="text-primary" />
-        <h3 className="text-sm font-black text-foreground">{t('title')}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t('title')}</h3>
       </div>
 
       {subscription?.status === 'active' && (
-        <div className="mt-3 flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3 dark:bg-emerald-500/10">
+        <div className="mt-3 flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-500/10">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={16} className="text-emerald-600" />
             <div>
-              <p className="text-xs font-black text-foreground">
+              <p className="text-xs font-semibold text-foreground">
                 {t('active')} · {plans[subscription.plan_id] || subscription.plan_id}
               </p>
               {subscription.expires_at && (
-                <p className="text-[10px] font-semibold text-muted-foreground">
+                <p className="text-xs font-semibold text-muted-foreground">
                   {t('expires')}: {fmtDate(subscription.expires_at)}
                 </p>
               )}
@@ -97,24 +97,24 @@ export function ManualPaymentHistory({ userId }: { userId: string }) {
       ) : (
         <div className="mt-3 space-y-2">
           {payments.slice(0, 10).map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-muted/20 px-4 py-3">
+            <div key={p.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/20 px-4 py-3">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-xs font-black text-foreground">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                   {plans[p.plan_id] || p.plan_id}
-                  <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black', STATUS_TONE[p.status] || STATUS_TONE.pending)}>
+                  <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold', STATUS_TONE[p.status] || STATUS_TONE.pending)}>
                     {p.status === 'approved' ? <CheckCircle2 size={9} /> : p.status === 'rejected' ? <XCircle size={9} /> : <Clock3 size={9} />}
                     {p.status === 'pending' ? t('pending') : p.status === 'approved' ? t('approved') : p.status === 'rejected' ? t('rejected') : t('cancelled')}
                   </span>
                 </p>
-                <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
+                <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">
                   {t('utr')}: {p.utr} · {fmtDate(p.created_at)}
                   {p.status === 'approved' && p.verified_at && ` · ${t('verified')} ${fmtDate(p.verified_at)}`}
                 </p>
                 {(p.admin_note || p.rejection_reason) && (
-                  <p className="mt-0.5 truncate text-[10px] font-bold text-amber-600">{p.admin_note || p.rejection_reason}</p>
+                  <p className="mt-0.5 truncate text-xs font-bold text-amber-600">{p.admin_note || p.rejection_reason}</p>
                 )}
               </div>
-              <span className="shrink-0 text-xs font-black text-foreground">{fmtINR(p.amount)}</span>
+              <span className="shrink-0 text-xs font-semibold text-foreground">{fmtINR(p.amount)}</span>
             </div>
           ))}
         </div>

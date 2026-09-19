@@ -33,7 +33,7 @@ export const Waveform: React.FC<WaveformProps> = ({
           key={i}
           className={cn(
             "w-[4px] rounded-full",
-            active ? "bg-primary animate-wave" : "bg-muted-foreground/30"
+            active ? "bg-primary " : "bg-muted-foreground/30"
           )}
           style={{
             height: `${h}%`,

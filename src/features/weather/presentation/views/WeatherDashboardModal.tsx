@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X, ShieldAlert, Sparkles, Sprout } from 'lucide-react';
+import { X, ShieldAlert, Sprout } from 'lucide-react';
 import { IWeatherModuleData } from '../../domain/models/WeatherModels';
 import { LiveWeatherHeroCard } from '../components/LiveWeatherHeroCard';
 import { HourlyForecastTimeline } from '../components/HourlyForecastTimeline';
@@ -57,10 +57,10 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
 
   if (!data) {
     return (
-      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
-        <div className="bg-slate-950/95 border-t sm:border border-white/15 w-full max-w-3xl sm:rounded-3xl rounded-t-3xl p-8 text-center" onClick={(e) => e.stopPropagation()}>
-          <div className="animate-spin h-8 w-8 border-2 border-emerald-400 border-t-transparent rounded-full mx-auto" />
-          <p className="text-sm text-slate-400 mt-4">{t('wth.loading') || 'Loading weather data…'}</p>
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
+        <div className="bg-card border border-border w-full max-w-3xl sm:rounded-xl rounded-t-xl p-8 text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="type-small text-muted-foreground mt-4">{t('wth.loading') || 'Loading weather data…'}</p>
         </div>
       </div>
     );
@@ -75,23 +75,23 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
-      <div ref={bodyRef} className="bg-slate-950/95 border-t sm:border border-white/15 w-full max-w-3xl max-h-[92vh] sm:rounded-3xl rounded-t-3xl overflow-y-auto no-scrollbar flex flex-col shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50" role="dialog" aria-modal="true" aria-label={t('wth.title')} onClick={onClose}>
+      <div ref={bodyRef} className="bg-card border border-border w-full max-w-3xl max-h-[92vh] sm:rounded-xl rounded-t-xl overflow-y-auto no-scrollbar flex flex-col">
         
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-xl px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-emerald-500/15 rounded-xl border border-emerald-500/30 text-emerald-400">
-              <Sparkles size={18} className="animate-spin-slow" />
+        <div className="sticky top-0 z-30 bg-card px-5 py-4 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <Sprout size={18} aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-base font-black text-white leading-tight">
+              <h2 className="type-h2 leading-tight">
                 {t('wth.title')}
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="type-meta">
                 {interpolate(t('wth.lastUpdated'), { time: new Date(data.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}
                 {data.isOfflineCached && (
-                  <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 px-2 py-0.5 font-bold">
+                  <span className="ml-2 inline-flex items-center gap-1 rounded bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 px-2 py-0.5 font-semibold">
                     {t('wth.estimated')}
                   </span>
                 )}
@@ -103,7 +103,7 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
             <button
               onClick={onClose}
               aria-label={t('wth.closeAria')}
-              className="p-2 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full text-slate-300 hover:text-white transition-all"
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted transition-colors"
               title={t('wth.closeTitle')}
             >
               <X size={20} />
@@ -112,17 +112,17 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="p-4 sm:p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-5">
           
           {/* Critical Agro-Advisory Banner (if active) */}
           {data.advisoryAlert && (
-            <div className="p-4 bg-gradient-to-r from-emerald-900/60 to-teal-900/60 border border-emerald-500/40 rounded-2xl flex items-start gap-3 text-white shadow-lg">
-              <ShieldAlert size={22} className="text-emerald-400 shrink-0 mt-0.5 animate-pulse" />
+            <div className="p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-start gap-3">
+              <ShieldAlert size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
               <div className="flex-1">
-                <h4 className="text-xs font-black uppercase tracking-wider text-emerald-300 mb-0.5">
+                <h4 className="type-label text-amber-700 dark:text-amber-300 mb-0.5">
                   {t('wth.advisory')}
                 </h4>
-                <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                <p className="type-small text-foreground">
                   {data.advisoryAlert.message}
                 </p>
               </div>
@@ -130,31 +130,31 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
           )}
 
           {/* Today's Farm Plan — crop-aware action strip */}
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-300 flex items-center gap-1.5">
-                <Sprout size={13} className="animate-pulse" />
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <h4 className="type-label text-muted-foreground flex items-center gap-1.5">
+                <Sprout size={13} aria-hidden="true" />
                 {t('wth.todaysPlan')} · {profile.crop} · {profile.stage}
               </h4>
               {rainPct != null && (
                 <span
                   className={cn(
-                    "text-[10px] font-bold rounded-full px-2.5 py-1 border",
+                    "type-label rounded px-2 py-1 border",
                     rainPct >= 40
-                      ? "text-sky-300 bg-sky-500/10 border-sky-500/25"
-                      : "text-amber-300 bg-amber-500/10 border-amber-500/25"
+                      ? "text-sky-700 dark:text-sky-300 bg-sky-500/10 border-sky-500/25"
+                      : "text-amber-700 dark:text-amber-300 bg-amber-500/10 border-amber-500/25"
                   )}
                 >
                   {interpolate(t('wth.rain'), { pct: Math.round(rainPct) })}
                 </span>
               )}
             </div>
-            <p className="text-sm font-bold text-white leading-snug">{farm.heroLine}</p>
+            <p className="type-h3 leading-snug">{farm.heroLine}</p>
             <div className="grid grid-cols-2 gap-2 mt-3">
               {farm.items.slice(0, 4).map((it, i) => (
-                <div key={i} className="rounded-xl bg-white/[0.04] border border-white/10 p-2.5">
-                  <p className="text-[10px] font-bold text-slate-300">{it.title}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{it.sub}</p>
+                <div key={i} className="rounded-lg bg-muted/50 border border-border p-2.5">
+                  <p className="type-small font-semibold text-foreground">{it.title}</p>
+                  <p className="type-meta mt-0.5 leading-snug">{it.sub}</p>
                 </div>
               ))}
             </div>
@@ -192,7 +192,7 @@ export const WeatherDashboardModal: React.FC<WeatherDashboardModalProps> = ({
           />
 
           {/* Bottom Footer Info */}
-          <div className="pt-2 pb-6 text-center text-slate-500 text-[11px] space-y-1">
+          <div className="pt-2 pb-6 text-center text-muted-foreground type-meta space-y-1">
             <p>{t('wth.footerData')}</p>
             <p>{t('wth.footerPerf')}</p>
           </div>

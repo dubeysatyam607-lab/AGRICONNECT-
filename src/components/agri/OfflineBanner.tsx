@@ -42,7 +42,7 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
   if (!visible || dismissed) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 animate-slide-down">
+    <div className="fixed top-0 left-0 right-0 z-50 ">
       <div className="bg-destructive text-destructive-foreground px-4 py-3 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-2">
           <WifiOff size={16} className="flex-shrink-0" />

@@ -30,7 +30,7 @@ export const CalendarView: React.FC<Props> = ({ data, onToast }) => {
               const isToday = e.date === today;
               const diff = Math.round((new Date(e.date + 'T00:00:00').getTime() - new Date(today + 'T00:00:00').getTime()) / 86400000);
               return (
-                <div key={e.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card">
+                <div key={e.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-card">
                   <span
                     className={cn(
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
@@ -45,12 +45,12 @@ export const CalendarView: React.FC<Props> = ({ data, onToast }) => {
                         {e.title}
                       </p>
                       {e.autoAdjust && (
-                        <span className="shrink-0 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                        <span className="shrink-0 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
                           {t('fos.cal.auto')}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] font-bold text-muted-foreground">
+                    <p className="text-xs font-bold text-muted-foreground">
                       {formatDay(e.date)}
                       {diff === 0 ? ` · ${t('fos.time.dueToday')}` : diff < 0 ? ` · ${t('fos.time.overdue')}` : ` · ${t('fos.time.daysLeft').replace('{n}', String(diff))}`}
                     </p>
@@ -60,7 +60,7 @@ export const CalendarView: React.FC<Props> = ({ data, onToast }) => {
                       actions.toggleCalendarEntry(e.id);
                       onToast(t('fos.toast.done'));
                     }}
-                    className="rounded-full border border-border px-3 py-1.5 text-[10px] font-black text-muted-foreground transition-colors hover:border-emerald-400 hover:text-emerald-700"
+                    className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-emerald-400 hover:text-emerald-700"
                   >
                     {t('fos.cal.markDone')}
                   </button>
@@ -71,15 +71,15 @@ export const CalendarView: React.FC<Props> = ({ data, onToast }) => {
 
           {done.length > 0 && (
             <section>
-              <h3 className="mb-2 text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('fos.cal.done')}</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('fos.cal.done')}</h3>
               <div className="flex flex-col gap-2">
                 {done.map((e) => {
                   const Icon = calendarIcons[e.type];
                   return (
-                    <div key={e.id} className="flex items-center gap-2.5 rounded-2xl border border-border bg-card/60 px-3 py-2.5 opacity-70">
+                    <div key={e.id} className="flex items-center gap-2.5 rounded-xl border border-border bg-card/60 px-3 py-2.5 opacity-70">
                       <Icon size={14} className="shrink-0 text-emerald-500" />
                       <span className="min-w-0 flex-1 truncate text-xs font-bold text-muted-foreground line-through">{e.title}</span>
-                      <span className="shrink-0 text-[10px] font-bold text-muted-foreground">{formatDay(e.date)}</span>
+                      <span className="shrink-0 text-xs font-bold text-muted-foreground">{formatDay(e.date)}</span>
                     </div>
                   );
                 })}

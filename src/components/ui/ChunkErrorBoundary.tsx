@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import { Sprout } from "lucide-react";
 import { crashLoggingService } from "@/core/services/CrashLoggingService";
 
 interface Props {
@@ -62,7 +63,7 @@ export class ChunkErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-2xl">🌾</div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted"><Sprout className="h-6 w-6 text-emerald-600" strokeWidth={1.6} /></div>
           <div>
             <h2 className="text-lg font-semibold text-foreground">This section couldn't load</h2>
             <p className="mt-1 text-sm text-muted-foreground">

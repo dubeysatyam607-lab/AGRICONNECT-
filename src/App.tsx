@@ -228,7 +228,7 @@ const FloatingWhatsApp = () => {
         aria-label="Contact Agricultural Helpdesk on WhatsApp (drag to move, tap to chat)"
         onClick={onClick}
         onPointerDown={onPointerDown}
-        className="fixed z-50 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none touch-none"
+        className="fixed z-50 bg-[#25D366] text-white p-3.5 rounded-full  hover:scale-105 active:scale-95 transition-transform flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none touch-none"
         style={{ left: pos.x, top: pos.y, width: BTN_SIZE, height: BTN_SIZE }}
       >
         <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" draggable={false} className="pointer-events-none">

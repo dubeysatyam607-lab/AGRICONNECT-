@@ -41,7 +41,7 @@ export const ReportsView: React.FC<Props> = ({ data, onToast }) => {
             className={`flex flex-col items-center gap-1 rounded-xl border border-border bg-card px-1 py-2.5 text-center shadow-card transition-transform hover:-translate-y-0.5 ${kindTint[k]}`}
           >
             <Sparkles size={14} />
-            <span className="text-[9px] font-black uppercase leading-tight">{t(`fos.rep.kind.${k}`)}</span>
+            <span className="text-xs font-semibold uppercase leading-tight">{t(`fos.rep.kind.${k}`)}</span>
           </button>
         ))}
       </div>
@@ -51,24 +51,24 @@ export const ReportsView: React.FC<Props> = ({ data, onToast }) => {
       ) : (
         <div className="flex flex-col gap-2.5">
           {reports.map((r) => (
-            <article key={r.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+            <article key={r.id} className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
               <div className={`flex items-center justify-between gap-2 px-3.5 py-2.5 ${kindTint[r.kind]}`}>
-                <h4 className="text-[13px] font-black tracking-tight">{r.title}</h4>
-                <span className="shrink-0 rounded-full bg-black/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide">
+                <h4 className="text-[13px] font-semibold tracking-tight">{r.title}</h4>
+                <span className="shrink-0 rounded-full bg-black/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
                   {t(`fos.rep.kind.${r.kind}`)}
                 </span>
               </div>
               <div className="px-3.5 py-3">
-                <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">{r.summary}</p>
+                <p className="text-xs font-medium leading-relaxed text-muted-foreground">{r.summary}</p>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {r.metrics.map((m) => (
                     <div key={m.label} className="rounded-xl bg-muted/60 px-2 py-2 text-center">
-                      <p className="truncate text-[10px] font-bold text-muted-foreground">{m.label}</p>
-                      <p className="mt-0.5 truncate text-[12px] font-black text-foreground">{m.value}</p>
+                      <p className="truncate text-xs font-bold text-muted-foreground">{m.label}</p>
+                      <p className="mt-0.5 truncate text-[12px] font-semibold text-foreground">{m.value}</p>
                     </div>
                   ))}
                 </div>
-                <p className="mt-2.5 text-right text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
+                <p className="mt-2.5 text-right text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   {t('fos.rep.generatedAt')} · {new Date(r.generatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>

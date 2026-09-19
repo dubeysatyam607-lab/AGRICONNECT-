@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Camera, MapPin, Mic, Send } from 'lucide-react';
+import { ArrowLeft, Camera, MapPin, Mic, MessageCircle, Send, CalendarDays, FileText, MicVocal } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
 import { cn } from '@/lib/utils';
 import { Avatar } from './Avatar';
 import type { ChatMessage, ChatThread } from '../../domain/networkTypes';
+
+const MESSAGE_ICON: Record<string, React.ReactNode> = {
+  image: <Camera className="inline h-3 w-3" aria-hidden="true" />,
+  voice: <MicVocal className="inline h-3 w-3" aria-hidden="true" />,
+  location: <MapPin className="inline h-3 w-3" aria-hidden="true" />,
+  booking: <CalendarDays className="inline h-3 w-3" aria-hidden="true" />,
+  receipt: <FileText className="inline h-3 w-3" aria-hidden="true" />,
+};
 
 interface ChatsViewProps {
   threads: ChatThread[];
@@ -47,7 +55,7 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
   if (thread) {
     return (
       <div className="mt-4">
-        <div className="rounded-2xl border border-border bg-card shadow-card">
+        <div className="rounded-xl border border-border bg-card shadow-card">
           <div className="flex items-center gap-2.5 border-b border-border p-3">
             <button
               onClick={() => { onRead(thread.id); setActive(null); }}
@@ -60,8 +68,8 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
               user={{ initials: thread.participantName.slice(0, 2).toUpperCase(), name: thread.participantName, type: thread.participantType, verified: false }}
             />
             <div>
-              <p className="text-xs font-black text-foreground">{thread.participantName}</p>
-              <p className="text-[10px] font-semibold text-muted-foreground">{t(`fnet.type.${thread.participantType}`)}</p>
+              <p className="text-xs font-semibold text-foreground">{thread.participantName}</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t(`fnet.type.${thread.participantType}`)}</p>
             </div>
           </div>
 
@@ -73,7 +81,7 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
               <div key={m.id} className={cn('flex', m.senderId === 'me' ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn(
-                    'max-w-[80%] rounded-2xl px-3 py-2 text-xs font-semibold leading-relaxed',
+                    'max-w-[80%] rounded-xl px-3 py-2 text-xs font-semibold leading-relaxed',
                     m.senderId === 'me'
                       ? 'rounded-br-md bg-forest text-primary-foreground dark:bg-emerald-600'
                       : 'rounded-bl-md bg-muted text-foreground',
@@ -81,7 +89,7 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
                 >
                   {m.type !== 'text' && (
                     <span className="mr-1.5" aria-hidden>
-                      {m.type === 'image' ? '📷' : m.type === 'voice' ? '🎙️' : m.type === 'location' ? '📍' : m.type === 'booking' ? '📅' : '🧾'}
+                      {MESSAGE_ICON[m.type] ?? <FileText className="inline h-3 w-3" aria-hidden="true" />}
                     </span>
                   )}
                   {m.text}
@@ -96,7 +104,7 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
                 <button
                   key={type}
                   onClick={() => quick(type)}
-                  className="flex items-center gap-1 rounded-full border border-border bg-background/60 px-3 py-1.5 text-[10px] font-bold text-muted-foreground hover:text-forest"
+                  className="flex items-center gap-1 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-forest"
                 >
                   <Icon size={12} />
                   {t(labelKey)}
@@ -133,8 +141,8 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
   return (
     <div className="mt-4 space-y-3">
       {threads.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-14 text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-xl" aria-hidden>💬</div>
+        <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-14 text-center">
+          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-emerald-700" aria-hidden><MessageCircle className="h-6 w-6" /></div>
           <p className="text-sm font-bold text-foreground">{t('fnet.chat.none.title')}</p>
           <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('fnet.chat.none.body')}</p>
         </div>
@@ -145,22 +153,22 @@ export const ChatsView: React.FC<ChatsViewProps> = ({ threads, onStart, onSend, 
             <button
               key={th.id}
               onClick={() => { onRead(th.id); setActive(th.id); }}
-              className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3.5 text-left shadow-card"
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-left shadow-card"
             >
               <Avatar
                 user={{ initials: th.participantName.slice(0, 2).toUpperCase(), name: th.participantName, type: th.participantType, verified: false }}
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="truncate text-xs font-black text-foreground">{th.participantName}</p>
-                  <span className="text-[10px] font-semibold text-muted-foreground">{timeAgo(t, th.updatedAt)}</span>
+                  <p className="truncate text-xs font-semibold text-foreground">{th.participantName}</p>
+                  <span className="text-xs font-semibold text-muted-foreground">{timeAgo(t, th.updatedAt)}</span>
                 </div>
-                <p className={cn('mt-0.5 truncate text-[11px] font-semibold', th.unread > 0 ? 'text-foreground' : 'text-muted-foreground')}>
+                <p className={cn('mt-0.5 truncate text-xs font-semibold', th.unread > 0 ? 'text-foreground' : 'text-muted-foreground')}>
                   {last?.text ?? t('fnet.chat.empty')}
                 </p>
               </div>
               {th.unread > 0 && (
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-forest px-1.5 text-[10px] font-black text-primary-foreground">
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-forest px-1.5 text-xs font-semibold text-primary-foreground">
                   {th.unread}
                 </span>
               )}

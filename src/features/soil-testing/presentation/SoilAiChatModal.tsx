@@ -80,7 +80,7 @@ export const SoilAiChatModal: React.FC<SoilAiChatModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] flex flex-col p-6 rounded-2xl">
+      <DialogContent className="max-w-xl max-h-[85vh] flex flex-col p-6 rounded-xl">
         <DialogHeader className="pb-3 border-b border-border/50">
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
@@ -114,7 +114,7 @@ export const SoilAiChatModal: React.FC<SoilAiChatModalProps> = ({
               </div>
 
               <div
-                className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
+                className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
                   m.sender === 'user'
                     ? 'bg-primary text-primary-foreground rounded-tr-none'
                     : 'bg-muted/80 text-foreground border border-border/60 rounded-tl-none whitespace-pre-line'
@@ -122,7 +122,7 @@ export const SoilAiChatModal: React.FC<SoilAiChatModalProps> = ({
               >
                 {m.text}
                 <div
-                  className={`text-[9px] mt-1 text-right ${
+                  className={`text-xs mt-1 text-right ${
                     m.sender === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   }`}
                 >
@@ -135,7 +135,7 @@ export const SoilAiChatModal: React.FC<SoilAiChatModalProps> = ({
 
         {/* Quick Suggestion Chips */}
         <div className="py-2 border-t border-border/40">
-          <div className="text-[10px] text-muted-foreground font-semibold mb-1.5">
+          <div className="text-xs text-muted-foreground font-semibold mb-1.5">
             {t('soil.ai.suggestedPrompts') || 'Suggested Questions'}:
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -144,7 +144,7 @@ export const SoilAiChatModal: React.FC<SoilAiChatModalProps> = ({
                 key={idx}
                 type="button"
                 onClick={() => handleSend(q)}
-                className="text-[11px] bg-secondary/80 hover:bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full text-left transition-colors border border-border/50"
+                className="text-xs bg-secondary/80 hover:bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full text-left transition-colors border border-border/50"
               >
                 💡 {q}
               </button>

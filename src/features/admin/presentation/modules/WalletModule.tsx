@@ -125,12 +125,12 @@ export function WalletModule() {
       />
 
       {error && !adjusting && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-extrabold text-red-700">{error}</div>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700">{error}</div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-border text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">
+          <thead className="border-b border-border text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">{t('adm37')}</th>
               <th className="px-4 py-3">{t('adm38')}</th>
@@ -158,11 +158,11 @@ export function WalletModule() {
             {rows.map((r) => (
               <tr key={r.wallet_id} className="border-b border-border/50 last:border-0">
                 <td className="px-4 py-3">
-                  <p className="font-extrabold text-foreground">{r.full_name ?? '—'}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">{r.user_id.slice(0, 12)}…</p>
+                  <p className="font-semibold text-foreground">{r.full_name ?? '—'}</p>
+                  <p className="font-mono text-xs text-muted-foreground">{r.user_id.slice(0, 12)}…</p>
                 </td>
                 <td className="px-4 py-3 text-xs font-semibold text-muted-foreground">{r.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-right font-black text-foreground">{fmt(r.balance)}</td>
+                <td className="px-4 py-3 text-right font-semibold text-foreground">{fmt(r.balance)}</td>
                 <td className="px-4 py-3"><AdminStatusBadge status={r.status} /></td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
                   {new Date(r.updated_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -186,20 +186,20 @@ export function WalletModule() {
           </DialogHeader>
           {adjusting && (
             <div className="space-y-3">
-              <p className="rounded-xl bg-muted/50 p-2.5 text-[11px] font-semibold text-muted-foreground">
+              <p className="rounded-xl bg-muted/50 p-2.5 text-xs font-semibold text-muted-foreground">
                 {adjusting.full_name ?? adjusting.user_id} · current balance {fmt(adjusting.balance)}
               </p>
-              {error && <p className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-[11px] font-extrabold text-red-700">{error}</p>}
+              {error && <p className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">{error}</p>}
               <div className="flex gap-2">
                 <Button variant={direction === 'in' ? 'default' : 'outline'} className="flex-1" onClick={() => setDirection('in')}>{t('adm44')}</Button>
                 <Button variant={direction === 'out' ? 'destructive' : 'outline'} className="flex-1" onClick={() => setDirection('out')}>{t('adm45')}</Button>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-muted-foreground">{t('adm46')}</label>
-                <Input type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm font-black" />
+                <label className="text-xs font-semibold text-muted-foreground">{t('adm46')}</label>
+                <Input type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} className="text-sm font-semibold" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-muted-foreground">{t('adm47')}</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t('adm47')}</label>
                 <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Refund approved by support" className="text-sm" />
               </div>
               <Button className="w-full" disabled={saving} onClick={handleAdjust}>

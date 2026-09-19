@@ -141,7 +141,7 @@ export function WeatherModule() {
       />
 
       {failedCount > 0 && (
-        <div className="flex items-start gap-2 rounded-2xl border border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3 text-xs font-medium text-amber-800 dark:text-amber-300">
+        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3 text-xs font-medium text-amber-800 dark:text-amber-300">
           <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
           <span>
             {failedCount} of {STATION_ANCHORS.length} stations could not be reached. Showing only live readings; offline
@@ -151,7 +151,7 @@ export function WeatherModule() {
       )}
 
       {isRefreshing && stations.length === 0 && (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           Loading live weather from Open-Meteo…
         </div>
       )}
@@ -211,7 +211,7 @@ export function WeatherModule() {
                       <div
                         key={station.id}
                         onClick={() => setSelectedStationId(station.id)}
-                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                           isSelected
                             ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-sm'
                             : 'border-border bg-card hover:border-border/80 hover:bg-muted/30'
@@ -223,7 +223,7 @@ export function WeatherModule() {
                             <p className="text-xs text-muted-foreground">{station.state}</p>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                            className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                               station.sprayCondition === 'Safe'
                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                                 : station.sprayCondition === 'Moderate'
@@ -246,12 +246,12 @@ export function WeatherModule() {
               </div>
 
               {/* Right Column: Selected Station Live telemetry */}
-              <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <div className="lg:col-span-2 rounded-xl border border-border bg-card p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <CloudSun className="h-6 w-6 text-amber-500" />
-                      <h3 className="text-lg font-black text-foreground">{selectedStation.name}</h3>
+                      <h3 className="text-lg font-semibold text-foreground">{selectedStation.name}</h3>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{selectedStation.state} · Live Agricultural Telemetry</p>
                   </div>
@@ -265,29 +265,29 @@ export function WeatherModule() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
                   <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-center">
                     <Thermometer className="mx-auto h-5 w-5 text-amber-500 mb-1" />
-                    <p className="text-2xl font-black text-foreground">{selectedStation.temp}°C</p>
-                    <p className="text-[11px] font-semibold text-muted-foreground">Ambient Temp</p>
+                    <p className="text-2xl font-semibold text-foreground">{selectedStation.temp}°C</p>
+                    <p className="text-xs font-semibold text-muted-foreground">Ambient Temp</p>
                   </div>
                   <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-center">
                     <Droplets className="mx-auto h-5 w-5 text-blue-500 mb-1" />
-                    <p className="text-2xl font-black text-foreground">{selectedStation.humidity}%</p>
-                    <p className="text-[11px] font-semibold text-muted-foreground">Relative Humidity</p>
+                    <p className="text-2xl font-semibold text-foreground">{selectedStation.humidity}%</p>
+                    <p className="text-xs font-semibold text-muted-foreground">Relative Humidity</p>
                   </div>
                   <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-center">
                     <Wind className="mx-auto h-5 w-5 text-slate-500 mb-1" />
-                    <p className="text-2xl font-black text-foreground">{selectedStation.windSpeed} km/h</p>
-                    <p className="text-[11px] font-semibold text-muted-foreground">Wind Velocity</p>
+                    <p className="text-2xl font-semibold text-foreground">{selectedStation.windSpeed} km/h</p>
+                    <p className="text-xs font-semibold text-muted-foreground">Wind Velocity</p>
                   </div>
                   <div className="p-4 rounded-xl bg-muted/40 border border-border/50 text-center">
                     <CloudRain className="mx-auto h-5 w-5 text-indigo-500 mb-1" />
-                    <p className="text-2xl font-black text-foreground">{selectedStation.rainProbability}%</p>
-                    <p className="text-[11px] font-semibold text-muted-foreground">Rain Probability</p>
+                    <p className="text-2xl font-semibold text-foreground">{selectedStation.rainProbability}%</p>
+                    <p className="text-xs font-semibold text-muted-foreground">Rain Probability</p>
                   </div>
                 </div>
 
                 {/* Spray & Agronomy Advisory */}
-                <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
-                  <div className="flex items-center gap-2 text-xs font-black text-emerald-800 dark:text-emerald-300">
+                <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                     <span>Agrometeorological Spray & Field Advisory:</span>
                   </div>

@@ -61,8 +61,8 @@ class AdminModuleErrorBoundary extends React.Component<ErrorBoundaryProps, Error
   render() {
     if (this.state.hasError) {
       return (
-        <div className="rounded-2xl border border-red-200 bg-red-50/50 dark:bg-red-950/20 p-6 text-center space-y-3 shadow-sm my-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+        <div className="rounded-xl border border-red-200 bg-red-50/50 dark:bg-red-950/20 p-6 text-center space-y-3 shadow-sm my-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div>
@@ -218,10 +218,10 @@ export default function AdminDashboard() {
 
   if (gate === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-          <p className="text-xs font-medium text-slate-400">Verifying secure admin credentials…</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="type-small text-muted-foreground">Verifying admin credentials…</p>
         </div>
       </div>
     );
@@ -229,32 +229,32 @@ export default function AdminDashboard() {
 
   if (gate === 'anon') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-emerald-950/30 to-slate-950 p-4 sm:p-6">
-        <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4 sm:p-6">
+        <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 sm:p-8">
           {/* Header */}
           <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/15">
               <Shield className="h-8 w-8" />
             </div>
-            <h1 className="mt-4 text-2xl font-black text-white tracking-tight">
+            <h1 className="mt-4 type-h1">
               AgriConnect Admin
             </h1>
-            <p className="mt-1 text-xs font-medium text-slate-400">
-              Executive Console · Enter your secure credentials
+            <p className="mt-1 type-small text-muted-foreground">
+              Sign in with an admin account to manage the platform.
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleAdminLogin} className="mt-6 space-y-4">
             {authError && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs font-medium text-red-400 flex items-start gap-2">
-                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 type-small text-red-600 flex items-start gap-2">
+                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
                 <span>{authError}</span>
               </div>
             )}
 
             <div>
-              <label className="text-xs font-semibold text-slate-300">
+              <label className="type-label text-foreground">
                 Admin Email / User ID
               </label>
               <Input
@@ -263,12 +263,12 @@ export default function AdminDashboard() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. dubeysatyam607@gmail.com"
                 required
-                className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/80 text-white placeholder:text-slate-500 focus:border-emerald-500"
+                className="mt-1.5 rounded-lg border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300">
+              <label className="type-label text-foreground">
                 Admin Password
               </label>
               <div className="relative mt-1.5">
@@ -278,12 +278,13 @@ export default function AdminDashboard() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="rounded-xl border-slate-700 bg-slate-800/80 text-white placeholder:text-slate-500 pr-10 focus:border-emerald-500"
+                  className="rounded-lg border-border bg-background text-foreground placeholder:text-muted-foreground pr-10 focus:border-primary"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -294,7 +295,7 @@ export default function AdminDashboard() {
               type="submit"
               disabled={authenticating}
               size="lg"
-              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/25 mt-2"
+              className="w-full rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mt-2"
             >
               {authenticating ? (
                 <>
@@ -302,16 +303,16 @@ export default function AdminDashboard() {
                 </>
               ) : (
                 <>
-                  <Lock className="h-4 w-4 mr-2" /> Sign In to Admin Console <ArrowRight className="h-4 w-4 ml-auto" />
+                  <Lock className="h-4 w-4 mr-2" /> Sign In to Admin <ArrowRight className="h-4 w-4 ml-auto" aria-hidden="true" />
                 </>
               )}
             </Button>
           </form>
 
-          <div className="mt-6 border-t border-slate-800 pt-4 text-center">
-            <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              256-bit Encrypted · Super Admin Access Gated
+          <div className="mt-6 border-t border-border pt-4 text-center">
+            <p className="type-meta flex items-center justify-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              Protected — Admin &amp; Super Admin access only
             </p>
           </div>
         </div>
@@ -321,20 +322,20 @@ export default function AdminDashboard() {
 
   if (gate === 'denied') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 p-6">
-        <div className="w-full max-w-md rounded-3xl border border-red-500/30 bg-slate-900/95 p-8 text-center shadow-2xl backdrop-blur-xl">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 shadow-inner">
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="w-full max-w-md rounded-xl border border-red-500/30 bg-card p-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-red-500/10 text-red-600 border border-red-500/20">
             <ShieldAlert className="h-8 w-8" />
           </div>
-          <h1 className="mt-5 text-2xl font-black text-white tracking-tight">Access Restricted</h1>
-          <p className="mt-2 text-xs font-medium text-slate-400 leading-relaxed">
-            This console requires the <span className="font-bold text-emerald-400">Admin</span> or <span className="font-bold text-emerald-400">Super Admin</span> role. Your account is not authorized to view executive administrative controls.
+          <h1 className="mt-5 type-h1">Access Restricted</h1>
+          <p className="mt-2 type-small text-muted-foreground leading-relaxed">
+            This console is only for <span className="font-semibold text-foreground">Admin</span> or <span className="font-semibold text-foreground">Super Admin</span> roles. Your account is not authorized to view administrative controls.
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <Button
               variant="outline"
               size="lg"
-              className="w-full rounded-2xl border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="w-full rounded-lg border-border bg-background text-foreground hover:bg-muted"
               onClick={() => {
                 supabase.auth.signOut().then(() => setGate('anon'));
               }}
@@ -344,7 +345,7 @@ export default function AdminDashboard() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-400 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => navigate('/')}
             >
               Return to Farmer App

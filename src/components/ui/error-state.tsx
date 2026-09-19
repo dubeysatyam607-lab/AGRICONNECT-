@@ -1,5 +1,5 @@
 import React from "react";
-import { RefreshCw, CloudOff, Inbox } from "lucide-react";
+import { RefreshCw, CloudOff, Inbox, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function friendlyError(err: unknown, fallback: string): string {
@@ -72,7 +72,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
-  emoji = "🌾",
+  emoji = <Sprout className="h-6 w-6 text-emerald-600" strokeWidth={1.6} />,
   compact = false,
 }: {
   title: string;
@@ -80,17 +80,17 @@ export function EmptyState({
   description?: string;
   actionLabel?: string;
   onAction?: () => void;
-  emoji?: string;
+  emoji?: string | React.ReactNode;
   compact?: boolean;
 }) {
   const text = description ?? subtitle;
   return (
     <div className={cn("flex flex-col items-center justify-center text-center", compact ? "py-6" : "py-10")}>
-      <span className={cn("flex items-center justify-center rounded-full bg-muted/60 text-2xl", compact ? "h-10 w-10" : "h-14 w-14")} aria-hidden="true">
+      <span className={cn("flex items-center justify-center rounded-full bg-muted/60", compact ? "h-10 w-10" : "h-14 w-14")} aria-hidden="true">
         {emoji}
       </span>
       <p className={cn("mt-3 font-bold text-foreground", compact ? "text-[13px]" : "text-[15px]")}>{title}</p>
-      {text && <p className={cn("mt-1 max-w-[260px] font-medium text-muted-foreground", compact ? "text-[11px]" : "text-[12px]")}>{text}</p>}
+      {text && <p className={cn("mt-1 max-w-[260px] font-medium text-muted-foreground", compact ? "text-xs" : "text-[12px]")}>{text}</p>}
       {actionLabel && onAction && (
         <button
           onClick={onAction}

@@ -83,7 +83,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 rounded-3xl border-border bg-card">
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 rounded-xl border-border bg-card">
         {/* Top Image Gallery */}
         <div className="relative aspect-video sm:aspect-[21/9] w-full bg-muted overflow-hidden">
           <SafeImage
@@ -94,7 +94,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             resolveType="general"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-black/30" />
 
           {/* Navigation arrows if multiple images */}
           {images.length > 1 && (
@@ -104,7 +104,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   e.stopPropagation();
                   setActiveImageIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1));
                 }}
-                className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto hover:bg-black/90 backdrop-blur-sm"
+                className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto hover:bg-black/90 "
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -113,7 +113,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   e.stopPropagation();
                   setActiveImageIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0));
                 }}
-                className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto hover:bg-black/90 backdrop-blur-sm"
+                className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto hover:bg-black/90 "
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -122,17 +122,17 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
           {/* Category Pill & Verification Badge */}
           <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600/90 text-white backdrop-blur-md shadow-sm">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600/90 text-white  shadow-sm">
               {categoryMeta?.nameEn || listing.category}
             </span>
             {listing.owner.is_verified && (
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-600/90 text-white backdrop-blur-md inline-flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-600/90 text-white  inline-flex items-center gap-1">
                 <BadgeCheck className="w-3.5 h-3.5" />
                 Verified Listing
               </span>
             )}
             <span
-              className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase backdrop-blur-md ${
+              className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase  ${
                 listing.availability === 'available'
                   ? 'bg-emerald-500/90 text-white'
                   : 'bg-amber-500/90 text-white'
@@ -145,7 +145,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
           {/* Price & Views Badge */}
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white">
             <div>
-              <div className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-md">
+              <div className="text-2xl sm:text-3xl font-semibold tracking-tight ">
                 {formatPriceWithUnit(listing.price, listing.price_unit)}
               </div>
               <div className="text-xs text-white/80 font-medium flex items-center gap-1.5 mt-0.5">
@@ -160,14 +160,14 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleShare}
-                className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center text-white"
+                className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30  flex items-center justify-center text-white"
                 title="Share Listing"
               >
                 <Share2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onReport(listing)}
-                className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center text-white"
+                className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30  flex items-center justify-center text-white"
                 title="Report Listing"
               >
                 <Flag className="w-4 h-4" />
@@ -180,7 +180,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
         <div className="p-6 space-y-6">
           {/* Title & Description */}
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-snug">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight leading-snug">
               {listing.title}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
@@ -190,17 +190,17 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
           {/* Specifications Table */}
           {listing.specifications && Object.keys(listing.specifications).length > 0 && (
-            <div className="rounded-2xl border border-border p-4 bg-muted/20">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-3">
+            <div className="rounded-xl border border-border p-4 bg-muted/20">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                 Key Specifications & Details
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {Object.entries(listing.specifications).map(([key, val]) => (
                   <div key={key} className="p-2.5 rounded-xl bg-card border border-border/70">
-                    <div className="text-[10px] uppercase font-bold text-muted-foreground truncate">
+                    <div className="text-xs uppercase font-bold text-muted-foreground truncate">
                       {key.replace(/([A-Z])/g, ' $1')}
                     </div>
-                    <div className="text-xs font-extrabold text-foreground mt-0.5 truncate">
+                    <div className="text-xs font-semibold text-foreground mt-0.5 truncate">
                       {String(val)}
                     </div>
                   </div>
@@ -210,9 +210,9 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
           )}
 
           {/* Owner & Provider Card */}
-          <div className="p-4 rounded-2xl border border-border bg-emerald-50/40 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 rounded-xl border border-border bg-emerald-50/40 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white font-semibold text-lg flex items-center justify-center shadow-md">
                 {listing.owner.name.charAt(0)}
               </div>
               <div>
@@ -269,7 +269,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 onBook(listing);
               }}
               disabled={listing.availability !== 'available'}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl font-extrabold text-xs text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md transition-all"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-xs text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md transition-all"
             >
               <Calendar className="w-4 h-4" />
               <span>Request / Book Now</span>

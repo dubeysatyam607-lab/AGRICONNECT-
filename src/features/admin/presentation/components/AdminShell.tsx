@@ -60,7 +60,7 @@ function NavItems({
     <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {ADMIN_MODULE_GROUPS.map((group) => (
         <div key={group}>
-          <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
             {group}
           </p>
           <div className="mt-1.5 space-y-0.5">
@@ -133,7 +133,7 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
       </div>
       <div className="leading-tight">
         <p className="text-sm font-bold text-foreground">{t('adm0')}</p>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{t('adm1')}</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('adm1')}</p>
       </div>
     </div>
   );
@@ -166,7 +166,7 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">Connected to Supabase DB</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Connected to Supabase DB</p>
           </div>
         </div>
       </aside>
@@ -205,12 +205,12 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
       {/* Main column */}
       <div className="lg:pl-64">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card/80 px-4 backdrop-blur">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-card/80 px-4 ">
           <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)}>
             <Menu className="h-4 w-4" />
           </Button>
           <h2 className="truncate text-sm font-semibold text-foreground sm:text-base">{currentModule.label}</h2>
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -234,7 +234,7 @@ export function AdminShell({ current, onNavigate, children }: AdminShellProps) {
               </Avatar>
               <div className="hidden leading-tight md:block">
                 <p className="text-xs font-semibold text-foreground">{actorName}</p>
-                <p className="text-[10px] text-muted-foreground">{displayRole || session.roleName}</p>
+                <p className="text-xs text-muted-foreground">{displayRole || session.roleName}</p>
               </div>
             </div>
             <Button

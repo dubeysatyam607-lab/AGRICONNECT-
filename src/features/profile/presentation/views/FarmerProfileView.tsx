@@ -6,7 +6,7 @@ import { FadeIn } from '@/shared/widgets/AppAnimations';
 import { maskAadhaar } from '../../domain/models/ProfileValidations';
 import { LANGUAGE_NAMES, useLanguage } from '@/contexts/LanguageContext';
 import { interpolate } from '@/i18n/journey';
-import { Sprout } from 'lucide-react';
+import { Sprout, Pencil, ShieldCheck, Smartphone, MapPin, Languages, Satellite, Wheat, Sprout as LeafIcon, Tractor, Settings2, Check, BadgeCheck, Lock, PawPrint } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -58,35 +58,35 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
           {onBack && (
             <button
               onClick={onBack}
-              className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               ←
             </button>
           )}
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/20">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider border border-emerald-500/20">
                 {t('pdetail.verifiedId')}
               </span>
               <span className="text-xs text-muted-foreground">ID: {state.profile.id.slice(0, 8)}</span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{t('pdetail.myIdentity')}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('pdetail.myIdentity')}</h1>
           </div>
         </div>
 
         <AppButton variant="primary" size="md" onClick={onEditProfile} className="text-xs font-bold shadow-md">
-          ✏️ {t('prof.editProfile')}
+          <Pencil size={13} className="mr-1" /> {t('prof.editProfile')}
         </AppButton>
       </div>
 
       {/* Hero CRED/Apple Style ID Card */}
-      <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-emerald-900 via-slate-900 to-teal-950 text-white shadow-2xl overflow-hidden border border-emerald-500/30">
+      <div className="relative rounded-xl p-6 sm:p-8 bg-emerald-900 text-white  overflow-hidden border border-emerald-500/30">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-12 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar */}
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white/20 shadow-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-3xl font-extrabold shrink-0">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white/20  bg-emerald-900 flex items-center justify-center text-3xl font-semibold shrink-0">
             {state.profile.profilePictureUrl ? (
               <img
                 src={state.profile.profilePictureUrl}
@@ -97,46 +97,46 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
                 className="w-full h-full object-cover"
               />
             ) : null}
-            <span className="select-none">{personal.fullName.slice(0, 2).toUpperCase() || "🌾"}</span>
+            <span className="select-none text-xl">{personal.fullName.slice(0, 2).toUpperCase() || <Sprout className="h-6 w-6 text-emerald-200" />}</span>
           </div>
 
           {/* Details */}
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <h2 className="text-2xl font-extrabold text-white tracking-tight">{personal.fullName}</h2>
+              <h2 className="text-2xl font-semibold text-white tracking-tight">{personal.fullName}</h2>
               {ffInfo.isFF && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary-foreground text-[11px] font-bold border border-primary/40">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary-foreground text-xs font-bold border border-primary/40">
                   <Sprout size={12} /> FOUNDING FARMER #{ffInfo.number}
                 </span>
               )}
               {personal.isAadhaarVerified && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/40">
-                  <span>🛡️</span> {t('pdetail.aadhaarVerified')}
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/40">
+                  <ShieldCheck size={12} /> {t('pdetail.aadhaarVerified')}
                 </span>
               )}
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-300 font-medium">
-              <span>📱 {personal.mobileNumber}</span>
+              <span className="inline-flex items-center gap-1"><Smartphone size={11} /> {personal.mobileNumber}</span>
               <span>•</span>
-              <span>📍 {location.villageOrTehsil}, {location.district}</span>
+              <span className="inline-flex items-center gap-1"><MapPin size={11} /> {location.villageOrTehsil}, {location.district}</span>
               <span>•</span>
-              <span>🗣️ {LANGUAGE_NAMES?.[preferredLanguage] || 'English'}</span>
+              <span className="inline-flex items-center gap-1"><Languages size={11} /> {LANGUAGE_NAMES?.[preferredLanguage] || 'English'}</span>
             </div>
 
             {/* Quick Metrics Bar */}
             <div className="pt-3 grid grid-cols-3 gap-3 border-t border-white/10 text-center sm:text-left">
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">{t('pdetail.landSize')}</span>
-                <span className="text-sm font-extrabold text-white">{farmSpecs.totalArea} {farmSpecs.landUnit}</span>
+                <span className="text-xs uppercase tracking-wider text-emerald-400 font-bold block">{t('pdetail.landSize')}</span>
+                <span className="text-sm font-semibold text-white">{farmSpecs.totalArea} {farmSpecs.landUnit}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">{t('prof.soilType')}</span>
-                <span className="text-sm font-extrabold text-white">{farmSpecs.soilType}</span>
+                <span className="text-xs uppercase tracking-wider text-emerald-400 font-bold block">{t('prof.soilType')}</span>
+                <span className="text-sm font-semibold text-white">{farmSpecs.soilType}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">{t('pdetail.livestock')}</span>
-                <span className="text-sm font-extrabold text-white">{totalLivestock} {t('pdetail.head')}</span>
+                <span className="text-xs uppercase tracking-wider text-emerald-400 font-bold block">{t('pdetail.livestock')}</span>
+                <span className="text-sm font-semibold text-white">{totalLivestock} {t('pdetail.head')}</span>
               </div>
             </div>
           </div>
@@ -148,8 +148,8 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
         {/* Farm GPS & Satellite Location Card */}
         <AppCard variant="glass" padding="lg" className="space-y-4">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
-            <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-              <span>🛰️</span> {t('pdetail.gpsLocation')}
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Satellite size={15} className="text-emerald-700 dark:text-emerald-400" /> {t('pdetail.gpsLocation')}
             </h3>
             {location.gpsCoordinates ? (
               <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">{interpolate(t('pdetail.accuracy'), { meters: location.gpsCoordinates.accuracyMeters })}</span>
@@ -178,7 +178,7 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
               <span className="font-mono font-bold text-foreground">{location.pinCode}</span>
             </div>
             {location.gpsCoordinates && (
-              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-1 mt-2 font-mono text-[11px]">
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-1 mt-2 font-mono text-xs">
                 <div className="flex justify-between">
                   <span>{t('pdetail.latitude')}</span>
                   <span className="font-bold">{location.gpsCoordinates.latitude.toFixed(6)}° N</span>
@@ -195,8 +195,8 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
         {/* Agricultural Specifications Card */}
         <AppCard variant="glass" padding="lg" className="space-y-4">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
-            <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-              <span>🌾</span> {t('pdetail.agriInfra')}
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Wheat size={15} className="text-emerald-700 dark:text-emerald-400" /> {t('pdetail.agriInfra')}
             </h3>
             <span className="text-xs text-muted-foreground font-semibold">{interpolate(t('pdetail.system'), { unit: farmSpecs.landUnit })}</span>
           </div>
@@ -204,7 +204,7 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800/50">
               <span className="font-semibold">{t('pdetail.totalArea')}</span>
-              <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-sm">
                 {farmSpecs.totalArea} {farmSpecs.landUnit}
               </span>
             </div>
@@ -228,8 +228,8 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
         {/* Crops Grown Tag Pills Card */}
         <AppCard variant="glass" padding="lg" className="space-y-3">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-            <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-              <span>🌱</span> {t('pdetail.cropsRotation')}
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <LeafIcon size={15} className="text-emerald-700 dark:text-emerald-400" /> {t('pdetail.cropsRotation')}
             </h3>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{interpolate(t('pdetail.cropsCount'), { count: crops.length })}</span>
           </div>
@@ -241,9 +241,9 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
               crops.map((c, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20"
+                  className="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 inline-flex items-center gap-1"
                 >
-                  ✓ {c}
+                  <Check size={11} /> {c}
                 </span>
               ))
             )}
@@ -253,8 +253,8 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
         {/* Machinery Owned Tag Pills Card */}
         <AppCard variant="glass" padding="lg" className="space-y-3">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-            <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-              <span>🚜</span> {t('pdetail.machineryInventory')}
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Tractor size={15} className="text-emerald-700 dark:text-emerald-400" /> {t('pdetail.machineryInventory')}
             </h3>
             <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{interpolate(t('pdetail.assetsCount'), { count: machineryOwned.length })}</span>
           </div>
@@ -266,9 +266,9 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
               machineryOwned.map((m, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs border border-blue-500/20"
+                  className="px-3 py-1 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs border border-blue-500/20 inline-flex items-center gap-1"
                 >
-                  ⚙️ {m}
+                  <Settings2 size={11} /> {m}
                 </span>
               ))
             )}
@@ -279,37 +279,37 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
       {/* Livestock Inventory Summary */}
       <AppCard variant="glass" padding="lg" className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-          <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-            <span>🐄</span> {t('pdetail.livestockSummary')}
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <PawPrint size={15} className="text-emerald-700 dark:text-emerald-400" /> {t('pdetail.livestockSummary')}
           </h3>
           <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{interpolate(t('pdetail.totalAnimals'), { count: totalLivestock })}</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center pt-1">
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <span className="text-2xl block mb-1">🐄</span>
-            <span className="text-sm font-extrabold text-foreground block">{livestock?.cows || 0}</span>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Cows')}</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <span className="block mb-1 flex justify-center"><PawPrint className="h-6 w-6 text-emerald-700" strokeWidth={1.6} /></span>
+            <span className="text-sm font-semibold text-foreground block">{livestock?.cows || 0}</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold">{t('opt:Cows')}</span>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <span className="text-2xl block mb-1">🐃</span>
-            <span className="text-sm font-extrabold text-foreground block">{livestock?.buffaloes || 0}</span>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Buffaloes')}</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <span className="block mb-1 flex justify-center"><PawPrint className="h-6 w-6 text-emerald-700" strokeWidth={1.6} /></span>
+            <span className="text-sm font-semibold text-foreground block">{livestock?.buffaloes || 0}</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold">{t('opt:Buffaloes')}</span>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <span className="text-2xl block mb-1">🐂</span>
-            <span className="text-sm font-extrabold text-foreground block">{livestock?.bullocks || 0}</span>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Bullocks')}</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <span className="block mb-1 flex justify-center"><PawPrint className="h-6 w-6 text-emerald-700" strokeWidth={1.6} /></span>
+            <span className="text-sm font-semibold text-foreground block">{livestock?.bullocks || 0}</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold">{t('opt:Bullocks')}</span>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <span className="text-2xl block mb-1">🐐</span>
-            <span className="text-sm font-extrabold text-foreground block">{livestock?.goatsOrSheep || 0}</span>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Goats / Sheep')}</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <span className="block mb-1 flex justify-center"><PawPrint className="h-6 w-6 text-emerald-700" strokeWidth={1.6} /></span>
+            <span className="text-sm font-semibold text-foreground block">{livestock?.goatsOrSheep || 0}</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold">{t('opt:Goats / Sheep')}</span>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 col-span-2 sm:col-span-1">
-            <span className="text-2xl block mb-1">🐓</span>
-            <span className="text-sm font-extrabold text-foreground block">{livestock?.poultry || 0}</span>
-            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('opt:Poultry')}</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 col-span-2 sm:col-span-1">
+            <span className="block mb-1 flex justify-center"><PawPrint className="h-6 w-6 text-emerald-700" strokeWidth={1.6} /></span>
+            <span className="text-sm font-semibold text-foreground block">{livestock?.poultry || 0}</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold">{t('opt:Poultry')}</span>
           </div>
         </div>
       </AppCard>
@@ -317,8 +317,8 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
       {/* Govt ID & Financial Verification Card */}
       <AppCard variant="glass" padding="lg" className="space-y-4">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-          <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
-            <span>🛡️</span> Government & Credit Verification
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <BadgeCheck size={15} className="text-emerald-700 dark:text-emerald-400" /> Government & Credit Verification
           </h3>
           {onOpenKyc && (
             <button
@@ -331,53 +331,53 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground block">
+              <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground block">
                 UIDAI Aadhaar Card
               </span>
-              <span className="text-sm font-extrabold text-foreground font-mono">
+              <span className="text-sm font-semibold text-foreground font-mono">
                 {personal.isAadhaarVerified && personal.aadhaarNumber
                   ? maskAadhaar(personal.aadhaarNumber)
                   : 'Not Linked'}
               </span>
             </div>
             {personal.isAadhaarVerified ? (
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase border border-emerald-500/20">
-                Verified ✅
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase border border-emerald-500/20 inline-flex items-center gap-1">
+                <Check size={11} /> Verified
               </span>
             ) : onOpenKyc ? (
               <button
                 onClick={onOpenKyc}
-                className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold shadow-sm cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold shadow-sm cursor-pointer"
               >
                 Verify Now
               </button>
             ) : (
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold">
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs font-bold">
                 Unverified
               </span>
             )}
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground block">
+              <span className="text-xs uppercase tracking-wider font-bold text-muted-foreground block">
                 Kisan Credit Card (KCC)
               </span>
-              <span className="text-sm font-extrabold text-foreground">
+              <span className="text-sm font-semibold text-foreground">
                 Institutional 4% Subsidized
               </span>
             </div>
             {onOpenKyc ? (
               <button
                 onClick={onOpenKyc}
-                className="px-2.5 py-1 rounded-full bg-slate-800 dark:bg-slate-700 text-white text-[10px] font-bold shadow-sm cursor-pointer hover:bg-slate-700"
+                className="px-2.5 py-1 rounded-full bg-slate-800 dark:bg-slate-700 text-white text-xs font-bold shadow-sm cursor-pointer hover:bg-slate-700"
               >
                 Link KCC
               </button>
             ) : (
-              <span className="px-2.5 py-1 rounded-full bg-slate-500/10 text-muted-foreground text-[10px] font-bold">
+              <span className="px-2.5 py-1 rounded-full bg-slate-500/10 text-muted-foreground text-xs font-bold">
                 Optional
               </span>
             )}
@@ -386,12 +386,12 @@ export const FarmerProfileView: React.FC<IFarmerProfileViewProps> = ({ onEditPro
       </AppCard>
 
       {/* Aadhaar Privacy Footer Note */}
-      <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-muted-foreground flex items-center justify-between">
+      <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-muted-foreground flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span>🔒</span>
+          <Lock size={13} className="text-emerald-700 dark:text-emerald-400" />
           <span>{interpolate(t('pdetail.aadhaarEncrypted'), { aadhaar: maskAadhaar(personal.aadhaarNumber || 'XXXX-XXXX-8942') })}</span>
         </div>
-        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
           {t('pdetail.enterpriseProtected')}
         </span>
       </div>

@@ -83,14 +83,14 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
   }, [status, location, t]);
 
   return (
-    <div className={cn('rounded-2xl border border-border bg-card p-4 shadow-card', className)}>
+    <div className={cn('rounded-xl border border-border bg-card p-4 shadow-card', className)}>
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest/10 text-forest dark:bg-emerald-600/15 dark:text-emerald-400">
           <MapPin size={18} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('loc.title')}</p>
-          <p className="mt-0.5 truncate text-sm font-black text-foreground">{currentLabel}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('loc.title')}</p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{currentLabel}</p>
 
           {status === 'error' && (
             <p className="mt-1 text-[12px] leading-snug text-rose-600 dark:text-rose-400">
@@ -142,7 +142,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
             </div>
           </div>
 
-          {searching && <p className="text-[11px] font-semibold text-muted-foreground">{t('loc.searching')}</p>}
+          {searching && <p className="text-xs font-semibold text-muted-foreground">{t('loc.searching')}</p>}
 
           {results.length > 0 && (
             <ul className="max-h-44 space-y-1 overflow-y-auto">
@@ -161,7 +161,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
           )}
 
           {results.length === 0 && !searching && query.trim().length >= 3 && (
-            <p className="text-[11px] font-semibold text-muted-foreground">{t('loc.noResults')}</p>
+            <p className="text-xs font-semibold text-muted-foreground">{t('loc.noResults')}</p>
           )}
 
           {/* Save as farm */}
@@ -188,7 +188,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
       {/* Saved farms */}
       {farms.length > 0 && (
         <div className="mt-3 border-t border-border pt-2">
-          <p className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('loc.myFarms')}</p>
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('loc.myFarms')}</p>
           <ul className="space-y-1">
             {farms.map((f) => (
               <li key={f.id}>
@@ -202,7 +202,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
                   >
                     {f.is_active && <Check size={13} className="shrink-0" />}
                     <span className="truncate">{f.name}</span>
-                    {f.district && <span className="truncate text-[10px] font-bold text-muted-foreground">· {f.district}</span>}
+                    {f.district && <span className="truncate text-xs font-bold text-muted-foreground">· {f.district}</span>}
                   </button>
                   <button
                     onClick={() => removeFarm(f.id)}
@@ -215,7 +215,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({ className, o
               </li>
             ))}
           </ul>
-          {farmsLoading && <p className="mt-1 text-[10px] font-semibold text-muted-foreground">{t('loc.loadingFarms')}</p>}
+          {farmsLoading && <p className="mt-1 text-xs font-semibold text-muted-foreground">{t('loc.loadingFarms')}</p>}
         </div>
       )}
     </div>

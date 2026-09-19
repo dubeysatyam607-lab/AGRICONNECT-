@@ -25,16 +25,16 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
   };
 
   return (
-    <section className="mt-5 overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-      <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-4 text-white">
+    <section className="mt-5 overflow-hidden rounded-xl border border-border bg-card shadow-card">
+      <div className="relative bg-primary p-4 text-white">
         <div className="flex items-center gap-3">
           <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
             <Bot size={19} />
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 animate-live-pulse" />
+            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-marigold" />
           </span>
           <div className="min-w-0">
-            <p className="font-display text-[15px] font-black leading-tight">{t('adv.home.title')}</p>
-            <p className="text-[11px] font-semibold text-white/80">
+            <p className=" text-[15px] font-semibold leading-tight">{t('adv.home.title')}</p>
+            <p className="text-xs font-semibold text-white/80">
               {interpolate(t('adv.home.subtitle'), { name: memory.farmer.name, crop: memory.farm.crop })}
             </p>
           </div>
@@ -53,7 +53,7 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
             `${memory.farm.area} acres`,
             `${t('adv.home.memory')} ${memory.dataCompleteness}%`,
           ].map((chip) => (
-            <span key={chip} className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-bold">
+            <span key={chip} className="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-bold">
               {chip}
             </span>
           ))}
@@ -88,7 +88,7 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
                     <p className="truncate text-[13px] font-bold text-foreground">
                       {interpolate(t(insight.titleKey), insight.params || {})}
                     </p>
-                    <p className="mt-1 text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                    <p className="mt-1 text-xs font-bold text-muted-foreground flex items-center gap-1">
                       <span className={`h-1.5 w-1.5 rounded-full ${insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 65 ? 'bg-sky-500' : 'bg-amber-500'}`} />
                       {trustLabel}
                     </p>
@@ -102,7 +102,7 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
 
       <button
         onClick={() => onNavigate('advisor')}
-        className="flex w-full items-center justify-center gap-2 border-t border-border bg-muted/30 py-3 text-[13px] font-black text-violet-600 transition-colors hover:bg-muted/50 dark:text-violet-400"
+        className="flex w-full items-center justify-center gap-2 border-t border-border bg-muted/30 py-3 text-[13px] font-semibold text-primary transition-colors hover:bg-muted/50 dark:text-primary"
       >
         {t('adv.home.open')}
         <ArrowRight size={14} />

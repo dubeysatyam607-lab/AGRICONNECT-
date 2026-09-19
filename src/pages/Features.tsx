@@ -150,13 +150,13 @@ const Features: React.FC = () => {
 
       <main className="min-h-screen bg-background pb-20">
         {/* Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Features' }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               Everything a Farmer Needs, in One App
             </h1>
             <p className="text-emerald-100/85 mt-4 max-w-3xl text-lg leading-relaxed">
@@ -182,7 +182,7 @@ const Features: React.FC = () => {
         </header>
 
         {/* Anchor quick-nav */}
-        <nav aria-label="Feature categories" className="sticky top-16 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
+        <nav aria-label="Feature categories" className="sticky top-16 z-30 border-b border-border bg-background">
           <div className="responsive-container py-3 overflow-x-auto">
             <ul className="flex gap-2 min-w-max">
               {FEATURES.map((f) => (
@@ -207,7 +207,7 @@ const Features: React.FC = () => {
               <article
                 key={f.id}
                 id={f.id}
-                className="scroll-mt-32 rounded-2xl border border-border bg-card p-6 shadow-card flex flex-col"
+                className="scroll-mt-32 rounded-xl border border-border bg-card p-6 shadow-card flex flex-col"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
@@ -216,7 +216,7 @@ const Features: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-foreground">{f.title}</h2>
                     {f.tag && (
-                      <span className="rounded-full bg-secondary/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-secondary">
+                      <span className="rounded-full bg-secondary/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-secondary">
                         {f.tag}
                       </span>
                     )}
@@ -247,8 +247,8 @@ const Features: React.FC = () => {
 
         {/* CTA */}
         <section className="responsive-container text-center">
-          <div className="rounded-3xl gradient-hero text-primary-foreground px-6 py-12 shadow-glow">
-            <h2 className="text-2xl md:text-3xl font-black">Start Using AgriConnect Today</h2>
+          <div className="rounded-xl gradient-hero text-primary-foreground px-6 py-12 ">
+            <h2 className="text-2xl md:text-3xl font-semibold">Start Using AgriConnect Today</h2>
             <p className="mx-auto mt-3 max-w-2xl text-primary-foreground/85">
               Live mandi bhav, AI crop doctor, hyperlocal weather, and government scheme alerts —
               100% free for farmers in 12 Indian languages.

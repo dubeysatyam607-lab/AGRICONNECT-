@@ -269,7 +269,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
                 <User className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground">{isHindi ? 'किसान का नाम' : 'Farmer Name'}</p>
+                <p className="text-xs text-muted-foreground">{isHindi ? 'किसान का नाम' : 'Farmer Name'}</p>
                 <p className="text-sm font-semibold truncate">{order.farmer_name}</p>
                 <p className="text-xs text-muted-foreground">{order.mobile}</p>
               </div>
@@ -282,7 +282,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
                 <MapPin className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground">{isHindi ? 'खेत का स्थान' : 'Field Location'}</p>
+                <p className="text-xs text-muted-foreground">{isHindi ? 'खेत का स्थान' : 'Field Location'}</p>
                 <p className="text-sm font-semibold truncate">{order.village ? `${order.village}, ` : ''}{order.district}</p>
                 <p className="text-xs text-muted-foreground">{order.state}</p>
               </div>
@@ -295,7 +295,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
                 <FlaskConical className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground">{isHindi ? 'परीक्षण का प्रकार' : 'Test Type'}</p>
+                <p className="text-xs text-muted-foreground">{isHindi ? 'परीक्षण का प्रकार' : 'Test Type'}</p>
                 <p className="text-sm font-semibold capitalize">{order.test_type} Test</p>
                 <p className="text-xs text-muted-foreground">{order.crop ? `Crop: ${order.crop}` : 'Field Soil'}</p>
               </div>
@@ -308,7 +308,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
                 <Calendar className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground">{isHindi ? 'रिपोर्ट जारी तिथि' : 'Report Date'}</p>
+                <p className="text-xs text-muted-foreground">{isHindi ? 'रिपोर्ट जारी तिथि' : 'Report Date'}</p>
                 <p className="text-sm font-semibold">
                   {order.report_generated_at
                     ? new Date(order.report_generated_at).toLocaleDateString('en-IN', {
@@ -325,7 +325,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
         </div>
 
         {/* Soil Health Score & Verdict Banner */}
-        <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-emerald-900 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center md:text-left">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
@@ -339,13 +339,13 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0 bg-white/10 px-5 py-3 rounded-xl backdrop-blur-sm border border-white/20">
+          <div className="flex items-center gap-4 shrink-0 bg-white/10 px-5 py-3 rounded-xl  border border-white/20">
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              <div className="text-3xl md:text-4xl font-semibold tracking-tight">
                 {results.overallHealthScore || 82}
                 <span className="text-base font-normal text-emerald-200">/100</span>
               </div>
-              <p className="text-[11px] text-emerald-200 font-medium mt-0.5">
+              <p className="text-xs text-emerald-200 font-medium mt-0.5">
                 {isHindi ? 'उत्कृष्ट स्वास्थ्य स्कोर' : 'Soil Health Index'}
               </p>
             </div>
@@ -487,7 +487,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
                         <div className="text-xl font-bold">
                           {p.value} <span className="text-xs font-normal text-muted-foreground">{p.unit}</span>
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-tight">{p.interpretation}</p>
+                        <p className="text-xs text-muted-foreground leading-tight">{p.interpretation}</p>
                       </CardContent>
                     </Card>
                   );
@@ -506,7 +506,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
 
             <div className="rounded-xl border overflow-hidden bg-white dark:bg-slate-800 shadow-xs">
               <table className="w-full text-left text-xs md:text-sm">
-                <thead className="bg-slate-100 dark:bg-slate-800/80 text-muted-foreground uppercase text-[11px] font-semibold border-b">
+                <thead className="bg-slate-100 dark:bg-slate-800/80 text-muted-foreground uppercase text-xs font-semibold border-b">
                   <tr>
                     <th className="p-3">{isHindi ? 'उर्वरक का नाम' : 'Fertilizer'}</th>
                     <th className="p-3">{isHindi ? 'मात्रा (प्रति एकड़)' : 'Dosage'}</th>
@@ -528,7 +528,7 @@ export const SoilHealthCardViewer: React.FC<SoilHealthCardViewerProps> = ({
         )}
 
         {/* Kisan AI Action Banner */}
-        <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-6 p-4 rounded-xl bg-sky-50   border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
               <Bot className="w-5 h-5" />

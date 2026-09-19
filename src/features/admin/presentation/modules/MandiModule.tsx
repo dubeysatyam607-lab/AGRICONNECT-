@@ -175,7 +175,7 @@ export function MandiModule() {
 
       {/* Last sync status */}
       <div className={cn(
-        'rounded-2xl border p-3 flex flex-wrap items-center justify-between gap-2 text-xs',
+        'rounded-xl border p-3 flex flex-wrap items-center justify-between gap-2 text-xs',
         syncError ? 'border-rose-500/30 bg-rose-500/5' : syncOk ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/30 bg-amber-500/5'
       )}>
         <span className="flex items-center gap-2 font-bold text-foreground">
@@ -199,11 +199,11 @@ export function MandiModule() {
 
       {/* Recent sync history */}
       {stats?.syncHistory && stats.syncHistory.length > 0 && (
-        <div className="rounded-2xl border border-border p-3">
-          <p className="text-[10px] uppercase font-black tracking-wider text-muted-foreground mb-2">Recent Sync Runs</p>
+        <div className="rounded-xl border border-border p-3">
+          <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-2">Recent Sync Runs</p>
           <div className="space-y-1.5">
             {stats.syncHistory.map((s) => (
-              <div key={s.id} className="flex items-center justify-between gap-2 text-[11px]">
+              <div key={s.id} className="flex items-center justify-between gap-2 text-xs">
                 <span className="flex items-center gap-2 font-semibold text-foreground">
                   <span className={cn('w-1.5 h-1.5 rounded-full', s.status === 'success' ? 'bg-emerald-500' : s.status === 'error' ? 'bg-rose-500' : 'bg-amber-500')} />
                   {s.started_at ? new Date(s.started_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
@@ -219,7 +219,7 @@ export function MandiModule() {
       )}
 
       {/* Image cache status */}
-      <div className="rounded-2xl border border-border p-3 flex items-center justify-between gap-2 text-xs">
+      <div className="rounded-xl border border-border p-3 flex items-center justify-between gap-2 text-xs">
         <span className="flex items-center gap-2 font-bold text-foreground">
           <ImageIcon className="h-3.5 w-3.5 text-sky-600" />
           Crop image cache
@@ -257,11 +257,11 @@ export function MandiModule() {
 
 function StatCard({ icon, label, value, tone = 'default' }: { icon: React.ReactNode; label: string; value: string; tone?: 'default' | 'muted' }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 space-y-1">
-      <span className={cn('flex items-center gap-1.5 text-[10px] uppercase font-black tracking-wider text-muted-foreground', tone === 'muted' && 'opacity-70')}>
+    <div className="rounded-xl border border-border bg-card p-3 space-y-1">
+      <span className={cn('flex items-center gap-1.5 text-xs uppercase font-semibold tracking-wider text-muted-foreground', tone === 'muted' && 'opacity-70')}>
         {icon} {label}
       </span>
-      <span className="text-lg font-black text-foreground leading-none">{value}</span>
+      <span className="text-lg font-semibold text-foreground leading-none">{value}</span>
     </div>
   );
 }

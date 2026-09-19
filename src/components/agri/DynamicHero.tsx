@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import {
-  MapPin, Sun, Droplets, Wind, Cloud, Bot, ChevronRight, Sparkles, Moon,
+  MapPin, Sun, Droplets, Wind, Cloud, Bot, ChevronRight, Sparkles, Moon, Wheat, Sprout,
 } from "lucide-react";
 import type { IWeatherModuleData } from "@/features/weather/domain/models/WeatherModels";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,7 +19,6 @@ interface DynamicHeroProps {
   wl: IWeatherModuleData | null;
   weatherStatus?: 'loading' | 'ready' | 'error';
   formatTemp: (celsius: number) => string;
-  condEmoji: (condition?: string) => string;
   onGo: (tab: string) => void;
 }
 
@@ -30,7 +29,7 @@ interface DynamicHeroProps {
  */
 const DynamicHero: React.FC<DynamicHeroProps> = ({
   greeting, firstName, dateStr, liveCity, farmLabel, cropLine,
-  wl, weatherStatus = 'loading', formatTemp, condEmoji, onGo,
+  wl, weatherStatus = 'loading', formatTemp, onGo,
 }) => {
   const { t } = useLanguage();
   const hour = new Date().getHours();
@@ -96,19 +95,19 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[30px]" aria-hidden="true">
         {/* Sun / Moon */}
         {showSun && (
-          <span className="absolute -top-4 right-10 text-4xl select-none animate-sun-pulse drop-shadow-[0_0_30px_rgba(251,191,36,0.55)]">
+          <span className="absolute -top-4 right-10 text-4xl select-none  drop-">
             <Sun size={44} strokeWidth={1.5} className="text-amber-300/90" fill="currentColor" />
           </span>
         )}
         {isNight && (
           <>
-            <span className="absolute top-4 right-10 text-4xl select-none animate-float">
+            <span className="absolute top-4 right-10 text-4xl select-none ">
               <Moon size={36} strokeWidth={1.5} className="text-amber-100/90" fill="currentColor" />
             </span>
             {particles.stars.map((s, i) => (
               <span
                 key={i}
-                className="absolute rounded-full bg-white animate-twinkle"
+                className="absolute rounded-full bg-white "
                 style={{ left: `${s.left}%`, top: `${s.top}%`, width: s.size, height: s.size, animationDelay: `${s.delay}s`, animationDuration: `${s.duration}s` }}
               />
             ))}
@@ -118,8 +117,8 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
         {/* Drifting clouds */}
         {showClouds && (
           <>
-            <span className="absolute -top-1 right-28 text-2xl select-none animate-cloud-slow opacity-80">☁️</span>
-            <span className="absolute top-8 right-4 text-lg select-none animate-cloud-fast opacity-60">☁️</span>
+            <span className="absolute -top-1 right-28 select-none opacity-80"><Cloud className="h-8 w-8 text-white/70" strokeWidth={1.2} /></span>
+            <span className="absolute top-8 right-4 select-none opacity-60"><Cloud className="h-6 w-6 text-white/60" strokeWidth={1.2} /></span>
           </>
         )}
 
@@ -129,7 +128,7 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
             {particles.rain.map((r, i) => (
               <span
                 key={i}
-                className="absolute top-[-12px] w-[2px] rounded-full bg-white/55 animate-rain-drop"
+                className="absolute top-[-12px] w-[2px] rounded-full bg-white/55 "
                 style={{ left: `${r.left}%`, height: 14, animationDelay: `${r.delay}s`, animationDuration: `${r.duration}s` }}
               />
             ))}
@@ -138,22 +137,22 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
 
         {/* Lightning flash (storm only) */}
         {showStorm && (
-          <span className="absolute inset-0 bg-white/30 animate-lightning-flash" />
+          <span className="absolute inset-0 bg-white/30 " />
         )}
 
         {/* Mist layers */}
         {showMist && (
           <>
-            <span className="absolute bottom-8 -left-6 h-16 w-64 rounded-full bg-white/15 blur-2xl animate-mist-drift" />
-            <span className="absolute bottom-2 right-2 h-14 w-56 rounded-full bg-white/10 blur-2xl animate-mist-drift" style={{ animationDelay: "4s" }} />
+            <span className="absolute bottom-8 -left-6 h-16 w-64 rounded-full bg-white/15 blur-2xl " />
+            <span className="absolute bottom-2 right-2 h-14 w-56 rounded-full bg-white/10 blur-2xl " style={{ animationDelay: "4s" }} />
           </>
         )}
 
         {/* Heat shimmer blobs */}
         {showHeat && (
           <>
-            <span className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-amber-200/20 blur-2xl animate-drift-soft" />
-            <span className="absolute -bottom-6 left-8 h-32 w-32 rounded-full bg-red-300/15 blur-2xl animate-breathe" />
+            <span className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-amber-200/20 blur-2xl " />
+            <span className="absolute -bottom-6 left-8 h-32 w-32 rounded-full bg-red-300/15 blur-2xl " />
           </>
         )}
       </div>
@@ -162,10 +161,10 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
 
   return (
     <section className="px-4 reveal" aria-label={t("hero.greeting")}>
-      <div className={`relative overflow-hidden rounded-[30px] ${bgClass} text-primary-foreground px-5 pt-5 pb-6 shadow-colorful`}>
-        <div className="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-secondary/25 blur-2xl animate-drift-soft" />
-        <div className="absolute -bottom-20 -left-12 h-52 w-52 rounded-full bg-emerald-300/20 blur-3xl animate-breathe" />
-        <span className="absolute bottom-2 right-2 text-6xl opacity-20 select-none animate-wave-wheat" aria-hidden="true">🌾</span>
+      <div className={`relative overflow-hidden rounded-[30px] ${bgClass} text-primary-foreground px-5 pt-5 pb-6 `}>
+        <div className="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-secondary/25 blur-2xl " />
+        <div className="absolute -bottom-20 -left-12 h-52 w-52 rounded-full bg-emerald-300/20 blur-3xl " />
+        <span className="absolute bottom-2 right-2 opacity-20 select-none " aria-hidden="true"><Wheat className="h-16 w-16 text-white" strokeWidth={1} /></span>
 
         {renderAtmosphere()}
 
@@ -175,12 +174,12 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
               <MapPin size={12} className="text-secondary" /> {liveCity}
             </span>
             <span className="feature-chip bg-white/10 text-primary-foreground">
-              <span aria-hidden="true">🌱</span> {farmLabel}
+              <Sprout size={12} className="text-secondary" aria-hidden="true" /> {farmLabel}
             </span>
           </div>
 
-          <h1 className="font-display font-semibold text-[30px] leading-[1.08] tracking-tight mt-4">
-            {greeting},<br />{firstName} 👋
+          <h1 className=" font-semibold text-[30px] leading-[1.08] tracking-tight mt-4">
+            {greeting},<br />{firstName}
           </h1>
           <p className="text-[13px] text-primary-foreground/80 mt-2 flex items-center gap-1.5">
             <Sparkles size={13} className="text-secondary shrink-0" />
@@ -191,7 +190,7 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
             {wl ? (
               <>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold">
-                  <Sun size={13} className="text-secondary" /> {formatTemp(wl.live.temp)} · {condEmoji(wl.live.condition)}
+                  <Sun size={13} className="text-secondary" /> {formatTemp(wl.live.temp)} · {wl.live.condition}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold">
                   <Droplets size={13} className="text-secondary" /> {interpolate(t("hero.humidity"), { pct: wl.live.humidity })}
@@ -213,16 +212,16 @@ const DynamicHero: React.FC<DynamicHeroProps> = ({
 
           <button
             onClick={() => onGo("ai-chat")}
-            className="group mt-5 flex w-full items-center justify-between rounded-2xl gradient-ai text-white px-4 py-3.5 shadow-colorful hover-lift"
+            className="group mt-5 flex w-full items-center justify-between rounded-xl gradient-ai text-white px-4 py-3.5  hover-lift"
           >
             <span className="flex items-center gap-2.5">
               <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
                 <Bot size={18} />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-secondary animate-live-pulse" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-secondary " />
               </span>
               <span className="text-left">
                 <span className="block text-[13px] font-bold">{t("hero.whatToday")}</span>
-                <span className="block text-[11px] font-semibold text-white/75">{t("hero.askKisan")}</span>
+                <span className="block text-xs font-semibold text-white/75">{t("hero.askKisan")}</span>
               </span>
             </span>
             <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />

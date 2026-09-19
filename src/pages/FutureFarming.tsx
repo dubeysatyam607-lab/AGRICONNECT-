@@ -32,13 +32,13 @@ const FutureFarming: React.FC = () => {
       />
       <main className="min-h-screen bg-background pb-20">
         {/* Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Blogs', path: '/blogs' }, { label: 'Future of Farming' }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               The Future of Farming Is Connected
             </h1>
             <p className="text-emerald-100/85 mt-4 max-w-3xl text-lg leading-relaxed">

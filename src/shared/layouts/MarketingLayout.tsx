@@ -30,13 +30,13 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/60">
+      <header className="sticky top-0 z-50 bg-background border-b border-border/60">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5" aria-label="AgriConnect Home">
             <Logo size={140} variant="full" className="hidden md:block h-8 w-auto" />
             <div className="flex md:hidden items-center gap-2">
               <Logo size={32} variant="icon" />
-              <span className="font-display font-black text-lg tracking-tight text-foreground">
+              <span className=" font-semibold text-lg tracking-tight text-foreground">
                 Agri<span className="text-emerald-700 dark:text-emerald-400">Connect</span>
               </span>
             </div>
@@ -61,7 +61,7 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
           <div className="flex items-center gap-2">
             <Link
               to="/"
-              className="hidden sm:inline-flex rounded-lg gradient-hero text-primary-foreground px-4 py-2 text-sm font-semibold shadow-md hover:brightness-110 transition shrink-0"
+              className="hidden sm:inline-flex rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold shadow-md hover:bg-primary/90 transition shrink-0"
             >
               Open App
             </Link>
@@ -80,7 +80,7 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
         {/* Mobile menu */}
         {menuOpen && (
-          <nav aria-label="Mobile navigation" className="lg:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
+          <nav aria-label="Mobile navigation" className="lg:hidden border-t border-border/60 bg-background">
             <ul className="mx-auto max-w-6xl px-4 py-4 grid grid-cols-2 gap-1">
               {NAV_LINKS.map((link) => (
                 <li key={`${link.to}-${link.label}`}>

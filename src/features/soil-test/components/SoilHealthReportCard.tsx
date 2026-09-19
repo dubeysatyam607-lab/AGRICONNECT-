@@ -81,11 +81,11 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
   return (
     <Card className="border shadow-sm overflow-hidden bg-card">
       {/* Report Header Bar */}
-      <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white p-4 sm:p-6">
+      <div className="bg-emerald-900 text-white p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Badge className="bg-emerald-500/30 text-white hover:bg-emerald-500/40 border-0 text-[11px]">
+              <Badge className="bg-emerald-500/30 text-white hover:bg-emerald-500/40 border-0 text-xs">
                 {isHindi ? 'सरकारी मान्यता प्राप्त NABL रिपोर्ट' : 'NABL Accredited Lab Report'}
               </Badge>
               <span className="text-xs text-emerald-100 font-mono">
@@ -127,27 +127,27 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
         </div>
 
         {/* Overall Health Score Banner */}
-        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white/10 backdrop-blur-md rounded-xl p-3.5 text-white">
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white/10  rounded-xl p-3.5 text-white">
           <div className="text-center sm:text-left">
-            <span className="text-[11px] text-emerald-200 block font-medium">
+            <span className="text-xs text-emerald-200 block font-medium">
               {isHindi ? 'मृदा स्वास्थ्य स्कोर' : 'Soil Health Index'}
             </span>
-            <div className="text-2xl font-black mt-0.5">{report.overallHealthScore}/100</div>
+            <div className="text-2xl font-semibold mt-0.5">{report.overallHealthScore}/100</div>
           </div>
           <div className="text-center sm:text-left">
-            <span className="text-[11px] text-emerald-200 block font-medium">
+            <span className="text-xs text-emerald-200 block font-medium">
               {isHindi ? 'मृदा पीएच (pH)' : 'Soil pH Status'}
             </span>
             <div className="text-lg font-bold mt-0.5">{report.ph} ({report.phStatus})</div>
           </div>
           <div className="text-center sm:text-left">
-            <span className="text-[11px] text-emerald-200 block font-medium">
+            <span className="text-xs text-emerald-200 block font-medium">
               {isHindi ? 'जैविक कार्बन' : 'Organic Carbon (OC)'}
             </span>
             <div className="text-lg font-bold mt-0.5">{report.organicCarbon}% ({report.ocStatus})</div>
           </div>
           <div className="text-center sm:text-left">
-            <span className="text-[11px] text-emerald-200 block font-medium">
+            <span className="text-xs text-emerald-200 block font-medium">
               {isHindi ? 'विद्युत चालकता (EC)' : 'EC (Salinity)'}
             </span>
             <div className="text-lg font-bold mt-0.5">{report.ec} dS/m</div>
@@ -192,7 +192,7 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
                   </div>
                   {getStatusBadge(report.nitrogenStatus)}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {isHindi ? 'इष्टतम स्तर: 280 - 560 kg/ha' : 'Target Range: 280 - 560 kg/ha'}
                 </div>
               </div>
@@ -208,7 +208,7 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
                   </div>
                   {getStatusBadge(report.phosphorusStatus)}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {isHindi ? 'इष्टतम स्तर: 23 - 56 kg/ha' : 'Target Range: 23 - 56 kg/ha'}
                 </div>
               </div>
@@ -224,7 +224,7 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
                   </div>
                   {getStatusBadge(report.potassiumStatus)}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {isHindi ? 'इष्टतम स्तर: 140 - 280 kg/ha' : 'Target Range: 140 - 280 kg/ha'}
                 </div>
               </div>
@@ -282,13 +282,13 @@ export const SoilHealthReportCard: React.FC<SoilHealthReportCardProps> = ({ repo
                   <div className="flex items-center gap-2">
                     <Leaf className="w-4 h-4 text-emerald-600" />
                     <h4 className="font-bold text-sm text-foreground">{rec.fertilizerName}</h4>
-                    <Badge variant="outline" className="text-[10px]">{rec.timing}</Badge>
+                    <Badge variant="outline" className="text-xs">{rec.timing}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">{rec.reason}</p>
                 </div>
                 <div className="text-right sm:text-right shrink-0 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border">
-                  <span className="text-[10px] text-muted-foreground block">{isHindi ? 'प्रति एकड़ मात्रा' : 'Dose per Acre'}</span>
-                  <span className="font-extrabold text-sm text-emerald-600">{rec.dosagePerAcre}</span>
+                  <span className="text-xs text-muted-foreground block">{isHindi ? 'प्रति एकड़ मात्रा' : 'Dose per Acre'}</span>
+                  <span className="font-semibold text-sm text-emerald-600">{rec.dosagePerAcre}</span>
                 </div>
               </div>
             ))}

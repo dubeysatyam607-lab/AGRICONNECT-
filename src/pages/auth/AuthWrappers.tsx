@@ -1,4 +1,5 @@
 import React from 'react';
+import { Sprout } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LoginView } from '@/features/auth/presentation/views/LoginView';
 import { SignUpView } from '@/features/auth/presentation/views/SignUpView';
@@ -44,10 +45,10 @@ class AuthViewErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6 text-center">
-          <div className="bg-white/90 backdrop-blur-md border border-emerald-100 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-4">
-            <span className="text-4xl">🌾</span>
-            <h2 className="text-xl font-extrabold text-foreground">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-emerald-50 p-6 text-center">
+          <div className="bg-white/90  border border-emerald-100 rounded-xl p-8 max-w-md w-full  space-y-4">
+            <span className="flex justify-center"><Sprout className="w-10 h-10 text-emerald-600" strokeWidth={1.4} aria-hidden="true" /></span>
+            <h2 className="text-xl font-semibold text-foreground">
               {this.props.fallbackTitle || 'AgriConnect Sign In'}
             </h2>
             <p className="text-xs text-muted-foreground">

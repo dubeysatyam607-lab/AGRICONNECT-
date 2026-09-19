@@ -205,7 +205,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-xl">
         <DialogHeader className="mb-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
@@ -257,7 +257,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                     }`}
                   >
                     <div className="text-foreground font-bold">{p.titleEn}</div>
-                    <div className="text-emerald-700 dark:text-emerald-400 font-extrabold mt-1">₹{p.price}</div>
+                    <div className="text-emerald-700 dark:text-emerald-400 font-semibold mt-1">₹{p.price}</div>
                   </button>
                 ))}
               </div>
@@ -328,7 +328,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                   type="button"
                   onClick={handleGpsAutofill}
                   disabled={locatingGps}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700"
                 >
                   <Compass className={`w-3.5 h-3.5 ${locatingGps ? 'animate-spin' : ''}`} />
                   <span>{locatingGps ? 'Detecting GPS…' : 'Autofill with GPS'}</span>
@@ -385,7 +385,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
             </div>
 
             {latitude && longitude && (
-              <div className="text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+              <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
                 <span>GPS coordinates tagged ({latitude.toFixed(4)}, {longitude.toFixed(4)}) for pickup technician navigation.</span>
               </div>
@@ -496,7 +496,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                     +₹{SOIL_PICKUP_FEE}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Our certified field agent will visit your farm, inspect the sample bag, tag with barcode, and transport safely to the lab.
                 </p>
               </div>
@@ -519,7 +519,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                     FREE (₹0)
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   You drop off the labeled sample bag directly at the nearest AgriConnect authorized laboratory or partner Krishi Kendra.
                 </p>
               </div>
@@ -530,7 +530,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                 <h4 className="text-xs font-bold text-foreground">Select Preferred Pickup Slot</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">
                       Preferred Date
                     </label>
                     <input
@@ -543,7 +543,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    <label className="text-xs font-semibold text-muted-foreground block mb-1">
                       Time Slot
                     </label>
                     <select
@@ -556,7 +556,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
                     </select>
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Technician contact and exact arrival confirmation will be sent via in-app alert & SMS.
                 </p>
               </div>
@@ -568,7 +568,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
         {step === 4 && (
           <div className="space-y-4 py-2">
             {/* Transparent Order Summary Card */}
-            <div className="bg-muted/40 border border-border/60 rounded-2xl p-4 text-xs space-y-3">
+            <div className="bg-muted/40 border border-border/60 rounded-xl p-4 text-xs space-y-3">
               <h4 className="font-bold text-foreground pb-2 border-b border-border/50">
                 Order Summary & Price Breakdown
               </h4>
@@ -601,13 +601,13 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
               </div>
 
               {pickupRequired && (
-                <div className="flex justify-between text-[11px] text-emerald-700 dark:text-emerald-400">
+                <div className="flex justify-between text-xs text-emerald-700 dark:text-emerald-400">
                   <span>Pickup Slot:</span>
                   <span>{pickupDate} · {pickupTimeSlot}</span>
                 </div>
               )}
 
-              <div className="pt-3 border-t border-border/60 flex justify-between items-baseline text-sm font-extrabold text-foreground">
+              <div className="pt-3 border-t border-border/60 flex justify-between items-baseline text-sm font-semibold text-foreground">
                 <span>Total Amount:</span>
                 <span className="text-xl text-emerald-600 dark:text-emerald-400">
                   ₹{pricing.totalAmount.toFixed(2)}
@@ -652,7 +652,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
               </div>
             )}
 
-            <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 rounded-xl p-3 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 rounded-xl p-3 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>100% Guaranteed ICAR Protocol Testing · Instant Status Tracking via AgriConnect</span>
             </div>

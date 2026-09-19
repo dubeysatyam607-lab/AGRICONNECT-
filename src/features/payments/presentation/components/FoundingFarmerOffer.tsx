@@ -147,17 +147,17 @@ export function FoundingFarmerOffer({
   };
 
   return (
-    <div className="rounded-3xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 p-5 sm:p-6 shadow-card">
+    <div className="rounded-xl border-2 border-primary/20 bg-emerald-700 p-5 sm:p-6 shadow-card">
       {/* Header */}
       <div className="flex items-start gap-3 mb-4">
-        <span className="w-10 h-10 rounded-2xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+        <span className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
           <Sprout size={20} />
         </span>
         <div>
-          <h3 className="font-extrabold text-foreground text-base sm:text-lg flex items-center gap-2">
+          <h3 className="font-semibold text-foreground text-base sm:text-lg flex items-center gap-2">
             {t('bannerTitle')}
           </h3>
-          <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wide">
+          <span className="inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wide">
             {t('limitedOffer')}
           </span>
         </div>
@@ -180,13 +180,13 @@ export function FoundingFarmerOffer({
               total: String(config.max_slots),
             })}
           </span>
-          <span className="text-[10px] font-bold text-primary">
+          <span className="text-xs font-bold text-primary">
             {config.max_slots > 0 ? `${Math.min(100, Math.round((config.slots_taken / config.max_slots) * 100))}% claimed` : 'Launching soon'}
           </span>
         </div>
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-500"
+            className="h-full bg-emerald-700 rounded-full transition-all duration-500"
             style={{ width: `${config.max_slots > 0 ? Math.min(100, (config.slots_taken / config.max_slots) * 100) : 0}%` }}
           />
         </div>
@@ -195,13 +195,13 @@ export function FoundingFarmerOffer({
       {/* Plan cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Plus */}
-        <div className="relative rounded-2xl border-2 border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md">
+        <div className="relative rounded-xl border-2 border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">{t('plusLabel')}</p>
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-2xl font-extrabold text-primary">{'\u20B9'}{config.plus_price}</span>
+            <span className="text-2xl font-semibold text-primary">{'\u20B9'}{config.plus_price}</span>
             <span className="text-xs text-muted-foreground line-through">{'\u20B9'}49{t('perMonth')}</span>
           </div>
-          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">
+          <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">
             {t('foundingPrice')}
           </span>
           <ul className="space-y-1.5 mb-4">
@@ -229,16 +229,16 @@ export function FoundingFarmerOffer({
         </div>
 
         {/* Pro */}
-        <div className="relative rounded-2xl border-2 border-primary/50 bg-card p-4 shadow-glow transition-all hover:-translate-y-0.5 hover:shadow-md">
-          <span className="absolute -top-2.5 right-4 rounded-full bg-primary px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-primary-foreground">
+        <div className="relative rounded-xl border-2 border-primary/50 bg-card p-4  transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <span className="absolute -top-2.5 right-4 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
             Best Value
           </span>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">{t('proLabel')}</p>
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-2xl font-extrabold text-primary">{'\u20B9'}{config.pro_price}</span>
+            <span className="text-2xl font-semibold text-primary">{'\u20B9'}{config.pro_price}</span>
             <span className="text-xs text-muted-foreground line-through">{'\u20B9'}99{t('perMonth')}</span>
           </div>
-          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">
+          <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">
             {t('foundingPrice')}
           </span>
           <ul className="space-y-1.5 mb-4">

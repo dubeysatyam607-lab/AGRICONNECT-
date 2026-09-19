@@ -136,7 +136,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ open, onClose, onC
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md bg-card rounded-xl border border-border  overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
             <Camera size={16} className="text-primary" /> {t("doctor.camera.title")}
@@ -165,7 +165,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ open, onClose, onC
               <p className="text-xs">Starting camera…</p>
             </div>
           )}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 text-[10px] text-white/90">
+          <div className="absolute inset-x-0 bottom-0 bg-emerald-700 px-3 py-2 text-xs text-white/90">
             {status === "active" && !captured ? "Hold the crop steady and well-lit, close to the camera" : ""}
           </div>
         </div>

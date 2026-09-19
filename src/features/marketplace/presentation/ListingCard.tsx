@@ -44,7 +44,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   return (
     <div
       onClick={() => onSelect(listing)}
-      className="group rounded-2xl border border-border bg-card hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer"
+      className="group rounded-xl border border-border bg-card hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer"
     >
       {/* Thumbnail */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
@@ -57,23 +57,23 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-black/30" />
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-black/60 text-white backdrop-blur-md">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase bg-black/60 text-white ">
             {categoryMeta?.nameEn || listing.category}
           </span>
 
           <div className="flex items-center gap-1.5">
             {listing.owner.is_verified && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white flex items-center gap-1 shadow-sm">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-600 text-white flex items-center gap-1 shadow-sm">
                 <BadgeCheck className="w-3 h-3" />
                 Verified
               </span>
             )}
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+              className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                 listing.availability === 'available'
                   ? 'bg-emerald-600 text-white'
                   : 'bg-amber-600 text-white'
@@ -87,11 +87,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         {/* Bottom Price in Thumbnail */}
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
           <div>
-            <div className="text-lg font-black tracking-tight drop-shadow-md">
+            <div className="text-lg font-semibold tracking-tight ">
               {formatPriceWithUnit(listing.price, listing.price_unit)}
             </div>
           </div>
-          <div className="text-[10px] text-white/80 font-medium flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
+          <div className="text-xs text-white/80 font-medium flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full ">
             <Eye className="w-3 h-3" />
             <span>{listing.views_count || 1} views</span>
           </div>
@@ -101,7 +101,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       {/* Card Info */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
-          <h3 className="text-sm font-extrabold text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors">
+          <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-emerald-600 transition-colors">
             {listing.title}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -121,7 +121,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <div className="flex items-center gap-1 font-semibold text-foreground">
               <span>{listing.owner.name.split(' ')[0]}</span>
               {listing.owner.rating && (
-                <span className="flex items-center gap-0.5 text-amber-500 font-bold text-[11px]">
+                <span className="flex items-center gap-0.5 text-amber-500 font-bold text-xs">
                   <Star className="w-3 h-3 fill-amber-500" />
                   {listing.owner.rating}
                 </span>
@@ -175,7 +175,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                     onBook?.(listing);
                   }}
                   disabled={listing.availability !== 'available'}
-                  className="py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-extrabold flex items-center justify-center gap-1 shadow-sm"
+                  className="py-1.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-1 shadow-sm"
                 >
                   <Calendar className="w-3 h-3" />
                   <span>Book</span>

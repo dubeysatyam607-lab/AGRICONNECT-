@@ -93,13 +93,13 @@ const Terms: React.FC = () => {
       />
 
       <main className="min-h-screen bg-background pb-20">
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: tr('legal.terms.breadcrumbHome', 'Home'), path: '/' }, { label: tr('legal.terms.breadcrumbTerms', 'Terms of Service') }]}
             />
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight">{tr('legal.terms.title', 'Terms & Conditions')}</h1>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">{tr('legal.terms.title', 'Terms & Conditions')}</h1>
             <p className="text-emerald-100/80 mt-2">{tr('legal.terms.lastUpdated', 'Last updated')}: January 2026</p>
           </div>
         </header>
@@ -107,14 +107,14 @@ const Terms: React.FC = () => {
         <div className="mx-auto max-w-4xl px-4 py-10">
           <div className="space-y-6">
             {SECTIONS.map((s) => (
-              <section key={s.title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <section key={s.title} className="rounded-xl border border-border bg-card p-6 shadow-card">
                 <h2 className="font-bold text-foreground text-lg">{s.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed mt-2">{s.content}</p>
               </section>
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl gradient-hero text-primary-foreground p-6 text-center">
+          <div className="mt-10 rounded-xl gradient-hero text-primary-foreground p-6 text-center">
             <h2 className="font-bold text-xl">{tr('legal.terms.questionsCta', 'Have questions about these terms?')}</h2>
             <p className="text-sm text-primary-foreground/80 mt-2">{tr('legal.terms.questionsSub', 'Contact our legal team.')}</p>
             <Link

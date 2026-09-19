@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { WifiOff, Wifi } from 'lucide-react';
 import { connectivityMonitor, ConnectionStatus } from '@/core/services/ConnectivityMonitor';
 
 /**
@@ -33,9 +34,9 @@ export const OfflineBanner: React.FC = () => {
       }`}
     >
       {status === 'offline' ? (
-        <span>📡 Offline Mode — Showing Cached Farm Data. We will automatically sync when connection returns.</span>
+        <span className="inline-flex items-center gap-1.5"><WifiOff className="h-3.5 w-3.5" /> Offline Mode — Showing Cached Farm Data. We will automatically sync when connection returns.</span>
       ) : (
-        <span>✅ Back Online — All data synced!</span>
+        <span className="inline-flex items-center gap-1.5"><Wifi className="h-3.5 w-3.5" /> Back Online — All data synced!</span>
       )}
     </div>
   );

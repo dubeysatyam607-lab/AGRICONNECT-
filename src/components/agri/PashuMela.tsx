@@ -204,7 +204,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
   }
 
   return (
-    <div className="pb-24 pt-4 px-4 animate-fade-in">
+    <div className="pb-24 pt-4 px-4">
       <div className="mb-4 flex justify-between items-center">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -306,7 +306,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
       {/* Listings Grid */}
       <div className="grid grid-cols-2 gap-3">
         {filteredLivestock.map((animal, idx) => (
-          <AgriCard key={animal.id} className="p-0 overflow-hidden animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+          <AgriCard key={animal.id} className="p-0 overflow-hidden" style={{ animationDelay: `${idx * 50}ms` }}>
             <div className="h-28 bg-muted overflow-hidden relative">
               <SafeImage
                 src={animal.image}
@@ -318,7 +318,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
                 fallbackIcon={<Milk size={32} className="text-primary/50" />}
               />
               {animal.verified && (
-                <span className="absolute top-1 right-1 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                   ✓ Verified
                 </span>
               )}
@@ -339,7 +339,7 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
                   ₹{animal.price.toLocaleString()}
                 </span>
                 {animal.milk !== 'N/A' && (
-                  <span className="text-[10px] bg-feature-community/10 text-feature-community px-1.5 py-0.5 rounded">
+                  <span className="text-xs bg-feature-community/10 text-feature-community px-1.5 py-0.5 rounded">
                     {animal.milk}
                   </span>
                 )}

@@ -60,7 +60,7 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-primary uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
             <span className={cn("w-1.5 h-1.5 rounded-full", paused ? "bg-amber-400" : "bg-primary animate-pulse")} />
             {paused ? "Paused" : "Speaking…"}
           </div>
@@ -75,7 +75,7 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
           )}
           <div className="mt-1.5 h-1 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all duration-200"
+              className="h-full rounded-full bg-emerald-700 transition-all duration-200"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -86,7 +86,7 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
           className={cn(
             "p-2.5 rounded-full transition-all shrink-0",
             paused
-              ? "bg-primary text-white shadow-lg shadow-primary/25"
+              ? "bg-primary text-white shadow-lg "
               : "bg-muted text-muted-foreground hover:bg-muted/80"
           )}
           aria-label={paused ? "Resume speaking" : "Pause speaking"}
@@ -104,10 +104,10 @@ export const VoicePlayerBar: React.FC<VoicePlayerBarProps> = ({
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] text-muted-foreground font-bold">{percent}%</span>
+        <span className="text-xs text-muted-foreground font-bold">{percent}%</span>
         <button
           onClick={() => onRate(nextRate)}
-          className="text-[10px] font-bold text-muted-foreground bg-muted hover:bg-muted/80 border border-border rounded-full px-2.5 py-1 transition-colors"
+          className="text-xs font-bold text-muted-foreground bg-muted hover:bg-muted/80 border border-border rounded-full px-2.5 py-1 transition-colors"
           title="Speech speed"
         >
           {rate >= 1.15 ? "1.15×" : rate >= 1 ? "1.0×" : "0.8×"}

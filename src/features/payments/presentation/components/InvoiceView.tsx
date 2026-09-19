@@ -9,29 +9,29 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export function InvoiceView({ invoice }: { invoice: Invoice }) {
   const { t } = useLanguage();
   return (
-    <div id="gst-invoice" className="rounded-2xl border border-border bg-card p-5 text-sm shadow-card print:border-none print:shadow-none">
+    <div id="gst-invoice" className="rounded-xl border border-border bg-card p-5 text-sm shadow-card print:border-none print:shadow-none">
       <div className="flex items-start justify-between">
         <div>
-          <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-primary">
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
             <ReceiptText size={14} /> {t('pay.invoiceGst')}
           </p>
-          <p className="mt-2 text-base font-black text-foreground">{SELLER_NAME}</p>
-          <p className="text-[11px] font-semibold text-muted-foreground">{t('pay.gstin')}: {SELLER_GSTIN}</p>
-          <p className="text-[11px] font-semibold text-muted-foreground">Jaipur, Rajasthan — India</p>
+          <p className="mt-2 text-base font-semibold text-foreground">{SELLER_NAME}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{t('pay.gstin')}: {SELLER_GSTIN}</p>
+          <p className="text-xs font-semibold text-muted-foreground">Jaipur, Rajasthan — India</p>
         </div>
         <div className="text-right">
-          <p className="text-xs font-black text-foreground">{invoice.number}</p>
-          <p className="text-[11px] font-semibold text-muted-foreground">{t('pay.issuedOn')} {shortDate(invoice.issuedAt)}</p>
+          <p className="text-xs font-semibold text-foreground">{invoice.number}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{t('pay.issuedOn')} {shortDate(invoice.issuedAt)}</p>
           {invoice.paidAt && (
-            <p className="text-[11px] font-semibold text-muted-foreground">{t('pay.paidOn')} {shortDate(invoice.paidAt)}</p>
+            <p className="text-xs font-semibold text-muted-foreground">{t('pay.paidOn')} {shortDate(invoice.paidAt)}</p>
           )}
         </div>
       </div>
 
       <div className="mt-4 rounded-xl bg-muted/50 p-3">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('pay.billedTo')}</p>
-        <p className="mt-0.5 text-sm font-extrabold text-foreground">{invoice.buyer.name}</p>
-        <p className="text-[11px] font-semibold text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('pay.billedTo')}</p>
+        <p className="mt-0.5 text-sm font-semibold text-foreground">{invoice.buyer.name}</p>
+        <p className="text-xs font-semibold text-muted-foreground">
           {invoice.buyer.phone ? `${invoice.buyer.phone}${invoice.buyer.address ? ' • ' : ''}` : ''}
           {invoice.buyer.address}
         </p>
@@ -39,12 +39,12 @@ export function InvoiceView({ invoice }: { invoice: Invoice }) {
 
       <table className="mt-4 w-full text-left text-xs">
         <thead>
-          <tr className="border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground">
-            <th className="pb-2 pr-2 font-black">#</th>
-            <th className="pb-2 pr-2 font-black">{t('pay.item')}</th>
-            <th className="pb-2 pr-2 text-center font-black">{t('pay.qty')}</th>
-            <th className="pb-2 pr-2 text-right font-black">{t('pay.rate')}</th>
-            <th className="pb-2 text-right font-black">{t('pay.amount')}</th>
+          <tr className="border-b border-border text-xs uppercase tracking-widest text-muted-foreground">
+            <th className="pb-2 pr-2 font-semibold">#</th>
+            <th className="pb-2 pr-2 font-semibold">{t('pay.item')}</th>
+            <th className="pb-2 pr-2 text-center font-semibold">{t('pay.qty')}</th>
+            <th className="pb-2 pr-2 text-right font-semibold">{t('pay.rate')}</th>
+            <th className="pb-2 text-right font-semibold">{t('pay.amount')}</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +79,7 @@ export function InvoiceView({ invoice }: { invoice: Invoice }) {
           <span>SGST @ {invoice.gstRate / 2}%</span>
           <span>{fmtMoney(invoice.sgst)}</span>
         </div>
-        <div className="flex justify-between border-t border-border pt-1 text-sm font-black text-foreground">
+        <div className="flex justify-between border-t border-border pt-1 text-sm font-semibold text-foreground">
           <span>{t('pay.total')}</span>
           <span>{fmtMoney(invoice.total)}</span>
         </div>

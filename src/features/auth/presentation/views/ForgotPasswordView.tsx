@@ -97,21 +97,21 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
           <div className="flex items-center justify-between">
             <button
               onClick={onBackToLogin}
-              className="flex items-center gap-1 text-xs font-extrabold text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={16} /> {t('common.back')}
             </button>
-            <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+            <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
               <ShieldCheck size={13} /> {hi ? 'ईमेल ओटीपी साइन इन' : 'Email OTP Sign In'}
             </span>
           </div>
 
           {/* Header */}
           <FadeIn className="mt-8 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-md">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-md">
               <Mail size={28} />
             </div>
-            <h1 className="mt-4 text-2xl font-black tracking-tight text-foreground">
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
               {hi ? 'ईमेल से साइन इन करें' : 'Sign In with Email OTP'}
             </h1>
             <p className="mt-1.5 text-xs font-medium text-muted-foreground">
@@ -123,7 +123,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
 
           {/* Error Banner */}
           {(fieldError || state.error) && (
-            <div className="mt-6 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-shake">
+            <div className="mt-6 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold ">
               ⚠️ {fieldError || state.error}
             </div>
           )}
@@ -133,7 +133,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
             {step === 'request' && (
               <form onSubmit={handleRequestSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {hi ? 'ईमेल पता' : 'Email Address'}
                   </label>
                   <div className="relative">
@@ -145,7 +145,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                       placeholder="farmer@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
+                      className="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
                       autoFocus
                     />
                   </div>
@@ -160,7 +160,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
             {step === 'verify' && (
               <form onSubmit={handleVerifySubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {hi ? 'सत्यापन कोड' : 'Verification Code'}
                   </label>
                   <input
@@ -172,7 +172,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                     maxLength={6}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    className="w-full text-center tracking-widest text-lg font-black rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
+                    className="w-full text-center tracking-widest text-lg font-semibold rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-card py-3 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 transition-all"
                     autoFocus
                   />
                 </div>
@@ -199,7 +199,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                       type="button"
                       onClick={handleResend}
                       disabled={state.isLoading}
-                      className="flex items-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-400 hover:underline"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline"
                     >
                       <RotateCw size={13} /> {hi ? 'कोड पुनः भेजें' : 'Resend Code'}
                     </button>
@@ -208,7 +208,7 @@ export const ForgotPasswordView: React.FC<IForgotPasswordViewProps> = ({ onBackT
                   <button
                     type="button"
                     onClick={() => { setStep('request'); setOtp(''); clearError(); setFieldError(null); }}
-                    className="text-xs font-extrabold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
                   >
                     {hi ? 'ईमेल बदलें' : 'Change Email'}
                   </button>

@@ -4,7 +4,7 @@
  */
 
 export const M3_TYPOGRAPHY = {
-  displayLarge: 'text-4xl sm:text-5xl font-extrabold tracking-tight leading-none',
+  displayLarge: 'text-4xl sm:text-5xl font-semibold tracking-tight leading-none',
   displayMedium: 'text-3xl sm:text-4xl font-bold tracking-tight leading-tight',
   displaySmall: 'text-2xl sm:text-3xl font-bold tracking-tight leading-snug',
   
@@ -22,7 +22,7 @@ export const M3_TYPOGRAPHY = {
   
   labelLarge: 'text-sm font-bold uppercase tracking-wider leading-none',
   labelMedium: 'text-xs font-bold uppercase tracking-wider leading-none',
-  labelSmall: 'text-[10px] font-bold uppercase tracking-widest leading-none',
+  labelSmall: 'text-xs font-bold uppercase tracking-widest leading-none',
 } as const;
 
 export type TypographyToken = keyof typeof M3_TYPOGRAPHY;

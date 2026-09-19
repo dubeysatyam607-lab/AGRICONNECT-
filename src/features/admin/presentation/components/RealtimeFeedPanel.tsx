@@ -80,11 +80,11 @@ function UserRow({ user }: { user: LiveUser }) {
         <p className="truncate text-xs font-semibold text-foreground">
           {user.full_name || 'New Farmer'}
         </p>
-        <p className="truncate text-[11px] text-muted-foreground">
+        <p className="truncate text-xs text-muted-foreground">
           {user.email || user.phone || user.location || 'Signed up'}
         </p>
       </div>
-      <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+      <span className="shrink-0 text-xs font-medium text-muted-foreground">
         {timeAgo(user.created_at)}
       </span>
     </div>
@@ -103,7 +103,7 @@ function ActivityRow({ activity }: { activity: LiveActivity }) {
     >
       <span
         className={cn(
-          'mt-0.5 inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold',
+          'mt-0.5 inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-xs font-bold',
           actionColor(activity.action),
         )}
       >
@@ -111,7 +111,7 @@ function ActivityRow({ activity }: { activity: LiveActivity }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-xs text-foreground">{activity.summary}</p>
-        <p className="mt-0.5 text-[10px] text-muted-foreground">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {activity.actor} · {timeAgo(activity.timestamp)}
         </p>
       </div>
@@ -162,7 +162,7 @@ export function RealtimeFeedPanel({ className, onClose }: RealtimeFeedPanelProps
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
           </div>
           <h3 className="text-xs font-bold text-foreground">Live Feed</h3>
-          <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <Radio className="h-2.5 w-2.5" />
             {feed.connected ? 'Connected' : 'Connecting…'}
           </span>
@@ -201,7 +201,7 @@ export function RealtimeFeedPanel({ className, onClose }: RealtimeFeedPanelProps
               <UserPlus className="h-3.5 w-3.5" />
               Signups
               {userCount > 0 && (
-                <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary">
                   {userCount}
                 </span>
               )}
@@ -218,7 +218,7 @@ export function RealtimeFeedPanel({ className, onClose }: RealtimeFeedPanelProps
               <Activity className="h-3.5 w-3.5" />
               Activity
               {activityCount > 0 && (
-                <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary">
                   {activityCount}
                 </span>
               )}
@@ -252,7 +252,7 @@ export function RealtimeFeedPanel({ className, onClose }: RealtimeFeedPanelProps
 
           {/* Footer */}
           <div className="flex items-center justify-between border-t px-3 py-2">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {feed.connected ? (
                 <Wifi className="h-3 w-3 text-emerald-500" />
               ) : (
@@ -263,7 +263,7 @@ export function RealtimeFeedPanel({ className, onClose }: RealtimeFeedPanelProps
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] font-semibold"
+              className="h-6 text-xs font-semibold"
               onClick={feed.refreshAll}
             >
               Refresh
@@ -307,7 +307,7 @@ export function RealtimeFeedBadge({
         Live Feed
       </span>
       {total > 0 && (
-        <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+        <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary">
           {total}
         </span>
       )}

@@ -124,18 +124,18 @@ export function SubscriptionsPanel({
     <div className="space-y-4">
       {/* Current subscription */}
       {active && (
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-card">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Crown className="h-4 w-4 text-primary" />
-                <span className="text-sm font-black text-foreground">{active.planName}</span>
+                <span className="text-sm font-semibold text-foreground">{active.planName}</span>
                 {ffStatus.isFF && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                     <Sprout size={10} /> FOUNDING FARMER #{ffStatus.ffNumber}
                   </span>
                 )}
-                <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-extrabold', STATUS_TONE[active.status])}>
+                <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', STATUS_TONE[active.status])}>
                   {STATUS_LABEL[active.status] ?? active.status}
                 </span>
               </div>
@@ -156,8 +156,8 @@ export function SubscriptionsPanel({
               <>
                 <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-2.5">
                   <div>
-                    <p className="text-xs font-extrabold text-foreground">{t('pay.autoRenew')}</p>
-                    <p className="text-[10px] font-semibold text-muted-foreground">
+                    <p className="text-xs font-semibold text-foreground">{t('pay.autoRenew')}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">
                       {active.autoRenew ? t('pay.autoRenewOn') : t('pay.autoRenewOff')}
                     </p>
                   </div>
@@ -213,23 +213,23 @@ export function SubscriptionsPanel({
               key={p.id}
               onClick={() => (isFree ? setSubscribePlan(p.id) : setManualPlan(p))}
               className={cn(
-                'relative rounded-3xl border-2 bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5',
+                'relative rounded-xl border-2 bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5',
                 p.id === 'plan-pro' ? 'border-primary/50' : 'border-border',
               )}
             >
               {p.id === 'plan-pro' && (
-                <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-primary-foreground">
+                <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
                   {t('pay.popular')}
                 </span>
               )}
               <span className={cn('flex h-9 w-9 items-center justify-center rounded-xl', p.id === 'plan-pro' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                 <Icon size={16} />
               </span>
-              <p className="mt-2.5 text-sm font-black text-foreground">{p.name}</p>
-              <p className="mt-0.5 text-[10px] font-semibold leading-tight text-muted-foreground">{p.description || ''}</p>
-              <p className="mt-2 text-lg font-black text-foreground">
+              <p className="mt-2.5 text-sm font-semibold text-foreground">{p.name}</p>
+              <p className="mt-0.5 text-xs font-semibold leading-tight text-muted-foreground">{p.description || ''}</p>
+              <p className="mt-2 text-lg font-semibold text-foreground">
                 {isFree ? t('pay.free') : fmtMoney(p.price)}
-                {!isFree && <span className="text-[10px] font-bold text-muted-foreground">/{t('pay.perMonth')}</span>}
+                {!isFree && <span className="text-xs font-bold text-muted-foreground">/{t('pay.perMonth')}</span>}
               </p>
             </button>
           );
@@ -264,12 +264,12 @@ export function SubscriptionsPanel({
                   key={pr}
                   onClick={() => setPeriod(pr)}
                   className={cn(
-                    'rounded-2xl border-2 p-3 text-left transition-all',
+                    'rounded-xl border-2 p-3 text-left transition-all',
                     period === pr ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40',
                   )}
                 >
-                  <p className="text-xs font-black text-foreground">{t(pr === 'month' ? 'pay.monthly' : 'pay.yearly')}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground">
+                  <p className="text-xs font-semibold text-foreground">{t(pr === 'month' ? 'pay.monthly' : 'pay.yearly')}</p>
+                  <p className="text-xs font-bold text-muted-foreground">
                     {pr === 'year' && plan && plan.priceYearly > 0 ? (
                       <span className="text-emerald-600">{interpolate(t('pay.savePercent'), { percent: plan.priceYearly > 0 ? Math.round((1 - plan.priceYearly / (plan.priceMonthly * 12)) * 100) : 0 })}</span>
                     ) : (
@@ -281,7 +281,7 @@ export function SubscriptionsPanel({
             </div>
             <Input value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder={t('pay.couponPh')} className="text-xs font-bold uppercase" />
             <MethodPicker value={method} onChange={setMethod} walletBalance={store.wallet.balance} />
-            {failMsg && <p className="text-[11px] font-bold text-red-600">{failMsg}</p>}
+            {failMsg && <p className="text-xs font-bold text-red-600">{failMsg}</p>}
             <Button className="w-full" onClick={handleSubscribe} disabled={busy}>
               {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : `${t('pay.subscribe')} · ${fmtMoney(price)}`}
             </Button>

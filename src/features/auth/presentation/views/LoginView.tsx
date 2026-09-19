@@ -4,7 +4,6 @@ import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { FaGoogle as Google } from 'react-icons/fa';
 import { Logo } from '@/components/ui/Logo';
 import { AppButton } from '@/shared/widgets/AppButton';
-import { FadeIn, SlideUp } from '@/shared/widgets/AppAnimations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import brandingImage from '@/assets/auth_branding_illustration.jpg';
@@ -75,67 +74,68 @@ export const LoginView: React.FC<ILoginViewProps> = ({
     }
   };
 
+  const inputClass =
+    'w-full rounded-lg border border-border bg-card pl-11 pr-4 py-3 type-body text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors';
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-white to-teal-50 relative overflow-hidden">
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <div className="absolute top-4 right-4 z-10">
         <LanguageSelector />
       </div>
-      <div className="flex flex-1 flex-col lg:flex-row justify-center items-center max-w-6xl mx-auto px-4 py-12 gap-8">
+      <div className="flex flex-1 flex-col lg:flex-row justify-center items-center max-w-6xl mx-auto px-4 py-12 gap-10">
         {/* Left branding panel */}
         <div className="hidden lg:flex flex-1 flex-col items-center justify-center p-6">
           {!imageError ? (
             <img
               src={brandingImage}
               alt={hi ? 'कृषि तकनीक' : 'Farming Innovation'}
-              className="w-full max-w-sm rounded-xl shadow-lg object-cover aspect-video lg:aspect-square"
+              className="w-full max-w-sm rounded-xl border border-border object-cover aspect-square"
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full max-w-sm aspect-square bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-lg flex flex-col items-center justify-center p-6">
-              <ShieldCheck size={48} className="text-emerald-600 dark:text-emerald-400 mb-3" />
-              <span className="text-lg font-bold text-emerald-800 dark:text-emerald-300">AgriConnect</span>
-              <span className="text-xs text-emerald-600 dark:text-emerald-500 mt-1">
+            <div className="w-full max-w-sm aspect-square bg-card border border-border rounded-xl flex flex-col items-center justify-center p-6">
+              <ShieldCheck size={44} className="text-primary mb-3" aria-hidden="true" />
+              <span className="type-h2">AgriConnect</span>
+              <span className="type-small text-muted-foreground mt-1">
                 {t('auth.secureNetwork') || 'Secure Farming Network'}
               </span>
             </div>
           )}
-          <h2 className="mt-6 text-2xl font-extrabold text-emerald-800">
+          <h2 className="mt-6 type-h1 text-center">
             {t('auth.futureOfFarming') || 'Welcome to the Future of Farming'}
           </h2>
-          <p className="mt-2 text-center text-sm text-emerald-700">
-            {t('auth.tagline') || 'Smart insights, real‑time market prices, and AI‑assisted farming'}
+          <p className="mt-2 text-center type-body text-muted-foreground max-w-sm">
+            {t('auth.tagline') || 'Smart insights, real-time market prices, and AI-assisted farming'}
           </p>
         </div>
 
         {/* Right auth card */}
         <div className="flex-1 w-full max-w-md">
-          <div className="backdrop-blur-xl bg-white/30 border border-white/20 rounded-xl shadow-xl p-8">
+          <div className="bg-card border border-border rounded-xl p-8">
             <div className="flex items-center justify-between">
               {onBack ? (
                 <button
                   onClick={onBack}
-                  className="rounded-xl px-3 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-foreground"
+                  className="rounded-lg px-3 py-1.5 type-small font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {t('common.back')}
                 </button>
               ) : (
                 <div />
               )}
-              <span className="flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                <ShieldCheck size={13} /> {t('auth.encryptionBadge') || '256-Bit Secure'}
+              <span className="flex items-center gap-1 type-label text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                <ShieldCheck size={13} aria-hidden="true" /> {t('auth.encryptionBadge') || '256-Bit Secure'}
               </span>
             </div>
 
             {/* Logo & Welcome Header */}
-            <FadeIn className="mt-8 text-center">
-              <div className="flex flex-col items-center gap-4">
-                <div className="mx-auto w-fit">
-                  <Logo size={72} className="drop-shadow-lg" />
-                </div>
-                <h1 className="mt-4 text-2xl font-black tracking-tight text-foreground">
+            <div className="mt-8 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <Logo size={64} />
+                <h1 className="type-h1">
                   {t('auth.login.welcomeTitle')}
                 </h1>
-                <p className="mt-1.5 text-xs font-medium text-muted-foreground">
+                <p className="type-small text-muted-foreground">
                   {t('auth.login.welcomeSubtitle')}
                 </p>
                 <AppButton
@@ -146,53 +146,53 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   isLoading={state.isLoading}
                   disabled={state.isLoading}
                   leftIcon={<Google size={18} className="text-[#4285F4]" />}
-                  className="mb-4 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-2"
+                  className="mt-2 bg-card border border-border text-foreground hover:bg-muted"
                 >
                   {t('auth.login.continueWithGoogle')}
                 </AppButton>
               </div>
-            </FadeIn>
+            </div>
 
-            {/* Clean Segmented Tab Control (Email OTP vs Email/Password) */}
-            <FadeIn delayMs={80} className="mt-6">
-              <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            {/* Segmented tab control (Email OTP vs Email/Password) */}
+            <div className="mt-6">
+              <div className="grid grid-cols-2 p-1 rounded-lg bg-muted">
                 <button
                   type="button"
                   onClick={() => { setUsePassword(false); setFieldError(null); clearError(); }}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-md type-small font-semibold transition-colors ${
                     !usePassword
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                      ? 'bg-card text-foreground border border-border'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Mail size={14} />
+                  <Mail size={14} aria-hidden="true" />
                   {t('auth.login.tabEmailOtp')}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setUsePassword(true); setFieldError(null); clearError(); }}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-md type-small font-semibold transition-colors ${
                     usePassword
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                      ? 'bg-card text-foreground border border-border'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Lock size={14} />
+                  <Lock size={14} aria-hidden="true" />
                   {t('auth.login.tabPassword')}
                 </button>
               </div>
-            </FadeIn>
+            </div>
 
             {/* Form Container */}
-            <FadeIn delayMs={120} className="mt-6">
+            <div className="mt-6">
               {fieldError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-shake">
-                  ⚠️ {fieldError}
+                <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/25 type-small font-semibold text-destructive">
+                  {fieldError}
                 </div>
               )}
               {state.error && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold animate-shake">
-                  ⚠️ {state.error}
+                <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/25 type-small font-semibold text-destructive">
+                  {state.error}
                 </div>
               )}
 
@@ -200,11 +200,11 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                 // Email + OTP Login Form
                 <form onSubmit={handleOtpSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <label className="block type-label text-muted-foreground">
                       {t('auth.login.emailLabel')}
                     </label>
                     <div className="relative">
-                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                       <input
                         type="email"
                         aria-label={t('auth.login.emailLabel')}
@@ -213,7 +213,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         placeholder="farmer@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
+                        className={inputClass}
                       />
                     </div>
                   </div>
@@ -233,11 +233,11 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                 // Email + Password Form
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <label className="block type-label text-muted-foreground">
                       {t('auth.login.emailLabel')}
                     </label>
                     <div className="relative">
-                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                       <input
                         type="email"
                         aria-label={t('auth.login.emailLabel')}
@@ -246,26 +246,26 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         placeholder="farmer@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-4 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
+                        className={inputClass}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                      <label className="block type-label text-muted-foreground">
                         {t('auth.login.tabPassword')}
                       </label>
                       <button
                         type="button"
                         onClick={onSwitchToForgot}
-                        className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                        className="type-small font-semibold text-primary hover:underline"
                       >
                         {t('auth.login.forgotPassword')}
                       </button>
                     </div>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         aria-label={t('auth.login.tabPassword')}
@@ -274,7 +274,7 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-card pl-11 pr-12 py-3 text-sm font-bold text-foreground outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all"
+                        className={`${inputClass} pr-12`}
                       />
                       <button
                         type="button"
@@ -289,12 +289,12 @@ export const LoginView: React.FC<ILoginViewProps> = ({
 
                   {/* Remember Me */}
                   <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-bold text-muted-foreground">
+                    <label className="flex items-center gap-2 cursor-pointer select-none type-small font-semibold text-muted-foreground">
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
+                        className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
                       />
                       {t('auth.login.rememberMe')}
                     </label>
@@ -312,24 +312,24 @@ export const LoginView: React.FC<ILoginViewProps> = ({
                   </AppButton>
                 </form>
               )}
-            </FadeIn>
+            </div>
           </div>
 
           {/* Footer Navigation */}
-          <SlideUp delayMs={200} className="mt-8 space-y-4 text-center">
-            <p className="text-xs font-medium text-muted-foreground">
+          <div className="mt-8 space-y-4 text-center">
+            <p className="type-small text-muted-foreground">
               {t('auth.login.newToAgriconnect')}{' '}
-              <button onClick={onSwitchToSignUp} className="font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline ml-1">
+              <button onClick={onSwitchToSignUp} className="font-semibold text-primary hover:underline ml-1">
                 {t('auth.login.createAccount')}
               </button>
             </p>
 
-            <p className="text-[10px] leading-relaxed text-muted-foreground/70">
+            <p className="type-meta text-muted-foreground">
               {t('auth.agreeTerms') || 'By signing in, you agree to our'}{' '}
-              <Link to="/terms" className="font-bold underline-offset-2 hover:underline">{t('nav.terms') || 'Terms'}</Link> &amp;{' '}
-              <Link to="/privacy-policy" className="font-bold underline-offset-2 hover:underline">{t('nav.privacy') || 'Privacy Policy'}</Link>
+              <Link to="/terms" className="font-semibold underline underline-offset-2">{t('nav.terms') || 'Terms'}</Link> &amp;{' '}
+              <Link to="/privacy-policy" className="font-semibold underline underline-offset-2">{t('nav.privacy') || 'Privacy Policy'}</Link>
             </p>
-          </SlideUp>
+          </div>
         </div>
       </div>
     </div>

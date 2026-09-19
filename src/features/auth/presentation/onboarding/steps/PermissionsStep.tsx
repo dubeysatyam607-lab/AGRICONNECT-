@@ -73,18 +73,18 @@ export const PermissionsStep: React.FC<{
           return (
             <div
               key={perm.id}
-              className={`animate-slide-up fill-mode-both rounded-2xl border-2 bg-white p-4 transition-colors ${
+              className={` fill-mode-both rounded-xl border-2 bg-white p-4 transition-colors ${
                 active ? 'border-emerald-500 bg-emerald-50/60' : 'border-slate-200'
               }`}
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-lime-100 text-lg">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-lg">
                   {perm.emoji}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-extrabold text-slate-800">{t(`opt:${perm.title}`)}</p>
+                    <p className="text-sm font-semibold text-slate-800">{t(`opt:${perm.title}`)}</p>
                     <button
                       type="button"
                       aria-pressed={active}
@@ -103,7 +103,7 @@ export const PermissionsStep: React.FC<{
                   </div>
                   <p className="mt-1 text-xs leading-relaxed text-slate-500">{t(whyKey)}</p>
                   {requesting === perm.id && (
-                    <p className="mt-1 text-[11px] font-bold text-emerald-600">{interpolate(t('onb.perm.asking'), { name: t(`opt:${perm.title}`) })}</p>
+                    <p className="mt-1 text-xs font-bold text-emerald-600">{interpolate(t('onb.perm.asking'), { name: t(`opt:${perm.title}`) })}</p>
                   )}
                 </div>
               </div>

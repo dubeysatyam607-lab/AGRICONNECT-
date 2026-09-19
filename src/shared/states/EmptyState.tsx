@@ -1,4 +1,5 @@
 import React from 'react';
+import { Sprout } from 'lucide-react';
 import { AppButton } from '@/shared/widgets/AppButton';
 
 /**
@@ -16,7 +17,7 @@ export interface IEmptyStateProps {
 }
 
 export const EmptyState: React.FC<IEmptyStateProps> = ({
-  icon = '🌾',
+  icon = <Sprout className="w-9 h-9 text-emerald-600" strokeWidth={1.6} />,
   title,
   description,
   actionText,
@@ -24,11 +25,11 @@ export const EmptyState: React.FC<IEmptyStateProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`w-full py-16 px-6 flex flex-col items-center justify-center text-center bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 animate-fade-in ${className}`}>
-      <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-4xl mb-4 shadow-inner">
+    <div className={`w-full py-16 px-6 flex flex-col items-center justify-center text-center bg-white/50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 ${className}`}>
+      <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center mb-4 shadow-inner">
         {icon}
       </div>
-      <h3 className="text-lg font-extrabold text-foreground tracking-tight max-w-sm mb-1">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground tracking-tight max-w-sm mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-md leading-relaxed mb-6">{description}</p>
       {actionText && onAction && (
         <AppButton variant="primary" size="md" onClick={onAction}>

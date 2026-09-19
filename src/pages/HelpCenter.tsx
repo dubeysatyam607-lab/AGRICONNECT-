@@ -62,13 +62,13 @@ const HelpCenter: React.FC = () => {
 
       <main className="min-h-screen bg-background pb-20">
         {/* Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="mx-auto max-w-5xl px-4 py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: tr('legal.terms.breadcrumbHome', 'Home'), path: '/' }, { label: tr('legal.help.title', 'Help Center') }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               {tr('legal.help.howCanWeHelp', 'How can we help?')}
             </h1>
             <p className="text-emerald-100/85 mt-4 max-w-3xl text-lg leading-relaxed">
@@ -81,7 +81,7 @@ const HelpCenter: React.FC = () => {
         <section className="mx-auto max-w-5xl px-4 py-12" aria-label="Help topics">
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {HELP_TOPICS.map((topic) => (
-              <article key={topic.title} className="rounded-2xl border border-border bg-card p-6 shadow-card flex flex-col">
+              <article key={topic.title} className="rounded-xl border border-border bg-card p-6 shadow-card flex flex-col">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
                   <topic.icon className="h-5 w-5" aria-hidden="true" />
                 </span>
@@ -113,7 +113,7 @@ const HelpCenter: React.FC = () => {
                 href={SUPPORT_WHATSAPP_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
+                className="rounded-xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
               >
                 <MessageCircle className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-foreground">{tr('legal.help.whatsappHelpdesk', 'WhatsApp Helpdesk')}</h3>
@@ -121,7 +121,7 @@ const HelpCenter: React.FC = () => {
               </a>
               <a
                 href="mailto:hello.agriconnect@gmail.com"
-                className="rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
+                className="rounded-xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
               >
                 <Mail className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-foreground">{tr('legal.help.emailUs', 'Email Us')}</h3>
@@ -129,7 +129,7 @@ const HelpCenter: React.FC = () => {
               </a>
               <a
                 href="tel:+917067820256"
-                className="rounded-2xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
+                className="rounded-xl border border-border bg-card p-6 shadow-card hover:border-primary/40 transition-colors"
               >
                 <Phone className="h-6 w-6 text-emerald-600" aria-hidden="true" />
                 <h3 className="mt-3 font-bold text-foreground">{tr('legal.help.callHelpdesk', 'Call the Helpdesk')}</h3>

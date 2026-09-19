@@ -3,7 +3,6 @@ import {
   Search,
   Plus,
   SlidersHorizontal,
-  Sparkles,
   Tractor,
   Layers,
   Wheat,
@@ -139,18 +138,17 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative rounded-xl border border-border bg-card p-6 sm:p-8">
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-white/15 text-emerald-100 backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>PHASE 12 · 100% Direct Farmer Marketplace</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-muted text-xs font-semibold text-primary">
+            <span>100% Direct farmer marketplace · No middleman</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+          <h1 className="type-h1 text-foreground">
             AgriConnect Marketplace
           </h1>
 
-          <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed font-medium">
+          <p className="type-small text-muted-foreground leading-relaxed">
             Rent machinery, hire skilled farm labour, trade certified cattle, and buy/sell organic farm produce directly without any middleman commission.
           </p>
 
@@ -160,25 +158,20 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
                 setListingToEdit(null);
                 setCreateModalOpen(true);
               }}
-              className="px-4 py-2.5 rounded-xl font-extrabold text-xs bg-white text-emerald-900 hover:bg-emerald-50 flex items-center gap-2 shadow-lg transition-transform active:scale-95"
+              className="px-4 py-2.5 rounded-lg font-semibold type-meta bg-primary text-white hover:bg-primary/90 flex items-center gap-2 transition-colors"
             >
-              <Plus className="w-4 h-4 text-emerald-700 font-bold" />
+              <Plus className="w-4 h-4" aria-hidden="true" />
               <span>List Item / Offer Service</span>
             </button>
 
             <button
               onClick={() => setActiveTab('my_bookings')}
-              className="px-4 py-2.5 rounded-xl font-bold text-xs bg-white/10 hover:bg-white/20 text-white backdrop-blur-md flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 rounded-lg font-semibold type-meta bg-muted hover:bg-muted/70 text-foreground flex items-center gap-1.5 transition-colors"
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4" aria-hidden="true" />
               <span>My Booking Requests ({bookings.length})</span>
             </button>
           </div>
-        </div>
-
-        {/* Decorative Background Elements */}
-        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none translate-x-8 translate-y-8">
-          <Tractor className="w-64 h-64 text-white" />
         </div>
       </div>
 
@@ -268,7 +261,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tractors, rotavators, cattle, labour teams, or organic produce..."
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-card border border-border rounded-2xl focus:ring-2 focus:ring-emerald-500 text-foreground"
+                className="w-full pl-10 pr-4 py-2.5 text-xs bg-card border border-border rounded-xl focus:ring-2 focus:ring-emerald-500 text-foreground"
               />
               {searchQuery && (
                 <button
@@ -284,7 +277,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
               <select
                 value={priceSort}
                 onChange={(e) => setPriceSort(e.target.value as any)}
-                className="px-3 py-2.5 text-xs bg-card border border-border rounded-2xl text-foreground font-semibold"
+                className="px-3 py-2.5 text-xs bg-card border border-border rounded-xl text-foreground font-semibold"
               >
                 <option value="newest">Newest First</option>
                 <option value="price_low">Price: Low to High</option>
@@ -301,7 +294,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
               <div className="text-xs font-bold text-muted-foreground">Loading verified listings…</div>
             </div>
           ) : listings.length === 0 ? (
-            <div className="py-16 text-center rounded-3xl border border-dashed border-border bg-card/50 p-6 space-y-3">
+            <div className="py-16 text-center rounded-xl border border-dashed border-border bg-card/50 p-6 space-y-3">
               <Package className="w-12 h-12 text-muted-foreground mx-auto" />
               <h3 className="text-sm font-bold text-foreground">No listings found in this category</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -343,7 +336,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
       {activeTab === 'my_listings' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-extrabold text-foreground">
+            <h2 className="text-sm font-semibold text-foreground">
               Your Published Listings ({myListings.length})
             </h2>
             <button
@@ -359,7 +352,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
           </div>
 
           {myListings.length === 0 ? (
-            <div className="py-16 text-center rounded-3xl border border-dashed border-border bg-card/50 p-6 space-y-3">
+            <div className="py-16 text-center rounded-xl border border-dashed border-border bg-card/50 p-6 space-y-3">
               <Tractor className="w-12 h-12 text-muted-foreground mx-auto" />
               <h3 className="text-sm font-bold text-foreground">You have not published any listings yet</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -402,12 +395,12 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
       {/* TAB 3: MY BOOKINGS & REQUESTS */}
       {activeTab === 'my_bookings' && (
         <div className="space-y-4">
-          <h2 className="text-sm font-extrabold text-foreground">
+          <h2 className="text-sm font-semibold text-foreground">
             Booking & Service Requests ({bookings.length})
           </h2>
 
           {bookings.length === 0 ? (
-            <div className="py-16 text-center rounded-3xl border border-dashed border-border bg-card/50 p-6 space-y-3">
+            <div className="py-16 text-center rounded-xl border border-dashed border-border bg-card/50 p-6 space-y-3">
               <Calendar className="w-12 h-12 text-muted-foreground mx-auto" />
               <h3 className="text-sm font-bold text-foreground">No booking requests yet</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
@@ -421,15 +414,15 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
                 return (
                   <div
                     key={booking.id}
-                    className="p-4 rounded-2xl border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="p-4 rounded-xl border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-sm text-foreground">
+                        <span className="font-semibold text-sm text-foreground">
                           {booking.listing_title}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                          className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase ${
                             booking.status === 'accepted'
                               ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                               : booking.status === 'rejected'
@@ -456,7 +449,7 @@ export const AgriMarketplaceHub: React.FC<AgriMarketplaceHubProps> = ({
                       </div>
 
                       {booking.location_address && (
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-emerald-600" />
                           <span>{booking.location_address}</span>
                         </div>

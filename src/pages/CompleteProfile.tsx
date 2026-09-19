@@ -21,6 +21,7 @@ import {
   Layers,
   Award,
   Globe,
+  TriangleAlert,
 } from 'lucide-react';
 import { MAJOR_INDIAN_CROPS, SoilType, IrrigationType } from '@/features/profile/domain/models/FarmerProfile';
 import { INDIAN_STATES_AND_DISTRICTS } from '@/features/location/indianStatesData';
@@ -320,7 +321,7 @@ export const CompleteProfile: React.FC = () => {
 
   if (authLoading && !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-background to-background dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-foreground flex items-center justify-center p-4">
+      <div className="min-h-screen bg-emerald-50    text-foreground flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
           <div className="w-9 h-9 rounded-full border-3 border-emerald-600 border-t-transparent animate-spin" />
           <p className="text-sm font-semibold text-muted-foreground">Loading your profile...</p>
@@ -330,7 +331,7 @@ export const CompleteProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-background to-background dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-foreground flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-emerald-50    text-foreground flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       <SeoHead
         title="Complete Your Profile — AgriConnect"
         description="Set up your farm profile to unlock live Mandi prices, AI crop advisory and weather insights."
@@ -341,14 +342,14 @@ export const CompleteProfile: React.FC = () => {
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-400/20 dark:bg-emerald-600/10 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-teal-400/20 dark:bg-teal-600/10 blur-[120px]" />
 
-      <div className="w-full max-w-2xl bg-card border border-border/80 rounded-3xl shadow-xl p-6 sm:p-8 relative z-10 space-y-6">
+      <div className="w-full max-w-2xl bg-card border border-border/80 rounded-xl  p-6 sm:p-8 relative z-10 space-y-6">
         {/* Header Branding */}
         <div className="flex flex-col items-center text-center space-y-2">
           <div className="flex items-center gap-3">
-            <Logo size={44} className="shadow-md shadow-emerald-500/20" />
-            <span className="text-xl font-black tracking-tight text-foreground">AgriConnect</span>
+            <Logo size={44} className="shadow-md " />
+            <span className="text-xl font-semibold tracking-tight text-foreground">AgriConnect</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
             Complete Your Farmer Profile
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
@@ -375,7 +376,7 @@ export const CompleteProfile: React.FC = () => {
               >
                 {step > s.num ? <CheckCircle2 size={18} /> : s.num}
               </div>
-              <span className={`text-[11px] font-semibold text-center hidden sm:block ${
+              <span className={`text-xs font-semibold text-center hidden sm:block ${
                 step === s.num ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-muted-foreground'
               }`}>
                 {s.label}
@@ -386,18 +387,18 @@ export const CompleteProfile: React.FC = () => {
 
         {/* Error Banner */}
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs sm:text-sm font-semibold flex items-center gap-2 animate-shake">
-            <span>⚠️</span>
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs sm:text-sm font-semibold flex items-center gap-2 ">
+            <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {/* ── STEP 1: Personal & Contact Details ── */}
         {step === 1 && (
-          <div className="space-y-4 animate-fadeIn">
+          <div className="space-y-4 ">
             {/* Google Profile Preview Badge */}
             {email && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 flex items-center gap-3.5">
+              <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 flex items-center gap-3.5">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -409,13 +410,13 @@ export const CompleteProfile: React.FC = () => {
                   />
                 ) : null}
                 {!avatarUrl && (
-                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
-                    {fullName ? fullName.charAt(0).toUpperCase() : '👨‍🌾'}
+                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-semibold text-lg shadow-sm">
+                    {fullName ? fullName.charAt(0).toUpperCase() : 'F'}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider bg-emerald-200/60 dark:bg-emerald-800/40 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider bg-emerald-200/60 dark:bg-emerald-800/40 px-2 py-0.5 rounded-md">
                       Google Account Verified
                     </span>
                   </div>
@@ -520,7 +521,7 @@ export const CompleteProfile: React.FC = () => {
                 onClick={() => {
                   if (validateStep1()) setStep(2);
                 }}
-                className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all transform active:scale-[0.99]"
+                className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-4 shadow-md  flex items-center justify-center gap-2 transition-all transform active:scale-[0.99]"
               >
                 <span>Continue to Farm Details</span>
                 <ArrowRight size={18} />
@@ -531,7 +532,7 @@ export const CompleteProfile: React.FC = () => {
 
         {/* ── STEP 2: Farm & Agricultural Details ── */}
         {step === 2 && (
-          <div className="space-y-4 animate-fadeIn">
+          <div className="space-y-4 ">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* State */}
               <div className="space-y-1.5">
@@ -723,7 +724,7 @@ export const CompleteProfile: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="w-1/3 rounded-2xl bg-muted hover:bg-muted/80 text-foreground font-bold py-3.5 px-4 flex items-center justify-center gap-1.5 transition-colors"
+                className="w-1/3 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold py-3.5 px-4 flex items-center justify-center gap-1.5 transition-colors"
               >
                 <ArrowLeft size={16} /> Back
               </button>
@@ -732,7 +733,7 @@ export const CompleteProfile: React.FC = () => {
                 onClick={() => {
                   if (validateStep2()) setStep(3);
                 }}
-                className="w-2/3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all transform active:scale-[0.99]"
+                className="w-2/3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-4 shadow-md  flex items-center justify-center gap-2 transition-all transform active:scale-[0.99]"
               >
                 <span>Continue to Consent</span>
                 <ArrowRight size={18} />
@@ -743,9 +744,9 @@ export const CompleteProfile: React.FC = () => {
 
         {/* ── STEP 3: Legal Consent & Summary ── */}
         {step === 3 && (
-          <div className="space-y-5 animate-fadeIn">
+          <div className="space-y-5 ">
             {/* Farm Summary Card */}
-            <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 space-y-2.5 text-xs sm:text-sm">
+            <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 space-y-2.5 text-xs sm:text-sm">
               <h3 className="font-bold text-foreground flex items-center gap-2">
                 <Sparkles size={16} className="text-emerald-600" /> Farm Profile Summary
               </h3>
@@ -761,7 +762,7 @@ export const CompleteProfile: React.FC = () => {
             </div>
 
             {/* Mandatory Terms & Privacy Policy Consent */}
-            <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-3">
+            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-3">
               <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -786,7 +787,7 @@ export const CompleteProfile: React.FC = () => {
                 </span>
               </label>
 
-              <p className="text-[11px] text-muted-foreground pl-8">
+              <p className="text-xs text-muted-foreground pl-8">
                 Your data is stored securely and used solely to personalize your farming advisory, mandi rates, and equipment bookings.
               </p>
             </div>
@@ -797,7 +798,7 @@ export const CompleteProfile: React.FC = () => {
                 type="button"
                 disabled={loading}
                 onClick={() => setStep(2)}
-                className="w-1/3 rounded-2xl bg-muted hover:bg-muted/80 text-foreground font-bold py-3.5 px-4 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+                className="w-1/3 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold py-3.5 px-4 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
               >
                 <ArrowLeft size={16} /> Back
               </button>
@@ -805,7 +806,7 @@ export const CompleteProfile: React.FC = () => {
                 type="button"
                 disabled={loading || !termsAccepted}
                 onClick={handleSubmit}
-                className="w-2/3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-2/3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-4 shadow-md  flex items-center justify-center gap-2 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

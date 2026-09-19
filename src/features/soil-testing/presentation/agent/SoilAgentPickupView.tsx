@@ -108,7 +108,7 @@ export const SoilAgentPickupView: React.FC = () => {
             <Truck className="w-4 h-4" />
             Field Dispatch Console
           </div>
-          <h1 className="text-2xl font-black text-foreground tracking-tight mt-1">
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight mt-1">
             Assigned Soil Sample Pickups
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -170,11 +170,11 @@ export const SoilAgentPickupView: React.FC = () => {
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="h-36 bg-muted/40 rounded-2xl animate-pulse" />
+            <div key={i} className="h-36 bg-muted/40 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-16 bg-muted/20 border border-dashed border-border rounded-2xl p-6">
+        <div className="text-center py-16 bg-muted/20 border border-dashed border-border rounded-xl p-6">
           <Package className="w-10 h-10 text-muted-foreground mx-auto mb-2 opacity-50" />
           <h4 className="text-sm font-bold text-foreground">No Pickups Found</h4>
           <p className="text-xs text-muted-foreground mt-1">
@@ -197,13 +197,13 @@ export const SoilAgentPickupView: React.FC = () => {
             return (
               <AgriCard
                 key={order.id}
-                className="p-5 rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md transition-all space-y-4"
+                className="p-5 rounded-xl border border-border/70 bg-card shadow-sm hover:shadow-md transition-all space-y-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-border/50">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-extrabold text-foreground">{order.order_number}</span>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full uppercase">
+                      <span className="text-xs font-semibold text-foreground">{order.order_number}</span>
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full uppercase">
                         {order.test_type} Test
                       </span>
                     </div>
@@ -218,7 +218,7 @@ export const SoilAgentPickupView: React.FC = () => {
                     <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-lg inline-block">
                       📅 {order.confirmed_pickup_date || order.preferred_pickup_date || 'Date TBD'}
                     </span>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {order.pickup_time_slot || 'Morning Slot'}
                     </div>
                   </div>
@@ -227,15 +227,15 @@ export const SoilAgentPickupView: React.FC = () => {
                 {/* Logistics Notes & Crop */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-muted/40 p-3 rounded-xl">
                   <div>
-                    <span className="text-muted-foreground block text-[10px]">Crop / Plot</span>
+                    <span className="text-muted-foreground block text-xs">Crop / Plot</span>
                     <span className="font-semibold text-foreground">{order.crop || 'Field Crop'} ({order.farm_size || '—'} {order.farm_size_unit || 'Acre'})</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[10px]">Sample Spec</span>
+                    <span className="text-muted-foreground block text-xs">Sample Spec</span>
                     <span className="font-semibold text-foreground">500g Composite Bag</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[10px]">Current Status</span>
+                    <span className="text-muted-foreground block text-xs">Current Status</span>
                     <span className="font-semibold text-emerald-600">{order.order_status.replace(/_/g, ' ').toUpperCase()}</span>
                   </div>
                 </div>

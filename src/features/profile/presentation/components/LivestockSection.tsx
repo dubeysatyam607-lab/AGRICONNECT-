@@ -33,10 +33,10 @@ export const LivestockSection: React.FC<ILivestockSectionProps> = ({ livestock, 
   const totalLivestock = Object.values(livestock).reduce((sum, val) => sum + (val || 0), 0);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5">
       <div className="border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
             <span>🐄</span> {t('pdetail.livestockInventory')}
           </h3>
           <p className="text-xs text-muted-foreground">{t('pdetail.livestockSub')}</p>
@@ -52,15 +52,15 @@ export const LivestockSection: React.FC<ILivestockSectionProps> = ({ livestock, 
           return (
             <div
               key={item.key}
-              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between transition-all hover:border-slate-300"
+              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between transition-all hover:border-slate-300"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center text-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                   {item.icon}
                 </div>
                 <div>
-                  <h4 className="text-sm font-extrabold text-foreground">{t(item.labelKey)}</h4>
-                  <p className="text-[11px] text-muted-foreground">{t(item.descKey)}</p>
+                  <h4 className="text-sm font-semibold text-foreground">{t(item.labelKey)}</h4>
+                  <p className="text-xs text-muted-foreground">{t(item.descKey)}</p>
                 </div>
               </div>
 
@@ -70,15 +70,15 @@ export const LivestockSection: React.FC<ILivestockSectionProps> = ({ livestock, 
                   type="button"
                   onClick={() => updateCount(item.key, -1)}
                   disabled={count === 0}
-                  className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-foreground font-extrabold flex items-center justify-center transition-colors disabled:opacity-30"
+                  className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-foreground font-semibold flex items-center justify-center transition-colors disabled:opacity-30"
                 >
                   −
                 </button>
-                <span className="w-8 text-center text-sm font-extrabold text-foreground font-mono">{count}</span>
+                <span className="w-8 text-center text-sm font-semibold text-foreground font-mono">{count}</span>
                 <button
                   type="button"
                   onClick={() => updateCount(item.key, 1)}
-                  className="w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold flex items-center justify-center transition-colors shadow-sm"
+                  className="w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold flex items-center justify-center transition-colors shadow-sm"
                 >
                   +
                 </button>

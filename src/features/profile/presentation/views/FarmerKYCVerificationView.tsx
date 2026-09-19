@@ -185,20 +185,20 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-16 animate-fade-in">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-16">
       {/* Top Bar */}
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBack}
-            className="w-10 h-10 rounded-2xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted transition-colors cursor-pointer"
             aria-label="Back to profile"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
               <span>🛡️</span> Government & KYC Verification
             </h1>
             <p className="text-xs text-muted-foreground">
@@ -211,7 +211,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
       {/* Trust Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div
-          className={`p-5 rounded-3xl border transition-all ${
+          className={`p-5 rounded-xl border transition-all ${
             isAadhaarVerified
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200'
               : 'bg-card border-border text-foreground'
@@ -220,16 +220,16 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold ${
+                className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold ${
                   isAadhaarVerified
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                    ? 'bg-emerald-500 text-white '
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-sm font-black">Aadhaar KYC</h2>
+                <h2 className="text-sm font-semibold">Aadhaar KYC</h2>
                 <p className="text-xs opacity-80">
                   {isAadhaarVerified
                     ? `Verified (${existingAadhaarMasked})`
@@ -238,11 +238,11 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
               </div>
             </div>
             {isAadhaarVerified ? (
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider">
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-semibold uppercase tracking-wider">
                 Active ✅
               </span>
             ) : (
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold">
                 Action Required
               </span>
             )}
@@ -250,7 +250,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
         </div>
 
         <div
-          className={`p-5 rounded-3xl border transition-all ${
+          className={`p-5 rounded-xl border transition-all ${
             kccDetails
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200'
               : 'bg-card border-border text-foreground'
@@ -259,16 +259,16 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold ${
+                className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold ${
                   kccDetails
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                    ? 'bg-emerald-500 text-white '
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <CreditCard className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-sm font-black">Kisan Credit Card</h2>
+                <h2 className="text-sm font-semibold">Kisan Credit Card</h2>
                 <p className="text-xs opacity-80">
                   {kccDetails
                     ? `${kccDetails.bankName} (₹${kccDetails.creditLimit.toLocaleString('en-IN')})`
@@ -277,11 +277,11 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
               </div>
             </div>
             {kccDetails ? (
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider">
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-semibold uppercase tracking-wider">
                 Linked 💳
               </span>
             ) : (
-              <span className="px-2.5 py-1 rounded-full bg-slate-500/10 border border-slate-500/30 text-muted-foreground text-[10px] font-bold">
+              <span className="px-2.5 py-1 rounded-full bg-slate-500/10 border border-slate-500/30 text-muted-foreground text-xs font-bold">
                 Optional
               </span>
             )}
@@ -290,7 +290,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1.5 bg-muted/60 rounded-2xl border border-border">
+      <div className="flex gap-2 p-1.5 bg-muted/60 rounded-xl border border-border">
         <button
           type="button"
           onClick={() => setActiveTab('aadhaar')}
@@ -319,7 +319,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
 
       {/* Tab 1: Aadhaar Verification */}
       {activeTab === 'aadhaar' && (
-        <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span>🇮🇳</span> UIDAI Aadhaar Verification
@@ -330,13 +330,13 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
           </div>
 
           {isAadhaarVerified ? (
-            <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-4">
+            <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-extrabold text-foreground">
+                  <h3 className="text-sm font-semibold text-foreground">
                     Aadhaar Identity Fully Verified
                   </h3>
                   <p className="text-xs text-muted-foreground">
@@ -362,7 +362,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                       setAadhaarInput('2345 6789 0124');
                       setAadhaarError(null);
                     }}
-                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                    className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                   >
                     Use Sample: 2345 6789 0124
                   </button>
@@ -379,10 +379,10 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     if (aadhaarError) setAadhaarError(null);
                   }}
                   placeholder="e.g. 5432 1098 7654"
-                  className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono tracking-wider"
+                  className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono tracking-wider"
                   required
                 />
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Info className="w-3.5 h-3.5 text-emerald-500" />
                   We will send a 6-digit OTP to your Aadhaar-linked mobile number.
                 </p>
@@ -401,7 +401,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
             </form>
           ) : (
             <form onSubmit={handleVerifyAadhaarOtp} className="space-y-4">
-              <div className="p-4 rounded-2xl bg-muted/60 border border-border space-y-2">
+              <div className="p-4 rounded-xl bg-muted/60 border border-border space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Verifying Aadhaar:</span>
                   <span className="font-mono font-bold text-foreground">{aadhaarInput}</span>
@@ -423,7 +423,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     setOtpInput(generatedDemoOtp);
                     if (aadhaarError) setAadhaarError(null);
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 active:scale-95 transition-all cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700  transition-all cursor-pointer"
                 >
                   Auto-Fill OTP
                 </button>
@@ -442,7 +442,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     if (aadhaarError) setAadhaarError(null);
                   }}
                   placeholder="e.g. 123456"
-                  className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base font-mono text-center tracking-[0.4em]"
+                  className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base font-mono text-center tracking-[0.4em]"
                   required
                   autoFocus
                 />
@@ -500,7 +500,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
 
       {/* Tab 2: KCC Verification */}
       {activeTab === 'kcc' && (
-        <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span>💳</span> Kisan Credit Card (KCC) Linkage
@@ -511,14 +511,14 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
           </div>
 
           {kccDetails ? (
-            <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-4">
+            <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-extrabold text-foreground">
+                    <h3 className="text-sm font-semibold text-foreground">
                       Kisan Credit Card Verified & Active
                     </h3>
                     <p className="text-xs text-muted-foreground">
@@ -526,21 +526,21 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     </p>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-semibold uppercase">
                   4% Subsidized
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="p-3 rounded-xl bg-background/60 border border-emerald-500/20">
-                  <span className="text-[11px] text-muted-foreground block">Sanctioned Credit Limit</span>
-                  <span className="text-sm font-black text-foreground">
+                  <span className="text-xs text-muted-foreground block">Sanctioned Credit Limit</span>
+                  <span className="text-sm font-semibold text-foreground">
                     ₹{kccDetails.creditLimit.toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-background/60 border border-emerald-500/20">
-                  <span className="text-[11px] text-muted-foreground block">Linked Farmland</span>
-                  <span className="text-sm font-black text-foreground">
+                  <span className="text-xs text-muted-foreground block">Linked Farmland</span>
+                  <span className="text-sm font-semibold text-foreground">
                     {kccDetails.linkedLandAcres} Acres
                   </span>
                 </div>
@@ -555,7 +555,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                 <select
                   value={kccBankCode}
                   onChange={(e) => setKccBankCode(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
+                  className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
                 >
                   {SUPPORTED_KCC_BANKS.map((b) => (
                     <option key={b.code} value={b.code}>
@@ -579,7 +579,7 @@ export const FarmerKYCVerificationView: React.FC<IFarmerKYCVerificationViewProps
                     setKccNumberInput(formatted);
                   }}
                   placeholder="e.g. 4532 9876 1234 5678"
-                  className="w-full px-4 py-3 rounded-2xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono tracking-wider"
+                  className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono tracking-wider"
                   required
                 />
               </div>

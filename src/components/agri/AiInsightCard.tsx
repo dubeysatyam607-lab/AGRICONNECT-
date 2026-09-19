@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
-  Sparkles, Bot, Droplets, CloudRain, Leaf, TrendingUp, Landmark,
+  Droplets, CloudRain, Leaf, TrendingUp, Landmark,
   ChevronRight, ShieldAlert,
 } from "lucide-react";
 import type { IWeatherModuleData } from "@/features/weather/domain/models/WeatherModels";
@@ -24,17 +24,24 @@ const ICON_MAP: Record<AdviceIconKey, React.ComponentType<{ size?: number | stri
   scheme: Landmark,
 };
 
-/**
- * The heart of the Home screen — "What should the farmer do next?".
- * Renders data-driven recommendations derived from the farmer's crop profile
- * and live weather (see farm-advisor.ts), plus critical weather alerts.
- */
 const AiInsightCard: React.FC<AiInsightCardProps> = ({ wl, loading, cropLabel, items, onGo }) => {
   const { t } = useLanguage();
   if (loading && !wl) {
     return (
-      <section className="px-4 mt-4" aria-label="AI insights loading">
-        <div className="h-56 w-full rounded-[28px] border border-border bg-card animate-shimmer" />
+      <section aria-labelledby="insight-heading">
+        <div className="flex items-end justify-between gap-2">
+          <div>
+            <p className="section-eyebrow">{t("home.adviceCaption")}</p>
+            <h2 id="insight-heading" className="type-h2 mt-1.5">{t("hero.whatToday")}</h2>
+          </div>
+        </div>
+        <div className="mt-3 rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="space-y-3">
+            <div className="h-4 w-40 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-full rounded bg-muted animate-pulse" />
+            <div className="h-4 w-3/4 rounded bg-muted animate-pulse" />
+          </div>
+        </div>
       </section>
     );
   }
@@ -42,73 +49,49 @@ const AiInsightCard: React.FC<AiInsightCardProps> = ({ wl, loading, cropLabel, i
   const isCritical = wl?.advisoryAlert?.isCritical;
 
   return (
-    <section className="px-4 mt-4" aria-labelledby="insight-heading">
-      <div className="relative overflow-hidden rounded-[28px] border border-border bg-card p-5 shadow-card">
-        <span className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-feature-ai/10 blur-2xl" aria-hidden="true" />
-
-        {/* Header */}
-        <div className="relative flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl gradient-ai text-white shadow-colorful animate-float">
-            <Sparkles size={19} />
-          </span>
-          <div className="flex-1">
-            <h2 id="insight-heading" className="font-display font-semibold text-[17px] tracking-tight text-foreground leading-none">
-              Kisan AI Insight
-            </h2>
-            <p className="text-[11px] font-semibold text-muted-foreground mt-1">
-              {cropLabel} · personalised for today
-            </p>
-          </div>
-          <span className="feature-chip bg-feature-ai/10 text-feature-ai">
-            <span className="h-1.5 w-1.5 rounded-full bg-feature-ai animate-live-pulse" /> Live
-          </span>
+    <section aria-labelledby="insight-heading">
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <p className="section-eyebrow">{t("home.adviceCaption")}</p>
+          <h2 id="insight-heading" className="type-h2 mt-1.5">{t("hero.whatToday")}</h2>
         </div>
+        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-[12px] font-bold text-primary">
+          {cropLabel}
+        </span>
+      </div>
 
-        {/* Critical weather alert */}
-        {isCritical && wl?.advisoryAlert && (
-          <div className="relative mt-3.5 flex items-start gap-2.5 rounded-2xl border border-feature-news/30 bg-feature-news/10 px-3.5 py-3">
-            <ShieldAlert size={17} className="mt-0.5 shrink-0 text-feature-news" />
-            <div className="flex-1">
-              <p className="text-[13px] font-bold text-foreground leading-snug">{wl.advisoryAlert.title}</p>
-              {wl.advisoryAlert.message && (
-                <p className="text-[12px] text-muted-foreground mt-0.5">{wl.advisoryAlert.message}</p>
-              )}
-            </div>
+      {isCritical && wl?.advisoryAlert && (
+        <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-3">
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-destructive" />
+          <div>
+            <p className="text-[13px] font-semibold text-foreground leading-snug">{wl.advisoryAlert.title}</p>
+            {wl.advisoryAlert.message && (
+              <p className="text-[12px] text-muted-foreground mt-0.5">{wl.advisoryAlert.message}</p>
+            )}
           </div>
-        )}
-
-        {/* Recommendations */}
-        <div className="relative mt-3.5 divide-y divide-border">
-          {items.slice(0, 4).map((item) => {
-            const Icon = ICON_MAP[item.icon];
-            return (
-              <button
-                key={item.title}
-                onClick={() => onGo(item.tab)}
-                className="group flex w-full items-center gap-3 py-3 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/50 active:scale-[0.98]"
-              >
-                <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", item.tone)}>
-                  <Icon size={17} />
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block text-[13px] font-bold text-foreground leading-snug">{item.title}</span>
-                  <span className="block text-[12px] text-muted-foreground mt-0.5 line-clamp-1">{item.sub}</span>
-                </span>
-                <ChevronRight size={15} className="shrink-0 text-muted-foreground/40 group-hover:translate-x-0.5 group-hover:text-muted-foreground transition-all" />
-              </button>
-            );
-          })}
         </div>
+      )}
 
-        {/* Ask AI CTA */}
-        <button
-          onClick={() => onGo("ai-chat")}
-          className="group relative mt-2 flex w-full items-center justify-center gap-2 rounded-2xl gradient-ai text-white px-4 py-3 shadow-colorful hover-lift"
-        >
-          <Bot size={16} />
-          <span className="text-[13px] font-bold">{t('agr3')}</span>
-          <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-        </button>
+      <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-card p-2 shadow-card">
+        {items.slice(0, 4).map((item) => {
+          const Icon = ICON_MAP[item.icon];
+          return (
+            <button
+              key={item.title}
+              onClick={() => onGo(item.tab)}
+              className="flex w-full items-center gap-3 rounded-xl px-2.5 py-3 text-left transition-colors hover:bg-muted/60"
+            >
+              <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", item.tone)}>
+                <Icon size={16} />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-[13.5px] font-semibold text-foreground leading-snug">{item.title}</span>
+                <span className="block text-[12px] text-muted-foreground mt-0.5 line-clamp-1">{item.sub}</span>
+              </span>
+              <ChevronRight size={15} className="shrink-0 text-muted-foreground" />
+            </button>
+          );
+        })}
       </div>
     </section>
   );

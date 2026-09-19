@@ -46,11 +46,11 @@ export const AppButton: React.FC<IAppButtonProps> = ({
     onClick?.(e);
   };
 
-  const baseStyles = 'inline-flex items-center justify-center font-bold tracking-tight rounded-2xl transition-all duration-200 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none shadow-sm';
+  const baseStyles = 'inline-flex items-center justify-center font-bold tracking-tight rounded-xl transition-all duration-200 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none shadow-sm';
 
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 focus:ring-emerald-500',
-    secondary: 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20 focus:ring-amber-400',
+    primary: 'bg-emerald-600 hover:bg-emerald-500 text-white  focus:ring-emerald-500',
+    secondary: 'bg-amber-500 hover:bg-amber-400 text-slate-950  focus:ring-amber-400',
     outline: 'border-2 border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:ring-emerald-500',
     ghost: 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-none',
     danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/20 focus:ring-rose-500',
@@ -58,8 +58,8 @@ export const AppButton: React.FC<IAppButtonProps> = ({
 
   const sizeStyles: Record<ButtonSize, string> = {
     sm: 'px-3 py-1.5 text-xs gap-1.5 rounded-xl',
-    md: 'px-5 py-2.5 text-sm gap-2 rounded-2xl',
-    lg: 'px-6 py-3.5 text-base gap-2.5 rounded-2xl',
+    md: 'px-5 py-2.5 text-sm gap-2 rounded-xl',
+    lg: 'px-6 py-3.5 text-base gap-2.5 rounded-xl',
   };
 
   return (

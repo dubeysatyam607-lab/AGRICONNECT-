@@ -49,7 +49,7 @@ export function MethodPicker({ value, onChange, walletBalance, disabled }: Metho
           <label
             key={m.id}
             className={cn(
-              'flex cursor-pointer items-center gap-2.5 rounded-2xl border-2 p-3 transition-all',
+              'flex cursor-pointer items-center gap-2.5 rounded-xl border-2 p-3 transition-all',
               active
                 ? 'border-primary bg-primary/5 shadow-sm'
                 : 'border-border bg-card hover:border-primary/40',
@@ -61,11 +61,11 @@ export function MethodPicker({ value, onChange, walletBalance, disabled }: Metho
               <Icon size={17} />
             </span>
             <span className="min-w-0">
-              <span className="block text-xs font-extrabold text-foreground">{t(METHOD_LABEL_KEY[m.id])}</span>
+              <span className="block text-xs font-semibold text-foreground">{t(METHOD_LABEL_KEY[m.id])}</span>
               {m.id === 'wallet' ? (
-                <span className="block truncate text-[10px] font-semibold text-muted-foreground">{fmtMoney(walletBalance)} {t('pay.available')}</span>
+                <span className="block truncate text-xs font-semibold text-muted-foreground">{fmtMoney(walletBalance)} {t('pay.available')}</span>
               ) : (
-                <span className="block truncate text-[10px] font-semibold text-muted-foreground">{METHOD_EN[m.id]}</span>
+                <span className="block truncate text-xs font-semibold text-muted-foreground">{METHOD_EN[m.id]}</span>
               )}
             </span>
           </label>

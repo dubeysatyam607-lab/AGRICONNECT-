@@ -106,13 +106,13 @@ export const ReportListingModal: React.FC<ReportListingModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 rounded-2xl">
+      <DialogContent className="max-w-md p-6 rounded-xl">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-wider">
             <Flag className="w-4 h-4" />
             Community Moderation
           </div>
-          <DialogTitle className="text-xl font-extrabold text-foreground">
+          <DialogTitle className="text-xl font-semibold text-foreground">
             Report Listing
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -153,7 +153,7 @@ export const ReportListingModal: React.FC<ReportListingModalProps> = ({
                   />
                   <div>
                     <div className="font-bold text-foreground">{r.label}</div>
-                    <div className="text-[11px] text-muted-foreground leading-tight">{r.description}</div>
+                    <div className="text-xs text-muted-foreground leading-tight">{r.description}</div>
                   </div>
                 </label>
               ))}

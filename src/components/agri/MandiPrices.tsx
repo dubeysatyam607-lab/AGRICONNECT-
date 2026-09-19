@@ -77,18 +77,18 @@ const MandiPrices: React.FC = () => {
     <div className="pb-24 pt-4 px-4 space-y-6 max-w-4xl mx-auto">
       {/* Offline banner */}
       {isCachedData && cachedAtText && (
-        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm">
+        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs font-semibold shadow-sm">
           <span className="flex items-center gap-2">
             <WifiOff size={15} /> {t('mandi.hub.offlineNotice', { time: cachedAtText })}
           </span>
-          <button onClick={fetchMandiData} className="underline font-extrabold ml-2">{t('agr111')}</button>
+          <button onClick={fetchMandiData} className="underline font-semibold ml-2">{t('agr111')}</button>
         </div>
       )}
 
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <TrendingUp className="text-emerald-600" /> {t('mandi.title')}
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <TrendingUp className="text-primary" /> {t('mandi.title')}
           </h2>
           <p className="text-muted-foreground text-sm">{t('agr112')}</p>
         </div>
@@ -97,7 +97,7 @@ const MandiPrices: React.FC = () => {
         </AgriButton>
       </div>
 
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm space-y-3">
+      <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
@@ -105,7 +105,7 @@ const MandiPrices: React.FC = () => {
             placeholder={t('mandi.hub.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium"
+            className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus-visible:ring-ring text-sm font-medium"
           />
         </div>
         <div className="relative">
@@ -113,7 +113,7 @@ const MandiPrices: React.FC = () => {
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium appearance-none"
+            className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus-visible:ring-ring text-sm font-medium appearance-none"
           >
             <option value="">{t('agr113')}</option>
             {states.map((state) => (
@@ -126,19 +126,19 @@ const MandiPrices: React.FC = () => {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card h-44 rounded-2xl border border-border animate-pulse" />
+            <div key={i} className="bg-card h-44 rounded-xl border border-border animate-pulse" />
           ))}
         </div>
       ) : error ? (
         <ErrorState message={error} onRetry={fetchMandiData} />
       ) : filteredData.length === 0 ? (
-        <div className="text-center py-12 bg-card rounded-2xl border border-border">
+        <div className="text-center py-12 bg-card rounded-xl border border-border">
           <p className="text-muted-foreground font-medium">{t('agr114') || "No Government mandi records found for this selection"}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredData.slice(0, 100).map((record) => (
-            <AgriCard key={record.id} className="p-0 flex flex-col justify-between overflow-hidden border border-border/80 rounded-2xl">
+            <AgriCard key={record.id} className="p-0 flex flex-col justify-between overflow-hidden border border-border/80 rounded-xl">
               <div className="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <CommodityImage
                   commodityName={record.crop}
@@ -150,9 +150,9 @@ const MandiPrices: React.FC = () => {
                   containerClassName="absolute inset-0 w-full h-full"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
                 <div className="absolute bottom-2 left-3 text-white">
-                  <h3 className="font-extrabold text-base leading-none drop-shadow">
+                  <h3 className="font-semibold text-base leading-none drop-shadow">
                     {record.crop} {record.cropHi && record.cropHi !== record.crop && <span className="text-xs font-normal opacity-90">({record.cropHi})</span>}
                   </h3>
                 </div>
@@ -160,28 +160,28 @@ const MandiPrices: React.FC = () => {
 
               <div className="p-3.5 space-y-2.5">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <MapPin size={13} className="text-emerald-600 shrink-0" />
+                  <MapPin size={13} className="text-primary shrink-0" />
                   <span className="truncate font-medium">{record.market}, {record.district}, {record.state}</span>
                 </div>
 
                 <div className="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-2.5 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr115')}</p>
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">{t('agr115')}</p>
                     <p className="font-semibold text-xs text-foreground">₹{record.minPrice}</p>
                   </div>
                   <div className="border-x border-border">
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr116')}</p>
-                    <p className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">₹{record.price}</p>
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">{t('agr116')}</p>
+                    <p className="font-semibold text-sm text-primary">₹{record.price}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('agr117')}</p>
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">{t('agr117')}</p>
                     <p className="font-semibold text-xs text-foreground">₹{record.maxPrice}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/40 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-400">
+              <div className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1 font-semibold text-primary">
                   <ShieldCheck size={12} /> api.data.gov.in
                 </span>
                 <span>{t("mandi.hub.arrivalLabel") || "Arrival:"} {record.arrivalDate}</span>

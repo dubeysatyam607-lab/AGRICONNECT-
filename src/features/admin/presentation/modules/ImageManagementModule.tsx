@@ -8,7 +8,7 @@ import {
   Trash2,
   ExternalLink,
   ShieldCheck,
-  Sparkles,
+  Camera,
   Database,
   Layers,
 } from 'lucide-react';
@@ -127,13 +127,13 @@ export const ImageManagementModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-6 rounded-3xl border border-white/10 backdrop-blur-xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-6 rounded-xl border border-border ">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-xs uppercase tracking-wider mb-1">
-            <Sparkles size={14} /> Pexels Photography Engine
+          <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider mb-1">
+            <Camera size={14} /> Pexels Photography Engine
           </div>
-          <h2 className="text-xl font-black text-white">Image System & Cache Control</h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <h2 className="text-xl font-semibold text-foreground">Image System & Cache Control</h2>
+          <p className="text-xs text-muted-foreground mt-1">
             Manage real-time Pexels image resolution, validation scoring, and persistent CDN caches.
           </p>
         </div>
@@ -141,13 +141,13 @@ export const ImageManagementModule: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={loadCache}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-bold transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-muted hover:bg-muted/80 border border-border text-foreground text-xs font-bold transition-all active:scale-95"
           >
             <RefreshCw size={13} /> Refresh List
           </button>
           <button
             onClick={handleClearCache}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 text-xs font-bold transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-600 text-xs font-bold transition-all active:scale-95"
           >
             <Trash2 size={13} /> Clear Cache
           </button>
@@ -156,43 +156,43 @@ export const ImageManagementModule: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-900/40 border border-white/10 p-4 rounded-2xl">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Cached</span>
-          <div className="text-2xl font-black text-white mt-1 flex items-center gap-2">
-            <Database size={20} className="text-emerald-400" />
+        <div className="bg-card border border-border p-4 rounded-xl">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Total Cached</span>
+          <div className="text-2xl font-semibold text-foreground mt-1 flex items-center gap-2">
+            <Database size={20} className="text-primary" />
             {stats.totalCached}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-white/10 p-4 rounded-2xl">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Verified Pexels</span>
-          <div className="text-2xl font-black text-emerald-400 mt-1 flex items-center gap-2">
-            <CheckCircle size={20} className="text-emerald-400" />
+        <div className="bg-card border border-border p-4 rounded-xl">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Verified Pexels</span>
+          <div className="text-2xl font-semibold text-primary mt-1 flex items-center gap-2">
+            <CheckCircle size={20} className="text-primary" />
             {stats.verifiedCount}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-white/10 p-4 rounded-2xl">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Curated Hits</span>
-          <div className="text-2xl font-black text-teal-400 mt-1 flex items-center gap-2">
-            <Layers size={20} className="text-teal-400" />
+        <div className="bg-card border border-border p-4 rounded-xl">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Curated Hits</span>
+          <div className="text-2xl font-semibold text-teal-600 mt-1 flex items-center gap-2">
+            <Layers size={20} className="text-teal-600" />
             {stats.sources.curated}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-white/10 p-4 rounded-2xl">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Fallback Count</span>
-          <div className="text-2xl font-black text-amber-400 mt-1 flex items-center gap-2">
-            <AlertCircle size={20} className="text-amber-400" />
+        <div className="bg-card border border-border p-4 rounded-xl">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Fallback Count</span>
+          <div className="text-2xl font-semibold text-amber-600 mt-1 flex items-center gap-2">
+            <AlertCircle size={20} className="text-amber-600" />
             {stats.fallbackCount}
           </div>
         </div>
       </div>
 
       {/* Live Pexels Search & Candidate Tester */}
-      <div className="bg-slate-900/40 border border-white/10 rounded-3xl p-5 space-y-4">
-        <div className="flex items-center gap-2 text-xs font-extrabold text-white">
-          <Search size={15} className="text-emerald-400" /> Test Live Pexels Search Query & Relevance Scoring
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+          <Search size={15} className="text-primary" /> Test Live Pexels Search Query & Relevance Scoring
         </div>
 
         <form onSubmit={handleLiveSearch} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
@@ -200,7 +200,7 @@ export const ImageManagementModule: React.FC = () => {
             <select
               value={testType}
               onChange={(e) => setTestType(e.target.value)}
-              className="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white font-medium focus:outline-none focus:border-emerald-500"
+              className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs text-foreground font-medium focus:outline-none focus:border-primary"
             >
               <option value="crop">Crop / Mandi Commodity</option>
               <option value="product">Store Product / Input</option>
@@ -216,7 +216,7 @@ export const ImageManagementModule: React.FC = () => {
               placeholder="e.g. Soyabean crop, Mahindra 575 DI tractor, Urea fertilizer, Drip irrigation..."
               value={testQuery}
               onChange={(e) => setTestQuery(e.target.value)}
-              className="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-500 font-medium focus:outline-none focus:border-emerald-500"
+              className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground font-medium focus:outline-none focus:border-primary"
             />
           </div>
 
@@ -234,13 +234,13 @@ export const ImageManagementModule: React.FC = () => {
 
         {/* Live Search Results Grid */}
         {searchResults.length > 0 && (
-          <div className="pt-2 border-t border-white/10 space-y-3">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+          <div className="pt-2 border-t border-border space-y-3">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Pexels Candidate Results ({searchResults.length} Candidates Evaluated)
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
               {searchResults.map((photo, i) => (
-                <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-white/10 bg-slate-950/60 flex flex-col">
+                <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-border bg-card flex flex-col">
                   <div className="h-28 w-full overflow-hidden">
                     <SafeImage
                       src={photo.src.medium || photo.src.large}
@@ -248,23 +248,23 @@ export const ImageManagementModule: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <div className="p-2 text-[10px] space-y-1">
-                    <div className="flex items-center justify-between text-slate-300">
-                      <span className="font-bold text-emerald-400">Rank #{i + 1}</span>
+                  <div className="p-2 text-xs space-y-1">
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="font-bold text-primary">Rank #{i + 1}</span>
                       {photo.relevanceScore !== undefined && (
-                        <span className="bg-emerald-500/10 text-emerald-300 px-1.5 py-0.5 rounded text-[9px] font-extrabold">
+                        <span className="bg-emerald-500/10 text-primary px-1.5 py-0.5 rounded text-xs font-semibold">
                           Score: {photo.relevanceScore}
                         </span>
                       )}
                     </div>
-                    <p className="text-slate-400 truncate" title={photo.photographer}>
+                    <p className="text-muted-foreground truncate" title={photo.photographer}>
                       By: {photo.photographer}
                     </p>
                     <a
                       href={photo.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-400 hover:underline flex items-center gap-1 text-[9px]"
+                      className="text-primary hover:underline flex items-center gap-1 text-xs"
                     >
                       View on Pexels <ExternalLink size={9} />
                     </a>
@@ -277,18 +277,18 @@ export const ImageManagementModule: React.FC = () => {
       </div>
 
       {/* Cached Items Filter & Table */}
-      <div className="bg-slate-900/40 border border-white/10 rounded-3xl p-5 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-white">Filter:</span>
+            <span className="text-xs font-bold text-foreground">Filter:</span>
             {['all', 'crop', 'product', 'tractor', 'seeds', 'fertilizer'].map((t) => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
                 className={`px-3 py-1 rounded-xl text-xs font-bold capitalize transition-colors ${
                   filterType === t
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                    ? 'bg-emerald-600 text-foreground'
+                    : 'bg-muted hover:bg-muted/80 text-muted-foreground'
                 }`}
               >
                 {t}
@@ -302,7 +302,7 @@ export const ImageManagementModule: React.FC = () => {
               placeholder="Search cached images..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-slate-500 font-medium focus:outline-none focus:border-emerald-500"
+              className="w-full bg-background border border-border rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground font-medium focus:outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -312,9 +312,9 @@ export const ImageManagementModule: React.FC = () => {
           {filteredItems.map((item, idx) => (
             <div
               key={`${item.entityType}-${item.entityName}-${idx}`}
-              className="bg-slate-950/70 border border-white/10 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-emerald-500/40 transition-colors"
+              className="bg-background border border-border rounded-xl overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-colors"
             >
-              <div className="h-36 w-full relative overflow-hidden bg-slate-900">
+              <div className="h-36 w-full relative overflow-hidden bg-card">
                 <SafeImage
                   src={item.imageUrl}
                   alt={item.entityName}
@@ -322,10 +322,10 @@ export const ImageManagementModule: React.FC = () => {
                   resolveType={item.entityType as any}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] font-bold text-white uppercase">
+                <span className="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded-md text-xs font-bold text-white uppercase">
                   {item.entityType}
                 </span>
-                <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-xs font-semibold ${
                   item.validationStatus === 'verified' ? 'bg-emerald-500/90 text-slate-950' : 'bg-amber-500/90 text-slate-950'
                 }`}>
                   {item.validationStatus}
@@ -334,15 +334,15 @@ export const ImageManagementModule: React.FC = () => {
 
               <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
                 <div>
-                  <h4 className="font-extrabold text-sm text-white capitalize">{item.entityName}</h4>
-                  <p className="text-[10px] text-slate-400 truncate mt-0.5">Query: {item.searchQuery}</p>
-                  <p className="text-[10px] text-slate-400 truncate">Source: {item.source} · {item.photographer}</p>
+                  <h4 className="font-semibold text-sm text-foreground capitalize">{item.entityName}</h4>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">Query: {item.searchQuery}</p>
+                  <p className="text-xs text-muted-foreground truncate">Source: {item.source} · {item.photographer}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                <div className="flex items-center justify-between pt-2 border-t border-border">
                   <button
                     onClick={() => handleRefresh(item)}
-                    className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+                    className="text-xs font-bold text-primary hover:text-primary flex items-center gap-1 transition-colors"
                   >
                     <RefreshCw size={11} /> Refresh
                   </button>
@@ -351,7 +351,7 @@ export const ImageManagementModule: React.FC = () => {
                       setSelectedItem(item);
                       setOverrideUrl(item.imageUrl);
                     }}
-                    className="text-[11px] font-bold text-slate-300 hover:text-white flex items-center gap-1 transition-colors"
+                    className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                   >
                     Replace URL
                   </button>
@@ -362,7 +362,7 @@ export const ImageManagementModule: React.FC = () => {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10 text-slate-400 text-xs">
+          <div className="text-center py-12 bg-muted rounded-xl border border-dashed border-border text-muted-foreground text-xs">
             No cached images match your filter. Dynamic images are fetched and cached automatically as users browse.
           </div>
         )}
@@ -370,33 +370,33 @@ export const ImageManagementModule: React.FC = () => {
 
       {/* Override URL Dialog */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-white/15 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <h3 className="font-black text-base text-white">Override Image URL</h3>
-            <p className="text-xs text-slate-400">
-              Provide a custom verified Pexels photo URL for <strong className="text-white">{selectedItem.entityName}</strong>.
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 ">
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full space-y-4 ">
+            <h3 className="font-semibold text-base text-foreground">Override Image URL</h3>
+            <p className="text-xs text-muted-foreground">
+              Provide a custom verified Pexels photo URL for <strong className="text-foreground">{selectedItem.entityName}</strong>.
             </p>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-300">Image URL</label>
+              <label className="text-xs font-bold text-muted-foreground">Image URL</label>
               <input
                 type="text"
                 value={overrideUrl}
                 onChange={(e) => setOverrideUrl(e.target.value)}
-                className="w-full bg-slate-950 border border-white/20 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-primary"
               />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setSelectedItem(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-slate-300 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveOverride}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-foreground transition-colors"
               >
                 Save Override
               </button>

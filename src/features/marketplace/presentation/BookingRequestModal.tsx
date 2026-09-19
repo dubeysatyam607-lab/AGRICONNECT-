@@ -105,13 +105,13 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-6 rounded-2xl">
+      <DialogContent className="max-w-lg p-6 rounded-xl">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
             Verified Direct Booking
           </div>
-          <DialogTitle className="text-xl font-extrabold text-foreground">
+          <DialogTitle className="text-xl font-semibold text-foreground">
             Request / Book: {listing.title}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -177,7 +177,7 @@ export const BookingRequestModal: React.FC<BookingRequestModalProps> = ({
               </label>
               <div className="px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center justify-between">
                 <span>₹{calculatedTotal.toLocaleString('en-IN')}</span>
-                <span className="text-[10px] text-muted-foreground font-normal">
+                <span className="text-xs text-muted-foreground font-normal">
                   ({listing.price_unit.replace('_', ' ')})
                 </span>
               </div>

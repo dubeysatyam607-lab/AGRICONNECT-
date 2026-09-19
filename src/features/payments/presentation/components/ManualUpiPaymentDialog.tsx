@@ -187,7 +187,7 @@ export function ManualUpiPaymentDialog({
             <div key={s} className={cn('flex items-center gap-2', i > 0 && 'flex-1')}>
               {i > 0 && <div className={cn('h-0.5 flex-1 rounded', stepIndex(step) >= i ? 'bg-primary' : 'bg-muted')} />}
               <div className={cn(
-                'flex h-7 items-center gap-1 rounded-full px-2.5 text-[10px] font-black',
+                'flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-semibold',
                 stepIndex(s) === stepIndex(step) ? 'bg-primary text-primary-foreground'
                   : stepIndex(s) < stepIndex(step) ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
               )}>
@@ -203,7 +203,7 @@ export function ManualUpiPaymentDialog({
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15">
               <FileCheck2 size={26} />
             </div>
-            <p className="text-sm font-black text-foreground">{t('submit')} ✓</p>
+            <p className="text-sm font-semibold text-foreground">{t('submit')} ✓</p>
             <p className="max-w-xs text-xs font-semibold text-muted-foreground">{t('verifyWait')}</p>
             <Button className="mt-2" onClick={() => onOpenChange(false)}>{t('back')}</Button>
           </div>
@@ -211,17 +211,17 @@ export function ManualUpiPaymentDialog({
           <div className="space-y-3 pt-1">
             <button
               onClick={() => { setStep('qr'); setFailMsg(''); }}
-              className="flex w-full items-center gap-3 rounded-2xl border-2 border-primary bg-primary/5 p-4 text-left transition hover:bg-primary/10"
+              className="flex w-full items-center gap-3 rounded-xl border-2 border-primary bg-primary/5 p-4 text-left transition hover:bg-primary/10"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                 <QrCode size={20} />
               </span>
               <div>
-                <p className="text-sm font-black text-foreground">{t('methodUpiLabel')} · {fmtINR(amount)}</p>
-                <p className="text-[11px] font-semibold text-muted-foreground">{t('scanHint')}</p>
+                <p className="text-sm font-semibold text-foreground">{t('methodUpiLabel')} · {fmtINR(amount)}</p>
+                <p className="text-xs font-semibold text-muted-foreground">{t('scanHint')}</p>
               </div>
             </button>
-            {failMsg && <p className="text-[11px] font-bold text-red-600">{failMsg}</p>}
+            {failMsg && <p className="text-xs font-bold text-red-600">{failMsg}</p>}
           </div>
         ) : step === 'qr' ? (
           <div className="space-y-4 pt-1">
@@ -232,15 +232,15 @@ export function ManualUpiPaymentDialog({
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-xs font-bold">
+                <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 text-xs font-bold">
                   <span className="text-muted-foreground">{t('amount')}</span>
-                  <span className="text-sm font-black text-foreground">{fmtINR(amount)}</span>
+                  <span className="text-sm font-semibold text-foreground">{fmtINR(amount)}</span>
                   <span className="text-muted-foreground pl-4">{t('payee')}</span>
                   <span className="text-foreground">{config.payee_name}</span>
                 </div>
 
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-gradient-to-b from-primary/5 to-transparent p-5 text-center">
-                  <div className="relative rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/10">
+                <div className="flex flex-col items-center justify-center rounded-xl border border-primary/20 bg-emerald-700 p-5 text-center">
+                  <div className="relative rounded-xl bg-white p-3 shadow-md ring-1 ring-black/10">
                     <img
                       src="/images/payment-qr.jpg"
                       alt="Official Payment QR Code - SATYAM DUBEY"
@@ -256,15 +256,15 @@ export function ManualUpiPaymentDialog({
                       <QRCode value={upiUri} size={190} />
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                  <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                     <CheckCircle2 size={13} />
                     <span>Official Verified UPI QR (Satyam Dubey)</span>
                   </div>
-                  <p className="mt-1 font-mono text-xs font-black text-foreground">
+                  <p className="mt-1 font-mono text-xs font-semibold text-foreground">
                     UPI ID: <span className="text-primary">{config.upi_id || '7067820256@airtel'}</span>
                   </p>
                 </div>
-                <p className="text-center text-[11px] font-semibold leading-relaxed text-muted-foreground">{t('scanHint')}</p>
+                <p className="text-center text-xs font-semibold leading-relaxed text-muted-foreground">{t('scanHint')}</p>
 
                 <div className="grid grid-cols-2 gap-2">
                   <Button onClick={() => window.open(upiUri, '_self')} className="gap-1.5 font-bold">
@@ -279,68 +279,68 @@ export function ManualUpiPaymentDialog({
                 <Button variant="ghost" size="sm" className="w-full text-xs font-bold" onClick={() => setStep('proof')}>
                   {t('next')} →
                 </Button>
-                {failMsg && <p className="text-[11px] font-bold text-red-600">{failMsg}</p>}
+                {failMsg && <p className="text-xs font-bold text-red-600">{failMsg}</p>}
               </>
             )}
           </div>
         ) : (
           <div className="space-y-4 pt-1">
-            <div className="flex items-start gap-2 rounded-2xl bg-primary/5 px-3 py-2.5">
+            <div className="flex items-start gap-2 rounded-xl bg-primary/5 px-3 py-2.5">
               <ShieldCheck size={16} className="mt-0.5 shrink-0 text-primary" />
-              <p className="text-[11px] font-semibold leading-relaxed text-muted-foreground">{t('proofHint')}</p>
+              <p className="text-xs font-semibold leading-relaxed text-muted-foreground">{t('proofHint')}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-[11px] font-black text-muted-foreground">{t('amount')}</label>
-                <div className="flex h-9 items-center rounded-xl border border-border bg-muted/40 px-3 text-xs font-black text-foreground">
+                <label className="mb-1 block text-xs font-semibold text-muted-foreground">{t('amount')}</label>
+                <div className="flex h-9 items-center rounded-xl border border-border bg-muted/40 px-3 text-xs font-semibold text-foreground">
                   {fmtINR(amount)}
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-black text-muted-foreground">{t('date')}</label>
+                <label className="mb-1 block text-xs font-semibold text-muted-foreground">{t('date')}</label>
                 <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="h-9 text-xs font-bold" />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-black text-muted-foreground">{t('utr')}</label>
+              <label className="mb-1 block text-xs font-semibold text-muted-foreground">{t('utr')}</label>
               <Input
                 value={utr}
                 onChange={(e) => { setUtr(e.target.value); setFailMsg(''); }}
                 placeholder={t('utrPh')}
                 className="text-xs font-bold uppercase tracking-wide"
               />
-              {utrError && <p className="mt-1 text-[10px] font-bold text-red-600">{utrError}</p>}
+              {utrError && <p className="mt-1 text-xs font-bold text-red-600">{utrError}</p>}
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-black text-muted-foreground">{t('screenshot')}</label>
+              <label className="mb-1 block text-xs font-semibold text-muted-foreground">{t('screenshot')}</label>
               <label className={cn(
-                'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition',
+                'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 py-6 text-center transition',
                 file ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-500/5' : 'border-border hover:border-primary/50',
               )}>
                 {file ? <FileCheck2 size={22} className="text-emerald-500" /> : <Upload size={22} className="text-muted-foreground" />}
                 {file ? (
                   <>
-                    <p className="text-xs font-black text-emerald-700">{t('cameraReady')}</p>
-                    <p className="max-w-[220px] truncate text-[10px] font-semibold text-muted-foreground">{file.name}</p>
+                    <p className="text-xs font-semibold text-emerald-700">{t('cameraReady')}</p>
+                    <p className="max-w-[220px] truncate text-xs font-semibold text-muted-foreground">{file.name}</p>
                   </>
                 ) : (
                   <>
-                    <p className="flex items-center gap-1.5 text-xs font-black text-foreground">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                       <ImageIcon size={13} /> {t('choose')}
                     </p>
-                    <p className="text-[10px] font-semibold text-muted-foreground">PNG / JPG / WebP · {'<'}5 MB</p>
+                    <p className="text-xs font-semibold text-muted-foreground">PNG / JPG / WebP · {'<'}5 MB</p>
                   </>
                 )}
                 <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleFile(e.target.files?.[0] || null)} />
               </label>
-              {fileError && <p className="mt-1 text-[10px] font-bold text-red-600">{fileError}</p>}
+              {fileError && <p className="mt-1 text-xs font-bold text-red-600">{fileError}</p>}
             </div>
 
             <div>
-              <label className="mb-1 block text-[11px] font-black text-muted-foreground">{t('note')}</label>
+              <label className="mb-1 block text-xs font-semibold text-muted-foreground">{t('note')}</label>
               <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="text-xs font-semibold" placeholder="..." />
             </div>
 
@@ -353,7 +353,7 @@ export function ManualUpiPaymentDialog({
                 {t('submit')}
               </Button>
             </div>
-            {failMsg && <p className="text-[11px] font-bold text-red-600">{failMsg}</p>}
+            {failMsg && <p className="text-xs font-bold text-red-600">{failMsg}</p>}
           </div>
         )}
       </DialogContent>

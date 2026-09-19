@@ -77,13 +77,13 @@ const PrivacyPolicy: React.FC = () => {
       />
 
       <main className="min-h-screen bg-background pb-20">
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Privacy Policy' }]}
             />
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight">Privacy Policy</h1>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Privacy Policy</h1>
             <p className="text-emerald-100/80 mt-2">Last updated: January 2026</p>
           </div>
         </header>
@@ -97,14 +97,14 @@ const PrivacyPolicy: React.FC = () => {
 
           <div className="space-y-6">
             {SECTIONS.map((s) => (
-              <section key={s.title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <section key={s.title} className="rounded-xl border border-border bg-card p-6 shadow-card">
                 <h2 className="font-bold text-foreground text-lg">{s.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed mt-2">{s.content}</p>
               </section>
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl gradient-hero text-primary-foreground p-6 text-center">
+          <div className="mt-10 rounded-xl gradient-hero text-primary-foreground p-6 text-center">
             <h2 className="font-bold text-xl">Questions about privacy?</h2>
             <p className="text-sm text-primary-foreground/80 mt-2">We're happy to clarify.</p>
             <Link

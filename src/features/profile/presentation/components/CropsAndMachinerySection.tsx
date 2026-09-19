@@ -56,9 +56,9 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="border-b border-slate-200 dark:border-slate-800 pb-2">
-        <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
           <span>🌱</span> {t('pdetail.cropsMachinery')}
         </h3>
         <p className="text-xs text-muted-foreground">{t('pdetail.cropsMachinerySub')}</p>
@@ -70,7 +70,7 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {t('pdetail.cropsGrown')}
           </label>
-          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
             {t('pdetail.selected').replace('{count}', String(crops.length))}
           </span>
         </div>
@@ -83,9 +83,9 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
                 key={cropName}
                 type="button"
                 onClick={() => toggleCrop(cropName)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-emerald-500 text-white shadow-sm scale-105'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-slate-100 dark:bg-slate-800/80 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
@@ -108,7 +108,7 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
           <button
             type="submit"
             disabled={!customCrop.trim()}
-            className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground type-small font-semibold disabled:opacity-50"
           >
             {t('pdetail.add')}
           </button>
@@ -121,7 +121,7 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {t('pdetail.machineryOwned')}
           </label>
-          <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
             {t('pdetail.assetsCount').replace('{count}', String(machinery.length))}
           </span>
         </div>
@@ -134,9 +134,9 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
                 key={machName}
                 type="button"
                 onClick={() => toggleMachinery(machName)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-sm scale-105'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-slate-100 dark:bg-slate-800/80 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
@@ -159,7 +159,7 @@ export const CropsAndMachinerySection: React.FC<ICropsAndMachinerySectionProps> 
           <button
             type="submit"
             disabled={!customMachinery.trim()}
-            className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground type-small font-semibold disabled:opacity-50"
           >
             {t('pdetail.add')}
           </button>

@@ -120,7 +120,7 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
   return (
     <div className="pb-24 pt-4 min-h-screen">
       {/* Hero Banner */}
-      <div className="relative mx-4 mb-5 rounded-2xl overflow-hidden h-36 shadow-lg">
+      <div className="relative mx-4 mb-5 rounded-xl overflow-hidden h-36 shadow-lg">
         <SafeImage
           src="https://images.pexels.com/photos/36678256/pexels-photo-36678256.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940"
           alt="Crop insurance"
@@ -129,20 +129,20 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
           category="insurance"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/85 to-primary/40" />
+        <div className="absolute inset-0 bg-primary/80" />
         <div className="absolute inset-0 flex items-center justify-between px-5">
           <div>
             <button onClick={onClose} className="flex items-center gap-1 text-primary-foreground/80 text-xs mb-1">
               <ArrowLeft size={13} /> {lang === "hi" ? "वापस" : "Back"}
             </button>
-            <h2 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-primary-foreground flex items-center gap-2">
               <Shield size={20} /> {L.title}
             </h2>
             <p className="text-primary-foreground/80 text-sm">{L.subtitle}</p>
           </div>
           <button
             onClick={() => setLang(l => l === "en" ? "hi" : "en")}
-            className="bg-primary-foreground/20 px-3 py-1.5 rounded-full text-primary-foreground text-xs font-bold backdrop-blur-sm"
+            className="bg-primary-foreground/20 px-3 py-1.5 rounded-full text-primary-foreground text-xs font-semibold "
           >
             {lang === "en" ? "हिंदी" : "English"}
           </button>
@@ -151,14 +151,14 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
 
       <div className="px-4 space-y-4">
         {/* How it works */}
-        <div className="bg-primary/5 rounded-2xl border border-primary/20 p-4">
-          <h3 className="font-bold text-foreground text-sm mb-2 flex items-center gap-1">
+        <div className="bg-primary/5 rounded-xl border border-primary/20 p-4">
+          <h3 className="font-semibold text-foreground text-sm mb-2 flex items-center gap-1">
             <Info size={14} className="text-primary" /> {L.howItWorks}
           </h3>
           <div className="space-y-1.5">
             {[L.step1, L.step2, L.step3].map((step, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center font-bold flex-shrink-0">{i + 1}</span>
+                <span className="w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center font-semibold flex-shrink-0">{i + 1}</span>
                 <span className="text-sm text-foreground">{step}</span>
               </div>
             ))}
@@ -166,8 +166,8 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
         </div>
 
         {/* Calculator Form */}
-        <div className="bg-card rounded-2xl border border-border p-4 shadow-card space-y-3">
-          <h3 className="font-bold text-foreground flex items-center gap-2">
+        <div className="bg-card rounded-xl border border-border p-4 shadow-card space-y-3">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Calculator size={16} className="text-primary" />
             {lang === "hi" ? "प्रीमियम गणना" : "Premium Calculator"}
           </h3>
@@ -249,22 +249,22 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
 
         {/* Results */}
         {result && (
-          <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+          <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
             <div className="bg-primary p-4 text-center">
               <p className="text-primary-foreground/80 text-sm">{L.premium}</p>
-              <p className="text-4xl font-bold text-primary-foreground">{fmt(result.farmerPremium)}</p>
+              <p className="text-4xl font-semibold text-primary-foreground">{fmt(result.farmerPremium)}</p>
               <p className="text-primary-foreground/70 text-xs mt-1">{fmt(result.premiumPerAcre)}{L.perAcre}</p>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted/30 rounded-xl p-3 text-center">
                   <p className="text-xs text-muted-foreground">{L.coverage}</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(result.coverage)}</p>
+                  <p className="text-lg font-semibold text-foreground">{fmt(result.coverage)}</p>
                 </div>
                 <div className="bg-primary/5 rounded-xl p-3 text-center">
                   <p className="text-xs text-muted-foreground">{L.govt}</p>
-                  <p className="text-lg font-bold text-primary">{fmt(result.govtSubsidy)}</p>
-                  <p className="text-[9px] text-muted-foreground">{L.subsidy}</p>
+                  <p className="text-lg font-semibold text-primary">{fmt(result.govtSubsidy)}</p>
+                  <p className="text-xs text-muted-foreground">{L.subsidy}</p>
                 </div>
               </div>
 
@@ -277,12 +277,12 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
                 href="https://pmfby.gov.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-primary/20 hover:bg-primary/20 transition-colors"
+                className="w-full py-3 bg-primary/10 text-primary rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border border-primary/20 hover:bg-primary/20 transition-colors"
               >
                 <ExternalLink size={14} /> {L.applyBtn}
               </a>
 
-              <p className="text-[10px] text-muted-foreground text-center">{L.disclaimer}</p>
+              <p className="text-xs text-muted-foreground text-center">{L.disclaimer}</p>
             </div>
           </div>
         )}

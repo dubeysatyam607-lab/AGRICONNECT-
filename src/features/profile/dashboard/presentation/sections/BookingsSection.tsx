@@ -25,12 +25,12 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
   return (
     <div className="space-y-5 pb-24">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-foreground tracking-tight">{t('prof.bookings')}</h2>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">{t('prof.bookings')}</h2>
       </div>
 
       {/* Current bookings */}
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground flex items-center gap-2">
           <CalendarCheck2 size={16} className="text-primary" /> {t('prof.currentBookings')}
         </h3>
         {data.activeBookings.length === 0 ? (
@@ -43,10 +43,10 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.activeBookings.map((b) => (
-              <div key={b.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
+              <div key={b.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-extrabold text-foreground truncate">{b.tractorName}</p>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                  <p className="text-sm font-semibold text-foreground truncate">{b.tractorName}</p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 size={10} /> {statusLabel(b.status)}
                   </span>
                 </div>
@@ -59,7 +59,7 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
 
       {/* Past rentals */}
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground flex items-center gap-2">
           <Truck size={16} className="text-sky-600" /> {t('prof.pastRentals')}
         </h3>
         {data.pastRentals.length === 0 ? (
@@ -67,8 +67,8 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.pastRentals.slice(0, 4).map((b) => (
-              <div key={b.id} className="rounded-2xl border border-border bg-card p-4 shadow-card">
-                <p className="text-sm font-extrabold text-foreground truncate">{b.tractorName}</p>
+              <div key={b.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
+                <p className="text-sm font-semibold text-foreground truncate">{b.tractorName}</p>
                 <p className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
                   <Clock size={11} /> {b.createdAt} · <span className="font-bold text-muted-foreground">{statusLabel(b.status)}</span>
                 </p>
@@ -80,7 +80,7 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
 
       {/* Marketplace orders */}
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground flex items-center gap-2">
           <Package size={16} className="text-orange-600" /> {t('prof.marketOrders')}
         </h3>
         {data.invoices.filter((inv) => inv.category === 'Store' || inv.category === 'Market').length === 0 ? (
@@ -95,16 +95,16 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
             }}
           />
         ) : (
-          <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+          <div className="rounded-xl border border-border bg-card shadow-card divide-y divide-border/60">
             {data.invoices.filter((inv) => inv.category === 'Store' || inv.category === 'Market').map((o) => (
               <div key={o.id} className="flex items-center justify-between gap-3 p-4">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground truncate">{o.title}</p>
-                  <p className="text-[11px] text-muted-foreground">{o.id} · {o.date}</p>
+                  <p className="text-xs text-muted-foreground">{o.id} · {o.date}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-extrabold text-foreground tabular-nums">₹{o.amount.toLocaleString('en-IN')}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${o.paid ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
+                  <p className="text-sm font-semibold text-foreground tabular-nums">₹{o.amount.toLocaleString('en-IN')}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${o.paid ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}`}>
                     {o.paid ? t('prof.bkCompleted') : t('prof.bkPlaced')}
                   </span>
                 </div>
@@ -116,13 +116,13 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
 
       {/* Payment history / invoices */}
       <section>
-        <h3 className="mb-2.5 text-sm font-extrabold text-foreground flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold text-foreground flex items-center gap-2">
           <Receipt size={16} className="text-violet-600" /> {t('prof.paymentHistory')}
         </h3>
         {data.invoices.length === 0 ? (
           <EmptyState compact emoji="🧾" title={t('prof.noInvoices')} description={t('prof.noBookingsHint')} />
         ) : (
-          <div className="rounded-2xl border border-border bg-card shadow-card divide-y divide-border/60">
+          <div className="rounded-xl border border-border bg-card shadow-card divide-y divide-border/60">
             {data.invoices.map((inv) => (
               <button
                 key={inv.id}
@@ -131,11 +131,11 @@ export const BookingsSection: React.FC<BookingsSectionProps> = ({ data, onNaviga
               >
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground truncate">{inv.title}</p>
-                  <p className="text-[11px] text-muted-foreground">{inv.date}</p>
+                  <p className="text-xs text-muted-foreground">{inv.date}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-extrabold text-foreground tabular-nums">₹{inv.amount.toLocaleString('en-IN')}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${inv.paid ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
+                  <p className="text-sm font-semibold text-foreground tabular-nums">₹{inv.amount.toLocaleString('en-IN')}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${inv.paid ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}>
                     {inv.paid ? t('prof.bkPaid') : t('prof.bkPending')}
                   </span>
                 </div>

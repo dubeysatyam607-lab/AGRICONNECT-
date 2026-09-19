@@ -389,10 +389,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       <span
         title={c.minPrice > 0 && c.maxPrice > 0 ? "Position of the modal price within today's published min–max range" : "No day-over-day comparison is published for this feed"}
         className={cn(
-          "inline-flex items-center gap-0.5 text-[11px] font-extrabold px-2 py-0.5 rounded-full border",
-          c.status === "up" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-          c.status === "down" && "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
-          (!c.status || c.status === "stable") && "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+          "type-num inline-flex items-center gap-0.5 text-xs mt-0.5",
+          c.status === "up" && "text-primary",
+          c.status === "down" && "text-destructive",
+          (!c.status || c.status === "stable") && "text-muted-foreground",
         )}>
         {c.status === "up" && <TrendingUp size={11} />}
         {c.status === "down" && <TrendingDown size={11} />}
@@ -410,12 +410,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
     const bgMap = {
       emerald: "bg-emerald-600 text-white border-emerald-500",
-      amber: "bg-amber-500 text-slate-950 border-amber-400 font-extrabold",
+      amber: "bg-amber-500 text-slate-950 border-amber-400 font-semibold",
       rose: "bg-rose-600 text-white border-rose-500",
     };
 
     return (
-      <span className={cn("text-[10px] font-black px-2.5 py-1 rounded-full border shadow-sm flex items-center gap-1", bgMap[advice.badgeColor])}>
+      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full border shadow-sm flex items-center gap-1", bgMap[advice.badgeColor])}>
         <Sparkles size={11} />
         {hi ? advice.badgeLabelHi : advice.badgeLabel}
       </span>
@@ -427,143 +427,59 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     const mspDiff = c.msp ? c.price - c.msp : null;
 
     return (
-      <AgriCard
+      <button
         key={c.id}
-        className="p-0 animate-fade-up hover:shadow-xl active:scale-[0.98] transition-all duration-200 cursor-pointer relative overflow-hidden group border border-border/80 bg-card rounded-2xl flex flex-col justify-between"
-        style={{ animationDelay: `${Math.min(index * 35, 300)}ms` } as React.CSSProperties}
         onClick={() => setSelectedCrop(c)}
+        className="flex w-full items-center gap-3 px-3.5 py-3 text-left hover:bg-muted/50 transition-colors"
       >
-        <div>
-          {/* Top Banner Image & AI Badge */}
-          <div className="relative h-32 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <CommodityImage
-              commodityName={c.crop}
-              commodityHi={c.cropHi}
-              category={c.category}
-              src={c.cropImage}
-              alt={c.crop}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-
-            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-              {renderAdviceBadge(c)}
-            </div>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(c); }}
-              className="absolute top-2.5 right-2.5 p-2 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 transition-colors"
-              aria-label={fav ? t("mandi.hub.ariaRemoveFavorite") : t("mandi.hub.ariaAddFavorite")}
-            >
-              <Heart size={16} className={fav ? "fill-rose-500 text-rose-500" : "text-white"} />
-            </button>
-
-            <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between text-white">
-              <div>
-                <h3 className="font-extrabold text-base tracking-tight leading-none text-white drop-shadow">
-                  {c.crop} {c.cropHi && c.cropHi !== c.crop && <span className="text-xs font-normal opacity-90">({c.cropHi})</span>}
-                </h3>
-                <p className="text-[10px] opacity-80 mt-0.5 line-clamp-1">{c.category}{c.arrivalQuantity ? ` · ${c.arrivalQuantity} ${L.quintalArrival}` : ""}</p>
-              </div>
-              {changeBadge(c)}
-            </div>
-          </div>
-
-          {/* Price Header */}
-          <div className="p-3.5 space-y-3">
-            <div className="flex items-baseline justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">{t('agr223')}</span>
-                <p className="font-black text-2xl text-emerald-700 dark:text-emerald-400 leading-tight">
-                  {formatINR(c.price)} <span className="text-xs font-semibold text-muted-foreground">{L.perQuintal}</span>
-                </p>
-              </div>
-
-              {/* MSP comparison */}
-              {c.msp && (
-                <div className="text-right">
-                  <span className="text-[9px] uppercase font-bold text-muted-foreground block">{L.msp}: {formatINR(c.msp)}</span>
-                  {mspDiff !== null && (
-                    <span className={cn(
-                      "text-[10px] font-extrabold px-1.5 py-0.5 rounded-md inline-block mt-0.5",
-                      mspDiff >= 0 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                    )}>
-                      {mspDiff >= 0 ? `+${formatINR(mspDiff)} Above MSP` : `${formatINR(mspDiff)} Below MSP`}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* AI Recommendation Reasoning Banner */}
-            {c.sellingAdvice && (
-              <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 flex items-start gap-2 text-xs">
-                <Bot size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                <p className="text-muted-foreground leading-snug line-clamp-2">
-                  <strong className="text-foreground font-semibold">{hi ? "AI सलाह:" : "AI Advice:"} </strong>
-                  {hi ? c.sellingAdvice.reasonHi : c.sellingAdvice.reasonEn}
-                </p>
-              </div>
-            )}
-
-            {/* Min / Max Range */}
-            <div className="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-2 flex items-center justify-between text-xs font-bold text-muted-foreground">
-              <span>{L.min}: <b className="text-foreground">{fmtRange(c.minPrice)}</b></span>
-              <span className="h-3 w-px bg-border" />
-              <span>{L.max}: <b className="text-foreground">{fmtRange(c.maxPrice)}</b></span>
-            </div>
-
-            {/* Location & Market Hours */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1 truncate font-medium">
-                <MapPin size={13} className="text-emerald-600 shrink-0" />
-                {c.market}, {c.district}
-              </span>
-              {c.operatingStatus && (
-                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0", c.operatingStatus === "OPEN" ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-200 dark:bg-slate-800 text-muted-foreground")}>
-                  {c.operatingStatus === "OPEN" ? `🟢 ${L.mandiOpen}` : `🔴 ${L.mandiClosed}`}
-                </span>
-              )}
-            </div>
-          </div>
+        <div className="flex-1 min-w-0">
+          <p className="truncate text-[14px] font-semibold text-foreground leading-tight">
+            {c.crop} {c.cropHi && c.cropHi !== c.crop && <span className="text-[12px] font-normal text-muted-foreground">({c.cropHi})</span>}
+          </p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {c.market}, {c.district}{c.state ? `, ${c.state}` : ""}
+            {c.operatingStatus === "OPEN" ? " · Open" : c.operatingStatus ? " · Closed" : ""}
+          </p>
+          {mspDiff !== null && (
+            <p className={cn("mt-0.5 text-xs font-medium", mspDiff >= 0 ? "text-primary" : "text-amber-600")}>
+              {mspDiff >= 0 ? `+${formatINR(mspDiff)} Above MSP` : `-${formatINR(Math.abs(mspDiff))} Below MSP`}
+            </p>
+          )}
         </div>
-
-        {/* Card Footer */}
-        <div className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1 font-semibold text-emerald-700 dark:text-emerald-400">
-            <ShieldCheck size={13} /> {L.verifiedSource}
-          </span>
-          <span className="flex items-center gap-1 font-semibold text-emerald-600">
-            {L.viewAdvice} <ChevronRight size={13} />
-          </span>
+        <div className="shrink-0 text-right">
+          <p className="type-num text-[15px] text-foreground leading-tight">
+            {formatINR(c.price)}
+            <span className="text-xs font-normal text-muted-foreground"> {L.perQuintal}</span>
+          </p>
+          {changeBadge(c)}
         </div>
-      </AgriCard>
+        <ChevronRight size={15} className="shrink-0 text-muted-foreground/60" aria-hidden="true" />
+      </button>
     );
   };
 
   const renderAdvisorTab = () => (
-    <div className="space-y-4 animate-fade-in">
-      <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent p-5 space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-            <Bot size={20} />
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+            <Bot size={17} aria-hidden="true" />
           </div>
           <div>
-            <h3 className="font-extrabold text-base text-foreground">{L.aiAdvisorTitle}</h3>
-            <p className="text-xs text-muted-foreground">{L.aiAdvisorDesc}</p>
+            <h3 className="type-h3">{L.aiAdvisorTitle}</h3>
+            <p className="type-meta">{L.aiAdvisorDesc}</p>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground leading-relaxed pt-1">
+        <p className="type-small text-muted-foreground leading-relaxed pt-1">
           {L.aiAdvisorLongDesc}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="rounded-xl border border-border bg-card divide-y divide-border">
         {paginated.map((c, i) => renderCard(c, i))}
       </div>
       {paginated.length < filtered.length && (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center pt-2">
           <AgriButton variant="outline" onClick={() => setPage(p => p + 1)} className="px-6">
             {L.loadMore}
           </AgriButton>
@@ -581,11 +497,11 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     const lowest = sorted[sorted.length - 1];
 
     return (
-      <div className="space-y-4 animate-fade-in">
-        <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+      <div className="space-y-4">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <BarChart3 className="text-emerald-600 shrink-0" size={18} />
-            <h3 className="font-extrabold text-base text-foreground">Compare Crop Prices Across Mandis</h3>
+            <BarChart3 className="text-primary shrink-0" size={17} aria-hidden="true" />
+            <h3 className="type-h3">Compare crop prices across mandis</h3>
           </div>
 
           <div className="space-y-1">
@@ -641,7 +557,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                       {c === best && sorted.length > 1 && <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />}
                       <span className="truncate">{c.market}, {c.district}</span>
                     </span>
-                    <span className="font-extrabold shrink-0">{formatINR(c.price)}{L.perQuintal}</span>
+                    <span className="font-semibold shrink-0">{formatINR(c.price)}{L.perQuintal}</span>
                   </li>
                 ))}
               </ul>
@@ -669,12 +585,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
     return (
       <div className="fixed inset-0 z-[60]">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedCrop(null)} />
-        <div className="absolute bottom-0 left-0 right-0 max-h-[92vh] overflow-y-auto rounded-t-3xl bg-card border-t border-border animate-sheet-up shadow-2xl" role="dialog" aria-modal="true" aria-label={`${c.crop} ${c.cropHi ? `(${c.cropHi})` : ""}`}>
-          <div className="sticky top-0 bg-card/95 backdrop-blur-md pt-3 pb-2 px-5 flex items-center justify-between border-b border-border z-10">
+        <div className="absolute inset-0 bg-black/60 " onClick={() => setSelectedCrop(null)} />
+        <div className="absolute bottom-0 left-0 right-0 max-h-[92vh] overflow-y-auto rounded-t-3xl bg-card border-t border-border  " role="dialog" aria-modal="true" aria-label={`${c.crop} ${c.cropHi ? `(${c.cropHi})` : ""}`}>
+          <div className="sticky top-0 bg-card/95  pt-3 pb-2 px-5 flex items-center justify-between border-b border-border z-10">
             <div className="mx-auto absolute left-1/2 -translate-x-1/2 top-1.5 w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             <div className="pt-3">
-              <h3 className="font-extrabold text-lg text-foreground flex items-center gap-2">
+              <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
                 {c.crop} {c.cropHi && <span className="text-sm font-semibold opacity-80">({c.cropHi})</span>}
               </h3>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -702,7 +618,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               className="w-full h-full object-cover"
               loading="eager"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
               <div>
                 <span className="text-xs bg-emerald-600/90 text-white font-bold px-2 py-0.5 rounded-full inline-block mb-1">
@@ -713,8 +629,8 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-[11px] opacity-80 block">{L.arrivalLabel}</span>
-                <span className="text-sm font-extrabold text-white">{c.arrivalDate || L.nullRange}</span>
+                <span className="text-xs opacity-80 block">{L.arrivalLabel}</span>
+                <span className="text-sm font-semibold text-white">{c.arrivalDate || L.nullRange}</span>
               </div>
             </div>
           </div>
@@ -722,25 +638,25 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <div className="p-5 space-y-5">
             {/* Advice Hero Banner */}
             {advice && (
-              <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-4 space-y-3">
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   {renderAdviceBadge(c)}
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+                  <span className="type-meta font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded">
                     {advice.confidence}{L.confidence}
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-sm font-extrabold text-foreground mb-1">{L.analysisTitle}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="type-h3 mb-1">{L.analysisTitle}</p>
+                  <p className="type-small text-muted-foreground">
                     {hi ? advice.reasonHi : advice.reasonEn}
                   </p>
                 </div>
 
-                <div className="bg-card p-3 rounded-xl border border-border flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-medium">{L.priceRangeLabel}</span>
-                  <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">
-                    {formatINR(advice.minExpectedPrice)} - {formatINR(advice.maxExpectedPrice)} {L.perQuintal}
+                <div className="bg-muted/50 p-3 rounded-lg border border-border flex items-center justify-between type-small">
+                  <span className="text-muted-foreground">{L.priceRangeLabel}</span>
+                  <span className="font-semibold text-foreground type-num">
+                    {formatINR(advice.minExpectedPrice)} – {formatINR(advice.maxExpectedPrice)} {L.perQuintal}
                   </span>
                 </div>
               </div>
@@ -750,12 +666,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             <div className="flex items-end justify-between border-t border-border pt-4">
               <div>
                 <span className="text-xs text-muted-foreground font-semibold block">{L.currentModalPrice}</span>
-                <p className="text-3xl font-black text-foreground">{formatINR(c.price)}</p>
+                <p className="text-3xl font-semibold text-foreground">{formatINR(c.price)}</p>
                 <p className="text-xs text-muted-foreground">{L.perQuintal}</p>
               </div>
               <div className="flex flex-col items-end gap-1.5">
                 {changeBadge(c)}
-                <div className="flex gap-3 text-[10px] text-muted-foreground font-medium">
+                <div className="flex gap-3 text-xs text-muted-foreground font-medium">
                   <span>{L.min}: <b className="text-foreground">{fmtRange(c.minPrice)}</b></span>
                   <span>{L.max}: <b className="text-foreground">{fmtRange(c.maxPrice)}</b></span>
                 </div>
@@ -778,31 +694,29 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
   };
 
   return (
-    <div className="pb-28 pt-4 px-4 space-y-4 max-w-5xl mx-auto">
+    <div className="pb-28 pt-5 px-4 space-y-4 max-w-3xl mx-auto">
       {/* Offline Cache Timestamp Banner */}
       {isCachedData && cachedAtText && typeof navigator !== 'undefined' && !navigator.onLine && (
-        <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs font-bold animate-fade-in shadow-sm">
-          <span className="flex items-center gap-2">
-            <WifiOff size={15} className="shrink-0" />
-            Showing cached prices from {cachedAtText} (Offline Mode)
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-medium text-amber-800 dark:text-amber-200">
+          <span className="flex items-center gap-2 min-w-0">
+            <WifiOff size={14} className="shrink-0" />
+            <span className="truncate">Showing cached prices from {cachedAtText} (Offline)</span>
           </span>
-          <button onClick={() => fetchMandi(true)} className="underline hover:no-underline font-extrabold shrink-0 ml-2">
-            {L.retry}
-          </button>
+          <button onClick={() => fetchMandi(true)} className="shrink-0 font-semibold underline">{L.retry}</button>
         </div>
       )}
 
       {/* Verified government snapshot banner — served from persisted AGMARKNET records */}
       {!error && !isCachedData && servedFrom === "database" && (
-        <div className="bg-teal-500/10 border border-teal-500/30 text-teal-800 dark:text-teal-300 px-4 py-2.5 rounded-2xl flex items-center justify-between gap-2 text-xs font-bold animate-fade-in shadow-sm">
+        <div className="rounded-lg border border-border bg-muted/40 px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
           <span className="flex items-center gap-2 min-w-0">
-            <ShieldCheck size={15} className="shrink-0" />
+            <ShieldCheck size={14} className="shrink-0 text-primary" />
             <span className="truncate">
-              Verified Government Data (api.data.gov.in / AGMARKNET)
+              {L.verifiedSource} · AGMARKNET
               {rateLimited ? " · Live refresh is rate-limited right now; showing the last synced records." : ""}
             </span>
           </span>
-          <button onClick={resync} disabled={refreshing} className="underline hover:no-underline font-extrabold shrink-0 ml-2 flex items-center gap-1">
+          <button onClick={resync} disabled={refreshing} className="shrink-0 font-semibold text-foreground flex items-center gap-1">
             <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
             {hi ? "सिंक करें" : "Sync now"}
           </button>
@@ -810,34 +724,33 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-xl font-extrabold text-foreground flex items-center gap-2 tracking-tight">
-            <TrendingUp className="text-emerald-700 dark:text-emerald-400" size={22} /> {L.title}
-            <span className={cn(
-              "flex items-center gap-1 text-[9px] font-black tracking-widest text-white rounded-md px-1.5 py-0.5",
-              error ? "bg-rose-600" : isCachedData ? "bg-amber-500" : servedFrom === "live" ? "bg-emerald-600" : "bg-teal-600"
-            )}>
-              <span className={cn("w-1.5 h-1.5 rounded-full bg-white", !error && servedFrom === "live" && "animate-live-dot")} />
-              {error ? (hi ? "ऑफ़लाइन" : "OFFLINE") : isCachedData ? (hi ? "कैश्ड" : "CACHED") : refreshing ? "SYNC…" : servedFrom === "live" ? (hi ? "लाइव मंडी" : "LIVE APMC") : (hi ? "सत्यापित डेटा" : "VERIFIED DATA")}
-            </span>
-          </h2>
-          <p className="text-sm text-muted-foreground">{L.subtitle}</p>
+          <h1 className="type-h1 text-foreground">{L.title}</h1>
+          <p className="type-small text-muted-foreground mt-1">{L.subtitle}</p>
           {lastUpdated && !error && (
-            <p className="text-[11px] text-muted-foreground/80 mt-0.5 flex items-center gap-1">
-              <Clock size={11} className="text-emerald-600" />
+            <p className="type-meta mt-1.5 flex items-center gap-1">
+              <Clock size={11} className="text-muted-foreground" />
               {L.updated}: {lastUpdated.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · AGMARKNET
             </p>
           )}
         </div>
-
-        <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label={t("mandi.hub.ariaRefresh")}>
-          <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-        </AgriButton>
+        <div className="flex shrink-0 items-center gap-2 pt-1">
+          <span className={cn(
+            "flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold tracking-wide",
+            error ? "bg-destructive/10 text-destructive" : isCachedData ? "bg-amber-500/10 text-amber-700" : "bg-primary/10 text-primary"
+          )}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", error ? "bg-destructive" : isCachedData ? "bg-amber-500" : "bg-primary")} />
+            {error ? "Offline" : isCachedData ? "Cached" : refreshing ? "Syncing…" : servedFrom === "live" ? "Live" : "Verified"}
+          </span>
+          <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label={t("mandi.hub.ariaRefresh")}>
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+          </AgriButton>
+        </div>
       </div>
 
       {/* Search & Autocomplete Dropdown */}
-      <div className="space-y-3 bg-card p-3.5 rounded-2xl border border-border shadow-sm relative">
+<div className="space-y-3 rounded-xl border border-border bg-card p-3.5">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
@@ -850,11 +763,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               setShowSearchSuggestions(true);
             }}
             onFocus={() => setShowSearchSuggestions(true)}
-            className="w-full pl-10 pr-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium"
+            className="w-full touch-target pl-10 pr-4 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm"
           />
 
+          {/* Search suggestions */}
           {showSearchSuggestions && searchSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-30 overflow-hidden py-1">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-float z-30 overflow-hidden py-1">
               {searchSuggestions.map((s) => (
                 <button
                   key={s}
@@ -863,7 +777,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
                     setPage(1);
                     setShowSearchSuggestions(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                  className="w-full touch-target text-left px-4 py-2 text-[13px] text-foreground hover:bg-muted transition-colors flex items-center justify-between"
                 >
                   <span>{s}</span>
                   <ChevronRight size={12} className="text-muted-foreground" />
@@ -880,10 +794,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               key={cat}
               onClick={() => { setSelectedCategory(cat); setPage(1); }}
               className={cn(
-                "px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors",
+                "touch-target flex items-center px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
                 selectedCategory === cat
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
               {CATEGORY_LABELS[cat] ?? cat}
@@ -897,7 +811,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             aria-label={t("mandi.hub.ariaFilterState")}
             value={selectedState}
             onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedMandi(""); setPage(1); }}
-            className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
+            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
           >
             <option value="">{L.allStates}</option>
             {states.map(s => <option key={s} value={s}>{s}</option>)}
@@ -907,7 +821,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             aria-label={t("mandi.hub.ariaFilterDistrict")}
             value={selectedDistrict}
             onChange={(e) => { setSelectedDistrict(e.target.value); setSelectedMandi(""); setPage(1); }}
-            className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
+            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
           >
             <option value="">{L.allDistricts}</option>
             {districts.map(d => <option key={d} value={d}>{d}</option>)}
@@ -917,7 +831,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             aria-label="Filter by Mandi"
             value={selectedMandi}
             onChange={(e) => { setSelectedMandi(e.target.value); setPage(1); }}
-            className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
+            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
           >
             <option value="">All Mandis</option>
             {mandis.map(m => <option key={m} value={m}>{m}</option>)}
@@ -927,7 +841,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
             aria-label={t("mandi.hub.ariaSortPrices")}
             value={sortOption}
             onChange={(e) => { setSortOption(e.target.value as SortOption); setPage(1); }}
-            className="px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 truncate"
+            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
           >
             <option value="highest">{t("mandi.hub.sortHighest")}</option>
             <option value="lowest">{t("mandi.hub.sortLowest")}</option>
@@ -938,32 +852,32 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           <button
             onClick={() => { setFavoritesOnly(f => !f); setPage(1); }}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all",
+              "flex min-h-[44px] items-center justify-center gap-1.5 px-3 rounded-lg border text-[13px] font-medium transition-colors",
               favoritesOnly
-                ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-400/40"
+                ? "bg-destructive/5 text-destructive border-destructive/30"
                 : "bg-background text-muted-foreground border-input hover:text-foreground"
             )}
           >
-            <Heart size={13} className={favoritesOnly ? "fill-rose-500 text-rose-500" : ""} />
+            <Heart size={13} className={favoritesOnly ? "fill-destructive text-destructive" : ""} />
             {L.onlyFavs}
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar border-b border-border pb-px">
         {TAB_ITEMS.map(item => (
           <button
             key={item.id}
             onClick={() => { setTab(item.id); setPage(1); }}
             className={cn(
-              "flex items-center gap-1.5 shrink-0 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-300 active:scale-95",
+              "flex touch-target items-center gap-1.5 shrink-0 px-3 py-2 text-[13px] font-medium transition-colors border-b-2 -mb-px",
               tab === item.id
-                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20"
-                : "bg-card text-muted-foreground border border-border hover:text-foreground"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            <item.icon size={13} />
+            <item.icon size={13} aria-hidden="true" />
             {item.label}
           </button>
         ))}
@@ -971,9 +885,9 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
 
       {/* Content */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-64 rounded-2xl border border-border animate-shimmer" />
+        <div className="rounded-xl border border-border bg-card divide-y divide-border pt-2">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-14 animate-pulse bg-muted/40" />
           ))}
         </div>
       ) : error ? (
@@ -983,10 +897,10 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
       ) : tab === "compare" ? (
         renderCompareTab()
       ) : filtered.length === 0 ? (
-        <div className="text-center py-14 px-4 bg-card rounded-2xl border border-dashed border-border my-4 space-y-3 animate-fade-in">
-          <Store className="mx-auto w-12 h-12 text-muted-foreground opacity-40" />
-          <h4 className="text-base font-bold text-foreground">No Government mandi records found for this selection</h4>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+        <div className="text-center py-12 px-4 bg-card rounded-xl border border-border my-4 space-y-3">
+          <Store className="mx-auto w-10 h-10 text-muted-foreground" />
+          <h4 className="type-h3">No Government mandi records found for this selection</h4>
+          <p className="type-small text-muted-foreground max-w-sm mx-auto">
             The government dataset has no published crop rate for this combination of state, district, mandi or category. Try a different selection.
           </p>
           <AgriButton
@@ -1006,12 +920,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
           </AgriButton>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border bg-card divide-y divide-border">
           {paginated.map((c, i) => renderCard(c, i))}
           {paginated.length < filtered.length && (
-            <div className="flex items-center justify-center col-span-full mt-4">
-              <AgriButton onClick={() => setPage(p => p + 1)}>{L.loadMore}</AgriButton>
-            </div>
+            <button onClick={() => setPage(p => p + 1)} className="w-full px-3.5 py-3 text-center text-[12px] font-semibold text-primary hover:bg-muted/50 transition-colors">
+              {L.loadMore}
+            </button>
           )}
         </div>
       )}

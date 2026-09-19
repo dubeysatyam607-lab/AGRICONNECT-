@@ -61,7 +61,7 @@ const StorageMap: React.FC<StorageMapProps> = ({ facilities, onSelectFacility })
                 {f.location}
               </p>
             </div>
-            <span className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusBadge[f.status]}`}>
+            <span className={`shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${statusBadge[f.status]}`}>
               {statusIcon[f.status]}
               {f.status}
             </span>

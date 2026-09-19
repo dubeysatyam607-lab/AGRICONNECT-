@@ -61,21 +61,21 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
           <button
             key={s.label}
             onClick={s.onClick}
-            className="group rounded-2xl border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.98]"
+            className="group rounded-xl border border-border bg-card p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.98]"
           >
             <span className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${s.tone}`}>{s.icon}</span>
-            <p className="mt-2.5 text-lg font-extrabold text-foreground tabular-nums leading-none">{s.value}</p>
-            <p className="mt-1 text-[11px] font-bold text-muted-foreground">{s.label}</p>
+            <p className="mt-2.5 text-lg font-semibold text-foreground tabular-nums leading-none">{s.value}</p>
+            <p className="mt-1 text-xs font-bold text-muted-foreground">{s.label}</p>
           </button>
         ))}
       </div>
 
       {/* Today's AI recommendation */}
-      <div className="rounded-[28px] border border-feature-ai/25 bg-card p-5 sm:p-6 shadow-card relative overflow-hidden">
+      <div className="rounded-xl border border-feature-ai/25 bg-card p-5 sm:p-6 shadow-card relative overflow-hidden">
         <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-feature-ai/10 blur-3xl pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full gradient-ai px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white">
+            <span className="inline-flex items-center gap-1.5 rounded-full gradient-ai px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
               <Sparkles size={12} />
               {t('prof.aiToday')}
             </span>
@@ -84,8 +84,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Weather impact */}
-            <div className="rounded-2xl bg-feature-weather/10 border border-feature-weather/20 p-3.5">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-feature-weather mb-1.5">
+            <div className="rounded-xl bg-feature-weather/10 border border-feature-weather/20 p-3.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-feature-weather mb-1.5">
                 <CloudSun size={13} /> {t('prof.weatherImpact')}
               </p>
               <p className="text-sm font-semibold text-foreground leading-snug">
@@ -95,24 +95,24 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
             </div>
 
             {/* Crop health */}
-            <div className="rounded-2xl bg-feature-doctor/10 border border-feature-doctor/20 p-3.5">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-feature-doctor mb-1.5">
+            <div className="rounded-xl bg-feature-doctor/10 border border-feature-doctor/20 p-3.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-feature-doctor mb-1.5">
                 <HeartPulse size={13} /> {t('prof.cropHealth')}
               </p>
               <p className="text-sm font-semibold text-foreground">{cropStage}</p>
               <p className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-live-pulse" />
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-current " />
                 {healthLabel}
               </p>
             </div>
 
             {/* Market opportunity */}
-            <div className="rounded-2xl bg-feature-mandi/10 border border-feature-mandi/20 p-3.5">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-feature-mandi mb-1.5">
+            <div className="rounded-xl bg-feature-mandi/10 border border-feature-mandi/20 p-3.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-feature-mandi mb-1.5">
                 <TrendingUp size={13} /> {t('prof.marketOpp')}
               </p>
               <p className="text-sm font-semibold text-foreground">
-                {recommendations.mandi.crop} · <span className="text-marigold font-extrabold">{recommendations.mandi.price}</span>
+                {recommendations.mandi.crop} · <span className="text-marigold font-semibold">{recommendations.mandi.price}</span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                 {recommendations.mandi.note} @ {recommendations.mandi.market}
@@ -120,8 +120,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
             </div>
 
             {/* Recommended tasks */}
-            <div className="rounded-2xl bg-feature-loans/10 border border-feature-loans/20 p-3.5">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-feature-loans mb-1.5">
+            <div className="rounded-xl bg-feature-loans/10 border border-feature-loans/20 p-3.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-feature-loans mb-1.5">
                 <CheckCircle2 size={13} /> {t('prof.recTasks')}
               </p>
               <ul className="space-y-1.5">
@@ -138,9 +138,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
       </div>
 
       {/* Eligible schemes */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-extrabold text-foreground flex items-center gap-2">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
             <span className="text-base">🏛️</span> {t('prof.schemesEligible')}
           </p>
           <button
@@ -153,8 +153,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {recommendations.schemes.map((s, i) => (
             <div key={i} className="rounded-xl border border-border bg-muted/40 p-3 transition-colors hover:bg-muted/70">
-              <p className="text-xs font-extrabold text-foreground">{s.title}</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground leading-snug">{s.detail}</p>
+              <p className="text-xs font-semibold text-foreground">{s.title}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground leading-snug">{s.detail}</p>
             </div>
           ))}
         </div>
@@ -162,9 +162,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
 
       {/* Upcoming tasks mini + recent activity */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-extrabold text-foreground flex items-center gap-2">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
               <ListTodo size={16} className="text-primary" /> {t('prof.upcomingMini')}
             </p>
             <button onClick={() => onNavigate('tasks')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
@@ -178,7 +178,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
               {data.upcomingTasks.slice(0, 3).map((task) => (
                 <li key={task.id} className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold text-foreground line-clamp-1">{task.label}</span>
-                  <span className="shrink-0 text-[10px] font-bold text-muted-foreground">
+                  <span className="shrink-0 text-xs font-bold text-muted-foreground">
                     {task.date}
                   </span>
                 </li>
@@ -187,9 +187,9 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
           )}
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-extrabold text-foreground flex items-center gap-2">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
               <Activity size={16} className="text-primary" /> {t('prof.recentActivity')}
             </p>
             <button onClick={() => onNavigate('activity')} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
@@ -200,7 +200,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ data, onNaviga
             {data.activities.slice(0, 3).map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-foreground line-clamp-1">{a.title}</span>
-                <span className="shrink-0 text-[10px] font-bold text-muted-foreground">{a.date}</span>
+                <span className="shrink-0 text-xs font-bold text-muted-foreground">{a.date}</span>
               </li>
             ))}
           </ul>

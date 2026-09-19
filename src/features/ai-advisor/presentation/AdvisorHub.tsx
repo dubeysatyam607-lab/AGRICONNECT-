@@ -75,13 +75,13 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
               <ArrowLeft size={15} />
             </button>
           )}
-          <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl gradient-ai text-primary-foreground shadow-colorful">
+          <span className="relative flex h-11 w-11 items-center justify-center rounded-xl gradient-ai text-primary-foreground ">
             <Bot size={19} />
-            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background animate-live-pulse" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background " />
           </span>
           <div>
-            <h1 className="font-display text-lg font-black tracking-tight text-foreground">{t('adv.title')}</h1>
-            <p className="text-[11px] font-semibold text-muted-foreground">
+            <h1 className=" text-lg font-semibold tracking-tight text-foreground">{t('adv.title')}</h1>
+            <p className="text-xs font-semibold text-muted-foreground">
               {memory.farmer.name} · {t('adv.subtitle')}
             </p>
           </div>
@@ -106,7 +106,7 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
         ].map(({ icon: Icon, label }) => (
           <span
             key={label}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-bold text-muted-foreground shadow-card"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-muted-foreground shadow-card"
           >
             <Icon size={12} className="text-forest" />
             {label}
@@ -115,7 +115,7 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
       </div>
 
       {/* Tabs */}
-      <nav className="mt-4 flex rounded-2xl border border-border bg-card p-1 shadow-card">
+      <nav className="mt-4 flex rounded-xl border border-border bg-card p-1 shadow-card">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -128,7 +128,7 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
             <Icon size={13} />
             {label}
             {key === 'daily' && unackedCount > 0 && (
-              <span className="rounded-full bg-rose-600 px-1.5 text-[9px] font-black text-white">{unackedCount}</span>
+              <span className="rounded-full bg-rose-600 px-1.5 text-xs font-semibold text-white">{unackedCount}</span>
             )}
           </button>
         ))}
@@ -137,10 +137,10 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
       {tab === 'daily' && (
         <>
           {/* Brief header */}
-          <div className="mt-4 rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
             <div className="flex items-center gap-2">
               <Sparkles size={15} className="text-violet-500" />
-              <h2 className="text-sm font-black text-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 {t('adv.brief.title')} {brief?.id ?? ''}
               </h2>
             </div>
@@ -152,7 +152,7 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
             {unackedCount > 0 && (
               <button
                 onClick={ackAll}
-                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-1.5 text-[11px] font-bold text-muted-foreground hover:text-foreground"
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
               >
                 <CheckCheck size={13} />
                 {t('adv.ackAll')}
@@ -179,7 +179,7 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
 
           <div className="mt-3 space-y-2.5">
             {insights.length === 0 ? (
-              <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card/50 py-14 text-center">
+              <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card/50 py-14 text-center">
                 <Sparkles size={34} className="mb-3 text-muted-foreground/40" />
                 <p className="text-sm font-bold text-foreground">{t('adv.empty.title')}</p>
                 <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('adv.empty.body')}</p>
@@ -206,10 +206,10 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
       {tab === 'memory' && (
         <div className="mt-4 space-y-3">
           {/* What the advisor remembers */}
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-card">
             <div className="flex items-center gap-2">
               <BrainCircuit size={16} className="text-violet-500" />
-              <h2 className="text-sm font-black text-foreground">{t('adv.memory.knows')}</h2>
+              <h2 className="text-sm font-semibold text-foreground">{t('adv.memory.knows')}</h2>
             </div>
             <ul className="mt-3 space-y-2.5">
               {[
@@ -229,13 +229,13 @@ export const AdvisorHub: React.FC<AdvisorHubProps> = ({ onNavigate, onToast }) =
 
             {/* Learned patterns */}
             <div className="mt-4 border-t border-border pt-3">
-              <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('adv.memory.learned')}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('adv.memory.learned')}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {(memory.learned.patterns.length > 0 || memory.learned.preferredAlerts.length > 0 ? [...memory.learned.preferredAlerts, ...memory.learned.patterns] : []).length === 0 ? (
                   <p className="text-xs font-semibold text-muted-foreground/70">{t('adv.memory.learning')}</p>
                 ) : (
                   [...memory.learned.preferredAlerts].map((p) => (
-                    <span key={p} className="rounded-full bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-bold text-violet-600 dark:text-violet-400">
+                    <span key={p} className="rounded-full bg-violet-500/10 px-2.5 py-0.5 text-xs font-bold text-violet-600 dark:text-violet-400">
                       {t(`adv.type.${p}`)}
                     </span>
                   ))

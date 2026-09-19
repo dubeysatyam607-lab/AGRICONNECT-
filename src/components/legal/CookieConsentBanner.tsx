@@ -58,25 +58,25 @@ export const CookieConsentBanner: React.FC = () => {
       {visible && (
         <aside
           aria-label="Cookie consent banner"
-          className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-4 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 shadow-2xl transition-all duration-300 animate-slideUp"
+          className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-4 bg-card border-t border-border"
         >
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Info Message */}
-            <div className="flex items-start gap-3.5 text-slate-200">
-              <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <Cookie size={20} />
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                <Cookie size={20} aria-hidden="true" />
               </div>
-              <div className="space-y-1 text-xs sm:text-sm">
-                <p className="font-bold text-white flex items-center gap-1.5">
+              <div className="space-y-1">
+                <p className="type-small font-semibold text-foreground">
                   We respect your privacy & agricultural data
                 </p>
-                <p className="text-slate-400 text-xs leading-relaxed max-w-2xl">
+                <p className="type-meta leading-relaxed max-w-2xl">
                   AgriConnect uses essential cookies for secure login and language selection. We also use optional analytics to improve app performance. Read our{' '}
-                  <Link to="/privacy-policy" className="text-emerald-400 underline hover:text-emerald-300 font-medium">
+                  <Link to="/privacy-policy" className="text-primary underline">
                     Privacy Policy
                   </Link>{' '}
                   and{' '}
-                  <Link to="/data-declaration" className="text-emerald-400 underline hover:text-emerald-300 font-medium">
+                  <Link to="/data-declaration" className="text-primary underline">
                     Data Declaration
                   </Link>
                   .
@@ -89,7 +89,7 @@ export const CookieConsentBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="flex-1 sm:flex-initial rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-2.5 px-3.5 flex items-center justify-center gap-1.5 transition-colors border border-slate-700"
+                className="flex-1 sm:flex-initial rounded-lg border border-border bg-card hover:bg-muted text-foreground type-small font-semibold py-2.5 px-3.5 flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Settings2 size={14} />
                 <span>Preferences</span>
@@ -98,7 +98,7 @@ export const CookieConsentBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={handleRejectNonEssential}
-                className="flex-1 sm:flex-initial rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-3.5 transition-colors border border-slate-700"
+                className="flex-1 sm:flex-initial rounded-lg border border-border bg-card hover:bg-muted text-foreground type-small font-semibold py-2.5 px-3.5 transition-colors"
               >
                 Essential Only
               </button>
@@ -106,7 +106,7 @@ export const CookieConsentBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 text-xs font-black py-2.5 px-4 shadow-md shadow-emerald-900/30 transition-all"
+                className="w-full sm:w-auto rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground type-small font-semibold py-2.5 px-4 transition-colors"
               >
                 Accept All
               </button>

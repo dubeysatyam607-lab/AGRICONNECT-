@@ -226,13 +226,13 @@ export const CreateEditListingModal: React.FC<CreateEditListingModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-xl">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
             {t('marketplace.eyebrow') || 'AgriConnect Verified Marketplace'}
           </div>
-          <DialogTitle className="text-xl font-extrabold text-foreground">
+          <DialogTitle className="text-xl font-semibold text-foreground">
             {listingToEdit ? 'Edit Marketplace Listing' : 'List Equipment, Service or Produce'}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -265,8 +265,8 @@ export const CreateEditListingModal: React.FC<CreateEditListingModalProps> = ({
                       : 'border-border bg-card hover:border-emerald-400/40 text-muted-foreground'
                   }`}
                 >
-                  <div className="text-foreground font-semibold text-[11px] truncate">{cat.nameEn}</div>
-                  <div className="text-[10px] text-muted-foreground truncate">{cat.nameHi}</div>
+                  <div className="text-foreground font-semibold text-xs truncate">{cat.nameEn}</div>
+                  <div className="text-xs text-muted-foreground truncate">{cat.nameHi}</div>
                 </button>
               ))}
             </div>
@@ -346,7 +346,7 @@ export const CreateEditListingModal: React.FC<CreateEditListingModalProps> = ({
                 type="button"
                 onClick={handleGpsAutofill}
                 disabled={locatingGps}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700"
+                className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700"
               >
                 <Compass className={`w-3.5 h-3.5 ${locatingGps ? 'animate-spin' : ''}`} />
                 <span>{locatingGps ? 'Locating…' : 'Autofill with GPS'}</span>
@@ -411,7 +411,7 @@ export const CreateEditListingModal: React.FC<CreateEditListingModalProps> = ({
                 className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-emerald-500 bg-muted/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-emerald-600 transition-colors"
               >
                 <Upload className="w-5 h-5" />
-                <span className="text-[10px] font-semibold">Upload</span>
+                <span className="text-xs font-semibold">Upload</span>
               </button>
             </div>
 

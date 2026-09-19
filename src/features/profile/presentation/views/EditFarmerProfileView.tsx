@@ -62,12 +62,12 @@ export const EditFarmerProfileView: React.FC<IEditFarmerProfileViewProps> = ({ o
         <div className="flex items-center gap-3">
           <button
             onClick={onCancel}
-            className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{t('pdetail.editWizard')}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('pdetail.editWizard')}</h1>
             <p className="text-xs text-muted-foreground">{t('pdetail.editWizardSub')}</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export const EditFarmerProfileView: React.FC<IEditFarmerProfileViewProps> = ({ o
       </div>
 
       {state.error && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium animate-shake">
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 text-xs font-medium ">
           ⚠️ {state.error}
         </div>
       )}
@@ -96,11 +96,11 @@ export const EditFarmerProfileView: React.FC<IEditFarmerProfileViewProps> = ({ o
       />
 
       {/* Language Preferences Bar */}
-      <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className="text-2xl">🗣️</span>
           <div>
-            <h4 className="text-sm font-extrabold text-foreground">{t('pdetail.dashLang')}</h4>
+            <h4 className="text-sm font-semibold text-foreground">{t('pdetail.dashLang')}</h4>
             <p className="text-xs text-muted-foreground">{t('pdetail.dashLangSub')}</p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export const EditFarmerProfileView: React.FC<IEditFarmerProfileViewProps> = ({ o
       </div>
 
       {/* Multi-Tab Switcher Navigation */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -130,7 +130,7 @@ export const EditFarmerProfileView: React.FC<IEditFarmerProfileViewProps> = ({ o
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 isActive
                   ? 'bg-white dark:bg-slate-900 text-foreground shadow-sm scale-[1.02]'
                   : 'text-muted-foreground hover:text-foreground'

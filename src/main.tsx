@@ -101,7 +101,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           fontFamily: "system-ui, sans-serif",
           textAlign: "center",
         }}>
-          <div style={{ fontSize: "40px" }}>🌱</div>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 20h10" />
+            <path d="M12 17v3" />
+            <path d="M16 3c-1.6 0-4 .7-5.2 2-1.2 1.3-1.8 3.7-1.8 5 1.6-.3 3.5-.3 4.9-1.3C11.5 9 9 8.6 6.6 9.4c0 2.4 1 4.6 3 6 1.4-.8 2.4-2.5 2.8-4.6.5-2.7 1.6-4.9 3.6-6.8z"/>
+          </svg>
           <h1 style={{ fontSize: "20px", fontWeight: 700, margin: 0 }}>Something went wrong</h1>
           <p style={{ fontSize: "14px", margin: 0, color: "#57534e", maxWidth: "400px" }}>
             Please reload the page or return to the homepage. If it keeps happening, check your connection.

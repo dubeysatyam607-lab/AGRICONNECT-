@@ -114,7 +114,7 @@ const HardwareDashboard: React.FC = () => {
         <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <p>
-            <span className="font-black">{t('agr93')}</span> No physical sensors are connected to your account yet. Readings shown here are illustrative — connect your AgriConnect IoT kit to see live field data.
+            <span className="font-semibold">{t('agr93')}</span> No physical sensors are connected to your account yet. Readings shown here are illustrative — connect your AgriConnect IoT kit to see live field data.
           </p>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -124,28 +124,28 @@ const HardwareDashboard: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="px-4 grid grid-cols-2 gap-3">
-        <Card className="border-border shadow-card rounded-2xl">
+        <Card className="border-border shadow-card rounded-xl">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <Droplets size={18} className="text-sky-500" />
               {criticalMoisture > 0 ? (
-                <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-[10px]">{criticalMoisture} Alert</Badge>
+                <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-xs">{criticalMoisture} Alert</Badge>
               ) : (
-                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">{t('agr94')}</Badge>
+                <Badge className="bg-primary/15 text-primary border-primary/20 text-xs">{t('agr94')}</Badge>
               )}
             </div>
             <p className="text-2xl font-bold text-foreground">{moistureData.length}</p>
             <p className="text-xs text-muted-foreground">{t('agr95')}</p>
           </CardContent>
         </Card>
-        <Card className="border-border shadow-card rounded-2xl">
+        <Card className="border-border shadow-card rounded-xl">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <Fence size={18} className="text-emerald-500" />
               {offlineNodes > 0 ? (
-                <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-[10px]">{offlineNodes} Offline</Badge>
+                <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-xs">{offlineNodes} Offline</Badge>
               ) : (
-                <Badge className="bg-primary/15 text-primary border-primary/20 text-[10px]">{t('agr96')}</Badge>
+                <Badge className="bg-primary/15 text-primary border-primary/20 text-xs">{t('agr96')}</Badge>
               )}
             </div>
             <p className="text-2xl font-bold text-foreground">{fenceNodes.length}</p>
@@ -156,7 +156,7 @@ const HardwareDashboard: React.FC = () => {
 
       {/* Moisture Detector Section */}
       <div className="px-4">
-        <Card className="border-border shadow-card rounded-2xl">
+        <Card className="border-border shadow-card rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Droplets size={16} className="text-sky-500" />
@@ -179,7 +179,7 @@ const HardwareDashboard: React.FC = () => {
                   value={sensor.moisture}
                   className="h-2"
                 />
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Battery size={11} />
                     {Math.round(sensor.battery)}%
@@ -197,7 +197,7 @@ const HardwareDashboard: React.FC = () => {
 
       {/* Digital Fencing Section */}
       <div className="px-4">
-        <Card className="border-border shadow-card rounded-2xl">
+        <Card className="border-border shadow-card rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Fence size={16} className="text-emerald-500" />
@@ -237,19 +237,19 @@ const HardwareDashboard: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{node.name}</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {node.active ? "Active" : "Offline"} · Signal {Math.round(node.signal)}%
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Battery size={11} className={node.battery < 20 ? "text-destructive" : ""} />
                       <span className={node.battery < 20 ? "text-destructive font-semibold" : ""}>
                         {Math.round(node.battery)}%
                       </span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {node.lastPing.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>

@@ -284,45 +284,45 @@ export function SoilTestingModule() {
 
       {/* Real KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-muted-foreground uppercase">Total Requests</span>
-          <div className="text-2xl font-black text-foreground mt-1">{kpis.totalRequests}</div>
-          <span className="text-[10px] text-emerald-600 font-semibold">Real-time DB records</span>
+        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-sm">
+          <span className="text-xs font-bold text-muted-foreground uppercase">Total Requests</span>
+          <div className="text-2xl font-semibold text-foreground mt-1">{kpis.totalRequests}</div>
+          <span className="text-xs text-emerald-600 font-semibold">Real-time DB records</span>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-amber-600 uppercase">Pending Pickup</span>
-          <div className="text-2xl font-black text-amber-600 mt-1">{kpis.pendingPickup}</div>
-          <span className="text-[10px] text-muted-foreground">Awaiting assignment</span>
+        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-sm">
+          <span className="text-xs font-bold text-amber-600 uppercase">Pending Pickup</span>
+          <div className="text-2xl font-semibold text-amber-600 mt-1">{kpis.pendingPickup}</div>
+          <span className="text-xs text-muted-foreground">Awaiting assignment</span>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-blue-600 uppercase">Scheduled / In Field</span>
-          <div className="text-2xl font-black text-blue-600 mt-1">
+        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-sm">
+          <span className="text-xs font-bold text-blue-600 uppercase">Scheduled / In Field</span>
+          <div className="text-2xl font-semibold text-blue-600 mt-1">
             {kpis.scheduledPickups + kpis.samplesCollected}
           </div>
-          <span className="text-[10px] text-muted-foreground">{kpis.samplesCollected} collected</span>
+          <span className="text-xs text-muted-foreground">{kpis.samplesCollected} collected</span>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-purple-600 uppercase">In Lab Testing</span>
-          <div className="text-2xl font-black text-purple-600 mt-1">
+        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-sm">
+          <span className="text-xs font-bold text-purple-600 uppercase">In Lab Testing</span>
+          <div className="text-2xl font-semibold text-purple-600 mt-1">
             {kpis.samplesAtLab + kpis.testingInProgress}
           </div>
-          <span className="text-[10px] text-muted-foreground">Analysis in progress</span>
+          <span className="text-xs text-muted-foreground">Analysis in progress</span>
         </div>
 
-        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-emerald-600 uppercase">Reports Ready</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">{kpis.reportsReady}</div>
-          <span className="text-[10px] text-emerald-700 font-semibold">
+        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-sm">
+          <span className="text-xs font-bold text-emerald-600 uppercase">Reports Ready</span>
+          <div className="text-2xl font-semibold text-emerald-600 mt-1">{kpis.reportsReady}</div>
+          <span className="text-xs text-emerald-700 font-semibold">
             ₹{kpis.totalRevenue.toLocaleString('en-IN')} revenue
           </span>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-card border border-border/70 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-card border border-border/70 rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
         <form onSubmit={handleSearchSubmit} className="relative w-full md:max-w-xs">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
@@ -363,10 +363,10 @@ export function SoilTestingModule() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-card border border-border/70 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-card border border-border/70 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground font-bold uppercase tracking-wider text-[10px]">
+            <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground font-bold uppercase tracking-wider text-xs">
               <tr>
                 <th className="p-3.5">Order ID</th>
                 <th className="p-3.5">Farmer</th>
@@ -397,7 +397,7 @@ export function SoilTestingModule() {
                     <td className="p-3.5 font-bold text-foreground">{o.order_number}</td>
                     <td className="p-3.5">
                       <div className="font-bold text-foreground">{o.farmer_name}</div>
-                      <div className="text-[11px] text-muted-foreground">+91 {o.mobile}</div>
+                      <div className="text-xs text-muted-foreground">+91 {o.mobile}</div>
                     </td>
                     <td className="p-3.5 text-muted-foreground">
                       {o.district}, {o.state}
@@ -406,10 +406,10 @@ export function SoilTestingModule() {
                       <span className="font-semibold text-foreground capitalize">
                         {o.test_type}
                       </span>
-                      <div className="text-[10px] text-muted-foreground">₹{o.total_amount}</div>
+                      <div className="text-xs text-muted-foreground">₹{o.total_amount}</div>
                     </td>
                     <td className="p-3.5">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground uppercase">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-muted text-foreground uppercase">
                         {o.order_status.replace(/_/g, ' ')}
                       </span>
                     </td>
@@ -446,7 +446,7 @@ export function SoilTestingModule() {
       {/* Manage Order Modal */}
       {selectedOrder && (
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-xl">
             <DialogHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
@@ -672,7 +672,7 @@ export function SoilTestingModule() {
                   </span>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">Soil pH</label>
+                      <label className="text-xs text-muted-foreground block">Soil pH</label>
                       <Input
                         value={phVal}
                         onChange={(e) => setPhVal(e.target.value)}
@@ -680,7 +680,7 @@ export function SoilTestingModule() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">Nitrogen (N)</label>
+                      <label className="text-xs text-muted-foreground block">Nitrogen (N)</label>
                       <Input
                         value={nVal}
                         onChange={(e) => setNVal(e.target.value)}
@@ -688,7 +688,7 @@ export function SoilTestingModule() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">Phosphorus (P)</label>
+                      <label className="text-xs text-muted-foreground block">Phosphorus (P)</label>
                       <Input
                         value={pVal}
                         onChange={(e) => setPVal(e.target.value)}
@@ -696,7 +696,7 @@ export function SoilTestingModule() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">Potassium (K)</label>
+                      <label className="text-xs text-muted-foreground block">Potassium (K)</label>
                       <Input
                         value={kVal}
                         onChange={(e) => setKVal(e.target.value)}
@@ -704,7 +704,7 @@ export function SoilTestingModule() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">% Organic Carbon</label>
+                      <label className="text-xs text-muted-foreground block">% Organic Carbon</label>
                       <Input
                         value={ocVal}
                         onChange={(e) => setOcVal(e.target.value)}
@@ -712,7 +712,7 @@ export function SoilTestingModule() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground block">Zinc (Zn ppm)</label>
+                      <label className="text-xs text-muted-foreground block">Zinc (Zn ppm)</label>
                       <Input
                         value={znVal}
                         onChange={(e) => setZnVal(e.target.value)}

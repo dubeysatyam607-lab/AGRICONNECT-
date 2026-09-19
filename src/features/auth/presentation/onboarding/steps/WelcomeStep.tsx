@@ -10,7 +10,7 @@ export const WelcomeStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
   return (
   <div className="flex min-h-full flex-col items-center justify-center text-center">
     <div className="relative flex w-full max-w-sm items-center justify-center">
-      <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-gradient-to-br from-emerald-400 via-lime-300 to-amber-300 opacity-30 blur-3xl" />
+      <div className="absolute inset-0 -z-10 rounded-[2.5rem] bg-emerald-700 opacity-30 blur-3xl" />
       <svg viewBox="0 0 320 240" className="w-full max-w-[19rem]">
         <defs>
           <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
@@ -52,11 +52,11 @@ export const WelcomeStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
       </svg>
     </div>
 
-    <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900">{t('onb.welcome.titleA')} <span className="text-emerald-600">{t('onb.welcome.titleAccent')}</span></h1>
+    <h1 className="mt-6 text-3xl font-semibold tracking-tight text-slate-900">{t('onb.welcome.titleA')} <span className="text-emerald-600">{t('onb.welcome.titleAccent')}</span></h1>
     <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
       {t('onb.welcome.subtitle')}
     </p>
-    <p className="mt-4 flex items-center gap-1.5 rounded-full bg-emerald-50 px-4 py-1.5 text-[11px] font-bold text-emerald-700">
+    <p className="mt-4 flex items-center gap-1.5 rounded-full bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700">
       {t('onb.welcome.eta')}
     </p>
 

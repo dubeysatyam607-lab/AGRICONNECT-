@@ -167,7 +167,7 @@ export function SafeImage({
         {...props}
       />
       {loading && (
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-emerald-500/20 to-emerald-500/10 animate-pulse pointer-events-none" />
+        <div className="absolute inset-0 bg-emerald-700 animate-pulse pointer-events-none" />
       )}
     </div>
   );

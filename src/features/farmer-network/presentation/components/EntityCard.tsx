@@ -31,16 +31,16 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
   const handleToast = (msg: string) => onToast?.(msg);
 
   return (
-    <article className="rounded-2xl border border-border bg-card p-4 shadow-card">
+    <article className="rounded-xl border border-border bg-card p-4 shadow-card">
       {/* Header */}
       <div className="flex items-start gap-3">
         <Avatar user={entity} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <h3 className="truncate text-sm font-black text-foreground">{entity.name}</h3>
+            <h3 className="truncate text-sm font-semibold text-foreground">{entity.name}</h3>
             {entity.verified && <ShieldCheck size={14} className="shrink-0 text-sky-500" aria-label={t('fnet.verified')} />}
           </div>
-          <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+          <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
             <MapPin size={11} className="text-forest" />
             {entity.village}, {entity.district}
             <span className="text-muted-foreground/50">·</span>
@@ -71,10 +71,10 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
       )}
       {entity.type === 'buyer' && (
         <div className="mt-3 rounded-xl bg-violet-500/8 px-3 py-2">
-          <p className="text-[11px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-300">{t('fnet.meta.buys')}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-300">{t('fnet.meta.buys')}</p>
           <p className="text-xs font-bold text-foreground">{(entity as Buyer).lookingFor}</p>
           {(entity as Buyer).minQty && (
-            <p className="mt-0.5 text-[11px] font-semibold text-muted-foreground">
+            <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
               {t('fnet.meta.minQty')}: {(entity as Buyer).minQty}
             </p>
           )}
@@ -83,7 +83,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
       {entity.type === 'farmer' && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {(entity as FarmerProfile).produce.map((crop) => (
-            <span key={crop} className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+            <span key={crop} className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
               {crop}
             </span>
           ))}
@@ -94,7 +94,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
       {entity.type === 'provider' && (entity as ServiceProvider).skills.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {(entity as ServiceProvider).skills.map((s) => (
-            <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+            <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-xs font-bold text-muted-foreground">
               {s}
             </span>
           ))}
@@ -105,7 +105,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
       {reviews.length > 0 && (
         <button
           onClick={() => setShowReviews((v) => !v)}
-          className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-forest hover:underline"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-forest hover:underline"
         >
           <Star size={11} />
           {showReviews ? t('fnet.review.hide') : interpolate(t('fnet.review.show'), { count: reviews.length })}
@@ -116,7 +116,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
           {reviews.map((r) => (
             <li key={r.id} className="rounded-xl bg-background/60 px-3 py-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black text-foreground">{r.author}</span>
+                <span className="text-xs font-semibold text-foreground">{r.author}</span>
                 <StarRating rating={r.rating} reviews={0} showCount={false} size={10} />
               </div>
               <p className="mt-1 text-xs leading-snug text-muted-foreground">{r.comment}</p>
@@ -126,7 +126,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({ entity, footerNote, onTo
       )}
 
       {/* Footer note (e.g. "sells wheat") */}
-      {footerNote && <p className="mt-3 text-[11px] font-semibold text-muted-foreground/80">{footerNote}</p>}
+      {footerNote && <p className="mt-3 text-xs font-semibold text-muted-foreground/80">{footerNote}</p>}
 
       {/* Actions */}
       <div className="mt-3.5 flex gap-2">
@@ -173,11 +173,11 @@ const MetaTile: React.FC<{ icon: React.ComponentType<{ size?: number; className?
   sub,
 }) => (
   <div className="rounded-xl bg-background/60 px-2 py-2 text-center">
-    <p className="flex items-center justify-center gap-1 text-xs font-black text-foreground">
+    <p className="flex items-center justify-center gap-1 text-xs font-semibold text-foreground">
       <Icon size={11} className="text-forest" />
       {label}
     </p>
-    <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{sub}</p>
+    <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">{sub}</p>
   </div>
 );
 
@@ -193,10 +193,10 @@ const BookingModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 shadow-soft sm:rounded-3xl">
+      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 shadow-soft sm:rounded-xl">
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-black text-foreground">{t('fnet.booking.title')}</h4>
+            <h4 className="text-sm font-semibold text-foreground">{t('fnet.booking.title')}</h4>
             <p className="mt-0.5 text-xs font-semibold text-muted-foreground">{provider.name} · {provider.pricing}</p>
           </div>
           <button onClick={onClose} className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-bold text-muted-foreground" aria-label={t('common.back')}>
@@ -205,7 +205,7 @@ const BookingModal: React.FC<{
         </div>
         <div className="mt-4 space-y-3">
           <label className="block">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('fnet.booking.date')}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('fnet.booking.date')}</span>
             <input
               type="date"
               value={date}
@@ -219,7 +219,7 @@ const BookingModal: React.FC<{
               <IndianRupee size={13} className="text-forest" />
               {t('fnet.booking.amount')}
             </span>
-            <span className="text-sm font-black text-foreground">{provider.pricing}</span>
+            <span className="text-sm font-semibold text-foreground">{provider.pricing}</span>
           </div>
           <button
             disabled={!date}

@@ -29,17 +29,17 @@ const COLUMNS: DataColumn<AdminRole>[] = [
   { key: 'name', header: 'Role', render: (r) => (
       <div className="flex items-center gap-2">
         <span className="font-medium text-foreground">{r.name}</span>
-        {r.protected && <Badge variant="secondary" className="text-[10px]">{t('adm27')}</Badge>}
+        {r.protected && <Badge variant="secondary" className="text-xs">{t('adm27')}</Badge>}
       </div>
     ) },
   { key: 'description', header: 'Description', className: 'hidden lg:table-cell' },
   { key: 'permissions', header: 'Permissions', render: (r) => (
       <div className="flex max-w-sm flex-wrap gap-1">
         {r.permissions.includes('*')
-          ? <Badge variant="secondary" className="text-[10px]">{t('adm28')}</Badge>
-          : r.permissions.slice(0, 3).map((p) => <Badge key={p} variant="outline" className="text-[10px] font-mono">{p}</Badge>)
+          ? <Badge variant="secondary" className="text-xs">{t('adm28')}</Badge>
+          : r.permissions.slice(0, 3).map((p) => <Badge key={p} variant="outline" className="text-xs font-mono">{p}</Badge>)
         }
-        {r.permissions.length > 3 && !r.permissions.includes('*') && <Badge variant="outline" className="text-[10px]">+{r.permissions.length - 3}</Badge>}
+        {r.permissions.length > 3 && !r.permissions.includes('*') && <Badge variant="outline" className="text-xs">+{r.permissions.length - 3}</Badge>}
       </div>
     ) },
   { key: 'memberCount', header: 'Members', align: 'right', sortValue: (r) => r.memberCount, render: (r) => <span>{fmtNumber(r.memberCount)}</span> },
@@ -100,7 +100,7 @@ export function RolesModule() {
       {/* Custom role dialog with permission matrix */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
-          <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-5 " onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-foreground">{editing ? `Edit Role — ${editing.name}` : 'New Role'}</h3>
             {editing?.protected && (
               <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-600">
@@ -141,7 +141,7 @@ export function RolesModule() {
               )}
               <div className="flex flex-wrap gap-1">
                 {ALL_PERMS.map((p) => (
-                  <Badge key={p} variant={form.permissions.includes(p) ? 'default' : 'outline'} className="cursor-pointer text-[10px] font-mono" onClick={() => togglePerm(p)}>
+                  <Badge key={p} variant={form.permissions.includes(p) ? 'default' : 'outline'} className="cursor-pointer text-xs font-mono" onClick={() => togglePerm(p)}>
                     {p}
                   </Badge>
                 ))}

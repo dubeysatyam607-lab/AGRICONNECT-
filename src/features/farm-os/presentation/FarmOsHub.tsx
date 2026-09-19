@@ -51,22 +51,22 @@ export const FarmOsHub: React.FC<FarmOsHubProps> = ({ onNavigate, onToast }) => 
               <ArrowLeft size={15} />
             </button>
           )}
-          <span className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-forest text-primary-foreground shadow-colorful">
+          <span className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-forest text-primary-foreground ">
             <Sprout size={19} />
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400 ring-2 ring-background">
               <Sparkles size={8} className="text-white" />
             </span>
           </span>
           <div>
-            <h1 className="font-display text-lg font-black tracking-tight text-foreground">{t('fos.title')}</h1>
-            <p className="text-[11px] font-semibold text-muted-foreground">{t('fos.subtitle')}</p>
+            <h1 className=" text-lg font-semibold tracking-tight text-foreground">{t('fos.title')}</h1>
+            <p className="text-xs font-semibold text-muted-foreground">{t('fos.subtitle')}</p>
           </div>
         </div>
         {/* Farm switcher */}
         <div className="relative">
           <button
             onClick={() => setFarmOpen((o) => !o)}
-            className="flex max-w-[150px] items-center gap-1 rounded-full border border-border bg-card py-1.5 pl-2.5 pr-2 text-[11px] font-black text-foreground shadow-card hover:border-emerald-300"
+            className="flex max-w-[150px] items-center gap-1 rounded-full border border-border bg-card py-1.5 pl-2.5 pr-2 text-xs font-semibold text-foreground shadow-card hover:border-emerald-300"
           >
             <MapPinned size={12} className="shrink-0 text-emerald-600 dark:text-emerald-300" />
             <span className="truncate">{data.activeFarm.name}</span>
@@ -75,7 +75,7 @@ export const FarmOsHub: React.FC<FarmOsHubProps> = ({ onNavigate, onToast }) => 
           {farmOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setFarmOpen(false)} />
-              <div className="absolute right-0 top-9 z-50 w-52 rounded-2xl border border-border bg-card p-1.5 shadow-xl">
+              <div className="absolute right-0 top-9 z-50 w-52 rounded-xl border border-border bg-card p-1.5 ">
                 {data.state.farms.map((f) => (
                   <button
                     key={f.id}
@@ -92,7 +92,7 @@ export const FarmOsHub: React.FC<FarmOsHubProps> = ({ onNavigate, onToast }) => 
                     )}
                   >
                     <span className="truncate">{f.name}</span>
-                    <span className="shrink-0 text-[9px] font-black text-muted-foreground">{f.areaAcres} ac</span>
+                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">{f.areaAcres} ac</span>
                   </button>
                 ))}
               </div>

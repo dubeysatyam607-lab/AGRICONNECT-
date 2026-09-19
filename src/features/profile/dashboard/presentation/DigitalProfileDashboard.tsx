@@ -62,7 +62,7 @@ interface DigitalProfileDashboardProps {
 const SectionFallback: React.FC = () => (
   <div className="space-y-4">
     {[0, 1, 2].map((i) => (
-      <Skeleton key={i} className="h-28 rounded-2xl" />
+      <Skeleton key={i} className="h-28 rounded-xl" />
     ))}
   </div>
 );
@@ -199,7 +199,7 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
         className="pointer-events-none flex items-center justify-center overflow-hidden transition-all duration-200"
         style={{ height: pull, opacity: pull > 0 ? 1 : 0 }}
       >
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[10px] font-extrabold text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
           <RefreshCw size={11} className={`${pull >= 80 ? 'animate-spin' : ''}`} />
           {pull >= 80 ? t('prof.releaseRefresh') : t('prof.pullRefresh')}
         </span>
@@ -223,7 +223,7 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
               <LogOut size={13} className={loggingOut ? 'animate-spin' : ''} /> {t('settings.logout')}
             </button>
           </div>
-          <span className="text-[11px] font-bold text-muted-foreground">{t('prof.digitalProfile')}</span>
+          <span className="text-xs font-bold text-muted-foreground">{t('prof.digitalProfile')}</span>
         </div>
 
         {/* Hero */}
@@ -241,7 +241,7 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
         </div>
 
         {/* Section tabs */}
-        <nav aria-label="Profile sections" className="sticky top-2 z-30 -mx-4 mt-5 px-4 py-1 bg-background/85 backdrop-blur-lg">
+        <nav aria-label="Profile sections" className="sticky top-2 z-30 -mx-4 mt-5 px-4 py-1 bg-background-lg">
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -250,9 +250,9 @@ export const DigitalProfileDashboard: React.FC<DigitalProfileDashboardProps> = (
                 <button
                   key={tab.id}
                   onClick={() => setSection(tab.id)}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-extrabold transition-all ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all ${
                     active
-                      ? 'border-primary bg-primary text-primary-foreground shadow-glow'
+                      ? 'border-primary bg-primary text-primary-foreground '
                       : 'border-border bg-card text-muted-foreground hover:text-foreground shadow-card'
                   }`}
                 >

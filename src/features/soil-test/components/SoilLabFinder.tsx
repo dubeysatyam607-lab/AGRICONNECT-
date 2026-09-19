@@ -222,7 +222,7 @@ export const SoilLabFinder: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header & Filter Controls */}
-      <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-50/50 via-background to-teal-50/20 dark:from-emerald-950/20 dark:via-background dark:to-teal-950/10">
+      <Card className="border-emerald-500/20 bg-emerald-50  dark:via-background ">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -286,14 +286,14 @@ export const SoilLabFinder: React.FC = () => {
                     <Badge
                       className={
                         lab.type === 'icar' || lab.type === 'kvk'
-                          ? 'bg-emerald-600 text-white text-[10px]'
-                          : 'bg-blue-600 text-white text-[10px]'
+                          ? 'bg-emerald-600 text-white text-xs'
+                          : 'bg-blue-600 text-white text-xs'
                       }
                     >
                       {lab.type.toUpperCase()}
                     </Badge>
                     {lab.nablAccredited && (
-                      <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-700 dark:text-amber-300">
+                      <Badge variant="outline" className="text-xs border-amber-500 text-amber-700 dark:text-amber-300">
                         <Award className="w-3 h-3 mr-1" />
                         NABL
                       </Badge>
@@ -304,7 +304,7 @@ export const SoilLabFinder: React.FC = () => {
                 <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0 bg-amber-50 dark:bg-amber-950/40 px-2 py-1 rounded">
                   <Star className="w-3.5 h-3.5 fill-current" />
                   <span>{lab.rating}</span>
-                  <span className="text-muted-foreground text-[10px] font-normal">({lab.reviewCount})</span>
+                  <span className="text-muted-foreground text-xs font-normal">({lab.reviewCount})</span>
                 </div>
               </div>
 
@@ -320,7 +320,7 @@ export const SoilLabFinder: React.FC = () => {
                 {lab.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium"
+                    className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium"
                   >
                     {tag}
                   </span>
@@ -330,15 +330,15 @@ export const SoilLabFinder: React.FC = () => {
               {/* Lab Key Info Matrix */}
               <div className="grid grid-cols-3 gap-2 py-2 px-3 bg-muted/40 rounded-lg text-center text-xs">
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">{isHindi ? 'मूल NPK' : 'Basic NPK'}</span>
+                  <span className="text-xs text-muted-foreground block">{isHindi ? 'मूल NPK' : 'Basic NPK'}</span>
                   <span className="font-bold text-foreground">₹{lab.basicPrice}</span>
                 </div>
                 <div className="border-x border-border">
-                  <span className="text-[10px] text-muted-foreground block">{isHindi ? '12 पैरामीटर' : '12 Params'}</span>
+                  <span className="text-xs text-muted-foreground block">{isHindi ? '12 पैरामीटर' : '12 Params'}</span>
                   <span className="font-bold text-emerald-600">₹{lab.completePrice}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground block">{isHindi ? 'रिपोर्ट समय' : 'TAT'}</span>
+                  <span className="text-xs text-muted-foreground block">{isHindi ? 'रिपोर्ट समय' : 'TAT'}</span>
                   <span className="font-bold text-foreground">{lab.turnaroundDays} {isHindi ? 'दिन' : 'Days'}</span>
                 </div>
               </div>

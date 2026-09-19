@@ -207,15 +207,15 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
   }, [order.id]);
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background overflow-y-auto animate-sheet-up" role="dialog" aria-modal="true" aria-label="Delivery tracking">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-2">
+    <div className="fixed inset-0 z-[70] bg-background overflow-y-auto " role="dialog" aria-modal="true" aria-label="Delivery tracking">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-2">
         <AgriButton variant="outline" size="icon" onClick={onClose} aria-label="Back"><ArrowLeft size={16} /></AgriButton>
         <div>
-          <h2 className="font-bold text-sm flex items-center gap-1.5"><PackageSearch size={15} className="text-primary" /> {t("deliveryTrack")}</h2>
-          <p className="text-[11px] text-muted-foreground">#{order.id.slice(0, 10).toUpperCase()}</p>
+          <h2 className="font-semibold text-sm flex items-center gap-1.5"><PackageSearch size={15} className="text-primary" /> {t("deliveryTrack")}</h2>
+          <p className="text-xs text-muted-foreground">#{order.id.slice(0, 10).toUpperCase()}</p>
         </div>
         {track.status !== "delivered" && (
-          <span className="ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+          <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
             <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span></span>
             LIVE
           </span>
@@ -227,29 +227,29 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><Truck size={19} /></div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm">{t("courier")}: {track.courier}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{t("trackNo")}: {track.trackingNo}</p>
+              <p className="font-semibold text-sm">{t("courier")}: {track.courier}</p>
+              <p className="text-xs text-muted-foreground truncate">{t("trackNo")}: {track.trackingNo}</p>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">{t("eta")} {track.eta}</span>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">{t("eta")} {track.eta}</span>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span>{track.progress}% {t("completed")}</span><span className="font-semibold text-primary">{track.current}</span>
           </div>
           <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" style={{ width: `${track.progress}%` }}></div>
+            <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${track.progress}%` }}></div>
           </div>
 
           <div className="relative mt-5">
             <div className="absolute left-[11px] top-1 bottom-1 w-0.5 bg-muted"></div>
             {track.stages.map((s, i) => (
               <div key={i} className="relative flex gap-3 pb-5 last:pb-0">
-                <span className={cn("relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0", s.done ? "bg-emerald-500 border-emerald-500 text-white" : "bg-card border-muted-foreground/40 text-transparent")}>
+                <span className={cn("relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0", s.done ? "bg-primary border-primary text-primary-foreground" : "bg-card border-muted-foreground/40 text-transparent")}>
                   {s.done && <Check size={12} />}
                 </span>
                 <div className="pt-0.5">
                   <p className={cn("text-sm font-semibold", s.done ? "text-foreground" : "text-muted-foreground")}>{s.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{s.when}</p>
+                  <p className="text-xs text-muted-foreground">{s.when}</p>
                 </div>
               </div>
             ))}
@@ -257,7 +257,7 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
         </AgriCard>
 
         <AgriCard>
-          <h3 className="font-bold text-sm mb-2">{t("orderItems")}</h3>
+          <h3 className="font-semibold text-sm mb-2">{t("orderItems")}</h3>
           {order.items.map((it, i) => (
             <div key={i} className="flex items-center gap-2.5 py-2 border-b border-border last:border-0">
               <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative">
@@ -271,15 +271,15 @@ const TrackingScreen = ({ order, onClose, t }: { order: Order; onClose: () => vo
                 />
               </div>
               <p className="text-xs font-semibold flex-1 truncate">{it.name} × {it.qty}</p>
-              <p className="text-xs font-bold text-primary">{fmt(it.lineTotal)}</p>
+              <p className="text-xs font-semibold text-primary">{fmt(it.lineTotal)}</p>
             </div>
           ))}
-          <div className="flex justify-between mt-2 text-sm font-bold">
+          <div className="flex justify-between mt-2 text-sm font-semibold">
             <span>{t("total")}</span><span className="text-primary">{fmt(order.total)}</span>
           </div>
         </AgriCard>
 
-        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
           <ShieldCheck size={22} className="text-primary shrink-0" />
           <p className="text-xs text-foreground">{t("supportMsg")}</p>
         </div>
@@ -326,12 +326,12 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-background/90 backdrop-blur flex items-center justify-center p-4 overflow-y-auto animate-fade-up" role="dialog" aria-modal="true" aria-label="Payment status">
+    <div className="fixed inset-0 z-[80] bg-background flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Payment status">
       <AgriCard className="w-full max-w-sm">
         {stage === "done" ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center mx-auto mb-3"><CircleCheck size={34} /></div>
-            <h3 className="font-bold text-foreground text-lg">{t("paySuccess")}</h3>
+            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3"><CircleCheck size={34} /></div>
+            <h3 className="font-semibold text-foreground text-lg">{t("paySuccess")}</h3>
             <p className="text-sm text-muted-foreground mt-1">{fmt(order.total)} {t("paidVia")} {method.toUpperCase()}</p>
             <div className="mt-4 space-y-2">
               <AgriButton className="w-full" onClick={() => { onPaid(); }}><PackageSearch size={15} /> {t("trackOrder")}</AgriButton>
@@ -341,12 +341,12 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-foreground flex items-center gap-2"><Wallet size={16} className="text-primary" /> {t("payment")}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><Wallet size={16} className="text-primary" /> {t("payment")}</h3>
               <AgriButton variant="ghost" size="icon" onClick={onClose}><X size={16} /></AgriButton>
             </div>
             <div className="bg-muted rounded-xl p-3 my-3 flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{t("amountDue")}</span>
-              <span className="font-bold text-xl text-primary">{fmt(order.total)}</span>
+              <span className="font-semibold text-xl text-primary">{fmt(order.total)}</span>
             </div>
             {stage === "paying" ? (
               <div className="py-8 flex flex-col items-center gap-3">
@@ -356,7 +356,7 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
             ) : (
               <>
                 <div className="mb-4">
-                  <div className="flex items-center gap-2 p-3 rounded-xl border bg-primary/10 border-primary/50 text-sm font-bold text-foreground mb-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl border bg-primary/10 border-primary/50 text-sm font-semibold text-foreground mb-3">
                     <Smartphone size={16} className="text-primary" />
                     <span>Official UPI & Instant QR Payment</span>
                   </div>
@@ -367,8 +367,8 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
                   <Check size={16} />
                   {`I Have Paid / Confirm Order (${fmt(order.total)})`}
                 </AgriButton>
-                {payErr && <p className="text-[11px] text-rose-500 text-center mt-2 font-semibold">{payErr}</p>}
-                <p className="text-[11px] text-muted-foreground text-center mt-2">Verified Direct UPI Payment · Satyam Dubey (7067820256@airtel)</p>
+                {payErr && <p className="text-xs text-rose-500 text-center mt-2 font-semibold">{payErr}</p>}
+                <p className="text-xs text-muted-foreground text-center mt-2">Verified Direct UPI Payment · Satyam Dubey (7067820256@airtel)</p>
               </>
             )}
           </>
@@ -401,18 +401,18 @@ const ReviewModal = ({ product, onClose, onSubmitted, t }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/90 backdrop-blur flex items-center justify-center p-4 overflow-y-auto animate-fade-up" role="dialog" aria-modal="true" aria-label="Order status">
+    <div className="fixed inset-0 z-[70] bg-background flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Order status">
       <AgriCard className="w-full max-w-sm">
         {sent ? (
           <div className="text-center py-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center mx-auto mb-3"><Check size={28} /></div>
-            <h3 className="font-bold text-foreground">{t("thankReview")}</h3>
+            <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3"><Check size={28} /></div>
+            <h3 className="font-semibold text-foreground">{t("thankReview")}</h3>
             <p className="text-sm text-muted-foreground mt-1">{t("reviewAdded")}</p>
             <AgriButton className="w-full mt-4" onClick={onClose}>{t("done")}</AgriButton>
           </div>
         ) : (
           <>
-            <h3 className="font-bold text-foreground mb-1">{t("rate")} {product.name}</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t("rate")} {product.name}</h3>
             <p className="text-sm text-muted-foreground mb-4">{t("shareExp")}</p>
             <div className="flex justify-center gap-2 mb-4">
               {[1, 2, 3, 4, 5].map(i => (
@@ -679,8 +679,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
   const renderCard = (p: Product) => {
     const fav = wishlist.includes(p.id);
     return (
-      <div key={p.id} className="bg-card rounded-2xl border border-border shadow-card overflow-hidden flex flex-col group">
-        <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center cursor-pointer overflow-hidden" onClick={() => openDetails(p.id)}>
+      <div key={p.id} className="bg-card rounded-xl border border-border shadow-card overflow-hidden flex flex-col group">
+        <div className="relative aspect-[4/3] bg-muted flex items-center justify-center cursor-pointer overflow-hidden" onClick={() => openDetails(p.id)}>
           <SafeImage
             src={p.imageUrl}
             alt={p.name}
@@ -689,25 +689,25 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             containerClassName="absolute inset-0 w-full h-full"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white z-10">{p.discountPct}% OFF</span>
-          <button onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }} className={cn("absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur transition-all z-10", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}>
+          <span className="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{p.discountPct}% OFF</span>
+          <button onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }} className={cn("absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center  transition-all z-10", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}>
             <Heart size={13} className={fav ? "fill-current" : ""} />
           </button>
         </div>
         <div className="p-3 flex flex-col flex-1">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{hi ? CATEGORY_LABEL[p.category]?.[1] : CATEGORY_LABEL[p.category]?.[0]}</span>
-            <span className="text-[10px] text-muted-foreground">{p.brand}</span>
-            <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold"><Star size={10} className="fill-amber-400 text-amber-400" /> {p.rating}</span>
+            <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{hi ? CATEGORY_LABEL[p.category]?.[1] : CATEGORY_LABEL[p.category]?.[0]}</span>
+            <span className="text-xs text-muted-foreground">{p.brand}</span>
+            <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold"><Star size={10} className="fill-amber-400 text-amber-400" /> {p.rating}</span>
           </div>
-          <h4 className="font-bold text-sm text-foreground leading-snug line-clamp-2 cursor-pointer" onClick={() => openDetails(p.id)}>{hi ? p.nameHi : p.name}</h4>
-          <p className="text-[11px] text-muted-foreground mt-0.5">{p.unit} · {(p.sold || 0).toLocaleString()} {t("sold")}</p>
+          <h4 className="font-semibold text-sm text-foreground leading-snug line-clamp-2 cursor-pointer" onClick={() => openDetails(p.id)}>{hi ? p.nameHi : p.name}</h4>
+          <p className="text-xs text-muted-foreground mt-0.5">{p.unit} · {(p.sold || 0).toLocaleString()} {t("sold")}</p>
           <div className="flex items-end justify-between mt-auto pt-2">
             <div>
-              <p className="font-bold text-primary text-base leading-none">{fmt(p.price)}</p>
-              <p className="text-[10px] text-muted-foreground line-through">{fmt(p.mrp)}</p>
+              <p className="font-semibold text-primary text-base leading-none">{fmt(p.price)}</p>
+              <p className="text-xs text-muted-foreground line-through">{fmt(p.mrp)}</p>
             </div>
-            <button onClick={() => addToCart(p)} disabled={!p.inStock} className={cn("gradient-hero text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110 active:scale-90 transition-all disabled:opacity-40", addedId === p.id && "animate-cart-pop")}>
+            <button onClick={() => addToCart(p)} disabled={!p.inStock} className={cn("bg-primary text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110 transition-all disabled:opacity-40", addedId === p.id && "")}>
               {addedId === p.id ? <Check size={16} /> : <Plus size={16} />}
             </button>
           </div>
@@ -719,24 +719,24 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
   return (
     <div className="pb-24">
       {toast && (
-        <div className="fixed top-16 inset-x-4 z-[90] flex justify-center animate-fade-up pointer-events-none">
-          <div className="bg-foreground text-background text-sm font-semibold px-4 py-2.5 rounded-2xl shadow-2xl">{toast}</div>
+        <div className="fixed top-16 inset-x-4 z-[90] flex justify-center pointer-events-none">
+          <div className="bg-foreground text-background text-sm font-semibold px-4 py-2.5 rounded-xl ">{toast}</div>
         </div>
       )}
 
       <div className="px-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
               <span className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><ShoppingCart size={20} /></span>
               {t("title")}
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t("subtitle")}</p>
           </div>
-          <button onClick={() => setCartOpen(true)} className="relative w-11 h-11 rounded-2xl bg-card border border-border flex items-center justify-center shadow-card active:scale-95 transition-transform">
+          <button onClick={() => setCartOpen(true)} className="relative w-11 h-11 rounded-xl bg-card border border-border flex items-center justify-center shadow-card active:scale-95 transition-transform">
             <ShoppingCart size={19} className="text-primary" />
             {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">{cartCount}</span>
+              <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center">{cartCount}</span>
             )}
           </button>
         </div>
@@ -748,21 +748,21 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             { label: t("brands"), value: String(stats.brands || new Set(products.map(p => p.brand)).size), icon: BadgeCheck, color: "text-teal-500" },
             { label: t("rating"), value: String(stats.avgRating || 4.6), icon: Star, color: "text-amber-500" },
           ].map((s, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-2 text-center animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+            <div key={i} className="bg-card rounded-xl border border-border p-2 text-center" style={{ animationDelay: `${i * 60}ms` }}>
               <s.icon size={14} className={`mx-auto ${s.color}`} />
-              <p className="font-bold text-sm mt-0.5 truncate">{s.value}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
+              <p className="font-semibold text-sm mt-0.5 truncate">{s.value}</p>
+              <p className="text-xs text-muted-foreground truncate">{s.label}</p>
             </div>
           ))}
         </div>
 
         <div className="flex gap-3 overflow-x-auto no-scrollbar mt-4 pb-1">
           {banners.map(b => (
-            <div key={b.id} className="shrink-0 w-72 rounded-2xl p-4 text-white overflow-hidden relative" style={{ background: `linear-gradient(120deg, ${b.color}, #0f172a)` }}>
+            <div key={b.id} className="shrink-0 w-72 rounded-xl p-4 bg-card border border-border text-foreground overflow-hidden relative">
               <div className="absolute -right-6 -bottom-6 opacity-20"><Tractor size={120} /></div>
-              <p className="font-extrabold text-lg flex items-center gap-1.5"><Sparkles size={15} /> {hi ? b.titleHi : b.title}</p>
+              <p className="font-semibold text-lg flex items-center gap-1.5"><Sparkles size={15} /> {hi ? b.titleHi : b.title}</p>
               <p className="text-xs opacity-90 mt-0.5">{hi ? b.subHi : b.sub}</p>
-              <span className="inline-block mt-2 text-[10px] font-bold px-2 py-1 rounded-full bg-white/20">{t("shopNow")} →</span>
+              <span className="inline-block mt-2 text-xs font-semibold px-2 py-1 rounded-full bg-white/20">{t("shopNow")} →</span>
             </div>
           ))}
         </div>
@@ -770,12 +770,12 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
         <div className="mt-4 flex items-center gap-2">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("searchPlaceholder")} className="w-full h-11 pl-10 pr-3 rounded-2xl bg-card border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-card" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("searchPlaceholder")} className="w-full h-11 pl-10 pr-3 rounded-xl bg-card border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-card" />
           </div>
           <AgriButton variant="outline" size="icon" className="h-11 w-11" onClick={() => setShowFilters(true)} aria-label={t("filters")}><SlidersHorizontal size={17} /></AgriButton>
           <AgriButton variant="outline" size="icon" className={cn("h-11 w-11 relative", showWishlist && "border-rose-400 text-rose-500 bg-rose-500/10")} onClick={() => setShowWishlist(!showWishlist)} title={t("wishlist")}>
             <Heart size={17} className={showWishlist ? "fill-rose-500" : ""} />
-            {wishlist.length > 0 && <span className="absolute -top-1 -right-1 min-w-4 h-4 px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">{wishlist.length}</span>}
+            {wishlist.length > 0 && <span className="absolute -top-1 -right-1 min-w-4 h-4 px-0.5 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center">{wishlist.length}</span>}
           </AgriButton>
         </div>
 
@@ -783,7 +783,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           {CATEGORIES.map(c => {
             const active = category === c;
             return (
-              <button key={c} onClick={() => setCategory(c)} className={cn("shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95", active ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30" : "bg-card border border-border text-muted-foreground hover:border-primary/40")}>
+              <button key={c} onClick={() => setCategory(c)} className={cn("shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95", active ? "bg-primary text-white " : "bg-card border border-border text-muted-foreground hover:border-primary/40")}>
                 {c !== "All" && (() => { const Icon = CATEGORY_ICONS[c]; return <Icon size={13} />; })()}
                 {c === "All" ? t("all") : (hi ? CATEGORY_LABEL[c]?.[1] : CATEGORY_LABEL[c]?.[0])}
               </button>
@@ -792,10 +792,10 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-foreground text-sm">
+          <h2 className="font-semibold text-foreground text-sm">
             {showWishlist ? `${t("wishlist")} · ` : ""}{visible.length} {t("products")}
           </h2>
-          <div className="flex bg-card border border-border rounded-full p-0.5 text-[11px] font-bold">
+          <div className="flex bg-card border border-border rounded-full p-0.5 text-xs font-semibold">
             {(["shop", "orders"] as const).map(tb => (
               <button key={tb} onClick={() => setTab(tb)} className={cn("px-3 py-1.5 rounded-full transition-colors", tab === tb ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>
                 {tb === "shop" ? t("shop") : t("orders")}
@@ -809,7 +809,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
         loading ? (
           <div className="px-4 grid grid-cols-2 gap-4">
             {[0, 1, 2, 3].map(i => (
-              <div key={i} className="bg-card rounded-2xl border border-border overflow-hidden animate-pulse">
+              <div key={i} className="bg-card rounded-xl border border-border overflow-hidden animate-pulse">
                 <div className="aspect-[4/3] bg-muted"></div>
                 <div className="p-3 space-y-2">
                   <div className="h-3 bg-muted rounded w-1/2"></div>
@@ -823,11 +823,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           <div className="px-4">
             <AgriCard className="p-8 text-center">
               <WifiOff className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{loadError}</p>
+              <p className="font-semibold text-foreground">{loadError}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("tryAgain")}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
               >
                 <RefreshCw size={14} /> {t("retry")}
               </button>
@@ -837,7 +837,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           <div className="px-4">
             <AgriCard className="p-8 text-center">
               <Search className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{t("noProducts")}</p>
+              <p className="font-semibold text-foreground">{t("noProducts")}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("tryFilters")}</p>
             </AgriCard>
           </div>
@@ -851,7 +851,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
           {orders.length === 0 ? (
             <AgriCard className="p-8 text-center">
               <PackageCheck className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{t("noOrders")}</p>
+              <p className="font-semibold text-foreground">{t("noOrders")}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("noOrdersHint")}</p>
             </AgriCard>
           ) : (
@@ -860,15 +860,15 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                 <div className="p-3.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", o.status === "confirmed" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/15 text-rose-500")}><PackageCheck size={17} /></span>
+                      <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", o.status === "confirmed" ? "bg-primary/10 text-primary" : "bg-rose-500/15 text-rose-500")}><PackageCheck size={17} /></span>
                       <div className="min-w-0">
-                        <p className="font-bold text-sm truncate">#{o.id.slice(0, 12).toUpperCase()}</p>
-                        <p className="text-[11px] text-muted-foreground">{new Date(o.placedAt).toLocaleDateString()} · {o.items.length} {t("items")}</p>
+                        <p className="font-semibold text-sm truncate">#{o.id.slice(0, 12).toUpperCase()}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(o.placedAt).toLocaleDateString()} · {o.items.length} {t("items")}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-bold text-primary">{fmt(o.total)}</p>
-                      <span className={cn("inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1", o.paymentStatus === "paid" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/15 text-amber-600 dark:text-amber-400")}>
+                      <p className="font-semibold text-primary">{fmt(o.total)}</p>
+                      <span className={cn("inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1", o.paymentStatus === "paid" ? "bg-primary/10 text-primary" : "bg-amber-500/15 text-amber-600 dark:text-amber-400")}>
                         {o.paymentStatus === "paid" ? t("paid") : t("pendingPay")}
                       </span>
                     </div>
@@ -886,7 +886,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                         />
                       </div>
                     ))}
-                    {o.items.length > 4 && <span className="shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-bold">+{o.items.length - 4}</span>}
+                    {o.items.length > 4 && <span className="shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">+{o.items.length - 4}</span>}
                     <AgriButton size="sm" variant="outline" className="flex-1" onClick={() => { if (o.paymentStatus === "paid") setTracking(o); else { setPayment(o); } }}>
                       {o.paymentStatus === "paid" ? <PackageSearch size={13} /> : <Wallet size={13} />} {o.paymentStatus === "paid" ? t("trackOrder") : t("payNow")}
                     </AgriButton>
@@ -904,11 +904,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {/* Filters sheet */}
       {showFilters && (
         <div className="fixed inset-0 z-[60]">
-          <div className="absolute inset-0 bg-black/40 animate-fade-up" onClick={() => setShowFilters(false)}></div>
-          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl p-5 pb-8 animate-sheet-up max-h-[70vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("sortBy")}>
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowFilters(false)}></div>
+          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl p-5 pb-8  max-h-[70vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("sortBy")}>
             <div className="w-10 h-1.5 bg-muted rounded-full mx-auto mb-4"></div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-foreground flex items-center gap-2"><SlidersHorizontal size={16} className="text-primary" /> {t("sortBy")}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><SlidersHorizontal size={16} className="text-primary" /> {t("sortBy")}</h3>
               <AgriButton variant="ghost" size="sm" onClick={() => setSort("popular")}>{t("reset")}</AgriButton>
             </div>
             {[["popular", t("mostPopular")], ["price_asc", t("priceLow")], ["price_desc", t("priceHigh")], ["rating", t("topRated")]].map(([v, label]) => (
@@ -924,10 +924,10 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {/* Product details sheet */}
       {selected && (
         <>
-          <div className="fixed inset-0 z-[60] bg-black/50 animate-fade-up" onClick={() => setSelected(null)}></div>
-          <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[88vh] flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-black/50" onClick={() => setSelected(null)}></div>
+          <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl   max-h-[88vh] flex flex-col">
             <div className="p-3.5 pb-0 overflow-y-auto flex-1">
-              <div className="relative h-44 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 flex items-center justify-center mb-3">
+              <div className="relative h-44 rounded-xl overflow-hidden bg-muted flex items-center justify-center mb-3">
                 <SafeImage
                   src={selected.imageUrl}
                   alt={selected.name}
@@ -937,23 +937,23 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   className="w-full h-full object-cover"
                 />
                 <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center z-10"><X size={15} /></button>
-                <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white z-10">{selected.discountPct}% OFF</span>
+                <span className="absolute top-2.5 left-2.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{selected.discountPct}% OFF</span>
               </div>
 
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{hi ? CATEGORY_LABEL[selected.category]?.[1] : CATEGORY_LABEL[selected.category]?.[0]}</span>
-                    <span className="text-[11px] text-muted-foreground">{selected.brand}</span>
+                    <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{hi ? CATEGORY_LABEL[selected.category]?.[1] : CATEGORY_LABEL[selected.category]?.[0]}</span>
+                    <span className="text-xs text-muted-foreground">{selected.brand}</span>
                     {selected.inStock ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-live-dot"></span> {t("inStock")}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary"><span className="w-1.5 h-1.5 rounded-full bg-primary "></span> {t("inStock")}</span>
                     ) : (
-                      <span className="text-[10px] font-bold text-rose-500">{t("outOfStock")}</span>
+                      <span className="text-xs font-semibold text-rose-500">{t("outOfStock")}</span>
                     )}
                   </div>
-                  <h2 className="font-extrabold text-lg text-foreground mt-0.5">{hi ? selected.nameHi : selected.name}</h2>
+                  <h2 className="font-semibold text-lg text-foreground mt-0.5">{hi ? selected.nameHi : selected.name}</h2>
                   <div className="flex items-center gap-2 mt-1 text-xs">
-                    <span className="inline-flex items-center gap-1"><Stars rating={selected.rating} /> <span className="font-bold">{selected.rating}</span></span>
+                    <span className="inline-flex items-center gap-1"><Stars rating={selected.rating} /> <span className="font-semibold">{selected.rating}</span></span>
                     <span className="text-muted-foreground">({selected.reviews} {t("reviews")})</span>
                     <span className="text-muted-foreground">· {(selected.sold || 0).toLocaleString()} {t("sold")}</span>
                   </div>
@@ -961,43 +961,43 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
               </div>
 
               <div className="flex items-end gap-2 mt-3">
-                <p className="font-extrabold text-2xl text-primary">{fmt(selected.price)}</p>
+                <p className="font-semibold text-2xl text-primary">{fmt(selected.price)}</p>
                 <p className="text-sm text-muted-foreground line-through mb-1">{fmt(selected.mrp)}</p>
-                <span className="mb-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">{selected.discountPct}% off</span>
+                <span className="mb-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">{selected.discountPct}% off</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">{selected.unit} · {selected.weightKg} kg · {selected.offer}</p>
+              <p className="text-xs text-muted-foreground">{selected.unit} · {selected.weightKg} kg · {selected.offer}</p>
               {selected.batchNo && (
-                <p className="text-[11px] text-muted-foreground mt-0.5">Batch: {selected.batchNo}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Batch: {selected.batchNo}</p>
               )}
 
-              <div className="mt-3 bg-muted rounded-2xl p-3">
+              <div className="mt-3 bg-muted rounded-xl p-3">
                 <p className="text-xs font-semibold text-foreground leading-relaxed">
                   {hi ? (selected.descriptionHi || selected.description) : (selected.description || selected.descriptionHi)}
                 </p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {(selected.tags || []).map((tg, i) => (
-                    <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-card border border-border text-muted-foreground">{tg}</span>
+                    <span key={i} className="text-xs font-semibold px-2 py-0.5 rounded-md bg-card border border-border text-muted-foreground">{tg}</span>
                   ))}
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                <div className="bg-muted rounded-xl p-2"><Truck size={15} className="mx-auto text-primary mb-0.5" /><p className="text-[10px] font-bold">{selected.freeDelivery ? t("freeDelivery") : "₹49 Delivery"}</p><p className="text-[9px] text-muted-foreground">{selected.deliveryDays}</p></div>
-                <div className="bg-muted rounded-xl p-2"><ShieldCheck size={15} className="mx-auto text-emerald-600 mb-0.5" /><p className="text-[10px] font-bold">{t("genuine")}</p><p className="text-[9px] text-muted-foreground">100% {t("certified")}</p></div>
-                <div className="bg-muted rounded-xl p-2"><RefreshCw size={15} className="mx-auto text-blue-600 mb-0.5" /><p className="text-[10px] font-bold">7 {t("daysReturn")}</p><p className="text-[9px] text-muted-foreground">{t("easyReturns")}</p></div>
+                <div className="bg-muted rounded-xl p-2"><Truck size={15} className="mx-auto text-primary mb-0.5" /><p className="text-xs font-semibold">{selected.freeDelivery ? t("freeDelivery") : "₹49 Delivery"}</p><p className="text-xs text-muted-foreground">{selected.deliveryDays}</p></div>
+                <div className="bg-muted rounded-xl p-2"><ShieldCheck size={15} className="mx-auto text-primary mb-0.5" /><p className="text-xs font-semibold">{t("genuine")}</p><p className="text-xs text-muted-foreground">100% {t("certified")}</p></div>
+                <div className="bg-muted rounded-xl p-2"><RefreshCw size={15} className="mx-auto text-blue-600 mb-0.5" /><p className="text-xs font-semibold">7 {t("daysReturn")}</p><p className="text-xs text-muted-foreground">{t("easyReturns")}</p></div>
               </div>
 
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-sm flex items-center gap-1.5"><Star size={14} className="text-amber-500 fill-amber-500" /> {t("reviews")}</h3>
-                  <button onClick={() => setReviewFor(selected)} className="text-xs font-bold text-primary">{t("writeReview")}</button>
+                  <h3 className="font-semibold text-sm flex items-center gap-1.5"><Star size={14} className="text-amber-500 fill-amber-500" /> {t("reviews")}</h3>
+                  <button onClick={() => setReviewFor(selected)} className="text-xs font-semibold text-primary">{t("writeReview")}</button>
                 </div>
                 <div className="space-y-2">
                   {detailReviews.map((r, i) => (
                     <div key={i} className="bg-muted rounded-xl p-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs">{r.user}</span>
-                        <span className="text-[10px] text-muted-foreground">{r.when}</span>
+                        <span className="font-semibold text-xs">{r.user}</span>
+                        <span className="text-xs text-muted-foreground">{r.when}</span>
                       </div>
                       <Stars rating={r.rating} size={11} />
                       {r.comment && <p className="text-xs text-muted-foreground mt-1">{r.comment}</p>}
@@ -1008,7 +1008,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
               {related.length > 0 && (
                 <div className="mt-4 pb-1">
-                  <h3 className="font-bold text-sm mb-2">{t("related")}</h3>
+                  <h3 className="font-semibold text-sm mb-2">{t("related")}</h3>
                   <div className="flex gap-3 overflow-x-auto no-scrollbar">
                     {related.map(r => (
                       <button key={r.id} onClick={() => openDetails(r.id)} className="shrink-0 w-28 bg-muted rounded-xl p-2 text-left group">
@@ -1022,8 +1022,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         </div>
-                        <p className="text-[11px] font-bold text-foreground line-clamp-2 mt-1.5">{hi ? r.nameHi : r.name}</p>
-                        <p className="text-[11px] font-bold text-primary mt-0.5">{fmt(r.price)}</p>
+                        <p className="text-xs font-semibold text-foreground line-clamp-2 mt-1.5">{hi ? r.nameHi : r.name}</p>
+                        <p className="text-xs font-semibold text-primary mt-0.5">{fmt(r.price)}</p>
                       </button>
                     ))}
                   </div>
@@ -1043,10 +1043,10 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {/* Cart sheet */}
       {cartOpen && (
         <div className="fixed inset-0 z-[66]">
-          <div className="absolute inset-0 bg-black/40 animate-fade-up" onClick={() => setCartOpen(false)}></div>
-          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[85vh] flex flex-col" role="dialog" aria-modal="true" aria-label={t("cart")}>
+          <div className="absolute inset-0 bg-black/40" onClick={() => setCartOpen(false)}></div>
+          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl   max-h-[85vh] flex flex-col" role="dialog" aria-modal="true" aria-label={t("cart")}>
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <h3 className="font-bold text-foreground flex items-center gap-2"><ShoppingCart size={16} className="text-primary" /> {t("cart")} <span className="text-muted-foreground font-normal text-xs">({cartCount})</span></h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><ShoppingCart size={16} className="text-primary" /> {t("cart")} <span className="text-muted-foreground font-normal text-xs">({cartCount})</span></h3>
               <AgriButton variant="ghost" size="icon" onClick={() => setCartOpen(false)}><X size={18} /></AgriButton>
             </div>
 
@@ -1054,7 +1054,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
               {cart.length === 0 ? (
                 <div className="text-center py-10">
                   <ShoppingCart className="mx-auto text-muted-foreground mb-2" size={32} />
-                  <p className="font-bold text-foreground">{t("cartEmpty")}</p>
+                  <p className="font-semibold text-foreground">{t("cartEmpty")}</p>
                   <p className="text-sm text-muted-foreground mt-1">{t("cartEmptyHint")}</p>
                 </div>
               ) : (
@@ -1072,13 +1072,13 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">{l.name} × {l.qty}</p>
-                        <p className="text-[11px] text-muted-foreground">{l.unit}</p>
-                        <p className="text-xs font-bold text-primary mt-0.5">{fmt(l.lineTotal)}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{l.name} × {l.qty}</p>
+                        <p className="text-xs text-muted-foreground">{l.unit}</p>
+                        <p className="text-xs font-semibold text-primary mt-0.5">{fmt(l.lineTotal)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <AgriButton size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQty(l.productId, -1)}><Minus size={13} /></AgriButton>
-                        <span className="font-bold text-xs w-5 text-center">{l.qty}</span>
+                        <span className="font-semibold text-xs w-5 text-center">{l.qty}</span>
                         <AgriButton size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQty(l.productId, 1)}><Plus size={13} /></AgriButton>
                         <AgriButton size="icon" variant="ghost" className="h-7 w-7 text-rose-500" onClick={() => setCart(prev => prev.filter(x => x.productId !== l.productId))}><Trash2 size={14} /></AgriButton>
                       </div>
@@ -1087,13 +1087,13 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5"><Gift size={13} className="text-primary" /> {t("applyCoupon")}</p>
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Gift size={13} className="text-primary" /> {t("applyCoupon")}</p>
                       {couponCode && (
-                        <button onClick={() => { setCouponCode(""); setCouponMsg(null); }} className="text-[10px] font-bold text-rose-500">{t("remove")}</button>
+                        <button onClick={() => { setCouponCode(""); setCouponMsg(null); }} className="text-xs font-semibold text-rose-500">{t("remove")}</button>
                       )}
                     </div>
                     {couponCode ? (
-                      <div className="flex items-center gap-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 rounded-lg px-2.5 py-1.5 text-xs font-bold">
+                      <div className="flex items-center gap-2 bg-primary/10 text-primary rounded-lg px-2.5 py-1.5 text-xs font-semibold">
                         <Check size={13} /> {couponCode} · {totals.couponDesc}
                       </div>
                     ) : (
@@ -1102,10 +1102,10 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                           <input value={couponInput} onChange={e => setCouponInput(e.target.value)} placeholder="WELCOME10 / KHETI20" className="flex-1 h-9 px-3 rounded-lg bg-card border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
                           <AgriButton size="sm" onClick={applyCoupon}><Tag size={13} /> {t("apply")}</AgriButton>
                         </div>
-                        {couponMsg && <p className={cn("text-[11px] font-semibold mt-1.5", couponMsg.ok ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500")}>{couponMsg.text}</p>}
+                        {couponMsg && <p className={cn("text-xs font-semibold mt-1.5", couponMsg.ok ? "text-primary" : "text-rose-500")}>{couponMsg.text}</p>}
                         <div className="flex gap-1.5 flex-wrap mt-2">
                           {coupons.map(c => (
-                            <button key={c.code} onClick={() => setCouponInput(c.code)} className="text-[10px] px-2 py-1 rounded-md bg-card border border-border font-bold text-primary">{c.code}</button>
+                            <button key={c.code} onClick={() => setCouponInput(c.code)} className="text-xs px-2 py-1 rounded-md bg-card border border-border font-semibold text-primary">{c.code}</button>
                           ))}
                         </div>
                       </>
@@ -1114,10 +1114,10 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
                   <div className="bg-muted rounded-xl p-3 space-y-1.5 text-sm">
                     <div className="flex justify-between text-muted-foreground"><span>{t("subtotal")}</span><span>{fmt(totals.subtotal)}</span></div>
-                    {totals.discount > 0 && <div className="flex justify-between text-emerald-600 dark:text-emerald-400"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
-                    <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-bold text-emerald-600 dark:text-emerald-400">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
-                    {totals.shipping > 0 && <p className="text-[10px] text-muted-foreground">{t("freeShipHint").replace(/₹\s*$/, "").trim()} {fmt(499 - (totals.subtotal - totals.discount))}</p>}
-                    <div className="border-t border-border pt-1.5 flex justify-between font-bold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
+                    {totals.discount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
+                    <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-semibold text-primary">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
+                    {totals.shipping > 0 && <p className="text-xs text-muted-foreground">{t("freeShipHint").replace(/₹\s*$/, "").trim()} {fmt(499 - (totals.subtotal - totals.discount))}</p>}
+                    <div className="border-t border-border pt-1.5 flex justify-between font-semibold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
                   </div>
                 </>
               )}
@@ -1126,14 +1126,14 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             {cart.length > 0 && (
               <div className="p-4 border-t border-border">
                 {walletBalance > 0 && (
-                  <div className="flex items-center gap-2 mb-3 text-[11px] text-primary font-semibold">
+                  <div className="flex items-center gap-2 mb-3 text-xs text-primary font-semibold">
                     <Wallet size={13} /> {t("walletBal")}: {fmt(walletBalance)}
                   </div>
                 )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <p className="text-[10px] text-muted-foreground">{t("total")}</p>
-                    <p className="font-extrabold text-lg text-primary leading-none">{fmt(totals.total)}</p>
+                    <p className="text-xs text-muted-foreground">{t("total")}</p>
+                    <p className="font-semibold text-lg text-primary leading-none">{fmt(totals.total)}</p>
                   </div>
                   <AgriButton className="flex-[1.4]" size="lg" onClick={() => { setCartOpen(false); setCheckoutOpen(true); }}>
                     {t("checkout")} <ChevronRight size={16} />
@@ -1148,15 +1148,15 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {/* Checkout */}
       {checkoutOpen && (
         <div className="fixed inset-0 z-[66]">
-          <div className="absolute inset-0 bg-black/40 animate-fade-up" onClick={() => setCheckoutOpen(false)}></div>
-          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[88vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("checkout")}>
+          <div className="absolute inset-0 bg-black/40" onClick={() => setCheckoutOpen(false)}></div>
+          <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl   max-h-[88vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("checkout")}>
             <div className="px-4 py-3 border-b border-border sticky top-0 bg-card flex items-center justify-between">
-              <h3 className="font-bold text-foreground flex items-center gap-2"><MapPin size={16} className="text-primary" /> {t("checkout")}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><MapPin size={16} className="text-primary" /> {t("checkout")}</h3>
               <AgriButton variant="ghost" size="icon" onClick={() => setCheckoutOpen(false)}><X size={18} /></AgriButton>
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{t("deliveryAddr")}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("deliveryAddr")}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <input value={checkoutForm.name} onChange={e => { const f = { ...checkoutForm, name: e.target.value }; setCheckoutForm(f); write("agri_user", f); }} placeholder={t("name")} className="h-10 px-3 rounded-xl bg-muted border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
                   <input value={checkoutForm.phone} onChange={e => { const f = { ...checkoutForm, phone: e.target.value }; setCheckoutForm(f); write("agri_user", f); }} placeholder={t("phone")} inputMode="numeric" maxLength={10} className="h-10 px-3 rounded-xl bg-muted border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
@@ -1166,7 +1166,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
               </div>
 
               <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{t("payMethod")}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("payMethod")}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     ["upi", "UPI", Smartphone],
@@ -1176,7 +1176,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                   ] as Array<[string, string, typeof Smartphone]>).map(([id, label, IconC]) => {
                     const Icon = IconC as typeof Smartphone;
                     return (
-                      <button key={id} onClick={() => { const f = { ...checkoutForm, payment: id }; setCheckoutForm(f); write("agri_user", f); }} className={cn("flex items-center gap-2 p-3 rounded-xl border text-xs font-bold", checkoutForm.payment === id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
+                      <button key={id} onClick={() => { const f = { ...checkoutForm, payment: id }; setCheckoutForm(f); write("agri_user", f); }} className={cn("flex items-center gap-2 p-3 rounded-xl border text-xs font-semibold", checkoutForm.payment === id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
                         <Icon size={15} className={checkoutForm.payment === id ? "text-primary" : "text-muted-foreground"} /> {label}
                       </button>
                     );
@@ -1188,18 +1188,18 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3">
                   <Wallet size={18} className="text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-foreground">{t("walletBal")}</p>
-                    <p className="text-[11px] text-muted-foreground">{t("walletHint")}</p>
+                    <p className="text-xs font-semibold text-foreground">{t("walletBal")}</p>
+                    <p className="text-xs text-muted-foreground">{t("walletHint")}</p>
                   </div>
-                  <span className="text-sm font-bold text-primary">{fmt(walletBalance)}</span>
+                  <span className="text-sm font-semibold text-primary">{fmt(walletBalance)}</span>
                 </div>
               )}
 
               <div className="bg-muted rounded-xl p-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-muted-foreground"><span>{t("subtotal")}</span><span>{fmt(totals.subtotal)}</span></div>
-                {totals.discount > 0 && <div className="flex justify-between text-emerald-600 dark:text-emerald-400"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
-                <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-bold text-emerald-600 dark:text-emerald-400">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
-                <div className="border-t border-border pt-1.5 flex justify-between font-bold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
+                {totals.discount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
+                <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-semibold text-primary">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
+                <div className="border-t border-border pt-1.5 flex justify-between font-semibold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
               </div>
 
               <AgriButton size="lg" className="w-full" disabled={placing || !checkoutForm.name || !checkoutForm.phone || cart.length === 0} onClick={placeOrder}>
@@ -1224,21 +1224,21 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {reviewFor && <ReviewModal product={reviewFor} onClose={() => setReviewFor(null)} onSubmitted={r => showToast(`${t("thankReview")} ★${r}`)} t={t} />}
 
       {detailLoading && (
-        <div className="fixed inset-0 z-[80] bg-background/80 backdrop-blur flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-background flex items-center justify-center">
           <RefreshCw className="animate-spin text-primary" size={30} />
         </div>
       )}
 
       {detailError && !selected && (
         <div className="fixed inset-0 z-[80] bg-background overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("title")}>
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-2">
+          <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-2">
             <AgriButton variant="outline" size="icon" onClick={() => setDetailError(null)}><ArrowLeft size={16} /></AgriButton>
-            <h2 className="font-bold text-sm">{t("title")}</h2>
+            <h2 className="font-semibold text-sm">{t("title")}</h2>
           </div>
           <div className="px-4 py-12">
             <AgriCard className="p-8 text-center">
               <WifiOff className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{detailError}</p>
+              <p className="font-semibold text-foreground">{detailError}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("tryAgain")}</p>
             </AgriCard>
           </div>
@@ -1249,11 +1249,11 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
       {cartCount > 0 && !cartOpen && !checkoutOpen && !selected && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-20 right-4 z-[55] w-14 h-14 rounded-full gradient-hero shadow-xl flex items-center justify-center active:scale-90 transition-transform animate-fade-up"
+          className="fixed bottom-20 right-4 z-[55] w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white transition-transform"
           aria-label={`${t("cart")} (${cartCount})`}
         >
           <ShoppingCart size={22} className="text-primary-foreground" />
-          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-background animate-cart-pop">{cartCount}</span>
+          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center border-2 border-background ">{cartCount}</span>
         </button>
       )}
     </div>

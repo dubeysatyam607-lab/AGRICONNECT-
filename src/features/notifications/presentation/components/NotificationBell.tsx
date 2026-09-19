@@ -20,7 +20,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
     >
       <Bell size={17} />
       {unread > 0 && (
-        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center">
+        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-rose-600 text-white text-xs font-semibold flex items-center justify-center">
           {unread > 9 ? '9+' : unread}
         </span>
       )}

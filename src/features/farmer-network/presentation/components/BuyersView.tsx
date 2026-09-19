@@ -67,7 +67,7 @@ export const BuyersView: React.FC<BuyersViewProps> = ({ buyers, onToast }) => {
 
       <div className="mt-3 space-y-3">
         {list.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-border py-14 text-center">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-14 text-center">
             <ShoppingBag size={30} className="mb-2 text-muted-foreground/40" />
             <p className="text-sm font-bold text-foreground">{t('fnet.empty.title')}</p>
             <p className="mt-1 max-w-xs text-xs text-muted-foreground">{t('fnet.empty.buyers')}</p>

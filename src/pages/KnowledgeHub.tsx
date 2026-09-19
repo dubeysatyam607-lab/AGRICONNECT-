@@ -113,13 +113,13 @@ const KnowledgeHub: React.FC = () => {
 
       <main className="min-h-screen bg-background pb-20">
         {/* Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="responsive-container py-14 md:py-20">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Knowledge Hub' }]}
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-tight">
               Knowledge Hub
             </h1>
             <p className="text-emerald-100/85 mt-4 max-w-3xl text-lg leading-relaxed">
@@ -133,7 +133,7 @@ const KnowledgeHub: React.FC = () => {
         <section className="responsive-container py-12" aria-label="Knowledge categories">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {HUB_SECTIONS.map((s) => (
-              <article key={s.title} className="rounded-2xl border border-border bg-card p-6 shadow-card flex flex-col">
+              <article key={s.title} className="rounded-xl border border-border bg-card p-6 shadow-card flex flex-col">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl gradient-hero text-primary-foreground">
                   <s.icon className="h-5 w-5" aria-hidden="true" />
                 </span>
@@ -168,7 +168,7 @@ const KnowledgeHub: React.FC = () => {
                 <Link
                   key={g.title}
                   to={g.path}
-                  className="group rounded-2xl border border-border bg-card p-5 shadow-card hover:border-primary/40 transition-colors"
+                  className="group rounded-xl border border-border bg-card p-5 shadow-card hover:border-primary/40 transition-colors"
                 >
                   <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                     <FileText className="h-3.5 w-3.5" aria-hidden="true" />

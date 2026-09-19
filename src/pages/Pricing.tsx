@@ -256,14 +256,14 @@ const Pricing: React.FC = () => {
 
       <main className="min-h-screen bg-background pb-20">
         {/* Header Hero */}
-        <header className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-900 text-white">
+        <header className="bg-emerald-900 text-white">
           <div className="mx-auto max-w-5xl px-4 py-12 md:py-16 text-center">
             <MarketingBreadcrumb
               tone="light"
               items={[{ label: 'Home', path: '/' }, { label: 'Pricing' }]}
               className="justify-center"
             />
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mt-2">
               Simple, Farmer-Friendly Pricing
             </h1>
             <p className="text-emerald-100/90 mt-3 max-w-2xl mx-auto text-base md:text-lg">
@@ -283,20 +283,20 @@ const Pricing: React.FC = () => {
         {/* ── SECTION 1: FOUNDING FARMER SPECIAL OFFER BANNER & CARDS ── */}
         {isOfferAvailable && !userFfStatus?.isFF && (
           <section className="mx-auto max-w-5xl px-4 -mt-8 relative z-20 mb-12">
-            <div className="rounded-3xl border-2 border-emerald-500/60 bg-card shadow-2xl p-6 md:p-8 relative overflow-hidden bg-gradient-to-b from-emerald-50/50 dark:from-emerald-950/20 to-card">
+            <div className="rounded-xl border-2 border-emerald-500/60 bg-card  p-6 md:p-8 relative overflow-hidden bg-emerald-50  to-card">
               {/* Header Badge */}
               <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-border/80">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-2xl bg-emerald-600 text-white shadow-md">
+                  <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-md">
                     <Sprout className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-0.5 rounded-full mb-1">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-0.5 rounded-full mb-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       Limited Early Access Offer
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                      🌱 Become a Founding Farmer
+                    <h2 className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">
+                      Become a Founding Farmer
                     </h2>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ const Pricing: React.FC = () => {
                 {/* Real-time remaining slots counter */}
                 <div className="flex flex-col items-end">
                   <span className="text-xs font-bold text-muted-foreground">Limited Availability</span>
-                  <div className="inline-flex items-center gap-1.5 text-sm font-black text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 px-3 py-1 rounded-full mt-1">
+                  <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 px-3 py-1 rounded-full mt-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                     Only {ffConfig?.remaining_slots} of {ffConfig?.max_slots} Founding Farmer memberships available
                   </div>
@@ -319,22 +319,22 @@ const Pricing: React.FC = () => {
               {/* Two Founding Farmer Plans Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 {/* Founding Farmer Plus */}
-                <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-background p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-background p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                           Early Access Plus
                         </span>
-                        <h3 className="text-xl font-black text-foreground mt-0.5">Founding Farmer Plus</h3>
+                        <h3 className="text-xl font-semibold text-foreground mt-0.5">Founding Farmer Plus</h3>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
                         Save 41%
                       </span>
                     </div>
 
                     <div className="mt-4 flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-foreground">₹{ffConfig?.plus_price ?? 29}</span>
+                      <span className="text-4xl font-semibold text-foreground">₹{ffConfig?.plus_price ?? 29}</span>
                       <span className="text-sm font-medium text-muted-foreground">/month</span>
                       <span className="text-base text-muted-foreground line-through ml-1">₹49/month</span>
                     </div>
@@ -348,7 +348,7 @@ const Pricing: React.FC = () => {
                         'Real-time mandi price SMS & WhatsApp alerts',
                         'Priority 1-on-1 support from agronomists',
                         'Reduced advertisements on all devices',
-                        'Official 🌱 FOUNDING FARMER badge on profile',
+                        'Official FOUNDING FARMER badge on profile',
                       ].map((f, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs md:text-sm text-muted-foreground">
                           <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -399,25 +399,25 @@ const Pricing: React.FC = () => {
                 </div>
 
                 {/* Founding Farmer Pro */}
-                <div className="rounded-2xl border-2 border-emerald-500 bg-background p-6 shadow-md hover:shadow-lg transition-all relative flex flex-col justify-between">
-                  <div className="absolute -top-3 right-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-[11px] font-black uppercase px-3 py-0.5 rounded-full shadow-sm">
+                <div className="rounded-xl border-2 border-emerald-500 bg-background p-6 shadow-md hover:shadow-lg transition-all relative flex flex-col justify-between">
+                  <div className="absolute -top-3 right-6 bg-emerald-700 text-white text-xs font-semibold uppercase px-3 py-0.5 rounded-full shadow-sm">
                     Most Popular
                   </div>
                   <div>
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                           Early Access Pro
                         </span>
-                        <h3 className="text-xl font-black text-foreground mt-0.5">Founding Farmer Pro</h3>
+                        <h3 className="text-xl font-semibold text-foreground mt-0.5">Founding Farmer Pro</h3>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
                         Save 40%
                       </span>
                     </div>
 
                     <div className="mt-4 flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-foreground">₹{ffConfig?.pro_price ?? 59}</span>
+                      <span className="text-4xl font-semibold text-foreground">₹{ffConfig?.pro_price ?? 59}</span>
                       <span className="text-sm font-medium text-muted-foreground">/month</span>
                       <span className="text-base text-muted-foreground line-through ml-1">₹99/month</span>
                     </div>
@@ -431,7 +431,7 @@ const Pricing: React.FC = () => {
                         '100% Ad-Free Experience',
                         'Advanced Yield Forecasting & Harvest Analytics',
                         'Marketplace Priority Search Boost for your crops/tools',
-                        '🌱 FOUNDING FARMER verified badge on all listings',
+                        'FOUNDING FARMER verified badge on all listings',
                         '24/7 dedicated agronomy phone helpline',
                       ].map((f, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs md:text-sm text-foreground">
@@ -446,7 +446,7 @@ const Pricing: React.FC = () => {
                     <button
                       onClick={() => handlePurchaseFF('pro')}
                       disabled={purchasingPlan !== null}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-900 hover:bg-primary/90 text-white font-bold py-3 text-sm shadow-md transition disabled:opacity-50"
                     >
                       {purchasingPlan === 'pro' ? (
                         <>
@@ -489,7 +489,7 @@ const Pricing: React.FC = () => {
         {/* ── SECTION 2: NORMAL STANDARD PLANS ── */}
         <section className="mx-auto max-w-5xl px-4 mt-6">
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-semibold text-foreground tracking-tight">
               Standard Subscription Plans
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -503,20 +503,20 @@ const Pricing: React.FC = () => {
                 key={plan.id}
                 className={
                   plan.highlight
-                    ? 'rounded-2xl border-2 border-emerald-600 bg-card p-6 shadow-md relative flex flex-col justify-between'
-                    : 'rounded-2xl border border-border bg-card p-6 shadow-sm relative flex flex-col justify-between'
+                    ? 'rounded-xl border-2 border-emerald-600 bg-card p-6 shadow-md relative flex flex-col justify-between'
+                    : 'rounded-xl border border-border bg-card p-6 shadow-sm relative flex flex-col justify-between'
                 }
               >
                 <div>
                   {plan.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 text-white px-3.5 py-0.5 text-xs font-black flex items-center gap-1 shadow-sm">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 text-white px-3.5 py-0.5 text-xs font-semibold flex items-center gap-1 shadow-sm">
                       <Sparkles size={12} /> Standard Pro
                     </span>
                   )}
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{plan.tagline}</p>
-                  <h3 className="mt-1 text-xl font-black text-foreground">{plan.name}</h3>
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{plan.tagline}</p>
+                  <h3 className="mt-1 text-xl font-semibold text-foreground">{plan.name}</h3>
                   <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-foreground">₹{plan.monthlyPrice}</span>
+                    <span className="text-4xl font-semibold text-foreground">₹{plan.monthlyPrice}</span>
                     <span className="text-sm font-semibold text-muted-foreground">{plan.period}</span>
                   </div>
 
@@ -573,11 +573,11 @@ const Pricing: React.FC = () => {
 
         {/* Guarantee & Trust Footer */}
         <section className="mx-auto max-w-3xl px-4 mt-16 text-center">
-          <div className="rounded-2xl border border-border bg-muted/40 p-6 md:p-8">
+          <div className="rounded-xl border border-border bg-muted/40 p-6 md:p-8">
             <div className="flex justify-center mb-3 text-emerald-600">
               <ShieldCheck className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-black text-foreground">100% Free Core Tools for All Farmers</h3>
+            <h3 className="text-xl font-semibold text-foreground">100% Free Core Tools for All Farmers</h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-xl mx-auto">
               Live Mandi Bhav, crop disease scanner, weather warnings, and government schemes are free forever.
               Paid plans are designed to provide advanced computing power, priority agronomist advisory, and commercial marketplace benefits.

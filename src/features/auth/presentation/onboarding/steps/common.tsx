@@ -7,10 +7,10 @@ import React from 'react';
 
 export const StepTitle: React.FC<{ badge: string; title: string; subtitle: string }> = ({ badge, title, subtitle }) => (
   <div className="mb-5">
-    <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">
+    <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-700">
       {badge}
     </span>
-    <h2 className="mt-2.5 text-[1.55rem] font-extrabold leading-tight tracking-tight text-slate-900">{title}</h2>
+    <h2 className="mt-2.5 text-[1.55rem] font-semibold leading-tight tracking-tight text-slate-900">{title}</h2>
     <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
   </div>
 );
@@ -25,7 +25,7 @@ export const Chip: React.FC<{
     type="button"
     onClick={onClick}
     aria-pressed={active}
-    className={`flex items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-3 text-left text-xs font-bold transition-all duration-150 active:scale-[0.96] ${
+    className={`flex items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-3 text-left text-xs font-bold transition-all duration-150 active:scale-[0.96] ${
       active
         ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
         : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300'
@@ -82,7 +82,7 @@ export const Stepper: React.FC<{
   value: number;
   onChange: (v: number) => void;
 }> = ({ emoji, label, value, onChange }) => (
-  <div className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white px-4 py-3">
+  <div className="flex items-center justify-between rounded-xl border-2 border-slate-200 bg-white px-4 py-3">
     <div className="flex items-center gap-2.5">
       <span className="text-xl">{emoji}</span>
       <span className="text-xs font-bold text-slate-600">{label}</span>
@@ -92,16 +92,16 @@ export const Stepper: React.FC<{
         type="button"
         aria-label={`Decrease ${label}`}
         onClick={() => onChange(Math.max(0, value - 1))}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg font-extrabold text-slate-600 transition-all active:scale-90 hover:bg-slate-200"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-600 transition-all active:scale-90 hover:bg-slate-200"
       >
         −
       </button>
-      <span className="w-6 text-center text-base font-extrabold text-slate-900">{value}</span>
+      <span className="w-6 text-center text-base font-semibold text-slate-900">{value}</span>
       <button
         type="button"
         aria-label={`Increase ${label}`}
         onClick={() => onChange(Math.min(99, value + 1))}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-lg font-extrabold text-emerald-700 transition-all active:scale-90 hover:bg-emerald-200"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-lg font-semibold text-emerald-700 transition-all active:scale-90 hover:bg-emerald-200"
       >
         +
       </button>
@@ -110,7 +110,7 @@ export const Stepper: React.FC<{
 );
 
 export const LargeCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`rounded-3xl border border-slate-100 bg-white p-5 shadow-sm ${className}`}>{children}</div>
+  <div className={`rounded-xl border border-slate-100 bg-white p-5 shadow-sm ${className}`}>{children}</div>
 );
 
 export const FieldLabel: React.FC<{ emoji?: string; children: React.ReactNode; hint?: string }> = ({ emoji, children, hint }) => (
@@ -119,7 +119,7 @@ export const FieldLabel: React.FC<{ emoji?: string; children: React.ReactNode; h
       {emoji && <span className="mr-1">{emoji}</span>}
       {children}
     </label>
-    {hint && <span className="text-[10px] font-semibold text-slate-300">{hint}</span>}
+    {hint && <span className="text-xs font-semibold text-slate-300">{hint}</span>}
   </div>
 );
 
@@ -136,7 +136,7 @@ export const TextField: React.FC<{
     value={value}
     onChange={(e) => onChange(e.target.value)}
     placeholder={placeholder}
-    className="w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition-all placeholder:font-medium placeholder:text-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
+    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-900 outline-none transition-all placeholder:font-medium placeholder:text-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
   />
 );
 
@@ -150,7 +150,7 @@ export const OnboardingCta: React.FC<{
     type="button"
     disabled={disabled || loading}
     onClick={onClick}
-    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-extrabold text-white shadow-lg shadow-emerald-600/20 transition-all duration-150 hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-lg  transition-all duration-150 hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
   >
     {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}
     {label}

@@ -125,12 +125,12 @@ function StatusPill({ status, nextAvailable, t }: { status: string; nextAvailabl
   const live = status === "available";
   return (
     <span className={cn(
-      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold",
-      live ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : status === "busy" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-slate-500/15 text-muted-foreground"
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold",
+      live ? "bg-primary/10 text-primary" : status === "busy" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-slate-500/15 text-muted-foreground"
     )}>
-      <span className={cn("relative flex h-1.5 w-1.5", live && "animate-live-dot")}>
-        {live && <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping"></span>}
-        <span className={cn("relative inline-flex rounded-full h-1.5 w-1.5", live ? "bg-emerald-500" : status === "busy" ? "bg-amber-500" : "bg-slate-400")}></span>
+      <span className={cn("relative flex h-1.5 w-1.5", live && "")}>
+        {live && <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping"></span>}
+        <span className={cn("relative inline-flex rounded-full h-1.5 w-1.5", live ? "bg-primary" : status === "busy" ? "bg-amber-500" : "bg-slate-400")}></span>
       </span>
       {live ? t("live") : status === "busy" ? t("busy") : t("maintenance")}
       {!live && <span className="font-medium opacity-70">· {nextAvailable}</span>}
@@ -147,7 +147,7 @@ const MachinePhoto: React.FC<{ name: string; category: string; color: string; cl
   const imgSrc = getMachineImage(name, category);
 
   return (
-    <div className={cn("relative h-28 bg-slate-900 overflow-hidden", className)}>
+    <div className={cn("relative h-28 bg-muted overflow-hidden", className)}>
       <SafeImage
         src={imgSrc}
         resolveType="tractor"
@@ -157,7 +157,6 @@ const MachinePhoto: React.FC<{ name: string; category: string; color: string; cl
         className="w-full h-full"
         cover={true}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
     </div>
   );
 };
@@ -196,7 +195,7 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
 
   if (!track) {
     return (
-      <div className="fixed inset-0 z-[70] bg-background/95 backdrop-blur flex flex-col items-center justify-center gap-3 animate-fade-up">
+      <div className="fixed inset-0 z-[70] bg-background flex flex-col items-center justify-center gap-3">
         <RefreshCw className="animate-spin text-primary" size={32} />
         <p className="text-sm text-muted-foreground">{t("tracking")}...</p>
         {err && <p className="text-xs text-red-500">{err}</p>}
@@ -208,10 +207,10 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
   const pts = track.route && track.route.length > 1 ? track.route : [];
   if (pts.length === 0) {
     return (
-      <div className="fixed inset-0 z-[70] bg-background overflow-y-auto animate-sheet-up flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label={t("liveTracking")}>
+      <div className="fixed inset-0 z-[70] bg-background overflow-y-auto  flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label={t("liveTracking")}>
         <div className="text-center max-w-xs">
           <Truck size={34} className="mx-auto text-muted-foreground mb-3" />
-          <h2 className="font-bold text-foreground">{t("liveTracking")}</h2>
+          <h2 className="font-semibold text-foreground">{t("liveTracking")}</h2>
           <p className="text-sm text-muted-foreground mt-1">Tracking route is not available for this trip yet.</p>
           <AgriButton variant="outline" size="sm" className="mt-4" onClick={onClose}><ArrowLeft size={14} /> {t("back")}</AgriButton>
         </div>
@@ -229,16 +228,16 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
   const driverPos = { x: toX(driver.x), y: toY(driver.y) };
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background overflow-y-auto animate-sheet-up" role="dialog" aria-modal="true" aria-label={t("liveTracking")}>
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-[70] bg-background overflow-y-auto " role="dialog" aria-modal="true" aria-label={t("liveTracking")}>
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AgriButton variant="outline" size="icon" onClick={onClose}><X size={16} /></AgriButton>
           <div>
-            <h2 className="font-bold text-sm flex items-center gap-1.5"><Truck size={15} className="text-primary" /> {t("liveTracking")}</h2>
-            <p className="text-[11px] text-muted-foreground">{booking.tractorName} · {track.plate}</p>
+            <h2 className="font-semibold text-sm flex items-center gap-1.5"><Truck size={15} className="text-primary" /> {t("liveTracking")}</h2>
+            <p className="text-xs text-muted-foreground">{booking.tractorName} · {track.plate}</p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
           <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span></span>
           LIVE
         </span>
@@ -246,7 +245,7 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
 
       <div className="p-4 space-y-4">
         <AgriCard className="p-0 overflow-hidden">
-          <div className="relative w-full h-64 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950">
+          <div className="relative w-full h-64 bg-muted">
             <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
               <path d={path} fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeDasharray="0.1 2" className="opacity-80" />
               <circle cx={start.x} cy={start.y} r="1.6" fill="#94a3b8" />
@@ -257,7 +256,7 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
                 <animate attributeName="r" values="2;3;2" dur="1.2s" repeatCount="indefinite" />
               </circle>
             </svg>
-            <div className="absolute bottom-3 left-3 right-3 flex justify-between text-[10px] font-semibold text-white/90">
+            <div className="absolute bottom-3 left-3 right-3 flex justify-between text-xs font-semibold text-white/90">
               <span className="inline-flex items-center gap-1"><MapPin size={10} /> {booking.ownerName}</span>
               <span className="inline-flex items-center gap-1"><Tractor size={10} /> {track.tractor}</span>
               <span className="inline-flex items-center gap-1"><Navigation size={10} /> {t("farm")}</span>
@@ -268,12 +267,12 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
         <AgriCard>
           <div className="flex justify-between items-center mb-2">
             <div>
-              <p className="text-[11px] text-muted-foreground">{t("driver")}</p>
-              <p className="font-bold text-foreground flex items-center gap-1.5">{track.driver} <BadgeCheck size={13} className="text-primary" /></p>
+              <p className="text-xs text-muted-foreground">{t("driver")}</p>
+              <p className="font-semibold text-foreground flex items-center gap-1.5">{track.driver} <BadgeCheck size={13} className="text-primary" /></p>
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-muted-foreground">ETA</p>
-              <p className="font-bold text-primary text-lg leading-tight">{track.eta} {t("min")}</p>
+              <p className="text-xs text-muted-foreground">ETA</p>
+              <p className="font-semibold text-primary text-lg leading-tight">{track.eta} {t("min")}</p>
             </div>
           </div>
           <div className="bg-muted rounded-xl p-2.5 flex items-center gap-2 text-xs">
@@ -282,11 +281,11 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
             <span className="ml-auto font-semibold text-foreground">{track.speed} km/h</span>
           </div>
           <div className="mt-3">
-            <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
               <span>{track.progress}% {t("route")}</span><span>{track.totalTrip} {t("min")}</span>
             </div>
             <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" style={{ width: `${track.progress}%` }}></div>
+              <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${track.progress}%` }}></div>
             </div>
           </div>
           <div className="flex gap-2 mt-4">
@@ -296,17 +295,17 @@ const TrackingScreen = ({ booking, onClose, onCall, onChat, t }: {
         </AgriCard>
 
         <AgriCard>
-          <h3 className="font-bold text-sm mb-3">{t("journey")}</h3>
+          <h3 className="font-semibold text-sm mb-3">{t("journey")}</h3>
           <div className="space-y-0">
             {track.steps.map((s, i) => (
               <div key={i} className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <span className={cn("w-3 h-3 rounded-full border-2 mt-0.5", s.done ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/40")}></span>
-                  {i < track.steps.length - 1 && <span className={cn("w-0.5 flex-1 min-h-5", s.done ? "bg-emerald-500/40" : "bg-muted")}></span>}
+                  <span className={cn("w-3 h-3 rounded-full border-2 mt-0.5", s.done ? "bg-primary border-emerald-500" : "border-muted-foreground/40")}></span>
+                  {i < track.steps.length - 1 && <span className={cn("w-0.5 flex-1 min-h-5", s.done ? "bg-primary/40" : "bg-muted")}></span>}
                 </div>
                 <div className="pb-4">
                   <p className={cn("text-sm font-semibold", s.done ? "text-foreground" : "text-muted-foreground")}>{s.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{s.time}</p>
+                  <p className="text-xs text-muted-foreground">{s.time}</p>
                 </div>
               </div>
             ))}
@@ -352,14 +351,14 @@ const ChatModal = ({ owner, tractorName, onClose, t }: {
   const quick = ["Is the tractor available today?", "Can you send a driver?", "What is the rate for 5 acres?", "Can you deliver to my village?"];
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/95 backdrop-blur flex items-end justify-center animate-sheet-up" role="dialog" aria-modal="true" aria-label={t("chat")}>
-      <div className="w-full max-w-md bg-card rounded-t-3xl border-t border-border shadow-2xl flex flex-col h-[85vh]">
+    <div className="fixed inset-0 z-[70] bg-background flex items-end justify-center " role="dialog" aria-modal="true" aria-label={t("chat")}>
+      <div className="w-full max-w-md bg-card rounded-t-3xl border-t border-border  flex flex-col h-[85vh]">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center text-xs">{owner.name[0]}</div>
+            <div className="w-9 h-9 rounded-full bg-primary/15 text-primary font-semibold flex items-center justify-center text-xs">{owner.name[0]}</div>
             <div>
-              <p className="font-bold text-sm flex items-center gap-1">{owner.name} <BadgeCheck size={12} className="text-primary" /></p>
-              <p className="text-[11px] text-muted-foreground">{tractorName}</p>
+              <p className="font-semibold text-sm flex items-center gap-1">{owner.name} <BadgeCheck size={12} className="text-primary" /></p>
+              <p className="text-xs text-muted-foreground">{tractorName}</p>
             </div>
           </div>
           <AgriButton variant="ghost" size="icon" onClick={onClose}><X size={18} /></AgriButton>
@@ -372,16 +371,16 @@ const ChatModal = ({ owner, tractorName, onClose, t }: {
             </div>
           )}
           {msgs.map((m, i) => (
-            <div key={i} className={cn("max-w-[80%] px-3 py-2 rounded-2xl text-sm", m.from === "user" ? "ml-auto bg-primary text-primary-foreground rounded-br-sm" : "bg-card border border-border rounded-bl-sm")}>
+            <div key={i} className={cn("max-w-[80%] px-3 py-2 rounded-xl text-sm", m.from === "user" ? "ml-auto bg-primary text-primary-foreground rounded-br-sm" : "bg-card border border-border rounded-bl-sm")}>
               {m.text}
-              <p className={cn("text-[10px] mt-0.5", m.from === "user" ? "text-primary-foreground/70" : "text-muted-foreground")}>{m.time}</p>
+              <p className={cn("text-xs mt-0.5", m.from === "user" ? "text-primary-foreground/70" : "text-muted-foreground")}>{m.time}</p>
             </div>
           ))}
         </div>
         <div className="p-3 border-t border-border space-y-2">
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {quick.map((q, i) => (
-              <button key={i} onClick={() => { setInput(q); }} className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-[11px] font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border">
+              <button key={i} onClick={() => { setInput(q); }} className="shrink-0 px-2.5 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border">
                 {q}
               </button>
             ))}
@@ -425,18 +424,18 @@ const ReviewModal = ({ tractor, onClose, onSubmitted, t }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/90 backdrop-blur flex items-center justify-center p-4 overflow-y-auto animate-fade-up" role="dialog" aria-modal="true" aria-label={t("thankReview")}>
+    <div className="fixed inset-0 z-[70] bg-background flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("thankReview")}>
       <AgriCard className="w-full max-w-sm">
         {sent ? (
           <div className="text-center py-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center mx-auto mb-3"><Check size={28} /></div>
-            <h3 className="font-bold text-foreground">{t("thankReview")}</h3>
+            <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3"><Check size={28} /></div>
+            <h3 className="font-semibold text-foreground">{t("thankReview")}</h3>
             <p className="text-sm text-muted-foreground mt-1">{t("reviewAdded")}</p>
             <AgriButton className="w-full mt-4" onClick={onClose}>{t("done")}</AgriButton>
           </div>
         ) : (
           <>
-            <h3 className="font-bold text-foreground mb-1">{t("rate")} {tractor.name}</h3>
+            <h3 className="font-semibold text-foreground mb-1">{t("rate")} {tractor.name}</h3>
             <p className="text-sm text-muted-foreground mb-4">{t("shareExp")}</p>
             <div className="flex justify-center gap-2 mb-4">
               {[1, 2, 3, 4, 5].map(i => (
@@ -471,23 +470,23 @@ const FilterSheet = ({ open, filters, onChange, onClose, t }: {
   const set = (patch: Partial<typeof filters>) => onChange({ ...filters, ...patch });
   return (
     <div className="fixed inset-0 z-[60]">
-      <div className="absolute inset-0 bg-black/40 animate-fade-up" onClick={onClose}></div>
-      <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl p-5 pb-8 animate-sheet-up max-h-[80vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("filters")}>
+      <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
+      <div className="absolute bottom-0 inset-x-0 bg-card rounded-t-3xl p-5 pb-8  max-h-[80vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("filters")}>
         <div className="w-10 h-1.5 bg-muted rounded-full mx-auto mb-4"></div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-foreground flex items-center gap-2"><SlidersHorizontal size={16} className="text-primary" /> {t("filters")}</h3>
+          <h3 className="font-semibold text-foreground flex items-center gap-2"><SlidersHorizontal size={16} className="text-primary" /> {t("filters")}</h3>
           <AgriButton variant="ghost" size="sm" onClick={() => onChange({ minRate: 0, maxRate: 5000, minRating: 0, availableOnly: false, verifiedOnly: false, sort: "distance" })}>{t("reset")}</AgriButton>
         </div>
 
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{t("pricePerHour")}</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("pricePerHour")}</p>
         <div className="bg-muted rounded-xl p-3 mb-4">
-          <input type="range" min={0} max={3000} step={50} value={filters.maxRate} onChange={e => set({ maxRate: Number(e.target.value) })} className="w-full accent-emerald-600" />
-          <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
-            <span>{fmt(0)}</span><span className="font-bold text-primary">upto {fmt(filters.maxRate)}</span>
+          <input type="range" min={0} max={3000} step={50} value={filters.maxRate} onChange={e => set({ maxRate: Number(e.target.value) })} className="w-full accent-primary" />
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+            <span>{fmt(0)}</span><span className="font-semibold text-primary">upto {fmt(filters.maxRate)}</span>
           </div>
         </div>
 
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{t("minRating")}</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("minRating")}</p>
         <div className="flex gap-2 mb-4">
           {[0, 3, 4, 4.5].map(r => (
             <button key={r} onClick={() => set({ minRating: r })} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border", filters.minRating === r ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground")}>
@@ -497,15 +496,15 @@ const FilterSheet = ({ open, filters, onChange, onClose, t }: {
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4">
-          <button onClick={() => set({ availableOnly: !filters.availableOnly })} className={cn("px-3 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5", filters.availableOnly ? "bg-emerald-600/10 border-emerald-500/50 text-emerald-600 dark:text-emerald-400" : "bg-card border-border text-muted-foreground")}>
+          <button onClick={() => set({ availableOnly: !filters.availableOnly })} className={cn("px-3 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5", filters.availableOnly ? "bg-primary/10 border-primary/40 text-primary" : "bg-card border-border text-muted-foreground")}>
             <Tractor size={13} /> {t("availableOnly")}
           </button>
-          <button onClick={() => set({ verifiedOnly: !filters.verifiedOnly })} className={cn("px-3 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5", filters.verifiedOnly ? "bg-emerald-600/10 border-emerald-500/50 text-emerald-600 dark:text-emerald-400" : "bg-card border-border text-muted-foreground")}>
+          <button onClick={() => set({ verifiedOnly: !filters.verifiedOnly })} className={cn("px-3 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5", filters.verifiedOnly ? "bg-primary/10 border-primary/40 text-primary" : "bg-card border-border text-muted-foreground")}>
             <ShieldCheck size={13} /> {t("verifiedOnly")}
           </button>
         </div>
 
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{t("sort")}</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("sort")}</p>
         <div className="flex gap-2 flex-wrap mb-6">
           {[["distance", t("nearest")], ["rating", t("topRated")], ["price_asc", t("priceLow")], ["price_desc", t("priceHigh")]].map(([v, label]) => (
             <button key={v} onClick={() => set({ sort: v })} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border", filters.sort === v ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground")}>
@@ -543,12 +542,12 @@ const BookingModal = ({ tractor, onClose, onSubmit }: {
   ];
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/90 backdrop-blur flex items-end justify-center animate-sheet-up">
-      <div className="w-full max-w-md bg-card rounded-t-3xl border-t border-border shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[70] bg-background flex items-end justify-center ">
+      <div className="w-full max-w-md bg-card rounded-t-3xl border-t border-border  max-h-[92vh] overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between z-10">
           <div>
-            <h3 className="font-bold text-foreground">{tractor.name}</h3>
-            <p className="text-[11px] text-muted-foreground">{tractor.city}, {tractor.state}</p>
+            <h3 className="font-semibold text-foreground">{tractor.name}</h3>
+            <p className="text-xs text-muted-foreground">{tractor.city}, {tractor.state}</p>
           </div>
           <AgriButton variant="ghost" size="icon" onClick={onClose}><X size={18} /></AgriButton>
         </div>
@@ -556,26 +555,26 @@ const BookingModal = ({ tractor, onClose, onSubmit }: {
         <div className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => { setMode("hours"); setQty(4); }} className={cn("p-3 rounded-xl border text-center", mode === "hours" ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
-              <p className="font-bold text-sm">{tractor.rateHour !== undefined && `₹${tractor.rateHour}/hr`}</p>
-              <p className="text-[11px] text-muted-foreground">Per hour</p>
+              <p className="font-semibold text-sm">{tractor.rateHour !== undefined && `₹${tractor.rateHour}/hr`}</p>
+              <p className="text-xs text-muted-foreground">Per hour</p>
             </button>
             <button onClick={() => { setMode("acres"); setQty(2); }} className={cn("p-3 rounded-xl border text-center", mode === "acres" ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
-              <p className="font-bold text-sm">₹{tractor.rateAcre}/acre</p>
-              <p className="text-[11px] text-muted-foreground">Per acre</p>
+              <p className="font-semibold text-sm">₹{tractor.rateAcre}/acre</p>
+              <p className="text-xs text-muted-foreground">Per acre</p>
             </button>
           </div>
 
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">{mode === "hours" ? "Duration (hours)" : "Land size (acres)"}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{mode === "hours" ? "Duration (hours)" : "Land size (acres)"}</p>
             <div className="flex items-center gap-3 bg-muted rounded-xl p-2">
               <AgriButton size="icon" variant="outline" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Decrease">−</AgriButton>
-              <div className="flex-1 text-center font-bold text-lg">{qty} {mode === "hours" ? "hr" : "acre"}</div>
+              <div className="flex-1 text-center font-semibold text-lg">{qty} {mode === "hours" ? "hr" : "acre"}</div>
               <AgriButton size="icon" variant="outline" onClick={() => setQty(Math.min(24, qty + 1))} aria-label="Increase">+</AgriButton>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Schedule date</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Schedule date</p>
             <div className="flex items-center gap-2 bg-muted rounded-xl p-2">
               <CalendarDays size={16} className="text-primary ml-1" />
               <input type="date" value={date} min={new Date().toISOString().slice(0, 10)} onChange={e => setDate(e.target.value)} className="flex-1 bg-transparent text-base sm:text-sm font-semibold focus:outline-none" />
@@ -583,27 +582,27 @@ const BookingModal = ({ tractor, onClose, onSubmit }: {
           </div>
 
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Field address</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Field address</p>
             <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Village, tehsil, district" className="w-full h-10 px-3 rounded-xl bg-muted border border-border text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
 
           <button onClick={() => setWithDriver(!withDriver)} className="w-full flex items-center justify-between p-3 rounded-xl border border-border bg-card">
-            <span className="flex items-center gap-2 text-sm font-semibold"><Truck size={15} className="text-primary" /> With driver <span className="text-[10px] text-muted-foreground font-normal">+₹150</span></span>
+            <span className="flex items-center gap-2 text-sm font-semibold"><Truck size={15} className="text-primary" /> With driver <span className="text-xs text-muted-foreground font-normal">+₹150</span></span>
             <span className={cn("w-10 h-6 rounded-full p-0.5 transition-colors", withDriver ? "bg-primary" : "bg-muted")}>
               <span className={cn("block w-5 h-5 rounded-full bg-white transition-transform", withDriver && "translate-x-4")}></span>
             </span>
           </button>
 
           <div>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Payment method</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Payment method</p>
             <div className="grid grid-cols-2 gap-2">
               {payMethods.map(m => {
                 const Icon = m.icon;
                 return (
                   <button key={m.id} onClick={() => setPaymentMethod(m.id)} className={cn("p-3 rounded-xl border text-left", paymentMethod === m.id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
                     <Icon size={16} className={paymentMethod === m.id ? "text-primary" : "text-muted-foreground"} />
-                    <p className="font-bold text-xs mt-1">{m.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+                    <p className="font-semibold text-xs mt-1">{m.label}</p>
+                    <p className="text-xs text-muted-foreground">{m.sub}</p>
                   </button>
                 );
               })}
@@ -614,8 +613,8 @@ const BookingModal = ({ tractor, onClose, onSubmit }: {
             <div className="flex justify-between text-muted-foreground"><span>{mode === "hours" ? `${qty} hr` : `${qty} acre`} rental</span><span>{fmt(base)}</span></div>
             <div className="flex justify-between text-muted-foreground"><span>Fuel surcharge (12%)</span><span>{fmt(fuel)}</span></div>
             <div className="flex justify-between text-muted-foreground"><span>Driver</span><span>{driver ? "+₹150" : "₹0"}</span></div>
-            <div className="border-t border-border my-1.5 pt-1.5 flex justify-between font-bold text-foreground"><span>Total</span><span>{fmt(total)}</span></div>
-            <p className="text-[11px] text-muted-foreground">Security deposit {fmt(tractor.deposit)} refunded after work.</p>
+            <div className="border-t border-border my-1.5 pt-1.5 flex justify-between font-semibold text-foreground"><span>Total</span><span>{fmt(total)}</span></div>
+            <p className="text-xs text-muted-foreground">Security deposit {fmt(tractor.deposit)} refunded after work.</p>
           </div>
 
           <AgriButton className="w-full" size="lg" onClick={() => onSubmit({ hours: mode === "hours" ? qty : 0, acres: mode === "acres" ? qty : 0, address, paymentMethod, withDriver })}>
@@ -639,14 +638,14 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-background/90 backdrop-blur flex items-center justify-center p-4 overflow-y-auto animate-fade-up" role="dialog" aria-modal="true" aria-label={t("payment")}>
+    <div className="fixed inset-0 z-[80] bg-background flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t("payment")}>
       <AgriCard className="w-full max-w-sm">
         {stage === "done" ? (
           <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center mx-auto mb-3">
+            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
               <Check size={34} />
             </div>
-            <h3 className="font-bold text-foreground text-lg">{t("paymentSuccess")}</h3>
+            <h3 className="font-semibold text-foreground text-lg">{t("paymentSuccess")}</h3>
             <p className="text-sm text-muted-foreground mt-1">{fmt(booking.total)} {t("paidVia")} {method.toUpperCase()}</p>
             <p className="text-xs text-muted-foreground mt-2">{t("receiptSent")}</p>
             <div className="mt-4 space-y-2">
@@ -657,13 +656,13 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
         ) : (
           <>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-bold text-foreground flex items-center gap-2"><CreditCard size={16} className="text-primary" /> {t("payment")}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-2"><CreditCard size={16} className="text-primary" /> {t("payment")}</h3>
               <AgriButton variant="ghost" size="icon" onClick={onClose}><X size={16} /></AgriButton>
             </div>
             <p className="text-sm text-muted-foreground">{booking.tractorName}</p>
             <div className="bg-muted rounded-xl p-3 my-3 flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{t("amountDue")}</span>
-              <span className="font-bold text-xl text-primary">{fmt(booking.total)}</span>
+              <span className="font-semibold text-xl text-primary">{fmt(booking.total)}</span>
             </div>
 
             {stage === "paying" ? (
@@ -693,7 +692,7 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
                 <AgriButton className="w-full" onClick={pay}>
                   <Check size={16} /> I Have Paid / Complete Booking ({fmt(booking.total)})
                 </AgriButton>
-                <p className="text-[11px] text-muted-foreground text-center mt-2">{t("securePay")}</p>
+                <p className="text-xs text-muted-foreground text-center mt-2">{t("securePay")}</p>
               </>
             )}
           </>
@@ -935,19 +934,19 @@ const TractorMarket: React.FC = () => {
           <MachinePhoto name={tractor.name} category={tractor.category} color={tractor.color} />
           <button
             onClick={() => { const nf = toggleFav(tractor.id); setFavs(prev => nf ? [...prev, tractor.id] : prev.filter(x => x !== tractor.id)); }}
-            className={cn("absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all backdrop-blur", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}
+            className={cn("absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all ", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}
           >
             <Heart size={14} className={fav ? "fill-current" : ""} />
           </button>
           {tractor.popular && (
-            <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-amber-950">★ {t("popular")}</span>
+            <span className="absolute top-2.5 left-2.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-400 text-amber-950">★ {t("popular")}</span>
           )}
         </div>
         <div className="p-3.5">
           <div className="flex justify-between items-start gap-2">
             <div className="min-w-0">
-              <h3 className="font-bold text-foreground truncate">{tractor.name}</h3>
-              <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+              <h3 className="font-semibold text-foreground truncate">{tractor.name}</h3>
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <MapPin size={10} /> {tractor.city}, {tractor.state}
                 {tractor.distance && <span className="text-primary font-semibold"> · {tractor.distance}</span>}
               </p>
@@ -959,23 +958,23 @@ const TractorMarket: React.FC = () => {
             <span className="inline-flex items-center gap-1 font-semibold text-foreground"><Stars rating={tractor.rating} size={11} /> {tractor.rating}</span>
             <span className="text-muted-foreground">({tractor.reviews})</span>
             {tractor.hp && <span className="inline-flex items-center gap-1 text-muted-foreground"><Gauge size={11} /> {tractor.hp} HP</span>}
-            {tractor.verified && <span className="inline-flex items-center gap-1 text-primary text-[10px] font-bold ml-auto"><ShieldCheck size={11} /> {t("verified")}</span>}
+            {tractor.verified && <span className="inline-flex items-center gap-1 text-primary text-xs font-semibold ml-auto"><ShieldCheck size={11} /> {t("verified")}</span>}
           </div>
 
           <div className="flex gap-1.5 mt-2 flex-wrap">
             {tractor.implements.slice(0, 3).map(imp => (
-              <span key={imp} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{imp}</span>
+              <span key={imp} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{imp}</span>
             ))}
           </div>
 
           <div className="flex items-end justify-between mt-3 pt-3 border-t border-border">
             <div>
-              <p className="text-[11px] text-muted-foreground">{t("perHour")}</p>
-              <p className="font-bold text-primary text-lg leading-tight">{fmt(tractor.rateHour)}</p>
+              <p className="text-xs text-muted-foreground">{t("perHour")}</p>
+              <p className="font-semibold text-primary text-lg leading-tight">{fmt(tractor.rateHour)}</p>
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-muted-foreground">{t("perAcre")}</p>
-              <p className="font-bold text-foreground">{fmt(tractor.rateAcre)}</p>
+              <p className="text-xs text-muted-foreground">{t("perAcre")}</p>
+              <p className="font-semibold text-foreground">{fmt(tractor.rateAcre)}</p>
             </div>
           </div>
 
@@ -999,15 +998,15 @@ const TractorMarket: React.FC = () => {
   return (
     <div className="pb-24">
       {toast && (
-        <div className="fixed top-16 inset-x-4 z-[90] flex justify-center animate-fade-up">
-          <div className="bg-foreground text-background text-sm font-semibold px-4 py-2.5 rounded-2xl shadow-2xl">{toast}</div>
+        <div className="fixed top-16 inset-x-4 z-[90] flex justify-center">
+          <div className="bg-foreground text-background text-sm font-semibold px-4 py-2.5 rounded-xl ">{toast}</div>
         </div>
       )}
 
       <div className="px-4 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
               <span className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><Tractor size={20} /></span>
               {t("title")}
             </h1>
@@ -1039,14 +1038,14 @@ const TractorMarket: React.FC = () => {
         <div className="grid grid-cols-4 gap-2 mt-4">
           {[
             { label: t("total"), value: String(stats.total || all.length), icon: Store, color: "text-primary" },
-            { label: t("availableNow"), value: String(stats.available || all.filter(x => x.status === "available").length), icon: Zap, color: "text-emerald-500" },
+            { label: t("availableNow"), value: String(stats.available || all.filter(x => x.status === "available").length), icon: Zap, color: "text-primary" },
             { label: t("avgRating"), value: String(stats.avgRating || 4.6), icon: Star, color: "text-amber-500" },
             { label: t("avgHour"), value: fmt(stats.avgHour || Math.round(all.reduce((s, x) => s + x.rateHour, 0) / Math.max(1, all.length))), icon: IndianRupee, color: "text-teal-500" },
           ].map((s, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-2 text-center animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+            <div key={i} className="bg-card rounded-xl border border-border p-2 text-center" style={{ animationDelay: `${i * 60}ms` }}>
               <s.icon size={14} className={`mx-auto ${s.color}`} />
-              <p className="font-bold text-sm mt-0.5 truncate">{s.value}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
+              <p className="font-semibold text-sm mt-0.5 truncate">{s.value}</p>
+              <p className="text-xs text-muted-foreground truncate">{s.label}</p>
             </div>
           ))}
         </div>
@@ -1058,7 +1057,7 @@ const TractorMarket: React.FC = () => {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="w-full h-11 pl-10 pr-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-card"
+              className="w-full h-11 pl-10 pr-3 rounded-xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-card"
             />
           </div>
           <AgriButton variant="outline" size="icon" onClick={() => setShowFilters(true)} className="h-11 w-11 relative" aria-label={t("filters")}>
@@ -1078,7 +1077,7 @@ const TractorMarket: React.FC = () => {
                 onClick={() => setCategory(c)}
                 className={cn(
                   "shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95",
-                  active ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30" : "bg-card border border-border text-muted-foreground hover:border-primary/40"
+                  active ? "bg-primary text-white " : "bg-card border border-border text-muted-foreground hover:border-primary/40"
                 )}
               >
                 {c !== "All" && <CategoryIcon category={c} size={13} />}
@@ -1089,11 +1088,11 @@ const TractorMarket: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-foreground text-sm">
+          <h2 className="font-semibold text-foreground text-sm">
             {coords ? t("nearbyTractors") : t("featured")}
             <span className="text-muted-foreground font-normal"> · {visible.length}</span>
           </h2>
-          <div className="flex bg-card border border-border rounded-full p-0.5 text-[11px] font-bold">
+          <div className="flex bg-card border border-border rounded-full p-0.5 text-xs font-semibold">
             {(["discover", "bookings"] as const).map(tb => (
               <button key={tb} onClick={() => setTab(tb)} className={cn("px-3 py-1.5 rounded-full transition-colors", tab === tb ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>
                 {tb === "discover" ? t("discover") : t("bookings")}
@@ -1107,7 +1106,7 @@ const TractorMarket: React.FC = () => {
         loading ? (
           <div className="px-4 space-y-3">
             {[0, 1, 2].map(i => (
-              <div key={i} className="bg-card rounded-2xl border border-border overflow-hidden animate-pulse">
+              <div key={i} className="bg-card rounded-xl border border-border overflow-hidden animate-pulse">
                 <div className="h-28 bg-muted"></div>
                 <div className="p-3.5 space-y-2">
                   <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -1121,11 +1120,11 @@ const TractorMarket: React.FC = () => {
           <div className="px-4">
             <AgriCard className="p-8 text-center">
               <WifiOff className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{loadError}</p>
+              <p className="font-semibold text-foreground">{loadError}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("tryAgain")}</p>
               <button
                 onClick={() => setCoords({ ...(coords ?? { lat: undefined, lng: undefined }) })}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
               >
                 <RefreshCw size={14} /> {t("retry")}
               </button>
@@ -1135,7 +1134,7 @@ const TractorMarket: React.FC = () => {
           <div className="px-4">
             <AgriCard className="p-8 text-center">
               <Search className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{t("noResults")}</p>
+              <p className="font-semibold text-foreground">{t("noResults")}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("tryFilters")}</p>
             </AgriCard>
           </div>
@@ -1149,7 +1148,7 @@ const TractorMarket: React.FC = () => {
           {history.length === 0 ? (
             <AgriCard className="p-8 text-center">
               <History className="mx-auto text-muted-foreground mb-2" size={28} />
-              <p className="font-bold text-foreground">{t("noBookings")}</p>
+              <p className="font-semibold text-foreground">{t("noBookings")}</p>
               <p className="text-sm text-muted-foreground mt-1">{t("noBookingsHint")}</p>
             </AgriCard>
           ) : (
@@ -1160,20 +1159,20 @@ const TractorMarket: React.FC = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0"><Tractor size={17} /></span>
                       <div className="min-w-0">
-                        <p className="font-bold text-sm truncate">{b.tractorName}</p>
-                        <p className="text-[11px] text-muted-foreground">{b.acres > 0 ? `${b.acres} acre` : `${b.hours} hr`} · {new Date(b.createdAt).toLocaleDateString()}</p>
+                        <p className="font-semibold text-sm truncate">{b.tractorName}</p>
+                        <p className="text-xs text-muted-foreground">{b.acres > 0 ? `${b.acres} acre` : `${b.hours} hr`} · {new Date(b.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <span className={cn("text-[10px] font-bold px-2 py-1 rounded-full", b.status === "confirmed" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/15 text-rose-500")}>
+                    <span className={cn("text-xs font-semibold px-2 py-1 rounded-full", b.status === "confirmed" ? "bg-primary/10 text-primary" : "bg-rose-500/15 text-rose-500")}>
                       {b.status === "confirmed" ? t("confirmed") : t("cancelled")}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mt-3 bg-muted rounded-xl p-2.5">
                     <div>
-                      <p className="text-[10px] text-muted-foreground">{t("owner")}</p>
+                      <p className="text-xs text-muted-foreground">{t("owner")}</p>
                       <p className="font-semibold text-xs flex items-center gap-1">{b.ownerName} <BadgeCheck size={11} className="text-primary" /></p>
                     </div>
-                    <p className="font-bold text-primary">{fmt(b.total)}</p>
+                    <p className="font-semibold text-primary">{fmt(b.total)}</p>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <AgriButton size="sm" variant="outline" className="flex-1" onClick={() => { setTracking(b); }} disabled={b.status !== "confirmed"}><Navigation size={13} /> {t("track")}</AgriButton>
@@ -1196,25 +1195,25 @@ const TractorMarket: React.FC = () => {
       />
 
       {selected && (
-        <div className="fixed inset-0 z-[60] bg-black/50 animate-fade-up" onClick={() => setSelected(null)}></div>
+        <div className="fixed inset-0 z-[60] bg-black/50" onClick={() => setSelected(null)}></div>
       )}
       {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl shadow-2xl animate-sheet-up max-h-[88vh] flex flex-col">
+        <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl   max-h-[88vh] flex flex-col">
           <div className="p-3.5 pb-0 overflow-y-auto flex-1">
             <div className="relative">
-              <MachinePhoto name={selected.name} category={selected.category} color={selected.color} className="h-36 rounded-2xl mb-3" />
+              <MachinePhoto name={selected.name} category={selected.category} color={selected.color} className="h-36 rounded-xl mb-3" />
               <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={15} /></button>
               <span className="absolute top-2.5 left-2.5 z-10"><StatusPill status={selected.status} nextAvailable={selected.nextAvailable} t={t} /></span>
             </div>
 
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="font-extrabold text-lg text-foreground">{selected.name}</h2>
+                <h2 className="font-semibold text-lg text-foreground">{selected.name}</h2>
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin size={11} /> {selected.city}, {selected.state} {selected.distance && <span className="text-primary font-semibold">· {selected.distance}</span>}</p>
               </div>
               <div className="text-right shrink-0">
-                <div className="flex items-center gap-1 justify-end"><Stars rating={selected.rating} /> <span className="font-bold text-sm">{selected.rating}</span></div>
-                <p className="text-[11px] text-muted-foreground">{selected.reviews} {t("reviews")}</p>
+                <div className="flex items-center gap-1 justify-end"><Stars rating={selected.rating} /> <span className="font-semibold text-sm">{selected.rating}</span></div>
+                <p className="text-xs text-muted-foreground">{selected.reviews} {t("reviews")}</p>
               </div>
             </div>
 
@@ -1222,16 +1221,16 @@ const TractorMarket: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-2 mt-4">
               <div className="bg-muted rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("perHour")}</p>
-                <p className="font-bold text-primary">{fmt(selected.rateHour)}</p>
+                <p className="text-xs text-muted-foreground">{t("perHour")}</p>
+                <p className="font-semibold text-primary">{fmt(selected.rateHour)}</p>
               </div>
               <div className="bg-muted rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("perAcre")}</p>
-                <p className="font-bold text-foreground">{fmt(selected.rateAcre)}</p>
+                <p className="text-xs text-muted-foreground">{t("perAcre")}</p>
+                <p className="font-semibold text-foreground">{fmt(selected.rateAcre)}</p>
               </div>
               <div className="bg-muted rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">{t("perDay")}</p>
-                <p className="font-bold text-foreground">{fmt(selected.rateDay)}</p>
+                <p className="text-xs text-muted-foreground">{t("perDay")}</p>
+                <p className="font-semibold text-foreground">{fmt(selected.rateDay)}</p>
               </div>
             </div>
 
@@ -1245,19 +1244,19 @@ const TractorMarket: React.FC = () => {
 
             <div className="flex gap-1.5 flex-wrap mt-3">
               {selected.features.map(f => (
-                <span key={f} className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold"><Check size={10} /> {f}</span>
+                <span key={f} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold"><Check size={10} /> {f}</span>
               ))}
             </div>
 
             <div className="mt-4">
-              <h3 className="font-bold text-sm mb-2 flex items-center gap-1.5"><UserBadge /> {t("ownerProfile")}</h3>
-              <div className="bg-card border border-border rounded-2xl p-3">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-1.5"><UserBadge /> {t("ownerProfile")}</h3>
+              <div className="bg-card border border-border rounded-xl p-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold flex items-center justify-center text-base shadow-lg shadow-emerald-500/30">{selected.owner.avatar}</div>
+                  <div className="w-12 h-12 rounded-xl bg-primary text-white font-semibold flex items-center justify-center text-base ">{selected.owner.avatar}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm flex items-center gap-1.5">{selected.owner.name} {selected.owner.verified && <BadgeCheck size={14} className="text-primary" />}</p>
-                    <p className="text-[11px] text-muted-foreground">{selected.owner.village}, {selected.owner.city}</p>
-                    <div className="flex items-center gap-2 mt-1 text-[11px]">
+                    <p className="font-semibold text-sm flex items-center gap-1.5">{selected.owner.name} {selected.owner.verified && <BadgeCheck size={14} className="text-primary" />}</p>
+                    <p className="text-xs text-muted-foreground">{selected.owner.village}, {selected.owner.city}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="inline-flex items-center gap-0.5 font-semibold"><Star size={10} className="fill-amber-400 text-amber-400" /> {selected.owner.rating}</span>
                       <span className="text-muted-foreground">{selected.owner.jobs} {t("jobs")}</span>
                       <span className="text-muted-foreground">· {selected.owner.response}</span>
@@ -1273,7 +1272,7 @@ const TractorMarket: React.FC = () => {
 
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-sm">{t("reviews")} ({detailReviews.length})</h3>
+                <h3 className="font-semibold text-sm">{t("reviews")} ({detailReviews.length})</h3>
                 <AgriButton size="sm" variant="outline" onClick={() => setReviewModal(true)}><Star size={12} /> {t("writeReview")}</AgriButton>
               </div>
               <div className="space-y-2">
@@ -1281,7 +1280,7 @@ const TractorMarket: React.FC = () => {
                   <div key={i} className="bg-muted rounded-xl p-2.5">
                     <div className="flex justify-between items-center">
                       <p className="font-semibold text-xs">{r.user}</p>
-                      <span className="text-[10px] text-muted-foreground">{r.when}</span>
+                      <span className="text-xs text-muted-foreground">{r.when}</span>
                     </div>
                     <Stars rating={r.rating} size={11} />
                     <p className="text-xs text-muted-foreground mt-1">{r.comment}</p>
@@ -1348,7 +1347,7 @@ const Spec = ({ icon: Icon, label, value }: { icon: LucideIcon; label: string; v
   <div className="flex items-center gap-2.5 bg-muted rounded-xl p-2.5">
     <Icon size={15} className="text-primary shrink-0" />
     <div className="min-w-0">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className="font-semibold text-xs text-foreground truncate">{value}</p>
     </div>
   </div>

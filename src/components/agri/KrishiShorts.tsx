@@ -211,14 +211,14 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
       {/* Close Button */}
       <button
         onClick={() => onClose ? onClose() : window.history.back()}
-        className="absolute top-4 left-4 z-30 w-9 h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+        className="absolute top-4 left-4 z-30 w-9 h-9 bg-white/20  rounded-full flex items-center justify-center"
       >
         <X size={20} className="text-white" />
       </button>
 
       {/* Header */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
-        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-4 py-1.5 rounded-full">
+        <div className="flex items-center gap-2 bg-black/40  px-4 py-1.5 rounded-full">
           <Leaf size={14} className="text-primary" />
           <span className="text-white text-sm font-bold">{t('agr101')}</span>
         </div>
@@ -243,7 +243,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url(${currentVideo.thumbnail})` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
+              <div className="absolute inset-0 bg-emerald-700" />
             </div>
 
             {/* Channel Badge */}
@@ -261,7 +261,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
               onClick={handlePlayVideo}
               className="absolute inset-0 flex items-center justify-center z-10"
             >
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/40 hover:bg-white/30 transition-colors">
+              <div className="w-20 h-20 bg-white/20  rounded-full flex items-center justify-center border-2 border-white/40 hover:bg-white/30 transition-colors">
                 <Play size={36} className="text-white ml-2" fill="white" />
               </div>
             </button>
@@ -286,7 +286,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
           <div className="absolute right-4 bottom-36 flex flex-col items-center gap-5 z-20">
             <button onClick={handleLike} aria-label={likedVideos.has(currentVideo.id) ? 'Unlike video' : 'Like video'} className="flex flex-col items-center">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                likedVideos.has(currentVideo.id) ? 'bg-red-500' : 'bg-white/20 backdrop-blur-sm'
+                likedVideos.has(currentVideo.id) ? 'bg-red-500' : 'bg-white/20 '
               }`}>
                 <Heart
                   size={22}
@@ -300,7 +300,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
             </button>
 
             <button onClick={handleShare} aria-label="Share video on WhatsApp" className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/20  rounded-full flex items-center justify-center">
                 <Share2 size={22} className="text-white" />
               </div>
               <span className="text-white text-xs mt-1">{t('agr102')}</span>
@@ -363,7 +363,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
               onClick={handlePrev}
               disabled={currentIndex === 0}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                currentIndex === 0 ? 'bg-white/10 opacity-40' : 'bg-white/20 backdrop-blur-sm hover:bg-white/30'
+                currentIndex === 0 ? 'bg-white/10 opacity-40' : 'bg-white/20  hover:bg-white/30'
               }`}
             >
               <ChevronUp className="text-white" size={22} />
@@ -372,7 +372,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
               onClick={handleNext}
               disabled={currentIndex === SHORTS_DATA.length - 1}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                currentIndex === SHORTS_DATA.length - 1 ? 'bg-white/10 opacity-40' : 'bg-white/20 backdrop-blur-sm hover:bg-white/30'
+                currentIndex === SHORTS_DATA.length - 1 ? 'bg-white/10 opacity-40' : 'bg-white/20  hover:bg-white/30'
               }`}
             >
               <ChevronDown className="text-white" size={22} />
@@ -384,7 +384,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
         {playingVideoId && (
           <button
             onClick={() => setPlayingVideoId(null)}
-            className="absolute top-4 right-4 z-30 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center"
+            className="absolute top-4 right-4 z-30 w-9 h-9 bg-black/50  rounded-full flex items-center justify-center"
           >
             <X size={20} className="text-white" />
           </button>
