@@ -56,7 +56,7 @@ function configuredProviders(): Provider[] {
       name: "gemini",
       key: geminiKey,
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      defaultModel: "gemini-3.6-flash",
+      defaultModel: "gemini-1.5-flash",
     });
   }
 
@@ -76,7 +76,7 @@ function configuredProviders(): Provider[] {
       name: "lovable",
       key: lovableKey,
       baseUrl: "https://ai.gateway.lovable.dev/v1",
-      defaultModel: "google/gemini-3.6-flash",
+      defaultModel: "google/gemini-1.5-flash",
     });
   }
 
@@ -129,13 +129,21 @@ function toGeminiParts(content: string | AiContentPart[]): Array<{ text?: string
     if (part.type === "text") {
       parts.push({ text: part.text });
     } else if (part.type === "image_url") {
-      const url = part.image_url.url;
-      const match = url.match(/^data:([^;,]+);base64,(.+)$/);
+      const url = part.image_url.url || "";
+      const cleanedUrl = url.trim();
+      const match = cleanedUrl.match(/^data:([^;,]+);base64,(.+)$/s);
       if (match) {
-        parts.push({ inlineData: { mimeType: match[1], data: match[2] } });
-      } else if (url.startsWith("http")) {
+        const mimeType = match[1].toLowerCase().trim();
+        const rawB64 = match[2].replace(/\s/g, "");
+        parts.push({ inlineData: { mimeType, data: rawB64 } });
+      } else if (cleanedUrl.includes(";base64,")) {
+        const partsSplit = cleanedUrl.split(";base64,");
+        const mimeType = (partsSplit[0].replace(/^data:/, "") || "image/jpeg").toLowerCase().trim();
+        const rawB64 = partsSplit[1].replace(/\s/g, "");
+        parts.push({ inlineData: { mimeType, data: rawB64 } });
+      } else if (cleanedUrl.startsWith("http")) {
         // Gemini accepts inline data only; keep the URL as text guidance.
-        parts.push({ text: `Image reference: ${url}` });
+        parts.push({ text: `Image reference: ${cleanedUrl}` });
       }
     }
   }
@@ -181,10 +189,38 @@ async function callProvider(
   let body: unknown;
 
   if (provider.name === "gemini") {
-    const geminiModel = model.replace(/^google\//, "");
-    url = `${provider.baseUrl}/models/${geminiModel}:generateContent`;
+    const primaryModel = model.replace(/^google\//, "");
+    const candidateModels = Array.from(new Set([primaryModel, "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"]));
+    let lastGeminiErr = "";
+
     headers["x-goog-api-key"] = provider.key!;
     body = buildGeminiBody(messages, temperature, maxTokens);
+
+    for (const m of candidateModels) {
+      const gUrl = `${provider.baseUrl}/models/${m}:generateContent`;
+      try {
+        const res = await fetch(gUrl, { method: "POST", headers, body: JSON.stringify(body), signal });
+        if (res.status === 429) throw new AiGatewayError("rate_limit", "Too many requests to AI provider");
+        if (res.status === 402 || res.status === 403) throw new AiGatewayError("quota", "AI quota exhausted");
+
+        if (!res.ok) {
+          lastGeminiErr = (await res.text().catch(() => "")).slice(0, 300);
+          console.warn(`[AiGateway] Gemini model ${m} HTTP ${res.status}:`, lastGeminiErr);
+          continue;
+        }
+
+        const payload = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+        if (!payload) continue;
+        const text = extractText(payload);
+        if (text) return text;
+      } catch (err) {
+        if (err instanceof AiGatewayError) throw err;
+        const aborted = err instanceof DOMException && err.name === "TimeoutError";
+        if (aborted) throw new AiGatewayError("timeout", "AI provider unreachable (timeout)");
+        lastGeminiErr = err instanceof Error ? err.message : String(err);
+      }
+    }
+    throw new AiGatewayError("upstream", `AI provider error: ${lastGeminiErr || "all Gemini models failed"}`);
   } else {
     headers.Authorization = `Bearer ${provider.key}`;
     url = `${provider.baseUrl}/chat/completions`;
@@ -194,29 +230,29 @@ async function callProvider(
       max_tokens: maxTokens,
       messages,
     };
+
+    let response: Response;
+    try {
+      response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body), signal });
+    } catch (err) {
+      const aborted = err instanceof DOMException && err.name === "TimeoutError";
+      throw new AiGatewayError(aborted ? "timeout" : "upstream", "AI provider unreachable");
+    }
+
+    if (response.status === 429) throw new AiGatewayError("rate_limit", "Too many requests to AI provider");
+    if (response.status === 402 || response.status === 403) throw new AiGatewayError("quota", "AI quota exhausted");
+
+    if (!response.ok) {
+      const detail = (await response.text().catch(() => "")).slice(0, 300);
+      throw new AiGatewayError("upstream", `AI provider error ${response.status}: ${detail}`);
+    }
+
+    const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    if (!payload) throw new AiGatewayError("upstream", "Invalid AI provider response");
+    const text = extractText(payload);
+    if (!text) throw new AiGatewayError("empty", "AI provider returned no content");
+    return text;
   }
-
-  let response: Response;
-  try {
-    response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body), signal });
-  } catch (err) {
-    const aborted = err instanceof DOMException && err.name === "TimeoutError";
-    throw new AiGatewayError(aborted ? "timeout" : "upstream", "AI provider unreachable");
-  }
-
-  if (response.status === 429) throw new AiGatewayError("rate_limit", "Too many requests to AI provider");
-  if (response.status === 402 || response.status === 403) throw new AiGatewayError("quota", "AI quota exhausted");
-
-  if (!response.ok) {
-    const detail = (await response.text().catch(() => "")).slice(0, 300);
-    throw new AiGatewayError("upstream", `AI provider error ${response.status}: ${detail}`);
-  }
-
-  const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-  if (!payload) throw new AiGatewayError("upstream", "Invalid AI provider response");
-  const text = extractText(payload);
-  if (!text) throw new AiGatewayError("empty", "AI provider returned no content");
-  return text;
 }
 
 /**
