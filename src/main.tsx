@@ -28,12 +28,31 @@ import("./lib/check-edge-functions").then(({ checkEdgeFunctions }) => {
   // Best-effort — never block app startup
 });
 
+// Version marker for build verification
+if (typeof window !== 'undefined') {
+  (window as unknown as { __AGRICONNECT_BUILD_VERSION__: string }).__AGRICONNECT_BUILD_VERSION__ = 'd86fc96';
+  console.log('[AgriConnect Build Version]:', 'd86fc96');
+}
+
 // 2. Register Service Worker for offline support in production only
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        if (import.meta.env.DEV) console.log('[ServiceWorker] Registered with scope:', registration.scope);
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              }
+            };
+          }
+        };
       })
       .catch((error) => {
         console.warn('[ServiceWorker] Registration warning:', error);

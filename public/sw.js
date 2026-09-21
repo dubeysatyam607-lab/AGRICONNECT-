@@ -112,11 +112,18 @@ async function networkFirst(request) {
   }
 }
 
-// Navigation strategy - always serve the freshest app shell, cache it so the
-// next offline visit still renders, and fall back to the precached shell.
+// Message event listener for immediate updates
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING' || event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Navigation strategy - always serve the freshest app shell from network using no-cache,
+// cache it so the next offline visit still renders, and fall back to the precached shell.
 async function navigationFirst(request) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { cache: 'no-cache' });
     if (response.ok) {
       await putBounded(request, response.clone());
     }
