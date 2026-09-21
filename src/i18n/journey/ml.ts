@@ -1215,7 +1215,6 @@ export const ml: JourneyDict = {
   "hero.weatherUnavailable": "കാലാവസ്ഥ ലഭ്യമല്ല",
   "home.weatherUnavailable": "തത്സമയ കാലാവസ്ഥ ലഭ്യമല്ല",
   "wth.retry": "കാലാവസ്ഥ വീണ്ടും ശ്രമിക്കുക",
-  "home.retryWeather": "കാലാവസ്ഥ വീണ്ടും ശ്രമിക്കുക",
   "home.retryMandi": "വീണ്ടും ശ്രമിക്കുക",
 
   "home.retryWeather": "കാലാവസ്ഥ വീണ്ടും ശ്രമിക്കുക",

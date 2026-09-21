@@ -1215,7 +1215,6 @@ export const te: JourneyDict = {
   "hero.weatherUnavailable": "వాతావరణం అందుబాటులో లేదు",
   "home.weatherUnavailable": "లైవ్ వాతావరణం అందుబాటులో లేదు",
   "wth.retry": "వాతావరణాన్ని మళ్లీ ప్రయత్నించండి",
-  "home.retryWeather": "వాతావరణాన్ని మళ్లీ ప్రయత్నించండి",
   "home.retryMandi": "మళ్లీ ప్రయత్నించండి",
 
   "home.retryWeather": "వాతావరణాన్ని మళ్లీ ప్రయత్నించండి",

@@ -1215,7 +1215,6 @@ export const gu: JourneyDict = {
   "hero.weatherUnavailable": "હવામાન ઉપલબ્ધ નથી",
   "home.weatherUnavailable": "લાઈવ હવામાન ઉપલબ્ધ નથી",
   "wth.retry": "હવામાન ફરીથી લોડ કરો",
-  "home.retryWeather": "હવામાન ફરીથી લોડ કરો",
   "home.retryMandi": "ફરી પ્રયત્ન કરો",
 
   "home.retryWeather": "હવામાન ફરીથી લોડ કરો",

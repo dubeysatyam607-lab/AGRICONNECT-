@@ -1215,7 +1215,6 @@ export const pa: JourneyDict = {
   "hero.weatherUnavailable": "ਮੌਸਮ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
   "home.weatherUnavailable": "ਲਾਈਵ ਮੌਸਮ ਉਪਲਬਧ ਨਹੀਂ ਹੈ",
   "wth.retry": "ਮੌਸਮ ਮੁੜ ਲੋਡ ਕਰੋ",
-  "home.retryWeather": "ਮੌਸਮ ਮੁੜ ਲੋਡ ਕਰੋ",
   "home.retryMandi": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
 
   "home.retryWeather": "ਮੌਸਮ ਮੁੜ ਲੋਡ ਕਰੋ",
