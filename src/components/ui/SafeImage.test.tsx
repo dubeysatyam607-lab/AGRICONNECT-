@@ -40,19 +40,17 @@ describe("SafeImage Component", () => {
   it("renders fallbackIcon if all candidates fail", () => {
     render(
       <SafeImage
-        src="broken-url-1"
+        src="https://invalid-domain.com/broken-url-1.jpg"
         alt="Custom item"
         resolveType="general"
         fallbackIcon={<span data-testid="custom-fallback">Custom Icon</span>}
       />
     );
-    const img = screen.getByAltText("Custom item") as HTMLImageElement;
-    
-    // Trigger error on all fallback candidates
-    fireEvent.error(img);
-    fireEvent.error(img);
-    fireEvent.error(img);
-    fireEvent.error(img);
+    let img = screen.queryByRole("img") as HTMLImageElement;
+    while (img) {
+      fireEvent.error(img);
+      img = screen.queryByRole("img") as HTMLImageElement;
+    }
 
     expect(screen.getByTestId("custom-fallback")).toBeDefined();
   });

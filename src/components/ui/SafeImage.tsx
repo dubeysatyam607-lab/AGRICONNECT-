@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   resolveImageUrl,
+  getRealFallbackImage,
   getExactCategoryFallbackSvg,
   invalidateImageUrl,
   OFFLINE_AGRI_SVG,
@@ -97,17 +98,29 @@ export function SafeImage({
       category,
       src,
     });
-    if (exactPhoto && !list.includes(exactPhoto)) {
+    if (exactPhoto && isValidImageUrl(exactPhoto) && !list.includes(exactPhoto)) {
       list.push(exactPhoto);
     }
 
-    // 3. Exact-category SVG illustration fallback
-    const svgFallback = getExactCategoryFallbackSvg(resolveType, effectiveName, category);
+    // 3. Category real photography fallback (e.g. Agricultural Wholesale Market)
+    const realFallback = getRealFallbackImage(resolveType as any, effectiveName, category);
+    if (realFallback && isValidImageUrl(realFallback) && !list.includes(realFallback)) {
+      list.push(realFallback);
+    }
+
+    // 4. Guaranteed Local Verified Static Asset
+    const localAsset = "/images/mandi-default.svg";
+    if (!list.includes(localAsset)) {
+      list.push(localAsset);
+    }
+
+    // 5. Exact-category SVG illustration fallback (Inline Data URI)
+    const svgFallback = getExactCategoryFallbackSvg(resolveType as any, effectiveName, category);
     if (svgFallback && !list.includes(svgFallback)) {
       list.push(svgFallback);
     }
 
-    // 4. Guaranteed neutral agricultural SVG
+    // 6. Guaranteed neutral agricultural SVG (Inline Data URI)
     if (!list.includes(OFFLINE_AGRI_SVG)) {
       list.push(OFFLINE_AGRI_SVG);
     }

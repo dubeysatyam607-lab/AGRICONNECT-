@@ -62,7 +62,8 @@ export const CommodityImage: React.FC<CommodityImageProps> = ({
   }, [rawName, cleanName]);
 
   const descriptiveAlt = alt || `${cleanName}${commodityHi ? ` (${commodityHi})` : ""} - Real crop produce`;
-  const initialSrc = liveUrl || curated || src || cleanName;
+  const candidatesList = [liveUrl, curated, src];
+  const initialSrc = candidatesList.find((c) => typeof c === "string" && (c.startsWith("http://") || c.startsWith("https://") || c.startsWith("data:") || c.startsWith("/")));
 
   return (
     <SafeImage
