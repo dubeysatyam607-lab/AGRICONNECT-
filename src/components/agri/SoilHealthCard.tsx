@@ -206,7 +206,7 @@ Keep it practical and farmer-friendly. Use simple language.`;
           src="https://images.pexels.com/photos/8851253/pexels-photo-8851253.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940"
           alt="Soil testing"
           entityName="Soil Health Testing"
-          resolveType="general"
+          resolveType="soil_testing"
           category="soil"
           className="w-full h-full object-cover"
         />

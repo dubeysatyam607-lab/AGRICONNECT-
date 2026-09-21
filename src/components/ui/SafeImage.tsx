@@ -28,7 +28,13 @@ export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement
     | "cattle"
     | "cow"
     | "buffalo"
+    | "mandi"
+    | "labour"
+    | "news"
+    | "weather"
+    | "soil_testing"
     | "scheme"
+    | "marketplace"
     | "general";
   /** Fallback component to render if image fails and no resolved fallback works */
   fallbackIcon?: React.ReactNode;

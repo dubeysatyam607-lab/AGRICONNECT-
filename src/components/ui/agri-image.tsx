@@ -60,12 +60,13 @@ export const AgriImage: React.FC<AgriImageProps> = ({
   
   // Normalize type for SafeImage resolver
   const resolveType = (() => {
-    if (type === "mandi" || type === "crop") return "crop";
+    if (type === "mandi") return "mandi";
+    if (type === "crop") return "crop";
     if (type === "tractor" || type === "harvester" || type === "equipment" || type === "machinery") return "tractor";
     if (type === "cattle" || type === "cow" || type === "buffalo") return "cattle";
     if (type === "product" || type === "seeds" || type === "fertilizer" || type === "agristore") return "product";
     if (type === "scheme") return "scheme";
-    return "general";
+    return type as any;
   })();
 
   return (

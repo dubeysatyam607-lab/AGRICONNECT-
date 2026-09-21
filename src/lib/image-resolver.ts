@@ -288,6 +288,12 @@ export const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
   crops: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   crop: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   mandi: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  market: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  labour: "https://images.pexels.com/photos/36678256/pexels-photo-36678256.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  news: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  weather: "https://images.pexels.com/photos/209831/pexels-photo-209831.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  soil_testing: "https://images.pexels.com/photos/8851253/pexels-photo-8851253.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  marketplace: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   irrigation: "https://images.pexels.com/photos/10606633/pexels-photo-10606633.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   default: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
@@ -377,8 +383,28 @@ export function getStoreProductBackupImage(productName?: string, category?: stri
   return getStoreProductImage(productName, category);
 }
 
+export type SupportedResolveType =
+  | "crop"
+  | "product"
+  | "category"
+  | "tractor"
+  | "harvester"
+  | "equipment"
+  | "machinery"
+  | "cattle"
+  | "cow"
+  | "buffalo"
+  | "mandi"
+  | "labour"
+  | "news"
+  | "weather"
+  | "soil_testing"
+  | "scheme"
+  | "marketplace"
+  | "general";
+
 export function getRealFallbackImage(
-  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
+  type: SupportedResolveType = "general",
   contextName?: string,
   category?: string
 ): string {
@@ -394,6 +420,24 @@ export function getRealFallbackImage(
   if (type === "cattle" || type === "cow" || type === "buffalo") {
     return getCattleImage(contextName);
   }
+  if (type === "mandi") {
+    return CATEGORY_FALLBACK_IMAGES.mandi;
+  }
+  if (type === "labour") {
+    return CATEGORY_FALLBACK_IMAGES.labour;
+  }
+  if (type === "news") {
+    return CATEGORY_FALLBACK_IMAGES.news;
+  }
+  if (type === "weather") {
+    return CATEGORY_FALLBACK_IMAGES.weather;
+  }
+  if (type === "soil_testing") {
+    return CATEGORY_FALLBACK_IMAGES.soil_testing;
+  }
+  if (type === "marketplace") {
+    return CATEGORY_FALLBACK_IMAGES.marketplace;
+  }
   if (type === "category") {
     const cat = (category || contextName || "").toLowerCase();
     return CATEGORY_FALLBACK_IMAGES[cat] || CATEGORY_FALLBACK_IMAGES.default;
@@ -402,7 +446,7 @@ export function getRealFallbackImage(
 }
 
 export function getExactCategoryFallbackSvg(
-  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
+  type: SupportedResolveType = "general",
   contextName?: string,
   category?: string
 ): string {
@@ -414,6 +458,82 @@ export function getExactCategoryFallbackSvg(
   }
   if (type === "cattle" || type === "cow" || type === "buffalo") {
     return getCattleSvgFallback(contextName);
+  }
+  if (type === "mandi") {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mandi_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" /><stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#mandi_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🏛️</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0fdf4" text-anchor="middle">${contextName || "Agricultural Mandi"}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Krishi Mandi</text>
+</svg>
+`)
+    );
+  }
+  if (type === "labour") {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="lab_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" /><stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#lab_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#3b82f6" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">👨‍🌾</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#eff6ff" text-anchor="middle">${contextName || "Farm Labour"}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#bfdbfe" text-anchor="middle">AgriConnect Krishi Shram</text>
+</svg>
+`)
+    );
+  }
+  if (type === "weather") {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="wth_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" /><stop offset="100%" stop-color="#0c4a6e" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#wth_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#38bdf8" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">☀️</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0f9ff" text-anchor="middle">${contextName || "Live Weather"}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#bae6fd" text-anchor="middle">AgriConnect Mausam Forecast</text>
+</svg>
+`)
+    );
+  }
+  if (type === "soil_testing") {
+    return (
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="soil_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350f" /><stop offset="100%" stop-color="#451a03" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#soil_grad)" />
+  <circle cx="200" cy="115" r="48" fill="#f59e0b" opacity="0.22" />
+  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🧪</text>
+  <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#fffbeb" text-anchor="middle">${contextName || "Soil Testing"}</text>
+  <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#fde68a" text-anchor="middle">AgriConnect Mitti Parikshan</text>
+</svg>
+`)
+    );
   }
   if (type === "scheme") {
     return (
@@ -440,7 +560,7 @@ export function getExactCategoryFallbackSvg(
 
 export function resolveImageUrl(
   imageSource?: unknown,
-  type: "crop" | "product" | "category" | "tractor" | "harvester" | "equipment" | "machinery" | "cattle" | "cow" | "buffalo" | "scheme" | "general" = "general",
+  type: SupportedResolveType = "general",
   contextName?: string
 ): string {
   const cacheKey = `${type}:${contextName || ""}:${String(imageSource || "")}`;
@@ -452,13 +572,13 @@ export function resolveImageUrl(
 
   // 1. If a valid direct image URL is provided, sanitize and check
   if (isValidImageUrl(imageSource)) {
-    finalUrl = sanitizeImageUrl(imageSource);
+    finalUrl = sanitizeImageUrl(imageSource as string);
   } else if (typeof imageSource === "object" && imageSource !== null) {
     const obj = imageSource as Record<string, unknown>;
     const extracted =
       obj.imageUrl || obj.image_url || obj.url || obj.src || obj.photo || obj.photo_url || obj.cropImage;
     if (isValidImageUrl(extracted)) {
-      finalUrl = sanitizeImageUrl(extracted);
+      finalUrl = sanitizeImageUrl(extracted as string);
     }
   }
 
@@ -472,6 +592,18 @@ export function resolveImageUrl(
       finalUrl = getMachineImage(contextName, type);
     } else if (type === "cattle" || type === "cow" || type === "buffalo") {
       finalUrl = getCattleImage(contextName);
+    } else if (type === "mandi") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.mandi;
+    } else if (type === "labour") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.labour;
+    } else if (type === "news") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.news;
+    } else if (type === "weather") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.weather;
+    } else if (type === "soil_testing") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.soil_testing;
+    } else if (type === "marketplace") {
+      finalUrl = CATEGORY_FALLBACK_IMAGES.marketplace;
     } else if (type === "category") {
       const cat = (contextName || "").toLowerCase();
       finalUrl = CATEGORY_FALLBACK_IMAGES[cat] || CATEGORY_FALLBACK_IMAGES.default;

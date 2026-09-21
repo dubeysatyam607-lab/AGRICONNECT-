@@ -112,12 +112,43 @@ describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, St
     expect(sprayerImg).toContain("https://");
   });
 
-  it("resolves category fallback images", () => {
+  it("resolves category fallback images including mandi, labour, news, weather, soil_testing, marketplace", () => {
     const seedsCat = resolveImageUrl(undefined, "category", "seeds");
     expect(seedsCat).toBe(CATEGORY_FALLBACK_IMAGES.seeds);
 
     const fertCat = resolveImageUrl(undefined, "category", "fertilizers");
     expect(fertCat).toBe(CATEGORY_FALLBACK_IMAGES.fertilizers);
+
+    const mandiImg = resolveImageUrl(undefined, "mandi", "Jaipur Grain Mandi");
+    expect(mandiImg).toContain("https://");
+
+    const labourImg = resolveImageUrl(undefined, "labour", "Farm Helper");
+    expect(labourImg).toContain("https://");
+
+    const newsImg = resolveImageUrl(undefined, "news", "MSP Updates");
+    expect(newsImg).toContain("https://");
+
+    const weatherImg = resolveImageUrl(undefined, "weather", "Monsoon Forecast");
+    expect(weatherImg).toContain("https://");
+
+    const soilImg = resolveImageUrl(undefined, "soil_testing", "NPK Soil Sample");
+    expect(soilImg).toContain("https://");
+
+    const mandiSvg = getExactCategoryFallbackSvg("mandi", "Jaipur APMC");
+    expect(mandiSvg).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(mandiSvg)).toContain("🏛️");
+
+    const labourSvg = getExactCategoryFallbackSvg("labour", "Harvester Worker");
+    expect(labourSvg).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(labourSvg)).toContain("👨‍🌾");
+
+    const weatherSvg = getExactCategoryFallbackSvg("weather", "Sunny Day");
+    expect(weatherSvg).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(weatherSvg)).toContain("☀️");
+
+    const soilSvg = getExactCategoryFallbackSvg("soil_testing", "Lab Test");
+    expect(soilSvg).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(soilSvg)).toContain("🧪");
   });
 
   it("never returns raw undefined or null strings when given invalid input", () => {

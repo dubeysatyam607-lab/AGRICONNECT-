@@ -24,7 +24,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
           alt={news.title}
           category={news.category}
           entityName={news.title}
-          resolveType="category"
+          resolveType="news"
           loading="lazy"
           className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-300"
         />
