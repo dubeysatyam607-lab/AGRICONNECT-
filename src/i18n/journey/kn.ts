@@ -1218,7 +1218,6 @@ export const kn: JourneyDict = {
   "home.retryWeather": "ಹವಾಮಾನವನ್ನು ಮರುಪ್ರಯತ್ನಿಸಿ",
   "home.retryMandi": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
 
-  "home.retryWeather": "ಹವಾಮಾನವನ್ನು ಮರುಪ್ರಯತ್ನಿಸಿ",
   "home.fetchingWeather": "ಲೈವ್ ಹವಾಮಾನ ಪಡೆಯಲಾಗುತ್ತಿದೆ…",
   "home.weatherDetecting": "ಸ್ಥಳೀಯ ತಾಪಮಾನ ಮತ್ತು ಮಳೆ ಮುನ್ಸೂಚನೆ ಪಡೆಯಲಾಗುತ್ತಿದೆ",
   "home.setLocationHint": " ನಿಖರ ಹವಾಮಾನಕ್ಕಾಗಿ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ",

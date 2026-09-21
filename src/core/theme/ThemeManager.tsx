@@ -102,7 +102,12 @@ export const ThemeManagerProvider: React.FC<{ children: React.ReactNode; default
 export const useThemeManager = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useThemeManager must be used within a ThemeManagerProvider');
+    return {
+      theme: 'light',
+      resolvedTheme: 'light',
+      setTheme: () => {},
+      toggleTheme: () => {},
+    };
   }
   return context;
 };

@@ -9,13 +9,16 @@ import { Logo } from '@/components/ui/Logo';
  * flags. While the session is loading a branded splash is rendered so the
  * redirect never flashes before auth state is known.
  */
-export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAuth?: boolean }> = ({
+  children,
+  requireAuth = true,
+}) => {
   const { user, session, loading } = useAuth();
   const location = useLocation();
 
-  // Ensure Supabase is configured; otherwise treat as unauthenticated to prevent bypass.
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) {
+  // Use configured Supabase URL or project fallback
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yrebxnpilkfeaofykvhq.supabase.co';
+  if (!supabaseUrl && requireAuth) {
     return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
   }
 
@@ -26,21 +29,20 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
         <div className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-amber-500/20 blur-[130px]" />
         <div className="relative flex flex-col items-center">
           <span className="absolute inline-flex h-32 w-32 animate-ping rounded-full bg-emerald-400/20" style={{ animationDuration: '2.4s' }} />
-          <Logo size={72} className="drop- " />
+          <Logo size={72} className="drop-shadow-lg" />
         </div>
         <span className="sr-only">Loading</span>
       </div>
     );
   }
 
-  // No user object = not authenticated. Redirect to login with return path.
-  if (!user) {
+  // Redirect to login only when authentication is explicitly required for this route
+  if (requireAuth && !user) {
     return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
   }
 
-  // Defense-in-depth: verify the JWT hasn't expired by checking the session's
-  // expires_at timestamp.
-  if (session?.expires_at) {
+  // Defense-in-depth: verify the JWT hasn't expired when a session is present.
+  if (requireAuth && session?.expires_at) {
     const expiresAtMs = session.expires_at * 1000;
     if (Date.now() >= expiresAtMs) {
       return <Navigate to="/auth/login" replace state={{ from: location.pathname, reason: 'session_expired' }} />;

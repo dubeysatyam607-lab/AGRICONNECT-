@@ -85,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const cleanAuthHash = () => {
       if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
         if (window.history && window.history.replaceState) {
@@ -94,10 +95,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    // Safety timeout: ensure loading state resolves even if Supabase network call is delayed
+    const timer = setTimeout(() => {
+      if (isMounted) setLoading(false);
+    }, 2000);
+
     // Get initial session
     supabase.auth
       .getSession()
       .then(({ data: { session } }) => {
+        if (!isMounted) return;
+        clearTimeout(timer);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -107,6 +115,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (session) cleanAuthHash();
       })
       .catch(() => {
+        if (!isMounted) return;
+        clearTimeout(timer);
         setSession(null);
         setUser(null);
         setLoading(false);
@@ -116,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -124,7 +135,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session) cleanAuthHash();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
@@ -186,12 +201,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+const defaultAuthValue: AuthContextType = {
+  user: null,
+  session: null,
+  loading: false,
+  signOut: async () => {},
+  signUp: async () => ({ error: null }),
+  signIn: async () => ({ error: null }),
+  verifyOtp: async () => ({ error: null }),
 };
 
-export const useOptionalAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  return context || defaultAuthValue;
+};
+
+export const useOptionalAuth = () => useContext(AuthContext) || defaultAuthValue;

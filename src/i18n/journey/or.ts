@@ -1218,7 +1218,6 @@ export const or: JourneyDict = {
   "home.retryWeather": "ପାଗ ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ",
   "home.retryMandi": "ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ",
 
-  "home.retryWeather": "ପାଗ ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ",
   "home.fetchingWeather": "ଲାଇଭ୍ ପାଗ ତଥ୍ୟ ଅଣାଯାଉଛି…",
   "home.weatherDetecting": "ସ୍ଥାନୀୟ ତାପମାତ୍ରା ଏବଂ ବର୍ଷା ପୂର୍ବାନୁମାନ ସଂଗ୍ରହ ହେଉଛି",
   "home.setLocationHint": " ସଠିକ୍ ପାଗ ପାଇଁ ନିଜର ସ୍ଥାନ ସେଟ୍ କରନ୍ତୁ",

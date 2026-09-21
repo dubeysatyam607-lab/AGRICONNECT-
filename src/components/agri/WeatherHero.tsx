@@ -210,20 +210,21 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               </p>
             </div>
           ) : (
-            <div className="mt-4">
-              <p className="text-sm font-bold text-white">
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5">
+              <CloudRain size={15} className="text-white/70" aria-hidden="true" />
+              <p className="text-[12.5px] font-semibold text-white/85">
                 {t("home.weatherUnavailable")}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="ml-auto flex gap-2">
                 <button
                   onClick={onRefresh}
-                  className="rounded-lg bg-white px-4 py-2 type-small font-bold text-emerald-950 transition-colors hover:bg-white/90"
+                  className="rounded-lg bg-white/90 px-3.5 py-1.5 text-[12px] font-bold text-emerald-950 transition-colors hover:bg-white"
                 >
                   {t("home.retryWeather")}
                 </button>
                 <button
                   onClick={onOpenLocation}
-                  className="rounded-lg bg-white/15 px-4 py-2 type-small font-bold text-white transition-colors hover:bg-white/25"
+                  className="rounded-lg bg-white/15 px-3.5 py-1.5 text-[12px] font-bold text-white transition-colors hover:bg-white/25"
                 >
                   {t("home.checkLocation")}
                 </button>

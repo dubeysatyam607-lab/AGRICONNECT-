@@ -76,6 +76,13 @@ interface CropDoctorProps {
   onAskKisan?: (scanResult: CropScanResult) => void;
 }
 
+const LOADING_STEPS = [
+  "📷 Photo received",
+  "🔍 Photo की जांच हो रही है...",
+  "🌿 Crop symptoms देख रहे हैं...",
+  "Almost done..."
+];
+
 const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   const [input, setInput] = useState("");
   const [images, setImages] = useState<SelectedImageItem[]>([]);
@@ -83,6 +90,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   const [error, setError] = useState<string | null>(null);
   const [qualityWarning, setQualityWarning] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -95,6 +103,20 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   const { user } = useAuth();
   const { profile } = useFarm();
   const { languageName, t } = useLanguage();
+
+  // Dynamic loading step timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      setLoadingStepIndex(0);
+      interval = setInterval(() => {
+        setLoadingStepIndex((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
+      }, 1500);
+    } else {
+      setLoadingStepIndex(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const speakResultText = useCallback(() => {
     if (!result) return;
@@ -164,7 +186,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast({
         title: t("doctor.error.invalidTypeTitle") || "Invalid file type",
-        description: t("doctor.error.invalidType") || "Please upload a valid JPG, PNG, or WebP image.",
+        description: "Photo open nahi ho rahi. Please doosri photo try karein.",
         variant: "destructive",
       });
       return;
@@ -192,7 +214,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       }
 
       if (!qResult.isUsable) {
-        setQualityWarning(qResult.warningEn || "Photo is not clear enough. Please take a closer photo in good light.");
+        setQualityWarning(qResult.warningHi || qResult.warningEn || "Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
       } else {
         setQualityWarning(null);
       }
@@ -212,19 +234,37 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     } catch (err: any) {
       toast({
         title: t("doctor.error.uploadFailedTitle") || "Upload failed",
-        description: err?.message || t("doctor.error.compress") || "Failed to process image.",
+        description: err?.message || "Photo open nahi ho rahi. Please doosri photo try karein.",
         variant: "destructive",
       });
     }
   };
 
   const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    for (let i = 0; i < Math.min(files.length, MAX_IMAGES - images.length); i++) {
-      await processFile(files[i]);
+    try {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+      for (let i = 0; i < Math.min(files.length, MAX_IMAGES - images.length); i++) {
+        await processFile(files[i]);
+      }
+      if (e.target) e.target.value = "";
+    } catch {
+      setError("Camera permission nahi mili. Gallery se photo upload karein.");
     }
-    if (e.target) e.target.value = "";
+  };
+
+  const openCameraInput = () => {
+    try {
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      }
+    } catch {
+      toast({
+        title: "Camera error",
+        description: "Camera permission nahi mili. Gallery se photo upload karein.",
+        variant: "destructive",
+      });
+    }
   };
 
   const removeImage = (id: string) => {
@@ -284,7 +324,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         
         // Attempt direct client-side AI fallback only when the edge service itself is
         // unavailable (unconfigured / not deployed / session). A genuine server error
-        // (api / unknown) must surface the honest error rather than silently retry.
+        // (api / timeout / rate_limit / validation / network) must surface the honest error.
         if (edgeCode === "config" || edgeCode === "deploy" || edgeCode === "session") {
           console.log("[CropScan] attempting client-side Gemini fallback");
           const fallbackResult = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
@@ -293,7 +333,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
             setIsLoading(false);
             setResult(fallbackResult as CropScanResult);
             if (fallbackResult.needs_clearer_image) {
-              setError("Photo is not clear enough for a reliable analysis. Please take a closer photo of the affected part.");
+              setError("Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
             }
             if (autoSpeak && (fallbackResult.possible_issue || fallbackResult.health_status)) {
               setTimeout(speakResultText, 500);
@@ -306,7 +346,13 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         const key = SCAN_ERROR_KEYS[edgeCode];
         const localized = key ? t(key) : null;
         // Show validation error verbatim; use localized message for network/timeout/config/quota, or err as fallback
-        const message = edgeCode === "validation" ? err : (localized || err || "Analysis service unavailable. Please check internet connection or retry.");
+        const message = edgeCode === "validation" 
+          ? err 
+          : edgeCode === "network" 
+          ? (t("doctor.error.network") || "Internet connection check karein aur dobara try karein.")
+          : edgeCode === "timeout"
+          ? (t("doctor.error.timeout") || "Scan में ज्यादा समय लग गया. Please retry करें.")
+          : (localized || err || "Scan service mein temporary problem hai. Please retry karein.");
         setIsLoading(false);
         setError(message);
         loadHistory().catch(() => {});
@@ -325,7 +371,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         }
 
         setIsLoading(false);
-        setError(t("doctor.error.api") || "The AI returned an empty result. Please try again.");
+        setError("Scan service mein temporary problem hai. Please retry karein.");
         loadHistory().catch(() => {});
         return;
       }
@@ -335,7 +381,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       setResult(data.result);
 
       if (data.result.needs_clearer_image) {
-        setError("Photo is not clear enough for a reliable analysis. Please take a closer photo of the affected leaf/fruit/stem.");
+        setError("Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
       }
 
       if (autoSpeak && (data.result.possible_issue || data.result.health_status)) {
@@ -347,7 +393,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     } catch (err: any) {
       console.error("[CropScan] exception caught during diagnosis:", err?.message || err);
       setIsLoading(false);
-      setError(err?.message || "Something went wrong with the analysis. Please try again in a moment.");
+      setError(err?.message || "Scan service mein temporary problem hai. Please retry karein.");
     }
   };
 
@@ -695,6 +741,19 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
             </div>
           </div>
 
+          {/* Photo Quality Guidance Helper */}
+          <div className="mb-4 bg-muted/40 p-3 rounded-xl border border-border">
+            <h4 className="type-h3 flex items-center gap-1 text-foreground text-xs sm:text-sm font-semibold mb-1.5">
+              📸 अच्छी फोटो के लिए:
+            </h4>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-muted-foreground">
+              <li>✓ पत्ती को पूरा frame में रखें</li>
+              <li>✓ दिन की रोशनी में फोटो लें</li>
+              <li>✓ प्रभावित हिस्से के पास से फोटो लें</li>
+              <li>✓ कैमरा साफ रखें और focus करें</li>
+            </ul>
+          </div>
+
           {/* Quality warning banner */}
           {qualityWarning && (
             <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2 font-medium">
@@ -742,7 +801,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={openCameraInput}
                   className="h-36 rounded-xl border border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-foreground hover:border-primary hover:bg-primary/5 transition-colors"
                 >
                   <Camera size={28} className="text-primary" aria-hidden="true" />
@@ -780,9 +839,9 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                 <button
                   type="button"
                   onClick={handleDiagnosis}
-                  className="shrink-0 px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold rounded-md text-xs transition-colors"
+                  className="shrink-0 px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold rounded-md text-xs transition-colors flex items-center gap-1"
                 >
-                  Retry
+                  🔄 फिर से जांचें
                 </button>
               )}
             </div>
@@ -796,10 +855,10 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
             className="w-full py-3.5 font-semibold text-base"
           >
             {isLoading ? (
-              <>
+              <span className="flex items-center gap-2">
                 <Loader className="animate-spin" size={20} />
-                Analyzing crop photos…
-              </>
+                {LOADING_STEPS[loadingStepIndex]}
+              </span>
             ) : (
               <>
                 <Scan size={20} /> Scan &amp; Diagnose

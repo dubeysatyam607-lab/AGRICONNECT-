@@ -16,8 +16,7 @@ import { SeoHead } from "@/components/seo/SeoHead";
 import { homepageStructuredData } from "@/lib/structured-data";
 
 import AgriConnectFooter from "@/components/ui/AgriConnectFooter";
-
-const FarmerHome = lazy(() => import("@/components/agri/FarmerHome"));
+import FarmerHome from "@/components/agri/FarmerHome";
 
 // Lazy load heavy components for performance (Code Splitting)
 const MandiPrices = lazy(() => import("@/components/agri/LiveMandi"));
@@ -626,9 +625,11 @@ const getTabFromPath = (path: string) => {
 };
 
 const Index: React.FC = () => (
+  <ChunkErrorBoundary label="home-dashboard">
     <FarmProvider>
       <IndexInner />
     </FarmProvider>
+  </ChunkErrorBoundary>
 );
 
 

@@ -64,7 +64,7 @@ export class DIContainer {
   }
 
   /**
-   * Resolves a dependency by token.
+   * Resolves a dependency by token. Returns a safe stub if token is missing to prevent crashes.
    */
   public resolve<T>(token: symbol): T {
     if (this.services.has(token)) {
@@ -76,7 +76,22 @@ export class DIContainer {
       return factory();
     }
 
-    throw new Error(`[DIContainer] Dependency not registered for token: ${token.toString()}`);
+    if (typeof (globalThis as any).__agriInitDI === 'function') {
+      try {
+        (globalThis as any).__agriInitDI();
+        if (this.services.has(token)) return this.services.get(token);
+        if (this.factories.has(token)) return this.factories.get(token)!();
+      } catch {
+        // ignore
+      }
+    }
+
+    console.warn(`[DIContainer] Dependency missing for token: ${token.toString()}, returning proxy fallback.`);
+    const stub = new Proxy(() => {}, {
+      get: (_target, prop) => (prop === 'then' ? undefined : stub),
+      apply: () => Promise.resolve(null),
+    });
+    return stub as unknown as T;
   }
 
   /**

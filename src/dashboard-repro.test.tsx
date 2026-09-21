@@ -73,4 +73,17 @@ describe("dashboard lazy chunks", () => {
       expect(true).toBe(true);
     }, 30000);
   }
+
+  it("Full Index Page renders without crashing", async () => {
+    const mod = await import("@/pages/Index");
+    const IndexPage = mod.default;
+    render(
+      React.createElement(
+        Providers as any,
+        null,
+        React.createElement(IndexPage),
+      ),
+    );
+    expect(true).toBe(true);
+  }, 30000);
 });

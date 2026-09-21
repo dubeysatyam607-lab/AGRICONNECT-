@@ -2,12 +2,11 @@ import { useReducer, useEffect, useRef, useCallback, useState } from "react";
 import {
   hero3DReducer,
   initialHero3DState,
-  type Hero3DMachineState,
-  type Hero3DEvent,
 } from "./hero3d-state";
 
 function isWebGLAvailable(): boolean {
   try {
+    if (typeof window === "undefined" || typeof document === "undefined") return false;
     const canvas = document.createElement("canvas");
     return !!(
       window.WebGLRenderingContext &&
@@ -27,7 +26,7 @@ export function useHero3DController() {
   useEffect(() => {
     isMountedRef.current = true;
     const gen = ++generationRef.current;
-    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
 
     dispatch({ type: "MOUNT", timestamp: now });
     dispatch({ type: "START_WEBGL_CHECK" });
@@ -39,7 +38,10 @@ export function useHero3DController() {
       }
     } else {
       if (isMountedRef.current && generationRef.current === gen) {
-        dispatch({ type: "WEBGL_READY", timestamp: typeof performance !== "undefined" ? performance.now() : Date.now() });
+        dispatch({
+          type: "WEBGL_READY",
+          timestamp: typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now(),
+        });
       }
     }
 
@@ -49,20 +51,30 @@ export function useHero3DController() {
     };
   }, []);
 
-  // Listen for prefers-reduced-motion
+  // Defensively listen for prefers-reduced-motion
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setIsReducedMotion(mediaQuery.matches);
-      const handler = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
-      mediaQuery.addEventListener("change", handler);
-      return () => mediaQuery.removeEventListener("change", handler);
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+      try {
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        setIsReducedMotion(!!mediaQuery?.matches);
+        const handler = (e: MediaQueryListEvent) => setIsReducedMotion(e.matches);
+
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener("change", handler);
+          return () => mediaQuery.removeEventListener("change", handler);
+        } else if (mediaQuery.addListener) {
+          mediaQuery.addListener(handler);
+          return () => mediaQuery.removeListener(handler);
+        }
+      } catch {
+        // Fail gracefully if media query is unsupported
+      }
     }
   }, []);
 
   const handleSceneReady = useCallback(() => {
     if (!isMountedRef.current) return;
-    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     dispatch({ type: "ASSETS_READY", timestamp: now });
   }, []);
 
@@ -70,7 +82,7 @@ export function useHero3DController() {
     if (!isMountedRef.current) return;
     dispatch({
       type: "RUNTIME_ERROR",
-      errorCode: errorCode as any ?? "UNKNOWN",
+      errorCode: (errorCode as any) ?? "UNKNOWN",
     });
   }, []);
 
@@ -85,7 +97,10 @@ export function useHero3DController() {
       }
     } else {
       if (isMountedRef.current && generationRef.current === gen) {
-        dispatch({ type: "WEBGL_READY", timestamp: typeof performance !== "undefined" ? performance.now() : Date.now() });
+        dispatch({
+          type: "WEBGL_READY",
+          timestamp: typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now(),
+        });
       }
     }
   }, []);

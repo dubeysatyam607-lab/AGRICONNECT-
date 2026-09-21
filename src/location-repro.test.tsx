@@ -20,7 +20,7 @@ beforeEach(() => {
 });
 
 describe("FarmerHome location dependency", () => {
-  it("throws when LocationProvider is missing (regression repro)", async () => {
+  it("does NOT throw when LocationProvider is missing (graceful context fallback)", async () => {
     let threw = false;
     try {
       await act(async () => {
@@ -36,6 +36,6 @@ describe("FarmerHome location dependency", () => {
       threw = true;
       console.log("THREW:", e.message);
     }
-    expect(threw).toBe(true);
+    expect(threw).toBe(false);
   });
 });

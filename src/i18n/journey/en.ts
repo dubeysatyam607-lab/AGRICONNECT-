@@ -1218,7 +1218,6 @@ export const en: JourneyDict = {
   "home.retryWeather": "Retry Weather",
   "home.retryMandi": "Retry",
 
-  "home.retryWeather": "Retry Weather",
   "home.fetchingWeather": "Fetching live weather…",
   "home.weatherDetecting": "Getting hyperlocal temperature & rain forecast",
   "home.setLocationHint": " Set your location for hyperlocal weather",

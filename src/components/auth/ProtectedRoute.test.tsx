@@ -20,7 +20,7 @@ const renderGuarded = (initialPath = '/dashboard') =>
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAuth={true}>
               <ProtectedContent />
             </ProtectedRoute>
           }

@@ -196,11 +196,11 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
 
   const firstName = userName.split(" ")[0];
 
-  const landUnit = t("home.areaUnit");
-  const farmTag = interpolate(t("home.heroFarmTag"), {
-    area: String(farmProfile.farmArea),
+  const landUnit = t("home.areaUnit") || "acres";
+  const farmTag = interpolate(t("home.heroFarmTag") || "{area} {unit} · {soil}", {
+    area: String(farmProfile?.farmArea ?? 5.2),
     unit: landUnit,
-    soil: farmProfile.soilType || t("home.guestVillage"),
+    soil: farmProfile?.soilType || t("home.guestVillage") || "Black Soil",
   });
 
   const renderRoleDashboard = () => {

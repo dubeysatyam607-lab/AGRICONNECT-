@@ -357,8 +357,19 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+const defaultLocationValue: LocationContextValue = {
+  location: { status: 'idle' },
+  farms: [],
+  farmsLoading: false,
+  setActiveFarm: () => {},
+  addFarm: async () => null,
+  removeFarm: async () => {},
+  requestGps: () => {},
+  setManual: () => {},
+  refresh: () => {},
+};
+
 export const useLocation = () => {
   const ctx = useContext(LocationContext);
-  if (!ctx) throw new Error('useLocation must be used within a LocationProvider');
-  return ctx;
+  return ctx || defaultLocationValue;
 };

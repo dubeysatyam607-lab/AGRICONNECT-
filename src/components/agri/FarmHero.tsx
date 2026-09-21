@@ -1,6 +1,7 @@
-import React from "react";
-import { Sprout, ArrowRight, Mic, CloudSun, Droplets, Layers, MapPin, Leaf } from "lucide-react";
+import React, { useRef, useState, useCallback, useMemo } from "react";
+import { Sprout, ArrowRight, Mic, Sun, Layers, MapPin, Sparkles, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Hero3D } from "@/components/home/Hero3D";
 
 export interface FarmHeroProps {
   dateStr: string;
@@ -17,13 +18,12 @@ export interface FarmHeroProps {
 }
 
 /**
- * FarmHero — AgriConnect's opening statement.
+ * FarmHero — AgriConnect's opening command center.
  *
- * A premium light composition: warm paper backdrop, deep-ink agriculture
- * type, and the living farm — a large, rounded field visualization that is
- * pure CSS animation (no WebGL, cannot throw at runtime). Real farm state
- * (crop, stage, soil) is surfaced as restrained instrument chips only when
- * that data actually exists. Reduced-motion disables all animation.
+ * An unconfined, editorial agricultural experience where the living 3D field
+ * (soybean crop, cultivated soil furrows, Indian farmer inspecting crops)
+ * blends directly into the command dashboard. Responsive mouse parallax,
+ * multi-tier WebGL fallback, i18n localization, and instant usability.
  */
 export const FarmHero: React.FC<FarmHeroProps> = ({
   dateStr,
@@ -38,149 +38,135 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
   mandiChip,
 }) => {
   const { t } = useLanguage();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Mouse move handler for subtle 3D camera parallax
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setMousePos({ x, y });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setMousePos({ x: 0, y: 0 });
+  }, []);
+
+  const weatherCond = weatherChip?.condition || "";
 
   return (
-    <section aria-labelledby="farm-hero-heading" className="mt-6">
-      <div className="relative overflow-hidden rounded-3xl border border-forest/10 bg-gradient-to-br from-[#fdfcf7] via-[#f6faf3] to-[#edf7ee] shadow-card">
-        {/* soft field tint — left vignette */}
-        <div
-          className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#22C55E]/10 blur-3xl"
-          aria-hidden="true"
-        />
-        {/* warm sun wash — right */}
-        <div
-          className="pointer-events-none absolute -bottom-28 right-0 h-80 w-80 rounded-full bg-[#F59E0B]/10 blur-3xl"
-          aria-hidden="true"
-        />
+    <section
+      ref={heroRef}
+      aria-labelledby="farm-hero-heading"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative mt-3 overflow-hidden rounded-[28px] border border-[#0F5132]/12 bg-gradient-to-br from-[#FBF8F1] via-[#F4F9F2] to-[#EBF5ED] p-5 shadow-[0_20px_50px_-20px_rgba(15,81,50,0.12)] sm:p-7 md:p-8"
+    >
+      {/* Subtle agricultural background ambient glows */}
+      <div
+        className="pointer-events-none absolute -left-20 -top-20 h-80 w-80 rounded-full bg-[#FEF3C7]/60 blur-3xl"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -right-16 top-1/3 h-96 w-96 rounded-full bg-[#00C26E]/8 blur-3xl"
+        aria-hidden="true"
+      />
 
-        <div className="relative grid gap-8 p-6 md:p-8 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
-          {/* ── LEFT — the farmer's morning brief ─────────────────── */}
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-forest/15 bg-white/70 px-3 py-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
-              <span className="type-meta text-[11.5px] font-bold uppercase tracking-[0.16em] text-forest">
-                {dateStr}
+      <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
+        {/* ── LEFT COLUMN — Editorial Farmer Command Brief ─────────────── */}
+        <div className="flex flex-col justify-center">
+          {/* Contextual Date & Status Line */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#0F5132]/15 bg-white/80 px-3 py-1 text-[11.5px] font-bold uppercase tracking-[0.16em] text-[#0F5132] shadow-xs backdrop-blur-xs">
+              <span className="h-2 w-2 rounded-full bg-[#00C26E] animate-live-pulse" aria-hidden="true" />
+              {dateStr}
+            </span>
+
+            {weatherChip && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/90 px-3 py-1 text-[11.5px] font-semibold text-amber-900 shadow-xs">
+                <Sun size={12} className="text-amber-600" aria-hidden="true" />
+                {weatherChip.condition} · {weatherChip.temp}
               </span>
-            </div>
+            )}
 
+            {mandiChip && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/90 px-3 py-1 text-[11.5px] font-semibold text-emerald-900 shadow-xs">
+                <TrendingUp size={12} className="text-[#00C26E]" aria-hidden="true" />
+                {mandiChip.crop} · ₹{mandiChip.price}
+              </span>
+            )}
+          </div>
+
+          {/* Greeting & Farmer Name */}
+          <div className="mt-4">
+            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#0F5132]/65 md:text-[13px]">
+              {greeting.trim()}
+            </p>
             <h1
               id="farm-hero-heading"
-              className="mt-4 font-display text-[30px] font-bold leading-[1.12] tracking-tight text-[#111827] md:text-[44px]"
+              className="mt-1 font-display text-4xl font-black tracking-tight text-[#0F5132] sm:text-5xl md:text-6xl"
             >
-              {greeting}{" "}
-              <span className="text-primary">{firstName}</span>
+              {firstName}
             </h1>
-
-            <p className="mt-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-forest/80">
-              <CloudSun size={15} aria-hidden="true" />
-              {cropLabel ? "Field Watch · live to your farm" : "Your farm, in one place"}
-            </p>
-
-            {(cropLabel || farmTag) && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {cropLabel && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[12.5px] font-bold text-white shadow-sm">
-                    <Sprout size={13} aria-hidden="true" />
-                    {cropLabel}
-                  </span>
-                )}
-                {farmTag && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-forest/20 bg-white/80 px-3 py-1 text-[12.5px] font-bold text-forest">
-                    <Layers size={13} aria-hidden="true" />
-                    {farmTag}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {adviceLine && (
-              <div className="mt-5 rounded-2xl border border-marigold/30 bg-marigold/10 p-4">
-                <p className="text-[14px] font-semibold leading-relaxed text-ink md:text-[15px]">
-                  {adviceLine}
-                </p>
-              </div>
-            )}
-
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                onClick={onAsk}
-                className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-primary px-6 text-[14px] font-bold text-white shadow-md transition-transform hover:brightness-105 active:scale-[0.97]"
-              >
-                <Mic size={16} aria-hidden="true" />
-                {t("home.kisanSaathiAsk")}
-              </button>
-              <button
-                onClick={onOpenFarm}
-                className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-forest/20 bg-white/60 px-5 text-[14px] font-bold text-forest transition-colors hover:bg-white"
-              >
-                {t("home.planToday")}
-                <ArrowRight size={15} aria-hidden="true" />
-              </button>
-            </div>
           </div>
 
-          {/* ── RIGHT — the living farm ───────────────────────────── */}
-          <div
-            aria-hidden="true"
-            className="relative h-48 w-full rounded-3xl border border-forest/10 shadow-soft sm:h-56 lg:h-[21rem]"
-          >
-            {/* sky */}
-            <div className="absolute inset-x-0 top-0 h-2/5 rounded-t-3xl bg-gradient-to-b from-sky-100 via-[#e8f4ea] to-transparent" />
-            {/* soft sun */}
-            <div className="absolute right-8 top-6 h-16 w-16 rounded-full bg-[#FDE68A]/70 blur-sm" />
-            {/* far field rows */}
-            <div className="absolute inset-x-0 bottom-0 h-3/4 rounded-b-3xl bg-gradient-to-t from-[#5b4026] via-[#8a6b45] to-[#b0926b]" />
-            {/* drifting crop rows — the wind line */}
-            <div
-              className="animate-crop-row-drift absolute inset-x-0 bottom-0 h-3/5"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(87deg, hsl(136 100% 24% / 0.14) 0 2px, transparent 2px 16px), repeating-linear-gradient(93deg, hsl(136 100% 24% / 0.08) 0 1px, transparent 1px 16px)",
-              }}
-            />
-            {/* foreground crop silhouette — brand-tinted */}
-            <div
-              className="absolute inset-x-0 bottom-0 h-1/2"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, rgba(15,81,50,0) 0 20px, rgba(15,81,50,0.30) 20px 24px, rgba(34,197,94,0.28) 24px 30px), repeating-linear-gradient(90deg, rgba(15,81,50,0.12) 0 90px, transparent 90px 180px)",
-              }}
-            />
-            {/* breathing field boundary */}
-            <div className="animate-field-boundary absolute inset-4 rounded-2xl border border-primary/70" />
-            {/* scan band */}
-            <div className="animate-field-scan absolute inset-x-5 h-px bg-[#0F5132]/40" />
+          {/* Farm Context Chips */}
+          <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 py-1.5 text-[13px] font-bold text-[#0F5132] shadow-xs">
+              <Sprout size={14} className="text-[#00C26E]" aria-hidden="true" />
+              <span>{cropLabel || t("home.farmTitle")}</span>
+            </div>
 
-            {/* instrument chips — real crop/farm data only */}
-            <div className="absolute left-4 top-4 flex flex-col gap-2">
-              {cropLabel && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[11.5px] font-bold text-forest shadow-sm backdrop-blur-sm">
-                  <Leaf size={12} className="text-primary" aria-hidden="true" />
-                  {cropLabel}
-                </span>
-              )}
-              {farmTag && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-[11.5px] font-bold text-forest shadow-sm backdrop-blur-sm">
-                  <MapPin size={12} className="text-primary" aria-hidden="true" />
-                  {farmTag}
-                </span>
-              )}
-            </div>
-            <div className="absolute bottom-3 left-4 flex flex-wrap items-center gap-2">
-              {weatherChip && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-forest/85 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
-                  <CloudSun size={11} aria-hidden="true" />
-                  {weatherChip.condition} · {weatherChip.temp}
-                </span>
-              )}
-              {mandiChip && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
-                  <Droplets size={11} aria-hidden="true" />
-                  {mandiChip.crop} · ₹{mandiChip.price}
-                </span>
-              )}
-            </div>
+            {farmTag && (
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 py-1.5 text-[13px] font-bold text-[#0F5132] shadow-xs">
+                <Layers size={14} className="text-[#00C26E]" aria-hidden="true" />
+                <span>{farmTag}</span>
+              </div>
+            )}
           </div>
+
+          {/* Dynamic AI Advisory Brief */}
+          {adviceLine && (
+            <div className="mt-5 rounded-2xl border-l-4 border-[#00C26E] border-y border-r border-emerald-900/10 bg-white/80 p-4 shadow-sm backdrop-blur-xs">
+              <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0F5132]">
+                <Sparkles size={13} className="text-[#00C26E]" aria-hidden="true" />
+                <span>{t("home.planToday") || "Today's Field Intelligence"}</span>
+              </div>
+              <p className="mt-1.5 text-[13.5px] font-medium leading-relaxed text-[#111827] md:text-[14.5px]">
+                {adviceLine}
+              </p>
+            </div>
+          )}
+
+          {/* Hero CTAs */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              onClick={onAsk}
+              type="button"
+              className="group inline-flex min-h-[48px] items-center gap-2.5 rounded-xl bg-[#0F5132] px-6 text-[14px] font-bold text-white shadow-[0_10px_24px_-8px_rgba(15,81,50,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#064E3B] hover:shadow-[0_14px_28px_-6px_rgba(15,81,50,0.6)] active:scale-[0.98]"
+            >
+              <Mic size={16} className="transition-transform group-hover:scale-110" aria-hidden="true" />
+              <span>{t("home.kisanSaathiAsk") || "Ask Kisan Saathi"}</span>
+            </button>
+
+            <button
+              onClick={onOpenFarm}
+              type="button"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-[#0F5132]/25 bg-white/70 px-5 text-[14px] font-bold text-[#0F5132] transition-all duration-200 hover:border-[#0F5132]/50 hover:bg-white active:scale-[0.98]"
+            >
+              <span>{t("home.planToday") || "Plan today's field work"}</span>
+              <ArrowRight size={15} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN — Living 3D Agricultural Scene Canvas ──────── */}
+        <div className="relative min-h-[260px] w-full overflow-hidden rounded-[24px] border border-[#0F5132]/15 bg-gradient-to-b from-[#FEF6E4]/40 to-[#EBF5ED]/40 shadow-inner sm:min-h-[300px] lg:min-h-[360px]">
+          {/* Integrated 3D Scene Component */}
+          <Hero3D mousePos={mousePos} weatherCondition={weatherCond} />
         </div>
       </div>
     </section>

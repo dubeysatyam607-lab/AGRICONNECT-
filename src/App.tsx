@@ -18,9 +18,9 @@ import { LoginPage, RegisterPage, OtpPage, ForgotPasswordPage, ResetPasswordPage
 import { AuthCallback } from "@/pages/auth/AuthCallback";
 
 import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
+import Index from "./pages/Index";
 
 // Code-split heavy page bundles
-const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 
@@ -279,62 +279,62 @@ const App = () => (
                   {/* ── Core App / Public Landing ───────────── */}
                   {/* Both authenticated farmers and guest visitors can access
                       the unified smart farming dashboard, mandi rates, and tools. */}
-                  <Route path="/" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/market" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/ai" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/kisan-ai" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/services" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/wallet" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/farm" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/farm-os" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/crop-scan" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/crop-doctor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/mandi" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/mandi-prices" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/mandi-finder" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/agri-store" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/store" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/machinery" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/machinery/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/machinery-rental" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/tractors" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/tractors/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/tractor-rental" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/schemes" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/loans" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/loan-calculator" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/labor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/labour" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/labor-hire" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/labour-hire" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/cattle" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/cattle-market" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/livestock" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/transport" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/soil" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/soil-test" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/soil-test/*" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/news" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/agri-news" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/cold-storage" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/community" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/krishi-shorts" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/farm-ledger" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/analytics" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/crop-insurance" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/fasal-bima" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/insurance" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/crop-calendar" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/profit-calculator" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/price-alerts" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/notifications" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/advisor" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/network" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/settings" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/payments" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
-                  <Route path="/kisan-chat" element={<ProtectedRoute><SafeLazy><Index /></SafeLazy></ProtectedRoute>} />
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/market" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/ai" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/kisan-ai" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/services" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/farm" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/farm-os" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/crop-scan" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/crop-doctor" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/mandi" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/mandi-prices" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/mandi-finder" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/agri-store" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/store" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/machinery" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/machinery/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/machinery-rental" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/tractors" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/tractors/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/tractor-rental" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/schemes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/loans" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/loan-calculator" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/labor" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/labour" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/labor-hire" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/labour-hire" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/cattle" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/cattle-market" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/livestock" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/transport" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/soil" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/soil-test" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/soil-test/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/news" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/agri-news" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/cold-storage" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/community" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/krishi-shorts" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/farm-ledger" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/analytics" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/crop-insurance" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/fasal-bima" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/insurance" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/crop-calendar" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/profit-calculator" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/price-alerts" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/advisor" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/network" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/payments" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/kisan-chat" element={<ProtectedRoute><Index /></ProtectedRoute>} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />

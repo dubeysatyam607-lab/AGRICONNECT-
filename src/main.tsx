@@ -8,12 +8,18 @@ import { initGoogleAnalytics } from "./lib/google-analytics";
 import { crashLoggingService } from "./core/services/CrashLoggingService";
 
 // 1. Initialize Enterprise Dependency Injection Container (Service Locator)
-initializeDIContainer();
+try {
+  initializeDIContainer();
+} catch (err) {
+  console.warn('[Bootstrap] DI initialization warning:', err);
+}
 
 // 1b. Bootstrap analytics (GA4 / GTM)
-// initGoogleAnalytics() removed — it duplicates initAnalytics() and overwrites gtag.
-// Configure VITE_GA4_ID=G-548945014 in .env to enable GA4 via initAnalytics().
-initAnalytics();
+try {
+  initAnalytics();
+} catch (err) {
+  console.warn('[Bootstrap] Analytics initialization warning:', err);
+}
 
 // 1c. Check edge function deployment (logs warnings for missing functions)
 import("./lib/check-edge-functions").then(({ checkEdgeFunctions }) => {

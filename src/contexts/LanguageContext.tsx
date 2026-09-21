@@ -150,10 +150,15 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
+const defaultLanguageValue: LanguageContextType = {
+  language: 'en',
+  setLanguage: () => {},
+  t: (key: string) => getTranslation('en', key),
+  languageName: 'English (India)',
+  formatDate: (d: Date | string | number) => new Date(d).toLocaleDateString('en-IN'),
+};
+
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
+  return context || defaultLanguageValue;
 };

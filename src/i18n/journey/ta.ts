@@ -1218,7 +1218,6 @@ export const ta: JourneyDict = {
   "home.retryWeather": "வானிலையை மீண்டும் முயற்சிக்கவும்",
   "home.retryMandi": "மீண்டும் முயற்சிக்கவும்",
 
-  "home.retryWeather": "வானிலையை மீண்டும் முயற்சிக்கவும்",
   "home.fetchingWeather": "நேரலை வானிலை பெறப்படுகிறது…",
   "home.weatherDetecting": "உள்ளூர் வெப்பநிலை மற்றும் மழை முன்னறிவிப்பு பெறப்படுகிறது",
   "home.setLocationHint": " துல்லியமான வானிலைக்கு உங்கள் இருப்பிடத்தை அமைக்கவும்",

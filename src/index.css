@@ -923,3 +923,13 @@
   .animate-crop-row-drift,
   .animate-sprout-up { animation: none; }
 }
+
+@keyframes hero-rise {
+  0%   { opacity: 0; filter: blur(6px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+.animate-hero-rise { animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-rise { animation: none; opacity: 1; }
+}

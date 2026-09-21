@@ -60,6 +60,8 @@ export function initializeDIContainer(): void {
   }
 }
 
+(globalThis as any).__agriInitDI = initializeDIContainer;
+
 // Auto-run bootstrap on module load to guarantee availability before any useCase resolves
 initializeDIContainer();
 

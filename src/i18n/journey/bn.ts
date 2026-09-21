@@ -1218,7 +1218,6 @@ export const bn: JourneyDict = {
   "home.retryWeather": "আবহাওয়া আবার চেষ্টা করুন",
   "home.retryMandi": "আবার চেষ্টা করুন",
 
-  "home.retryWeather": "আবহাওয়া আবার চেষ্টা করুন",
   "home.fetchingWeather": "লাইভ আবহাওয়া আনা হচ্ছে…",
   "home.weatherDetecting": "স্থানীয় তাপমাত্রা ও বৃষ্টির পূর্বাভাস সংগ্রহ করা হচ্ছে",
   "home.setLocationHint": " সঠিক আবহাওয়ার জন্য আপনার অবস্থান সেট করুন",
