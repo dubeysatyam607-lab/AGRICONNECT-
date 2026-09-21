@@ -42,8 +42,20 @@ export class ChunkErrorBoundary extends Component<Props, State> {
     const isChunkError = this.state.error?.message?.includes("Failed to fetch dynamically imported module") ||
       this.state.error?.message?.includes("Importing a module script failed");
     this.setState({ hasError: false, error: null, errorInfo: null, reloading: false });
-    if (isChunkError && typeof window !== "undefined") {
-      window.location.reload();
+    if (typeof window !== "undefined") {
+      if (isChunkError && 'caches' in window) {
+        caches.keys().then((keys) => {
+          Promise.all(keys.map((k) => caches.delete(k))).then(() => {
+            window.location.reload();
+          }).catch(() => {
+            window.location.reload();
+          });
+        }).catch(() => {
+          window.location.reload();
+        });
+      } else {
+        window.location.reload();
+      }
     }
   };
 

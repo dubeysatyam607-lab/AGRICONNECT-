@@ -34,25 +34,14 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - drop caches from older builds, claim clients
+// Activate event - drop caches from older builds, claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       await self.clients.claim();
-      const stale = (await caches.keys()).filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE);
-      if (stale.length === 0) return;
-      // Open tabs may still be running the previous build and lazily request
-      // its hashed chunks. Deleting those caches immediately would cause
-      // offline 404s → chunk-load crashes. Only prune once no window remains.
-      const windows = await self.clients.matchAll({ type: 'window' });
-      if (windows.length === 0) {
-        await Promise.all(stale.map((key) => caches.delete(key)));
-      } else {
-        setTimeout(async () => {
-          const win = await self.clients.matchAll({ type: 'window' });
-          if (win.length === 0) await Promise.all(stale.map((key) => caches.delete(key)));
-        }, 30 * 60 * 1000);
-      }
+      const keys = await caches.keys();
+      const stale = keys.filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE);
+      await Promise.all(stale.map((key) => caches.delete(key)));
     })()
   );
 });

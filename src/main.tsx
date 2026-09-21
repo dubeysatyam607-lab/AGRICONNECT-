@@ -46,6 +46,13 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       registration.unregister();
     }
   });
+  if (typeof window !== 'undefined' && 'caches' in window) {
+    caches.keys().then((keys) => {
+      for (const key of keys) {
+        caches.delete(key);
+      }
+    });
+  }
 }
 
 interface ErrorBoundaryProps {
