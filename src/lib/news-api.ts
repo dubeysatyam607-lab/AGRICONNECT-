@@ -8,7 +8,8 @@
 
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 
-const CACHE_KEY = "agri_live_news_cache_v2";
+const CACHE_KEY = "agri_live_news_cache_v3";
+export const NEWS_REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 5; // 5 hours
 
 export interface LiveAgriNewsArticle {
   id: string;
@@ -44,8 +45,27 @@ function isAgricultureRelated(title: string, description: string): boolean {
   return AGRI_KEYWORDS.some((kw) => combined.includes(kw));
 }
 
-export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
-  // Check local cache first for instant load
+export function getNewsLastUpdatedInfo(): { lastUpdatedMs: number; isStaleFiveHours: boolean } {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (typeof parsed.timestamp === 'number') {
+        const age = Date.now() - parsed.timestamp;
+        return {
+          lastUpdatedMs: parsed.timestamp,
+          isStaleFiveHours: age >= NEWS_REFRESH_INTERVAL_MS,
+        };
+      }
+    }
+  } catch {
+    // ignore parse error
+  }
+  return { lastUpdatedMs: 0, isStaleFiveHours: true };
+}
+
+export async function fetchLiveAgriNews(forceRefresh = false): Promise<LiveAgriNewsArticle[]> {
+  // Check local cache first unless forced
   let cachedArticles: LiveAgriNewsArticle[] | null = null;
   try {
     const cached = localStorage.getItem(CACHE_KEY);
@@ -53,8 +73,9 @@ export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
       const parsed = JSON.parse(cached);
       if (parsed.articles?.length > 0) {
         cachedArticles = parsed.articles;
-        // If cache is fresh (less than 30 min), return it directly
-        if (Date.now() - parsed.timestamp < 1000 * 60 * 30) {
+        const cacheAge = Date.now() - (parsed.timestamp || 0);
+        // STRICT REQUIREMENT: If cache is under 5 hours old and not forceRefresh, return cache
+        if (!forceRefresh && cacheAge < NEWS_REFRESH_INTERVAL_MS) {
           return parsed.articles;
         }
       }
@@ -84,7 +105,7 @@ export async function fetchLiveAgriNews(): Promise<LiveAgriNewsArticle[]> {
   } catch (err) {
     // Return stale cache if available instead of failing
     if (cachedArticles && cachedArticles.length > 0) {
-      console.warn('[AgriNews Service] Live API failed, serving cached news:', err);
+      console.warn('[AgriNews Service] Live API failed, serving cached 5-hour news:', err);
       return cachedArticles;
     }
     

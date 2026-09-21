@@ -13,8 +13,12 @@ import { cn } from "@/lib/utils";
 import {
   VERIFIED_GOVERNMENT_SCHEMES,
   OfficialScheme,
-  getVerifiedCategories
+  getVerifiedCategories,
+  getDailyVerifiedSubsidies,
+  getDailySchemeUpdatedDate,
+  DailySubsidyNotice
 } from "@/lib/government-schemes-data";
+import { Clock } from "lucide-react";
 import {
   evaluateFarmerEligibility,
   FarmerProfileInput,
@@ -751,6 +755,9 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
   const [selectedScheme, setSelectedScheme] = useState<OfficialScheme | null>(null);
   const [showEligibility, setShowEligibility] = useState(false);
 
+  const dailySubsidies = useMemo(() => getDailyVerifiedSubsidies(), []);
+  const todayDateStr = useMemo(() => getDailySchemeUpdatedDate(), []);
+
   // Default demo farmer profile for instant inline AI matching
   const demoProfile: FarmerProfileInput = useMemo(() => ({
     age: 38,
@@ -847,10 +854,10 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
   return (
     <div className="pb-28 pt-4 px-4 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between gap-2">
+      <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
         <div>
           <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2 tracking-tight">
-            <Landmark className="text-primary" size={26} /> Government Benefits
+            <Landmark className="text-primary" size={26} /> Government Benefits & Subsidies
           </h2>
           <p className="text-xs text-muted-foreground flex items-center gap-1 font-medium mt-0.5">
             <BadgeCheck size={13} className="text-primary" /> Real-time MoA&FW Verified Data Portal

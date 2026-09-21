@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck } from "lucide-react";
-import { fetchLiveAgriNews, LiveAgriNewsArticle } from "@/lib/news-api";
-import { trackAgriEvent } from "@/lib/google-analytics";
-
-import { SafeImage } from "@/components/ui/SafeImage";
+import { fetchLiveAgriNews, LiveAgriNewsArticle, NEWS_REFRESH_INTERVAL_MS, getNewsLastUpdatedInfo } from "@/lib/news-api";
+import { Clock } from "lucide-react";
 
 const CATEGORIES = ["All", "Policy & MSP", "Weather & Monsoon", "Schemes & Subsidy", "Market & Mandi", "Agritech & Innovation"];
 
@@ -29,7 +27,7 @@ const NewsCard = ({ news, onClick }: { news: LiveAgriNewsArticle; onClick: (n: L
           className="w-full h-full object-cover absolute inset-0 group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          <span className="bg-primary text-primary-foreground  text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             {news.category}
           </span>
         </div>
@@ -66,13 +64,20 @@ const AgriNews: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
 
-  const loadNews = async () => {
+  const loadNews = async (force = false) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchLiveAgriNews();
+      const data = await fetchLiveAgriNews(force);
       setArticles(data);
+      const info = getNewsLastUpdatedInfo();
+      if (info.lastUpdatedMs > 0) {
+        setLastRefreshedAt(new Date(info.lastUpdatedMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      } else {
+        setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      }
     } catch (e: any) {
       setError(e?.message || 'Could not load the latest news.');
       setArticles([]);
@@ -87,9 +92,15 @@ const AgriNews: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchLiveAgriNews();
+        const data = await fetchLiveAgriNews(false);
         if (!cancelled) {
           setArticles(data);
+          const info = getNewsLastUpdatedInfo();
+          if (info.lastUpdatedMs > 0) {
+            setLastRefreshedAt(new Date(info.lastUpdatedMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          } else {
+            setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          }
         }
       } catch (e: any) {
         if (!cancelled) {
@@ -100,7 +111,18 @@ const AgriNews: React.FC = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+
+    // Auto-refresh every 5 hours (18,000,000 ms) as per user requirement
+    const timer = setInterval(() => {
+      if (!cancelled) {
+        loadNews(true);
+      }
+    }, NEWS_REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   const filteredArticles = useMemo(() => {
@@ -122,22 +144,30 @@ const AgriNews: React.FC = () => {
   return (
     <div className="pb-28 pt-4 px-4 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between gap-2">
+      <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
         <div>
           <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2 tracking-tight">
             <Newspaper className="text-primary" size={26} /> Kisan Khabar
           </h2>
-          <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1">
-            <BadgeCheck size={13} className="text-primary" /> Live Agriculture & MSP News Portal
+          <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <span className="flex items-center gap-1 text-primary font-semibold">
+              <BadgeCheck size={13} /> Live Agriculture News
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-emerald-500/20">
+              <Clock size={11} className="animate-spin" /> Auto-updates every 5 hours
+              {lastRefreshedAt && ` (${lastRefreshedAt})`}
+            </span>
           </p>
         </div>
         <button
-          onClick={loadNews}
+          onClick={() => loadNews(true)}
           disabled={loading}
-          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all "
+          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center gap-1.5 text-xs font-semibold"
           aria-label="Refresh news"
         >
-          <RefreshCw size={16} className={loading ? "animate-spin text-primary" : ""} />
+          <RefreshCw size={15} className={loading ? "animate-spin text-primary" : ""} />
+          <span>Refresh Now</span>
         </button>
       </div>
 
