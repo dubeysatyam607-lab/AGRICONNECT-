@@ -57,40 +57,59 @@ const Hero3DInner: React.FC<Hero3DProps> = ({
     handleSceneError,
   } = useHero3DController();
 
-  const is3DActive = state.status === "READY" || state.status === "DEGRADED";
+  // Once WebGL is confirmed, the Canvas may initialize and report readiness
+  // through its own onCreated callback (breaking the old mount deadlock).
+  const canMountCanvas = state.webglReady;
 
-  if (!is3DActive) {
-    return <HeroFallback weatherCondition={weatherCondition} />;
-  }
+  // The 3D scene is live only after ASSETS_READY resolves.
+  const is3DActive = state.status === "READY" || state.status === "DEGRADED";
+  const showFallback = !is3DActive;
 
   return (
-    <Hero3DErrorBoundary
-      fallback={<HeroFallback weatherCondition={weatherCondition} />}
-      onError={() => handleSceneError("SHADER_FAILED")}
-    >
-      <div className="relative h-full w-full overflow-hidden" aria-hidden="true">
-        <Suspense fallback={<HeroFallback weatherCondition={weatherCondition} />}>
-          <Canvas
-            camera={{ position: [0, 0.4, 2.8], fov: 42 }}
-            className="pointer-events-none h-full w-full"
-            style={{ pointerEvents: "none" }}
-            gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false, powerPreference: "high-performance" }}
-            dpr={[1, Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2)]}
-            onCreated={() => {
-              handleSceneReady();
-            }}
-          >
-            <HeroFarmScene
-              isReducedMotion={isReducedMotion}
-              mousePos={mousePos}
-              weatherCondition={weatherCondition}
-            />
-          </Canvas>
-        </Suspense>
-        {/* Agricultural live telemetry boundary scan line */}
-        <div className="animate-field-scan pointer-events-none absolute inset-x-2 h-px bg-[#00C26E]/40" />
+    <div className="relative h-full w-full overflow-hidden" aria-hidden="true">
+      {/* Permanent agricultural base layer — never a blank box. Crossfades out
+          only once the live 3D scene is confirmed on screen. */}
+      <div
+        className="absolute inset-0 transition-opacity duration-700 ease-out"
+        style={{ opacity: showFallback ? 1 : 0 }}
+      >
+        <HeroFallback weatherCondition={weatherCondition} />
       </div>
-    </Hero3DErrorBoundary>
+
+      {canMountCanvas && (
+        <Hero3DErrorBoundary
+          fallback={<HeroFallback weatherCondition={weatherCondition} />}
+          onError={() => handleSceneError("SHADER_FAILED")}
+        >
+          <div
+            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            style={{ opacity: is3DActive ? 1 : 0 }}
+          >
+            <Suspense fallback={null}>
+              <Canvas
+                camera={{ position: [0, 0.4, 2.8], fov: 42 }}
+                className="pointer-events-none h-full w-full"
+                style={{ pointerEvents: "none" }}
+                gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false, powerPreference: "high-performance" }}
+                dpr={[1, Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2)]}
+                onCreated={() => {
+                  handleSceneReady();
+                }}
+              >
+                <HeroFarmScene
+                  isReducedMotion={isReducedMotion}
+                  mousePos={mousePos}
+                  weatherCondition={weatherCondition}
+                />
+              </Canvas>
+            </Suspense>
+          </div>
+        </Hero3DErrorBoundary>
+      )}
+
+      {/* Agricultural live telemetry boundary scan line */}
+      <div className="animate-field-scan pointer-events-none absolute inset-x-2 h-px bg-[#00C26E]/40" />
+    </div>
   );
 };
 
