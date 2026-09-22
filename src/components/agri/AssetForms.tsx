@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ImageUpload from "./ImageUpload";
+import { MACHINERY_CATEGORY_LABELS } from "@/lib/machinery-categories";
 
 // Removed ImageUploadPlaceholder in favor of actual ImageUpload
 
@@ -387,6 +388,7 @@ export const SoilTestLabForm = () => {
 export const EquipmentAssetForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [imageUrl, setImageUrl] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -406,6 +408,7 @@ export const EquipmentAssetForm = ({ onSuccess }: { onSuccess?: () => void }) =>
       status: "available",
       owner_id: user?.id || null,
       description: String(fd.get("description") || ""),
+      image: imageUrl || null,
     };
     try {
       const { error } = await supabase.from("equipment_listings").insert([payload]);
@@ -445,21 +448,22 @@ export const EquipmentAssetForm = ({ onSuccess }: { onSuccess?: () => void }) =>
       <p className="text-xs text-muted-foreground mb-4">Earn rental income by offering your farm machinery to nearby farmers.</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Equipment Photos</label>
+          <ImageUpload value={imageUrl} onChange={setImageUrl} bucket="equipment-images" />
+        </div>
+        <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1 block">Machine / Tractor Model Name</label>
           <input required name="name" type="text" placeholder="e.g. Mahindra 575 DI, John Deere 5310" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
-            <select required name="category" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
-              <option value="Tractor">Tractor (ट्रैक्टर)</option>
-              <option value="Harvester">Harvester (कंबाइन हार्वेस्टर)</option>
-              <option value="Rotavator">Rotavator (रोटावेटर)</option>
-              <option value="Cultivator">Cultivator (कल्टीवेटर)</option>
-              <option value="Plough">Plough (हल/प्लाउ)</option>
-              <option value="Seeder">Seeder (सीड ड्रिल)</option>
-              <option value="Sprayer">Sprayer (स्प्रेयर)</option>
-            </select>
+<label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
+          <select required name="category" className="w-full bg-background border border-input rounded-lg p-2 text-base sm:text-sm">
+            <option value="Tractor">Tractor (ट्रैक्टर)</option>
+            {MACHINERY_CATEGORY_LABELS.filter((c) => c !== "Tractor").map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">Brand</label>

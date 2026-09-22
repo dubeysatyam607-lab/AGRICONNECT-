@@ -40,7 +40,7 @@ const GROUPS: Group[] = [
     title: "Marketplace",
     items: [
       { id: "store", icon: ShoppingBag, labelKey: "svc.hub.marketplace.store.label", label: "Agri Store" },
-      { id: "tractors", icon: Tractor, labelKey: "svc.hub.machinery.tractors.label", label: "Tractor" },
+      { id: "tractors", icon: Tractor, labelKey: "svc.tractors", label: "Agricultural Machinery" },
       { id: "cattle", icon: PawPrint, labelKey: "svc.hub.marketplace.cattle.label", label: "Cattle Market" },
       { id: "labor", icon: Users, labelKey: "svc.hub.labour.labor.label", label: "Labour Hire" },
       { id: "transport", icon: Truck, labelKey: "svc.hub.transportStorage.transport.label", label: "Farm Transport" },

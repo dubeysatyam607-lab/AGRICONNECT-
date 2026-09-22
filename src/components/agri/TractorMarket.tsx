@@ -15,6 +15,7 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { postEdgeJson } from "@/lib/invoke-edge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EquipmentAssetForm } from "./AssetForms";
+import { MACHINERY_FILTER_CATEGORIES, MACHINERY_CATEGORY_LABELS, findMachineryGroup } from "@/lib/machinery-categories";
 import { PlusCircle } from "lucide-react";
 import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 
@@ -57,7 +58,7 @@ function toggleFav(id: string): boolean {
   return next.includes(id);
 }
 
-const CATEGORIES = ["All", "Tractor", "Rotavator", "Harvester", "Plough", "Seeder", "Cultivator", "Thresher", "Sprayer"];
+const CATEGORIES = MACHINERY_FILTER_CATEGORIES as readonly string[];
 const CATEGORY_ICONS: Record<string, typeof Tractor> = {
   Tractor, Rotavator: RefreshCw, Harvester: Wheat, Plough: Layers,
   Seeder: Sprout, Cultivator: Shovel, Thresher: Combine, Sprayer: Droplets,
@@ -711,7 +712,7 @@ const TractorMarket: React.FC = () => {
 
   const [tab, setTab] = useState<"discover" | "bookings">("discover");
   const [all, setAll] = useState<TractorSummary[]>([]);
-  const [categories, setCategories] = useState<string[]>(CATEGORIES);
+  const [categories, setCategories] = useState<string[]>(CATEGORIES as string[]);
   const [stats, setStats] = useState({ total: 0, available: 0, avgRating: 0, avgHour: 0 });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -824,7 +825,7 @@ const TractorMarket: React.FC = () => {
 
   const visible = useMemo(() => {
     let list = all;
-    if (category !== "All") list = list.filter(x => x.category === category);
+    if (category !== "All") list = list.filter(x => x.category === category || findMachineryGroup(x.category) === category);
     if (filters.availableOnly) list = list.filter(x => x.status === "available");
     if (filters.verifiedOnly) list = list.filter(x => x.verified);
     list = list.filter(x => x.rating >= filters.minRating && x.rateHour <= filters.maxRate);
@@ -1029,7 +1030,7 @@ const TractorMarket: React.FC = () => {
         <Dialog open={showListEquipment} onOpenChange={setShowListEquipment}>
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>List Your Tractor / Equipment</DialogTitle>
+              <DialogTitle>List Your Machinery</DialogTitle>
             </DialogHeader>
             <EquipmentAssetForm onSuccess={() => setShowListEquipment(false)} />
           </DialogContent>
@@ -1358,13 +1359,13 @@ const UserBadge = () => (
 );
 
 const STRINGS: Record<string, [string, string]> = {
-  title: ["Tractor Rental", "ट्रैक्टर किराया"],
-  subtitle: ["Uber-style tractor on demand", "ऑन-डिमांड ट्रैक्टर सेवा"],
+  title: ["Agricultural Machinery", "कृषि मशीनरी"],
+  subtitle: ["Rent or list farm equipment near you", "अपने पास किराए पर लें या मशीनरी सूचीबद्ध करें"],
   total: ["Listed", "सूचीबद्ध"],
   availableNow: ["Live", "उपलब्ध"],
   avgRating: ["Rating", "रेटिंग"],
   avgHour: ["Avg ₹/hr", "औसत ₹/घंटा"],
-  searchPlaceholder: ["Search tractor, brand, city...", "ट्रैक्टर, ब्रांड, शहर खोजें..."],
+  searchPlaceholder: ["Search equipment, category, city...", "मशीनरी, श्रेणी, शहर खोजें..."],
   all: ["All", "सभी"],
   nearbyTractors: ["Nearby tractors", "नज़दीकी ट्रैक्टर"],
   featured: ["All tractors", "सभी ट्रैक्टर"],
