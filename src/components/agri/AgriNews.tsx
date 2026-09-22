@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck } from "lucide-react";
 import { fetchLiveAgriNews, LiveAgriNewsArticle, NEWS_REFRESH_INTERVAL_MS, getNewsLastUpdatedInfo } from "@/lib/news-api";
+import { trackAgriEvent } from "@/lib/google-analytics";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { Clock } from "lucide-react";
 
 const CATEGORIES = ["All", "Policy & MSP", "Weather & Monsoon", "Schemes & Subsidy", "Market & Mandi", "Agritech & Innovation"];
@@ -222,7 +224,7 @@ const AgriNews: React.FC = () => {
               <p className="text-base font-bold text-foreground">Could not load news</p>
               <p className="text-xs text-muted-foreground mt-1">{error}</p>
               <button
-                onClick={loadNews}
+                onClick={() => { void loadNews(); }}
                 className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
               >
                 <RefreshCw size={14} /> Retry
