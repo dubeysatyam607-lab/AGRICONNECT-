@@ -1282,6 +1282,7 @@ export const te: JourneyDict = {
   "home.viewAll": "అన్నీ చూడండి",
   "home.coreFeatures": "ప్రధాన లక్షణాలు",
   "home.everythingAFarmerNeeds": "రైతుకు కావలసిన ప్రతిదీ",
+  "home.snapshotTitle": "పొలం స్నాప్షాట్",
   "home.open": "తెరవండి",
   "home.viewMore": "మరిన్ని చూడండి",
   "home.weatherAt": "వాతావరణం · {city}",

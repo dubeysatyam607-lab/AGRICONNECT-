@@ -1282,6 +1282,7 @@ export const mr: JourneyDict = {
   "home.viewAll": "सर्व पहा",
   "home.coreFeatures": "मुख्य वैशिष्ट्ये",
   "home.everythingAFarmerNeeds": "शेतकऱ्याला हवे ते सर्व",
+  "home.snapshotTitle": "शेत स्नॅपशॉट",
   "home.open": "उघडा",
   "home.viewMore": "अधिक पहा",
   "home.weatherAt": "हवामान · {city}",

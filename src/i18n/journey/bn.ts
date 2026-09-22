@@ -1282,6 +1282,7 @@ export const bn: JourneyDict = {
   "home.viewAll": "সব দেখুন",
   "home.coreFeatures": "প্রধান বৈশিষ্ট্য",
   "home.everythingAFarmerNeeds": "কৃষকের যা কিছু দরকার",
+  "home.snapshotTitle": "খেতের স্ন্যাপশট",
   "home.open": "খুলুন",
   "home.viewMore": "আরও দেখুন",
   "home.weatherAt": "আবহাওয়া · {city}",

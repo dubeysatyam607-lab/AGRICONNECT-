@@ -1282,6 +1282,7 @@ export const or: JourneyDict = {
   "home.viewAll": "ସବୁ ଦେଖନ୍ତୁ",
   "home.coreFeatures": "ମୁଖ୍ୟ ବୈଶିଷ୍ଟ୍ୟ",
   "home.everythingAFarmerNeeds": "ଚାଷୀଙ୍କୁ ଆବଶ୍ୟକ ସବୁଥର",
+  "home.snapshotTitle": "ଖେତ ସ୍ନାପସଟ୍",
   "home.open": "ଖୋଲନ୍ତୁ",
   "home.viewMore": "ଅଧିକ ଦେଖନ୍ତୁ",
   "home.weatherAt": "ପାଗ · {city}",

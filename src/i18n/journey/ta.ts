@@ -1282,6 +1282,7 @@ export const ta: JourneyDict = {
   "home.viewAll": "அனைத்தும் காண்க",
   "home.coreFeatures": "முக்கிய அம்சங்கள்",
   "home.everythingAFarmerNeeds": "விவசாயிக்கு தேவையான அனைத்தும்",
+  "home.snapshotTitle": "பண்ணை முன்னோட்டம்",
   "home.open": "திறக்க",
   "home.viewMore": "மேலும் காண்க",
   "home.weatherAt": "வானிலை · {city}",

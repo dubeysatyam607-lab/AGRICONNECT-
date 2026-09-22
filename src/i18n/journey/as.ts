@@ -1281,6 +1281,7 @@ export const as: JourneyDict = {
   "home.viewAll": "আটাইবোৰ চাওক",
   "home.coreFeatures": "মুখ্য বৈশিষ্ট্যসমূহ",
   "home.everythingAFarmerNeeds": "কৃষকৰ প্ৰয়োজনীয় সকলো",
+  "home.snapshotTitle": "পথাৰ স্নেপশ্বট",
   "home.open": "খোলক",
   "home.viewMore": "আৰু চাওক",
   "home.weatherAt": "বতৰ · {city}",

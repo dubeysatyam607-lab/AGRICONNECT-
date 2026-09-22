@@ -1282,6 +1282,7 @@ export const gu: JourneyDict = {
   "home.viewAll": "બધું જુઓ",
   "home.coreFeatures": "મુખ્ય વિશેષતાઓ",
   "home.everythingAFarmerNeeds": "ખેડૂતને જોઈએ એ બધું",
+  "home.snapshotTitle": "ખેતર સ્નેપશોટ",
   "home.open": "ખોલો",
   "home.viewMore": "વધુ જુઓ",
   "home.weatherAt": "હવામાન · {city}",

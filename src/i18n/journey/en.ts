@@ -1282,6 +1282,7 @@ export const en: JourneyDict = {
   "home.viewAll": "View all",
   "home.coreFeatures": "Core features",
   "home.everythingAFarmerNeeds": "Everything a Farmer Needs",
+  "home.snapshotTitle": "Quick Farm Snapshot",
   "home.open": "Open",
   "home.viewMore": "View More",
   "home.weatherAt": "Weather · {city}",

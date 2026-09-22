@@ -13,6 +13,7 @@ import TodayTasks from "./TodayTasks";
 import { FirstDayBoard } from "./FirstDayBoard";
 import { FarmHero } from "./FarmHero";
 import { CoreFeatures } from "./CoreFeatures";
+import { FarmSnapshot } from "./FarmSnapshot";
 import { TodayNeeds, type FarmNeed } from "./TodayNeeds";
 import { WeatherHero } from "./WeatherHero";
 import { NotificationBell } from "@/features/notifications/presentation/components/NotificationBell";
@@ -324,14 +325,34 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           </SectionErrorBoundary>
         </div>
 
+        {/* Quick Farm Snapshot — four live morning numbers */}
+        <div className="reveal stagger-1">
+          <SectionErrorBoundary label="Farm snapshot">
+            <FarmSnapshot
+              data={{
+                crop: advice.cropLabel,
+                stage: advice.cropLabel,
+                area: farmProfile?.farmArea,
+                unit: landUnit,
+                soil: farmProfile?.soilType,
+                temp: wl?.live && weather.formatTemp ? weather.formatTemp(wl.live.temp) : undefined,
+                condition: wl?.live?.condition,
+                humidity: wl?.live?.humidity,
+                mandiCrop: Array.isArray(mandiPrices) && mandiPrices[0] ? mandiPrices[0].crop : undefined,
+                mandiPrice: Array.isArray(mandiPrices) && mandiPrices[0] ? String(mandiPrices[0].price) : undefined,
+                mandiStatus: Array.isArray(mandiPrices) && mandiPrices[0] ? mandiPrices[0].status : undefined,
+                mandiChange: Array.isArray(mandiPrices) && mandiPrices[0] ? mandiPrices[0].change : undefined,
+              }}
+            />
+          </SectionErrorBoundary>
+        </div>
+
         {/* Everything a Farmer Needs — the seven core features, rich cards */}
         <div className="reveal stagger-1">
           <SectionErrorBoundary label="Core features">
             <CoreFeatures onGo={go} />
           </SectionErrorBoundary>
         </div>
-
-        {/* Live weather hero band */}
         <div className="reveal stagger-1">
           <SectionErrorBoundary label="Weather">
             <WeatherHero

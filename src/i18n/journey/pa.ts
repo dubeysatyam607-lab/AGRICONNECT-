@@ -1282,6 +1282,7 @@ export const pa: JourneyDict = {
   "home.viewAll": "ਸਭ ਵੇਖੋ",
   "home.coreFeatures": "ਮੁੱਖ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ",
   "home.everythingAFarmerNeeds": "ਕਿਸਾਨ ਨੂੰ ਚਾਹੀਦੀ ਹਰ ਚੀਜ਼",
+  "home.snapshotTitle": "ਖੇਤ ਸਨੈਪਸ਼ਾਟ",
   "home.open": "ਖੋਲ੍ਹੋ",
   "home.viewMore": "ਹੋਰ ਵੇਖੋ",
   "home.weatherAt": "ਮੌਸਮ · {city}",

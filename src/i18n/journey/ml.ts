@@ -1282,6 +1282,7 @@ export const ml: JourneyDict = {
   "home.viewAll": "എല്ലാം കാണുക",
   "home.coreFeatures": "പ്രധാന സവിശേഷതകൾ",
   "home.everythingAFarmerNeeds": "കർഷകന് വേണ്ടതെല്ലാം",
+  "home.snapshotTitle": "കൃഷിയിട സ്നാപ്പ്ഷോട്ട്",
   "home.open": "തുറക്കുക",
   "home.viewMore": "കൂടുതൽ കാണുക",
   "home.weatherAt": "കാലാവസ്ഥ · {city}",

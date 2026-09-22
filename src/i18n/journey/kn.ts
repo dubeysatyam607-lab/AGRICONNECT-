@@ -1282,6 +1282,7 @@ export const kn: JourneyDict = {
   "home.viewAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
   "home.coreFeatures": "ಪ್ರಮುಖ ವೈಶಿಷ್ಟ್ಯಗಳು",
   "home.everythingAFarmerNeeds": "ರೈತನಿಗೆ ಬೇಕಾದ ಎಲ್ಲವೂ",
+  "home.snapshotTitle": "ಜಮೀನು ಸ್ನ್ಯಾಪ್ಶಾಟ್",
   "home.open": "ತೆರೆಯಿರಿ",
   "home.viewMore": "ಇನ್ನಷ್ಟು ನೋಡಿ",
   "home.weatherAt": "ಹವಾಮಾನ · {city}",
