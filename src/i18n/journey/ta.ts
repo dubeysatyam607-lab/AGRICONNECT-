@@ -1308,6 +1308,8 @@ export const ta: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "இன்றைய கவனம்",
   "home.mandiSource": "சரிபார்க்கப்பட்ட APMC விலை · AGMARKNET",
+  "home.liveBadge": "நேரலை",
+  "home.updatedAgo": "புதுப்பிப்பு",
   "home.govtSub": "விவசாயிகளுக்கான புதிய திட்டங்கள் மற்றும் எச்சரிக்கைகள்",
   "home.cropHealthSub": "இலையின் புகைப்படத்தை ஸ்கேன் செய்யுங்கள் — உடனே பூச்சி, நோய் பரிசோதனை",
   "mkt.title": "அருகில் விவசாய உதவி",

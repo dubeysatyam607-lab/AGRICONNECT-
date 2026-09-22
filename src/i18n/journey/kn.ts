@@ -1308,6 +1308,8 @@ export const kn: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "ಇಂದಿನ ಫೋಕಸ್",
   "home.mandiSource": "ಪರಿಶೀಲಿಸಿದ APMC ದರ · AGMARKNET",
+  "home.liveBadge": "ಲೈವ್",
+  "home.updatedAgo": "ಅಪ್ಡೇಟ್",
   "home.govtSub": "ರೈತರಿಗೆ ಹೊಸ ಯೋಜನೆಗಳು ಮತ್ತು ಎಚ್ಚರಿಕೆಗಳು",
   "home.cropHealthSub": "ಎಲೆಯ ಫೋಟೋ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ — ಕೂಡಲೇ ಕೀಟ ಮತ್ತು ರೋಗ ಪರೀಕ್ಷೆ",
   "mkt.title": "ಹತ್ತಿರದ ಕೃಷಿ ಸಹಾಯ",

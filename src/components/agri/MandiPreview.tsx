@@ -44,7 +44,19 @@ export const MandiPreview: React.FC<MandiPreviewProps> = ({ items, loading, erro
         </div>
 
         <p className="mt-1 flex items-center gap-1.5 pl-5 type-meta text-muted-foreground">
-          {t("home.mandiSource")}
+          <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 animate-live-ring" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          <span className="font-bold text-emerald-700">{t("home.liveBadge")}</span>
+          {visible[0]?.lastUpdatedText && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{t("home.updatedAgo")} {visible[0].lastUpdatedText}</span>
+            </>
+          )}
+          <span aria-hidden="true">·</span>
+          <span>{t("home.mandiSource")}</span>
         </p>
 
         {visible.length > 0 ? (

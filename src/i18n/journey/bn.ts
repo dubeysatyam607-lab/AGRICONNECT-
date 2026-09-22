@@ -1308,6 +1308,8 @@ export const bn: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "আজকের ফোকাস",
   "home.mandiSource": "যাচাই করা APMC দাম · AGMARKNET",
+  "home.liveBadge": "লাইভ",
+  "home.updatedAgo": "আপডেট",
   "home.govtSub": "কৃষকদের জন্য নতুন প্রকল্প ও সতর্কবার্তা",
   "home.cropHealthSub": "পাতার ফটো স্ক্যান করুন — সঙ্গে সঙ্গে পোকা ও রোগ পরীক্ষা",
   "mkt.title": "কাছের কৃষি কাজের সাহায্য",

@@ -1307,6 +1307,8 @@ export const as: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "আজিৰ ফ’কাছ",
   "home.mandiSource": "প্ৰমাণিত APMC ভাও · AGMARKNET",
+  "home.liveBadge": "লাইভ",
+  "home.updatedAgo": "আপডেট",
   "home.govtSub": "খেতিয়কসকলৰ বাবে নতুন আঁচনি আৰু সতৰ্কবাণী",
   "home.cropHealthSub": "পাতৰ ফটো স্কেন কৰক — তৎক্ষণাত পোক আৰু ৰোগ পৰীক্ষা",
   "mkt.title": "ওচৰতে খেতিৰ সহায়",

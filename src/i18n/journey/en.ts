@@ -1308,6 +1308,8 @@ export const en: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "Today's focus",
   "home.mandiSource": "Verified APMC rates · AGMARKNET",
+  "home.liveBadge": "Live",
+  "home.updatedAgo": "Updated",
   "home.govtSub": "New schemes and alerts for farmers",
   "home.cropHealthSub": "Scan a leaf photo for an instant pest & disease check",
   "mkt.title": "Farm help nearby",

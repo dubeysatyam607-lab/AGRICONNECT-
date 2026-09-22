@@ -1308,6 +1308,8 @@ export const te: JourneyDict = {
   "home.heroFarmTag": "{area} {unit} · {soil}",
   "home.adviceCaption": "నేటి ఫోకస్",
   "home.mandiSource": "ధృవీకరించిన APMC ధర · AGMARKNET",
+  "home.liveBadge": "లైవ్",
+  "home.updatedAgo": "అప్డేట్",
   "home.govtSub": "రైతులకు కొత్త పథకాలు మరియు హెచ్చరికలు",
   "home.cropHealthSub": "ఆకు ఫోటో స్కాన్ చేయండి — వెంటనే తెగులు, వ్యాధి పరీక్ష",
   "mkt.title": "సమీపంలో వ్యవసాయ సహాయం",
