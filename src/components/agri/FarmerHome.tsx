@@ -12,6 +12,7 @@ import QuickActionsGrid from "./QuickActionsGrid";
 import TodayTasks from "./TodayTasks";
 import { FirstDayBoard } from "./FirstDayBoard";
 import { FarmHero } from "./FarmHero";
+import { CoreFeatures } from "./CoreFeatures";
 import { TodayNeeds, type FarmNeed } from "./TodayNeeds";
 import { WeatherHero } from "./WeatherHero";
 import { NotificationBell } from "@/features/notifications/presentation/components/NotificationBell";
@@ -320,6 +321,13 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                   : undefined
               }
             />
+          </SectionErrorBoundary>
+        </div>
+
+        {/* Everything a Farmer Needs — the seven core features, rich cards */}
+        <div className="reveal stagger-1">
+          <SectionErrorBoundary label="Core features">
+            <CoreFeatures onGo={go} />
           </SectionErrorBoundary>
         </div>
 
