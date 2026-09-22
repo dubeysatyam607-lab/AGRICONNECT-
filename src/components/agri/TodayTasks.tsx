@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate } from "@/i18n/journey";
 import { loadOnboardingData } from "@/features/auth/presentation/onboarding/onboardingData";
-import { buildFarmerTasks, type IGeneratedTask } from "./cropTimelineData";
+import { buildFarmerTasks, buildTasksForCropName, type IGeneratedTask } from "./cropTimelineData";
 
 interface TodayTasksProps {
   triggerHaptic: () => void;
+  farmCrop?: string;
 }
 
 const LEGACY_TASKS: { id: string; labelKey: string; done: boolean }[] = [
@@ -43,7 +44,7 @@ const loadDoneMap = (): Record<string, boolean> => {
  * personalized from their crops & crop stage; guests get the generic list.
  * Completion state is stored per task-id so it survives regeneration.
  */
-const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic }) => {
+const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop }) => {
   const { t, language } = useLanguage();
   const [celebrate, setCelebrate] = useState(false);
   const prevAllDone = useRef(false);
@@ -51,8 +52,10 @@ const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic }) => {
   const generated = useMemo(() => {
     const personalized = buildFarmerTasks(loadOnboardingData(language), t);
     if (personalized.length > 0) return personalized;
+    const byFarmCrop = farmCrop ? buildTasksForCropName(farmCrop, t) : [];
+    if (byFarmCrop.length > 0) return byFarmCrop;
     return LEGACY_TASKS.map(({ id, labelKey, done }) => ({ id, label: t(labelKey), done }));
-  }, [language, t]);
+  }, [language, t, farmCrop]);
 
   const [tasks, setTasks] = useState<IGeneratedTask[]>(() => {
     const doneMap = loadDoneMap();

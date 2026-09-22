@@ -70,6 +70,62 @@ export interface IGeneratedTask {
 type TaskT = (key: string) => string;
 const identity = (key: string): string => key;
 
+/** Normalize a free-form crop label into a timeline crop id, or undefined. */
+export const getTimelineCropId = (cropLabel: string): string | undefined => {
+  const norm = cropLabel.toLowerCase().replace(/\(.*?\)/g, "").trim();
+  const direct = TIMELINE_CROPS.find((c) => c.name.toLowerCase() === norm);
+  if (direct) return direct.id;
+  const alias: Record<string, string> = {
+    wheat: "wheat",
+    gehun: "wheat",
+    rice: "rice",
+    dhan: "rice",
+    cotton: "cotton",
+    kapas: "cotton",
+    mustard: "mustard",
+    sarson: "mustard",
+    potato: "potato",
+    aloo: "potato",
+    maize: "maize",
+    makka: "maize",
+    soybean: "soybean",
+    soyabean: "soybean",
+    soya: "soybean",
+    onion: "onion",
+    pyaaz: "onion",
+  };
+  return alias[norm] ?? alias[norm.split(" ")[0]];
+};
+
+/**
+ * Day-one tasks derived from the farm's actual crop name (used when onboarding
+ * answers are not available). Never guesses a crop — returns [] when the given
+ * label cannot be mapped to a known timeline schedule.
+ */
+export const buildTasksForCropName = (cropLabel: string, t: TaskT = identity): IGeneratedTask[] => {
+  const id = getTimelineCropId(cropLabel);
+  const crop = TIMELINE_CROPS.find((c) => c.id === id);
+  if (!crop) return [];
+  const cleanLabel = cropLabel.split("(")[0].trim() || crop.name;
+  const seen = new Set<string>();
+  const tasks: IGeneratedTask[] = [];
+  const push = (task: IGeneratedTask) => {
+    if (seen.has(task.label)) return;
+    seen.add(task.label);
+    tasks.push(task);
+  };
+  const firstIrrigation = crop.irrigationDays.find((d) => d > 0);
+  const firstFertilization = crop.fertilizationDays.find((d) => d > 0);
+  if (firstIrrigation != null) {
+    push({ id: `${crop.id}-irrigation`, label: interpolate(t('tasks.irrigate'), { crop: cleanLabel, day: firstIrrigation }), done: false });
+  }
+  if (firstFertilization != null) {
+    push({ id: `${crop.id}-fertilization`, label: interpolate(t('tasks.fertilize'), { crop: cleanLabel, day: firstFertilization }), done: false });
+  }
+  push({ id: 'mandi', label: interpolate(t('tasks.mandiCheck'), { crop: cleanLabel }), done: false });
+  return tasks;
+};
+
 /**
  * Day-one tasks derived from the farmer's onboarding answers: the first
  * irrigation & fertilization of their primary crop, stage-aware AI advice,

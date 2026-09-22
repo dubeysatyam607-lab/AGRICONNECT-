@@ -569,7 +569,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           </section>
         </div>
 
-        <TodayTasks triggerHaptic={triggerHaptic} />
+        <TodayTasks triggerHaptic={triggerHaptic} farmCrop={advice.cropLabel.split(" · ")[0] ?? undefined} />
 
         <div className="mt-8 grid gap-7 lg:grid-cols-2">
           {/* News */}
