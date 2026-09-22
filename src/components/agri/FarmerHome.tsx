@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState, Component, type React
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
   IndianRupee, Landmark, MapPin,
-  ArrowRight, Coins, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
+  ArrowRight, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
 } from "lucide-react";
 import AiInsightCard from "./AiInsightCard";
 import FarmStatusCard from "./FarmStatusCard";
@@ -104,7 +104,6 @@ const QUICK_ACTIONS = [
 const SECONDARY_SERVICES = [
   { id: "schemes", icon: Landmark, labelKey: "svc.schemes" },
   { id: "transport", icon: Truck, labelKey: "svc.transport" },
-  { id: "loans", icon: Coins, labelKey: "svc.loans" },
   { id: "news", icon: Newspaper, labelKey: "svc.news" },
   { id: "soil", icon: FlaskConical, labelKey: "svc.soil" },
   { id: "cold-storage", icon: Warehouse, labelKey: "svc.coldStorage" },

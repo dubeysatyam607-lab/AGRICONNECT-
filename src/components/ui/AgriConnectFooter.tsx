@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Mail, Phone, Instagram, Linkedin, Youtube, Twitter, Sun, Moon, Languages,
-  Heart, Check, ArrowRight, Cookie, ChevronDown,
+  Mail, Phone, Instagram, Sun, Moon, Languages,
+  Heart, ArrowRight, Cookie, ChevronDown,
 } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { useThemeManager } from '@/core/theme/ThemeManager';
 import { useLanguage, LANGUAGE_NAMES } from '@/contexts/LanguageContext';
-import { submitWeb3Form } from '@/config/web3forms';
 
 const APP_VERSION = '1.2.0';
 const LAST_UPDATED = 'August 2026';
@@ -39,10 +38,7 @@ const COMPANY = [
 ];
 
 const SOCIALS = [
-  { label: 'Instagram', href: 'https://www.instagram.com/agriconnect', icon: Instagram },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/agriconnect', icon: Linkedin },
-  { label: 'YouTube', href: 'https://www.youtube.com/@agriconnect', icon: Youtube },
-  { label: 'X (Twitter)', href: 'https://x.com/agriconnect', icon: Twitter },
+  { label: 'Instagram', href: 'https://www.instagram.com/hello_agriconnect', icon: Instagram },
 ];
 
 const Column = ({ title, links }: { title: string; links: { to: string; label: string }[] }) => (
@@ -81,113 +77,9 @@ const AgriConnectFooter: React.FC = () => {
   const theme = useThemeManager();
   const lang = useLanguage();
 
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [subscribed, setSubscribed] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
-
-  const submitNewsletter = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
-      setError('Please enter a valid email address.');
-      setSubscribed(false);
-      return;
-    }
-    setError(null);
-    setSubscribing(true);
-    try {
-      await submitWeb3Form({
-        subject: 'Newsletter subscription from AgriConnect website',
-        from_name: trimmed,
-        email: trimmed,
-      });
-      try {
-        localStorage.setItem('agri_newsletter', trimmed);
-      } catch {
-        // storage unavailable — ignore
-      }
-      setSubscribed(true);
-      setEmail('');
-      window.setTimeout(() => setSubscribed(false), 6000);
-    } catch (err) {
-      console.error('[Newsletter] subscription failed:', err);
-      setError('Subscription failed. Please check your connection and try again.');
-    } finally {
-      setSubscribing(false);
-    }
-  };
-
   return (
     <footer className="border-t border-border bg-card/40 relative overflow-hidden" aria-label="Footer">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          {/* ── Newsletter ─────────────────────────────────── */}
-          <section aria-labelledby="newsletter-heading" className="pt-10">
-            <div className="relative overflow-hidden rounded-xl border border-border bg-card px-6 py-8 sm:px-10 sm:py-9">
-              <div className="relative grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-center">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 rounded bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    Kisan updates for you
-                  </div>
-                  <h2 id="newsletter-heading" className="mt-3 type-h2">
-                    Stay Updated
-                  </h2>
-                  <p className="mt-2 max-w-md type-small text-muted-foreground">
-                    Get farming tips, government schemes, mandi updates and AI recommendations
-                    directly in your inbox.
-                  </p>
-                </div>
-
-                <form onSubmit={submitNewsletter} noValidate className="w-full" aria-label="Newsletter subscription">
-                  {subscribed ? (
-                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted px-5 py-4" role="status" aria-live="polite">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="type-small font-semibold">You&apos;re subscribed!</p>
-                        <p className="type-meta">Kisan updates will reach your inbox soon.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <label htmlFor="footer-email" className="sr-only">
-                          Email address
-                        </label>
-                        <input
-                          id="footer-email"
-                          type="email"
-                          inputMode="email"
-                          autoComplete="email"
-                          value={email}
-                          onChange={(e) => { setEmail(e.target.value); if (error) setError(null); }}
-                          placeholder="Enter your email address"
-                          aria-invalid={error ? true : undefined}
-                          aria-describedby={error ? 'newsletter-error' : undefined}
-                          className="h-12 w-full flex-1 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
-                        />
-                        <button
-                          type="submit"
-                          disabled={subscribing}
-                          className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                          {subscribing ? 'Subscribing…' : 'Subscribe'}
-                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </div>
-                      {error && (
-                        <p id="newsletter-error" role="alert" className="mt-2 text-xs font-semibold text-destructive">
-                          {error}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </form>
-              </div>
-            </div>
-          </section>
-
           {/* ── Main grid ──────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:flex lg:items-start lg:justify-between lg:gap-16 lg:py-16">
             {/* Brand */}
@@ -294,7 +186,7 @@ const AgriConnectFooter: React.FC = () => {
           {/* ── Bottom bar ─────────────────────────────────── */}
           <div className="flex flex-col gap-4 border-t border-border/70 py-6 lg:flex-row lg:items-center lg:justify-between">
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-muted-foreground">
-              © 2026 AgriConnect Technologies Pvt. Ltd. All rights reserved.
+              © 2026 AgriConnect. All rights reserved.
               <span className="hidden text-muted-foreground/40 sm:inline" aria-hidden="true">•</span>
               <span className="inline-flex items-center gap-1">
                 Made with <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" aria-hidden="true" /> for Indian Farmers

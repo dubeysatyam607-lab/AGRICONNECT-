@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useMemo } from "react";
-import { Sprout, ArrowRight, Mic, Sun, Layers, MapPin, Sparkles, TrendingUp } from "lucide-react";
+import { Sprout, ArrowRight, Mic, Sun, Layers, MapPin, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Hero3D } from "@/components/home/Hero3D";
 
@@ -132,7 +132,7 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
           {adviceLine && (
             <div className="mt-5 rounded-2xl border-l-4 border-[#00C26E] border-y border-r border-emerald-900/10 bg-white/80 p-4 shadow-sm backdrop-blur-xs">
               <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0F5132]">
-                <Sparkles size={13} className="text-[#00C26E]" aria-hidden="true" />
+                <Sprout size={13} className="text-[#00C26E]" aria-hidden="true" />
                 <span>{t("home.planToday") || "Today's Field Intelligence"}</span>
               </div>
               <p className="mt-1.5 text-[13.5px] font-medium leading-relaxed text-[#111827] md:text-[14.5px]">

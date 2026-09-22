@@ -1,8 +1,8 @@
 import React from "react";
 import {
   Home, TrendingUp, Sprout, Leaf, ShoppingBag, Tractor, PawPrint, Users,
-  Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Calculator, Wallet,
-  Coins, Landmark, Newspaper, MessagesSquare, PlaySquare, Bell, User, Settings,
+  Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Wallet,
+  Landmark, Newspaper, Bell, User, Settings,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -61,9 +61,6 @@ const GROUPS: Group[] = [
     title: "Money & Support",
     items: [
       { id: "schemes", icon: Landmark, labelKey: "svc.hub.government.schemes.label", label: "Schemes & Subsidies" },
-      { id: "loans", icon: Coins, labelKey: "svc.hub.financeInsurance.loans.label", label: "Loan Calculator" },
-      { id: "insurance", icon: ShieldCheck, labelKey: "svc.hub.financeInsurance.insurance.label", label: "Crop Insurance" },
-      { id: "profit-calculator", icon: Calculator, labelKey: "svc.hub.financeInsurance.profitCalculator.label", label: "Profit Calculator" },
       { id: "wallet", icon: Wallet, labelKey: "nav.wallet", label: "Wallet" },
     ],
   },
@@ -72,8 +69,6 @@ const GROUPS: Group[] = [
     title: "Community",
     items: [
       { id: "news", icon: Newspaper, labelKey: "svc.hub.learningCommunity.news.label", label: "Krishi News" },
-      { id: "community", icon: MessagesSquare, labelKey: "svc.hub.learningCommunity.community.label", label: "Farmer Community" },
-      { id: "krishi-shorts", icon: PlaySquare, labelKey: "svc.hub.learningCommunity.krishiShorts.label", label: "Krishi Shorts" },
     ],
   },
 ];
