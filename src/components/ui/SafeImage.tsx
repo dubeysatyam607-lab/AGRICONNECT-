@@ -108,10 +108,26 @@ export function SafeImage({
       list.push(realFallback);
     }
 
-    // 4. Guaranteed Local Verified Static Asset
-    const localAsset = "/images/mandi-default.svg";
-    if (!list.includes(localAsset)) {
-      list.push(localAsset);
+    // 4. Guaranteed Local Verified Static Assets
+    const categoryLocalMap: Record<string, string> = {
+      crop: "/images/crops/default.svg",
+      mandi: "/images/mandi/default.svg",
+      tractor: "/images/tractor/default.svg",
+      machinery: "/images/tractor/default.svg",
+      equipment: "/images/tractor/default.svg",
+      harvester: "/images/tractor/default.svg",
+      cattle: "/images/cattle/default.svg",
+      cow: "/images/cattle/default.svg",
+      buffalo: "/images/cattle/default.svg",
+      product: "/images/agristore/default.svg",
+      farm: "/images/farm/default.svg",
+    };
+    const localCategoryAsset = categoryLocalMap[resolveType] || "/images/mandi-default.svg";
+    if (!list.includes(localCategoryAsset)) {
+      list.push(localCategoryAsset);
+    }
+    if (!list.includes("/images/mandi-default.svg")) {
+      list.push("/images/mandi-default.svg");
     }
 
     // 5. Exact-category SVG illustration fallback (Inline Data URI)
@@ -186,7 +202,7 @@ export function SafeImage({
         {...props}
       />
       {loading && (
-        <div className="absolute inset-0 bg-emerald-700 animate-pulse pointer-events-none" />
+        <div className="absolute inset-0 bg-muted/60 dark:bg-slate-800/60 animate-pulse pointer-events-none" />
       )}
     </div>
   );

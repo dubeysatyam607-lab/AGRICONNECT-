@@ -454,7 +454,7 @@ const PashuMelaLive: React.FC<PashuMelaLiveProps> = ({ onToast, onNavigateToAuth
                   alt={`${animal.breed} ${animal.type}`}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-emerald-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                 {animal.is_verified && (
                   <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
                     ✓ Verified

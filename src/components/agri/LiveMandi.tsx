@@ -618,7 +618,7 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               className="w-full h-full object-cover"
               loading="eager"
             />
-            <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
               <div>
                 <span className="text-xs bg-emerald-600/90 text-white font-bold px-2 py-0.5 rounded-full inline-block mb-1">
