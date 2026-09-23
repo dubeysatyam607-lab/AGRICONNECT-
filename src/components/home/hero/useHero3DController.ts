@@ -72,6 +72,20 @@ export function useHero3DController() {
     }
   }, []);
 
+  // Watchdog: if the canvas mounted but assets never reported ready (a GL
+  // render-loop error is not caught by React error boundaries and would leave
+  // the hero stuck in LOADING_ASSETS forever), resolve to the permanent
+  // agricultural fallback so the user never sees an eternal loading state.
+  useEffect(() => {
+    if (state.status !== "LOADING_ASSETS") return;
+    if (!isMountedRef.current) return;
+    const timer = window.setTimeout(() => {
+      if (!isMountedRef.current) return;
+      dispatch({ type: "CRITICAL_ASSET_FAILED", errorCode: "CRITICAL_ASSET_FAILED" });
+    }, 6000);
+    return () => window.clearTimeout(timer);
+  }, [state.status]);
+
   const handleSceneReady = useCallback(() => {
     if (!isMountedRef.current) return;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();

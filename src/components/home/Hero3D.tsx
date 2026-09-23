@@ -93,7 +93,17 @@ const Hero3DInner: React.FC<Hero3DProps> = ({
                 gl={{ alpha: true, antialias: true, preserveDrawingBuffer: false, powerPreference: "high-performance" }}
                 dpr={[1, Math.min(typeof window !== "undefined" ? window.devicePixelRatio : 1, 2)]}
                 onCreated={() => {
-                  handleSceneReady();
+                  // Only report ready once the GL loop has actually painted a
+                  // frame — otherwise we'd crossfade onto a blank surface.
+                  let raf = 0;
+                  const paintAndReady = () => {
+                    if (++raf < 2) {
+                      requestAnimationFrame(paintAndReady);
+                      return;
+                    }
+                    handleSceneReady();
+                  };
+                  requestAnimationFrame(paintAndReady);
                 }}
               >
                 <HeroFarmScene
