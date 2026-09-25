@@ -163,10 +163,10 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN — Living 3D Agricultural Scene Canvas ──────── */}
-        <div className="relative flex h-full min-h-[260px] w-full flex-col overflow-hidden rounded-[24px] border border-[#0F5132]/15 bg-gradient-to-b from-[#FEF6E4]/40 to-[#EBF5ED]/40 shadow-inner sm:min-h-[300px] lg:min-h-[360px]">
-          {/* Integrated 3D Scene Component */}
-          <Hero3D mousePos={mousePos} weatherCondition={weatherCond} />
+        {/* ── RIGHT COLUMN — Dynamic Living Agricultural Scene Canvas ──────── */}
+        <div className="relative flex h-full min-h-[280px] w-full flex-col overflow-hidden rounded-[24px] border border-[#0F5132]/15 bg-gradient-to-b from-[#FEF6E4]/40 to-[#EBF5ED]/40 shadow-inner sm:min-h-[340px] lg:min-h-[400px]">
+          {/* Integrated Dynamic Agricultural Hero Scene Component */}
+          <Hero3D mousePos={mousePos} weatherCondition={weatherCond} cropLabel={cropLabel} />
         </div>
       </div>
     </section>

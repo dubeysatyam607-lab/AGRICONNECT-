@@ -1,5 +1,5 @@
 import React, { Component, type ReactNode } from "react";
-import SmartFarmHeroVisual from "./SmartFarmHeroVisual";
+import DynamicSmartFarmHero from "./DynamicSmartFarmHero";
 import HeroFallback from "./hero-fallback";
 
 interface ErrorBoundaryProps {
@@ -36,19 +36,25 @@ class HeroErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
 export interface Hero3DProps {
   mousePos?: { x: number; y: number };
   weatherCondition?: string;
+  cropLabel?: string;
 }
 
 /**
- * Hero3D / SmartFarmHeroVisual Component.
+ * Hero3D / DynamicSmartFarmHero Component.
  *
  * Renders a cinematic, photorealistic Indian agricultural smart-farming visual
- * with seamless ambient looping animations, AI field scanning beams, and
- * integrated crop telemetry data points. Zero blocky 3D, zero empty boxes.
+ * that dynamically adapts to local time of day (morning/day/evening/night),
+ * real-time weather conditions (clear/rain/thunderstorm/fog/hot), and selected crop
+ * (soybean/wheat/paddy). Zero blocky 3D, zero empty boxes.
  */
-export const Hero3D: React.FC<Hero3DProps> = ({ mousePos, weatherCondition }) => {
+export const Hero3D: React.FC<Hero3DProps> = ({ mousePos, weatherCondition, cropLabel }) => {
   return (
     <HeroErrorBoundary fallback={<HeroFallback weatherCondition={weatherCondition} />}>
-      <SmartFarmHeroVisual mousePos={mousePos} weatherCondition={weatherCondition} />
+      <DynamicSmartFarmHero
+        mousePos={mousePos}
+        weatherCondition={weatherCondition}
+        cropLabel={cropLabel}
+      />
     </HeroErrorBoundary>
   );
 };
