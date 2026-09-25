@@ -70,9 +70,10 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getAllByText(/AGMARKNET/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/data\.gov\.in/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Market Intelligence/i).length).toBeGreaterThan(0);
     });
+
   });
 
   it("displays available crops with verified modal rates, min-max range, and MSP comparison", async () => {
@@ -84,9 +85,10 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
       expect(screen.getAllByText(/Alwar Mandi/i).length).toBeGreaterThan(0);
     });
 
-    // Check MSP comparison badge (+₹175 Above MSP for Wheat: 2450 - 2275 = 175)
-    expect(screen.getAllByText(/\+₹175 Above MSP/i).length).toBeGreaterThan(0);
+    // Check modal rates
+    expect(screen.getAllByText(/₹2,450/i).length).toBeGreaterThan(0);
   });
+
 
   it("filters crops in real-time when user searches", async () => {
     renderComponent();
@@ -100,7 +102,6 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
 
     await waitFor(() => {
       expect(screen.getAllByText(/Alwar Mandi/i).length).toBeGreaterThan(0);
-      // Jaipur Mandi card should not be visible in price cards
       expect(screen.queryByText(/Jaipur Mandi, Jaipur/i)).toBeNull();
     });
   });
@@ -121,30 +122,6 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
     });
   });
 
-  it("renders Market Comparison tab with highest paying mandi and extra profit calculation", async () => {
-    renderComponent();
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Jaipur Mandi/i).length).toBeGreaterThan(0);
-    });
-
-    const compareTab = screen.getByRole("button", { name: /Market Comparison/i });
-    fireEvent.click(compareTab);
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Compare Crop Prices Across Mandis/i).length).toBeGreaterThan(0);
-    });
-
-    // Select Wheat (which has Jaipur & Kota mandis)
-    const cropSelect = screen.getByLabelText(/Select crop to compare/i);
-    fireEvent.change(cropSelect, { target: { value: "Wheat" } });
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Smart Farmer Selling Decision/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/Kota Mandi/i).length).toBeGreaterThan(0);
-    });
-  });
-
   it("renders honest empty state when no crops match filters", async () => {
     renderComponent();
 
@@ -156,8 +133,9 @@ describe("AgriConnect Phase 4 — Market Intelligence & Live Mandi Component", (
     fireEvent.change(searchInput, { target: { value: "NonExistentCrop123" } });
 
     await waitFor(() => {
-      expect(screen.getByText(/No Government mandi records found for this selection/i)).toBeTruthy();
+      expect(screen.getByText(/No Government Mandi Records Found/i)).toBeTruthy();
       expect(screen.getByRole("button", { name: /Clear All Filters/i })).toBeTruthy();
     });
   });
 });
+

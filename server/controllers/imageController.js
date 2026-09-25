@@ -98,3 +98,46 @@ exports.searchImages = async (req, res) => {
     });
   }
 };
+
+exports.pixelAiCropImage = async (req, res) => {
+  try {
+    const rawCrop = req.query.crop || req.query.cropName || req.body?.cropName || 'agriculture';
+    const category = req.query.category || req.body?.category || '';
+    const cleanQuery = sanitizeQuery(rawCrop);
+
+    const apiKey = process.env.PIXEL_AI_API_KEY || process.env.PEXELS_API_KEY || PEXELS_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Pixel AI API Key missing on server' });
+    }
+
+    const response = await axios.get('https://api.pexels.com/v1/search', {
+      headers: { Authorization: apiKey },
+      params: {
+        query: `${cleanQuery} crop harvest agriculture`,
+        per_page: 3,
+        orientation: 'landscape',
+      },
+      timeout: 6000,
+    });
+
+    const photos = response.data?.photos || [];
+    if (!photos.length) {
+      return res.status(404).json({ error: 'No crop image found for ' + cleanQuery });
+    }
+
+    const best = photos[0];
+    res.setHeader('Cache-Control', 'public, max-age=604800');
+    return res.status(200).json({
+      query: cleanQuery,
+      category: category || 'Crop',
+      imageUrl: best.src?.landscape || best.src?.large || best.src?.original,
+      photographer: best.photographer,
+      photographerUrl: best.photographer_url,
+      alt: best.alt || `${cleanQuery} crop photography`,
+    });
+  } catch (error) {
+    console.error('Pixel AI Error:', error.message);
+    return res.status(500).json({ error: 'Failed to generate Pixel AI crop image', details: error.message });
+  }
+};
+

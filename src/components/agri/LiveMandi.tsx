@@ -1,58 +1,33 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
-  TrendingUp, TrendingDown, Minus, RefreshCw, Search, MapPin, Star,
-  Bell, BarChart3, LineChart as LineChartIcon, Store, Heart, X, ChevronRight,
-  Navigation, Phone, Clock, Bot, ShieldCheck, ArrowUpDown, Filter, AlertCircle, WifiOff,
-  Sparkles, Calculator, CheckCircle2, AlertTriangle, Layers, Info
+  TrendingUp, TrendingDown, Minus, RefreshCw, Search, MapPin, Heart,
+  X, ChevronRight, Clock, Bot, ShieldCheck, Filter, AlertCircle, WifiOff,
+  Sparkles, Calculator, CheckCircle2, Store, Calendar, ArrowUpRight, Check
 } from "lucide-react";
-import {
-  ResponsiveContainer, AreaChart, Area, LineChart, Line, BarChart,
-  Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ComposedChart,
-} from "recharts";
 import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
 import { fetchMandiPrices, normalizeCropKey, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
-import { getCropImage } from "@/lib/crop-images";
+import {
+  getAllIndianStatesAndUTs,
+  getDistrictsForState,
+  getMandisForDistrict,
+} from "@/lib/india-mandi-service";
 import { ErrorState } from "@/components/ui/error-state";
-import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
-import { AgriImage } from "@/components/ui/agri-image";
 import { CommodityImage } from "@/components/agri/CommodityImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-interface NearbyPlace {
-  id: string;
-  name: string;
-  nameHi: string;
-  type: "market" | "shop";
-  distance: string | null;
-  address: string;
-  addressHi: string;
-  phone: string;
-  timings: string;
-  rating: number;
-  lat: number;
-  lng: number;
+interface LiveMandiProps {
+  onToast?: (message: string) => void;
+  onNavigateToAuth?: () => void;
 }
 
-type Tab = "prices" | "advisor" | "trends" | "compare" | "nearby" | "alerts";
+type Tab = "prices" | "advisor" | "compare" | "nearby" | "alerts";
 type SortOption = "highest" | "lowest" | "latest" | "alphabetical";
 
-const FAVORITES_KEY = "mandi_favorites_v2";
-
-const PEXELS_QUERY_ALIASES: Record<string, string> = {
-  tur: "tur dal",
-  arhar: "pigeon pea",
-  moong: "green gram",
-  chana: "chickpea",
-  gram: "chickpea",
-  bhindi: "okra",
-  paddy: "paddy rice",
-  masoor: "red lentils",
-  jowar: "sorghum",
-  bajra: "pearl millet",
-  groundnut: "peanuts",
-};
+const FAVORITES_KEY = "mandi_favorites_v3";
+const LAST_FETCH_KEY = "mandi_last_successful_fetch_v1";
+const FIVE_HOURS_MS = 5 * 60 * 60 * 1000;
 
 const formatINR = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
@@ -62,116 +37,112 @@ const parseChange = (change?: string): number => {
   return isNaN(num) ? 0 : num;
 };
 
-interface LiveMandiProps {
-  onToast?: (message: string) => void;
-  onNavigateToAuth?: () => void;
-}
+// Hinglish & Hindi Search Alias Map
+const SEARCH_ALIASES: Record<string, string[]> = {
+  tomato: ["tamatar", "टमाटर"],
+  potato: ["aloo", "alu", "आलू"],
+  onion: ["pyaj", "pyaaz", "kanda", "प्याज"],
+  wheat: ["gehu", "gehun", "गेहूं", "गेहू"],
+  rice: ["chawal", "चावल", "basmati"],
+  paddy: ["dhan", "धान"],
+  maize: ["makka", "corn", "मक्का"],
+  soybean: ["soyabean", "soya", "सोयाबीन"],
+  mustard: ["sarson", "sarso", "rai", "सरसों", "राई"],
+  cotton: ["kapas", "कपास"],
+  garlic: ["lahsun", "lasun", "लहसुन"],
+  ginger: ["adrak", "अदरक"],
+  banana: ["kela", "केला"],
+  mango: ["aam", "आम"],
+  chilli: ["mirch", "mirchi", "मिर्च"],
+  gram: ["chana", "चना"],
+  groundnut: ["mungfali", "मूंगफली"],
+};
 
 const CATEGORIES = ["All", "Cereals", "Pulses", "Vegetables", "Fruits", "Spices", "Oilseeds", "Commercial", "Other"];
 
-const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
+const LiveMandi: React.FC<LiveMandiProps> = ({ onToast }) => {
   const { t, language } = useLanguage();
   const hi = language === "hi";
 
   const L = {
-    title: t("mandi.hub.title") || "Live Mandi Advisor & Prices",
-    subtitle: t("mandi.hub.subtitle") || "Verified APMC rates & Market Intelligence",
-    live: t("mandi.hub.liveBadge") || "LIVE APMC",
-    updated: t("mandi.updated") || "Updated",
-    search: t("mandi.hub.searchPlaceholder") || "Search crop, mandi, district or state...",
-    allStates: t("mandi.allStates") || "All States",
-    allDistricts: t("mandi.hub.allDistricts") || "All Districts",
-    onlyFavs: t("mandi.onlyFavs") || "Favorites",
-    tabPrices: t("mandi.tabPrices") || "Prices",
-    tabAdvisor: t("mandi.hub.tabAdvisor") || "AI Advisor",
-    tabTrends: t("mandi.tabTrends") || "Trends",
-    tabCompare: t("mandi.tabCompare") || "Market Comparison",
-    tabNearby: t("mandi.tabNearby") || "Nearby",
-    tabAlerts: t("mandi.tabAlerts") || "Alerts",
-    perQuintal: t("mandi.perQuintal") || "/quintal",
-    min: t("mandi.min") || "Min",
-    max: t("mandi.max") || "Max",
-    msp: t("mandi.hub.msp") || "MSP",
-    loading: t("mandi.hub.loading") || "Fetching latest verified government mandi prices...",
-    failed: t("mandi.hub.failed") || "Government mandi data is temporarily unavailable.",
-    retry: t("mandi.hub.retrySync") || "Retry Sync",
-    verifiedSource: t("mandi.hub.verifiedSource") || "Verified Government Data: api.data.gov.in",
-    loadMore: t("mandi.hub.loadMore") || "Load More",
-    quintalArrival: t("mandi.hub.quintalArrival") || "क्विंटल आवक",
-    mandiOpen: t("mandi.hub.mandiOpen") || "मंडी खुली है",
-    mandiClosed: t("mandi.hub.mandiClosed") || "बंद",
-    viewAdvice: t("mandi.hub.viewAdvice") || "सलाह देखें",
-    aiAdvisorTitle: t("mandi.hub.aiAdvisorTitle") || "AI मंडी सलाहकार",
-    aiAdvisorDesc: t("mandi.hub.aiAdvisorDesc") || "लाइव APMC मंडी भाव, MSP और बाजार रुझान का AI विश्लेषण",
-    aiAdvisorLongDesc: t("mandi.hub.aiAdvisorLongDesc") || "यह सिस्टम सरकारी मंडियों के वास्तविक भाव, MSP सुरक्षा कवर, और आवक दबाव का गहराई से विश्लेषण करके आपको सही समय पर फसल बेचने की सलाह देता है।",
-    analysisTitle: t("mandi.hub.analysisTitle") || "कारण एवं विश्लेषण:",
-    dailyArrival: t("mandi.hub.dailyArrival") || "दैनिक आवक",
-    priceRangeLabel: t("mandi.hub.priceRangeLabel") || "अनुमानित संभावित मूल्य दायरा:",
-    yieldBenefitTitle: t("mandi.hub.yieldBenefitTitle") || "आपकी उपज पर संभावित अतिरिक्त लाभ",
-    yieldBenefitLabel: t("mandi.hub.yieldBenefitLabel") || "लाभ",
-    yieldQtyLabel: t("mandi.hub.yieldQtyLabel") || "आपकी उपज मात्रा (क्विंटल):",
-    currentModalPrice: t("mandi.hub.currentModalPrice") || "वर्तमान मॉडल मूल्य",
-    closeBtn: t("mandi.hub.close") || "बंद करें",
-    confidence: t("mandi.hub.confidence") || "% सटीक पूर्वानुमान",
-    arrivalLabel: t("mandi.hub.arrivalLabel") || "आवक:",
-    nullRange: t("mandi.hub.nullRange") || "Not available",
+    title: hi ? "लाइव मंडी भाव एवं बाजार गुप्तचर" : "Live Mandi Bhav & Market Intelligence",
+    subtitle: hi ? "भारत की सभी मंडियों के सत्यापित APMC सरकारी भाव" : "Verified APMC rates across all Indian States & Mandis",
+    updated: hi ? "अंतिम अपडेट" : "Last updated",
+    nextUpdate: hi ? "अगला ऑटो अपडेट" : "Next refresh in",
+    search: hi ? "फसल, मंडी, जिला या राज्य खोजें (जैसे: टमाटर, Shivpuri, इंदौर)..." : "Search crop, mandi, district or state (e.g. Tomato, Shivpuri)...",
+    allStates: hi ? "सभी राज्य / केंद्र शासित प्रदेश" : "All States / UTs",
+    allDistricts: hi ? "सभी जिले" : "All Districts",
+    allMandis: hi ? "सभी मंडियां" : "All Mandis",
+    onlyFavs: hi ? "पसंदीदा" : "Favorites",
+    tabPrices: hi ? "लाइव भाव" : "Market Prices",
+    tabAdvisor: hi ? "AI मंडी सलाह" : "AI Selling Advisor",
+    tabCompare: hi ? "मंडी तुलना" : "Mandi Comparison",
+    perQuintal: "/ quintal",
+    min: hi ? "न्यूनतम" : "Min",
+    max: hi ? "अधिकतम" : "Max",
+    modal: hi ? "मॉडल मूल्य" : "Modal Price",
+    loading: hi ? "नवीनतम सरकारी मंडी भाव लोड हो रहे हैं..." : "Fetching live APMC mandi prices...",
+    failed: hi ? "मंडी डेटा अस्थायी रूप से अनुपलब्ध है।" : "Mandi data is temporarily unavailable.",
+    retry: hi ? "पुनः प्रयास करें" : "Retry Sync",
+    verifiedSource: hi ? "सत्यापित सरकारी डेटा: api.data.gov.in" : "Verified Government Data: api.data.gov.in",
+    loadMore: hi ? "और फसलें देखें" : "Load More Crops",
+    confidence: hi ? "% सटीक पूर्वाअनुसार" : "% Confidence",
   };
 
   const CATEGORY_LABELS: Record<string, string> = {
-    All: t("mandi.hub.categoryAll"),
-    Cereals: t("mandi.hub.categoryCereals"),
-    Pulses: t("mandi.hub.categoryPulses"),
-    Vegetables: t("mandi.hub.categoryVegetables"),
-    Fruits: t("mandi.hub.categoryFruits"),
-    Spices: t("mandi.hub.categorySpices"),
-    Oilseeds: t("mandi.hub.categoryOilseeds"),
-    Commercial: t("mandi.hub.categoryCommercial"),
+    All: hi ? "सभी" : "All",
+    Cereals: hi ? "अनाज" : "Cereals",
+    Pulses: hi ? "दलहन" : "Pulses",
+    Vegetables: hi ? "सब्जियां" : "Vegetables",
+    Fruits: hi ? "फल" : "Fruits",
+    Spices: hi ? "मसाले" : "Spices",
+    Oilseeds: hi ? "तिलहन" : "Oilseeds",
+    Commercial: hi ? "व्यावसायिक" : "Commercial",
+    Other: hi ? "अन्य" : "Other",
   };
 
+  // Main State
   const [data, setData] = useState<MandiPrice[]>([]);
-  const [availableStates, setAvailableStates] = useState<string[]>([]);
-  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
-  const [availableMarkets, setAvailableMarkets] = useState<string[]>([]);
+  const [availableStatesMeta, setAvailableStatesMeta] = useState<string[]>([]);
   const [servedFrom, setServedFrom] = useState<"database" | "live" | undefined>(undefined);
-  const [isStale, setIsStale] = useState(false);
-  const [rateLimited, setRateLimited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [isCachedData, setIsCachedData] = useState(false);
-  const [cachedAtText, setCachedAtText] = useState<string | null>(null);
 
+  // 5-Hour Update Timestamps
+  const [lastSuccessfulUpdate, setLastSuccessfulUpdate] = useState<Date | null>(() => {
+    try {
+      const stored = localStorage.getItem(LAST_FETCH_KEY);
+      return stored ? new Date(parseInt(stored, 10)) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [timeUntilNextUpdate, setTimeUntilNextUpdate] = useState<string>("");
+
+  // Filters State
   const [tab, setTab] = useState<Tab>("prices");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
-  const [selectedState, setSelectedState] = useState("Rajasthan");
+  const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedMandi, setSelectedMandi] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOption, setSortOption] = useState<SortOption>("highest");
-  const [compareCrop, setCompareCrop] = useState("");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const pageSize = 20; // number of cards per page
+  const [compareCrop, setCompareCrop] = useState("");
 
+  // Pagination
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  // Favorites & Selection
   const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedCrop, setSelectedCrop] = useState<MandiPrice | null>(null);
-  // Reset pagination when filters/search change
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, sortOption]);
 
-  // Nearby state
-  const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
-  const [nearbyLoading, setNearbyLoading] = useState(false);
-  const [nearbyError, setNearbyError] = useState<string | null>(null);
+  // In-flight fetch guard
+  const isFetchingRef = useRef(false);
 
-  const [alertPrefill, setAlertPrefill] = useState<{ commodity: string; price: number } | null>(null);
-
-  const isFav = useCallback((c: MandiPrice) => favorites.includes(c.id), [favorites]);
-
+  // Load favorites from local storage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(FAVORITES_KEY);
@@ -187,181 +158,192 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     });
   }, []);
 
+  const isFav = useCallback((c: MandiPrice) => favorites.includes(c.id), [favorites]);
+
+  // Main Fetch Mandi Function with 5-Hour Update Logic
   const fetchMandi = useCallback(async (showSpinner = false, opts: { sync?: boolean } = {}) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
     if (showSpinner) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
+    else if (data.length === 0) setLoading(true);
 
     try {
       const result: MandiResult = await fetchMandiPrices(
-        undefined,
+        searchTerm || undefined,
         selectedState || undefined,
         selectedDistrict || undefined,
         selectedMandi || undefined,
-        { includeMeta: true, sync: opts.sync ?? false, timeoutMs: 90000 }
+        { includeMeta: true, sync: opts.sync ?? false, timeoutMs: 60000 }
       );
 
       if (result.isError) {
-        // Keep whatever verified records are already on screen when a re-sync
-        // fails (e.g. data.gov.in rate limit) instead of blanking the view.
-        if (data.length === 0) setData([]);
-        setError(result.errorMessage || L.failed);
-        setRateLimited(true);
+        if (data.length === 0) {
+          setError(result.errorMessage || L.failed);
+        }
       } else {
         setData(result.prices);
-        if (result.availableStates?.length) setAvailableStates(result.availableStates);
-        if (result.availableDistricts?.length) setAvailableDistricts(result.availableDistricts);
-        if (result.availableMarkets?.length) setAvailableMarkets(result.availableMarkets);
+        if (result.availableStates?.length) setAvailableStatesMeta(result.availableStates);
         setServedFrom(result.servedFrom);
-        setIsStale(!!result.stale);
-        setRateLimited(!!result.rateLimited);
-        setIsCachedData(!!result.isCached);
-        setCachedAtText(result.cachedAtText || null);
-        setLastUpdated(result.lastUpdated ? new Date(result.lastUpdated) : new Date());
         setError(null);
+
+        // Record successful update timestamp
+        const now = new Date();
+        setLastSuccessfulUpdate(now);
+        try {
+          localStorage.setItem(LAST_FETCH_KEY, now.getTime().toString());
+        } catch { /* ignore */ }
       }
-    } catch (err: unknown) {
-      console.error("[UI Mandi Fetch Error]:", err);
-      if (data.length === 0) setData([]);
-      setError(L.failed);
-      setRateLimited(true);
+    } catch (err) {
+      console.error("[Mandi Fetch Error]:", err);
+      if (data.length === 0) setError(L.failed);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      isFetchingRef.current = false;
     }
-  }, [selectedState, selectedDistrict, selectedMandi, L.failed]);
+  }, [selectedState, selectedDistrict, selectedMandi, searchTerm, data.length, L.failed]);
 
+  // Initial Load & Automatic 5-Hour Refresh Trigger
   useEffect(() => {
-    fetchMandi();
-  }, [fetchMandi]);
+    const lastTs = lastSuccessfulUpdate ? lastSuccessfulUpdate.getTime() : 0;
+    const now = Date.now();
+    const isStale5Hours = now - lastTs >= FIVE_HOURS_MS;
 
-  // Force a fresh sync from data.gov.in when the persisted snapshot is stale or
-  // the user taps the "Sync now" retry. Never invents data: if the live API is
-  // rate-limited, the previously-synced government records are kept on screen.
-  const resync = useCallback(() => {
-    setRateLimited(false);
-    void fetchMandi(true, { sync: true });
-  }, [fetchMandi]);
-
-  // Option sources come from the edge function's dynamic discovery meta (never a
-  // hardcoded subset). Data-derived state/district/mandi names are merged so every
-  // option shown is backed by a real record.
-  const states = useMemo(() => {
-    const fromMeta = new Set(availableStates.map(s => s.trim()).filter(Boolean));
-    const fromData = new Set(data.map(c => c.state).filter(Boolean));
-    return Array.from(new Set<string>([...fromMeta, ...fromData])).sort();
-  }, [availableStates, data]);
-  const districts = useMemo(() => {
-    const scoped = new Set(
-      availableDistricts.length
-        ? availableDistricts
-        : data.filter(c => !selectedState || c.state === selectedState).map(c => c.district)
-    );
-    const fromData = new Set(data.filter(c => !selectedState || c.state === selectedState).map(c => c.district).filter(Boolean));
-    return Array.from(new Set<string>([...scoped, ...fromData])).sort();
-  }, [availableDistricts, data, selectedState]);
-  const mandis = useMemo(() => {
-    const scoped = new Set(
-      availableMarkets.length
-        ? availableMarkets
-        : data.map(c => c.market).filter(Boolean)
-    );
-    const fromData = new Set(
-      data
-        .filter(c => (!selectedState || c.state === selectedState) && (!selectedDistrict || c.district === selectedDistrict))
-        .map(c => c.market)
-        .filter(Boolean)
-    );
-    return Array.from(new Set<string>([...scoped, ...fromData])).sort();
-  }, [availableMarkets, data, selectedState, selectedDistrict]);
-
-  // Default to Rajasthan only when the government dataset actually contains it;
-  // otherwise start on "All States" rather than forcing a wrong geographic scope.
-  useEffect(() => {
-    if (!loading && states.length > 0 && selectedState && !states.includes(selectedState)) {
-      setSelectedState("");
+    if (data.length === 0 || isStale5Hours) {
+      void fetchMandi(false, { sync: isStale5Hours });
     }
-  }, [loading, states, selectedState]);
+  }, [selectedState, selectedDistrict, selectedMandi]);
 
-  const fetchNearby = useCallback(async () => {
-    setNearbyLoading(true);
-    try {
-      let lat: number | undefined;
-      let lng: number | undefined;
-
-      if (navigator.geolocation) {
-        try {
-          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true, timeout: 8000, maximumAge: 300000,
-            });
-          });
-          lat = pos.coords.latitude;
-          lng = pos.coords.longitude;
-        } catch { /* permission denied */ }
+  // Background timer to compute "Next Update" countdown & trigger 5-hour auto refresh
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!lastSuccessfulUpdate) {
+        setTimeUntilNextUpdate("Pending sync");
+        return;
       }
 
-      const { data: result, error: fetchError } = await invokeEdgeWithTimeout<{
-        places?: NearbyPlace[];
-      }>("nearby-services", { latitude: lat, longitude: lng, type: "markets" }, 12000);
+      const nextTs = lastSuccessfulUpdate.getTime() + FIVE_HOURS_MS;
+      const diff = nextTs - Date.now();
 
-      if (fetchError) throw new Error(fetchError);
-      setNearbyPlaces((result?.places || []) as NearbyPlace[]);
-      setNearbyError(null);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to load nearby markets";
-      setNearbyError(msg.includes("took too long") ? "Nearby markets took too long to load." : msg);
-    } finally {
-      setNearbyLoading(false);
-    }
-  }, []);
+      if (diff <= 0) {
+        setTimeUntilNextUpdate("Due now");
+        void fetchMandi(false, { sync: true });
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        setTimeUntilNextUpdate(`${hours}h ${mins}m`);
+      }
+    };
 
-  const openInMaps = (p: NearbyPlace) => {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`, "_blank");
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // update every minute
+    return () => clearInterval(interval);
+  }, [lastSuccessfulUpdate, fetchMandi]);
+
+  // 1. Cascading State List (Combines all 36 Indian States/UTs + dynamic dataset)
+  const states = useMemo(() => {
+    const canonical = getAllIndianStatesAndUTs();
+    const dynamic = Array.from(new Set([...availableStatesMeta, ...data.map((p) => p.state)])).filter(Boolean);
+    return Array.from(new Set([...canonical, ...dynamic])).sort((a, b) => a.localeCompare(b));
+  }, [availableStatesMeta, data]);
+
+  // 2. Cascading District List (Derived strictly from selectedState)
+  const districts = useMemo(() => {
+    if (!selectedState) return [];
+    return getDistrictsForState(selectedState, data);
+  }, [selectedState, data]);
+
+  // 3. Cascading Mandi List (Derived strictly from selectedState & selectedDistrict)
+  const mandis = useMemo(() => {
+    return getMandisForDistrict(selectedState, selectedDistrict, data);
+  }, [selectedState, selectedDistrict, data]);
+
+  // Cascading Selection Resets
+  const handleStateChange = (newState: string) => {
+    setSelectedState(newState);
+    setSelectedDistrict("");
+    setSelectedMandi("");
+    setVisibleCount(24);
   };
 
-  // States/districts/mandis come from the government dataset via the edge
-  // function's dynamic discovery meta (never a hardcoded subset). Data-derived
-  // state/district/mandi names are merged so every option shown is backed by a
-  // real record.
-  // Option sources come from the edge function's dynamic discovery meta (never a
-  const searchSuggestions = useMemo(() => {
-    if (!searchTerm || searchTerm.trim().length < 2) return [];
-    const q = searchTerm.toLowerCase();
-    const matches = new Set<string>();
+  const handleDistrictChange = (newDistrict: string) => {
+    setSelectedDistrict(newDistrict);
+    setSelectedMandi("");
+    setVisibleCount(24);
+  };
 
-    for (const c of data) {
-      if (c.crop.toLowerCase().includes(q)) matches.add(c.crop);
-      if (c.cropHi && c.cropHi.toLowerCase().includes(q)) matches.add(c.cropHi);
-      if (c.market.toLowerCase().includes(q)) matches.add(c.market);
-      if (c.district.toLowerCase().includes(q)) matches.add(c.district);
-      if (c.state.toLowerCase().includes(q)) matches.add(c.state);
-      if (matches.size >= 6) break;
-    }
-    return Array.from(matches);
-  }, [data, searchTerm]);
+  const handleMandiChange = (newMandi: string) => {
+    setSelectedMandi(newMandi);
+    setVisibleCount(24);
+  };
 
-  // Filtered & Sorted Mandi List
-  const filtered = useMemo(() => {
+  // Filter & Search Logic (including Hinglish Aliases)
+  const filteredData = useMemo(() => {
     let list = [...data];
 
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      list = list.filter(c =>
-        c.crop.toLowerCase().includes(q) ||
-        (c.cropHi || "").toLowerCase().includes(q) ||
-        c.market.toLowerCase().includes(q) ||
-        c.district.toLowerCase().includes(q) ||
-        c.state.toLowerCase().includes(q)
-      );
+    // Location Filters
+    if (selectedState) {
+      const s = selectedState.toLowerCase().trim();
+      list = list.filter((p) => p.state && p.state.toLowerCase() === s);
+    }
+    if (selectedDistrict) {
+      const d = selectedDistrict.toLowerCase().trim();
+      list = list.filter((p) => p.district && p.district.toLowerCase() === d);
+    }
+    if (selectedMandi) {
+      const m = selectedMandi.toLowerCase().trim();
+      list = list.filter((p) => p.market && p.market.toLowerCase() === m);
     }
 
-    if (selectedState) list = list.filter(c => c.state === selectedState);
-    if (selectedDistrict) list = list.filter(c => c.district === selectedDistrict);
-    if (selectedMandi) list = list.filter(c => c.market === selectedMandi);
-    if (selectedCategory && selectedCategory !== "All") list = list.filter(c => c.category === selectedCategory);
-    if (favoritesOnly) list = list.filter(isFav);
+    // Category Filter
+    if (selectedCategory && selectedCategory !== "All") {
+      list = list.filter((p) => p.category === selectedCategory);
+    }
 
+    // Favorites Filter
+    if (favoritesOnly) {
+      list = list.filter(isFav);
+    }
+
+    // Search Query (with Aliases)
+    if (searchTerm && searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+
+      list = list.filter((item) => {
+        const cropEn = item.crop.toLowerCase();
+        const cropHi = (item.cropHi || "").toLowerCase();
+        const market = item.market.toLowerCase();
+        const district = item.district.toLowerCase();
+        const state = item.state.toLowerCase();
+        const variety = (item.variety || "").toLowerCase();
+
+        // Check direct string match
+        if (
+          cropEn.includes(q) ||
+          cropHi.includes(q) ||
+          market.includes(q) ||
+          district.includes(q) ||
+          state.includes(q) ||
+          variety.includes(q)
+        ) {
+          return true;
+        }
+
+        // Check search aliases (e.g. 'tamatar' matches 'tomato')
+        for (const [key, aliases] of Object.entries(SEARCH_ALIASES)) {
+          if (cropEn.includes(key)) {
+            if (aliases.some((alias) => alias.includes(q) || q.includes(alias))) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      });
+    }
+
+    // Sorting
     switch (sortOption) {
       case "highest":
         list.sort((a, b) => b.price - a.price);
@@ -378,531 +360,362 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
     }
 
     return list;
-  }, [data, searchTerm, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, sortOption, isFav]);
+  }, [data, selectedState, selectedDistrict, selectedMandi, selectedCategory, favoritesOnly, searchTerm, sortOption, isFav]);
 
-  // Paginated slice of filtered results
-  const paginated = useMemo(() => filtered.slice(0, page * pageSize), [filtered, page, pageSize]);
+  // Paginated List
+  const visibleItems = useMemo(() => filteredData.slice(0, visibleCount), [filteredData, visibleCount]);
+
+  // Market Summary stats when a mandi is selected
+  const marketSummary = useMemo(() => {
+    if (!selectedMandi || filteredData.length === 0) return null;
+    const latestDate = filteredData[0]?.arrivalDate || "Today";
+    const prices = filteredData.map(d => d.price).filter(p => p > 0);
+    const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+
+    return {
+      name: selectedMandi,
+      district: selectedDistrict || filteredData[0]?.district,
+      state: selectedState || filteredData[0]?.state,
+      count: filteredData.length,
+      latestDate,
+      avgPrice,
+    };
+  }, [selectedMandi, selectedDistrict, selectedState, filteredData]);
 
   const changeBadge = (c: MandiPrice) => {
     const ch = parseChange(c.change);
     return (
-      <span
-        title={c.minPrice > 0 && c.maxPrice > 0 ? "Position of the modal price within today's published min–max range" : "No day-over-day comparison is published for this feed"}
-        className={cn(
-          "type-num inline-flex items-center gap-0.5 text-xs mt-0.5",
-          c.status === "up" && "text-primary",
-          c.status === "down" && "text-destructive",
-          (!c.status || c.status === "stable") && "text-muted-foreground",
-        )}>
-        {c.status === "up" && <TrendingUp size={11} />}
-        {c.status === "down" && <TrendingDown size={11} />}
-        {(!c.status || c.status === "stable") && <Minus size={11} />}
-        {ch > 0 ? `+${ch.toFixed(1)}%` : `${ch.toFixed(1)}%`}
+      <span className={cn(
+        "inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-bold",
+        c.status === "up" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        c.status === "down" && "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+        (!c.status || c.status === "stable") && "bg-slate-100 dark:bg-slate-800 text-muted-foreground",
+      )}>
+        {c.status === "up" && <TrendingUp size={12} />}
+        {c.status === "down" && <TrendingDown size={12} />}
+        {(!c.status || c.status === "stable") && <Minus size={12} />}
+        {ch > 0 ? `+${ch.toFixed(0)}%` : `${ch.toFixed(0)}%`}
       </span>
     );
   };
 
-  const fmtRange = (n: number) => (n > 0 ? formatINR(n) : L.nullRange);
+  const renderCardGrid = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {visibleItems.map((c) => {
+        const fav = isFav(c);
+        return (
+          <div
+            key={c.id}
+            onClick={() => setSelectedCrop(c)}
+            className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:border-emerald-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer"
+          >
+            {/* Real Crop Image Container */}
+            <div className="relative h-44 w-full bg-muted overflow-hidden">
+              <CommodityImage
+                commodityName={c.crop}
+                commodityHi={c.cropHi}
+                category={c.category}
+                src={c.cropImage}
+                alt={c.crop}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
 
-  const renderAdviceBadge = (c: MandiPrice) => {
-    const advice = c.sellingAdvice;
-    if (!advice) return null;
+              {/* Category Badge & Favorite Button */}
+              <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-600/90 text-white shadow-sm">
+                  {c.category}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(c); }}
+                  className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+                >
+                  <Heart size={14} className={fav ? "fill-rose-500 text-rose-500" : "text-white"} />
+                </button>
+              </div>
 
-    const bgMap = {
-      emerald: "bg-emerald-600 text-white border-emerald-500",
-      amber: "bg-amber-500 text-slate-950 border-amber-400 font-semibold",
-      rose: "bg-rose-600 text-white border-rose-500",
-    };
+              {/* Mandi & District Overlay */}
+              <div className="absolute bottom-2.5 left-3 right-3 text-white">
+                <p className="text-xs font-semibold drop-shadow-sm truncate">
+                  <MapPin size={11} className="inline mr-1 text-emerald-400" />
+                  {c.market}, {c.district}
+                </p>
+              </div>
+            </div>
 
-    return (
-      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full border shadow-sm flex items-center gap-1", bgMap[advice.badgeColor])}>
-        <Sparkles size={11} />
-        {hi ? advice.badgeLabelHi : advice.badgeLabel}
-      </span>
-    );
-  };
+            {/* Card Content Body */}
+            <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-base text-foreground group-hover:text-emerald-600 transition-colors line-clamp-1">
+                    {c.crop} {c.cropHi && <span className="text-xs font-normal text-muted-foreground">({c.cropHi})</span>}
+                  </h3>
+                  {changeBadge(c)}
+                </div>
 
-  const renderCard = (c: MandiPrice, index: number) => {
-    const fav = isFav(c);
-    const mspDiff = c.msp ? c.price - c.msp : null;
-
-    return (
-      <button
-        key={c.id}
-        onClick={() => setSelectedCrop(c)}
-        className="flex w-full items-center gap-3 px-3.5 py-3 text-left hover:bg-muted/50 transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-[14px] font-semibold text-foreground leading-tight">
-            {c.crop} {c.cropHi && c.cropHi !== c.crop && <span className="text-[12px] font-normal text-muted-foreground">({c.cropHi})</span>}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {c.market}, {c.district}{c.state ? `, ${c.state}` : ""}
-            {c.operatingStatus === "OPEN" ? " · Open" : c.operatingStatus ? " · Closed" : ""}
-          </p>
-          {mspDiff !== null && (
-            <p className={cn("mt-0.5 text-xs font-medium", mspDiff >= 0 ? "text-primary" : "text-amber-600")}>
-              {mspDiff >= 0 ? `+${formatINR(mspDiff)} Above MSP` : `-${formatINR(Math.abs(mspDiff))} Below MSP`}
-            </p>
-          )}
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-num text-[15px] text-foreground leading-tight">
-            {formatINR(c.price)}
-            <span className="text-xs font-normal text-muted-foreground"> {L.perQuintal}</span>
-          </p>
-          {changeBadge(c)}
-        </div>
-        <ChevronRight size={15} className="shrink-0 text-muted-foreground/60" aria-hidden="true" />
-      </button>
-    );
-  };
-
-  const renderAdvisorTab = () => (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center">
-            <Bot size={17} aria-hidden="true" />
-          </div>
-          <div>
-            <h3 className="type-h3">{L.aiAdvisorTitle}</h3>
-            <p className="type-meta">{L.aiAdvisorDesc}</p>
-          </div>
-        </div>
-        <p className="type-small text-muted-foreground leading-relaxed pt-1">
-          {L.aiAdvisorLongDesc}
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card divide-y divide-border">
-        {paginated.map((c, i) => renderCard(c, i))}
-      </div>
-      {paginated.length < filtered.length && (
-        <div className="flex justify-center pt-2">
-          <AgriButton variant="outline" onClick={() => setPage(p => p + 1)} className="px-6">
-            {L.loadMore}
-          </AgriButton>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderCompareTab = () => {
-    const crops = Array.from(new Set(data.map((c) => c.crop)));
-    const active = compareCrop || "";
-    const records = active ? data.filter((c) => c.crop === active) : [];
-    const sorted = [...records].sort((a, b) => b.price - a.price);
-    const best = sorted[0];
-    const lowest = sorted[sorted.length - 1];
-
-    return (
-      <div className="space-y-4">
-        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="text-primary shrink-0" size={17} aria-hidden="true" />
-            <h3 className="type-h3">Compare crop prices across mandis</h3>
-          </div>
-
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-muted-foreground">Select crop to compare</p>
-            <select
-              aria-label="Select crop to compare"
-              value={active}
-              onChange={(e) => setCompareCrop(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            >
-              <option value="">Select a crop</option>
-              {crops.map((crop) => (
-                <option key={crop} value={crop}>{crop}</option>
-              ))}
-            </select>
-          </div>
-
-          {active && records.length > 0 && (
-            <>
-              <div className="pt-1">
-                <h4 className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                  <Calculator size={15} className="text-emerald-600 shrink-0" /> Smart Farmer Selling Decision
-                </h4>
-                {best && lowest && best !== lowest ? (
-                  <div className="mt-2 rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs text-foreground leading-relaxed">
-                    <p>
-                      Best price for <b>{active}</b> is at <b>{best.market}</b> ({formatINR(best.price)}{L.perQuintal}) —
-                      that's <b>{formatINR(best.price - lowest.price)}{L.perQuintal}</b> more than {lowest.market}.
-                    </p>
-                    <p className="mt-1 text-muted-foreground">
-                      Consider carrying your produce to {best.market} for a better return on {active}.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-2 rounded-xl p-3 bg-slate-100 dark:bg-slate-800 text-xs text-muted-foreground">
-                    Only one active mandi is reporting {active} right now. More live data will improve this comparison.
-                  </div>
+                {c.variety && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {hi ? "किस्म" : "Variety"}: <span className="font-medium text-foreground">{c.variety}</span>
+                  </p>
                 )}
               </div>
 
-              <ul className="space-y-1.5">
-                {sorted.map((c) => (
-                  <li
-                    key={c.id}
-                    className={cn(
-                      "flex items-center justify-between rounded-xl px-3 py-2 text-xs",
-                      c === best && sorted.length > 1
-                        ? "bg-emerald-500/10 border border-emerald-500/30 font-bold text-foreground"
-                        : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    <span className="flex items-center gap-1.5 min-w-0">
-                      {c === best && sorted.length > 1 && <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />}
-                      <span className="truncate">{c.market}, {c.district}</span>
-                    </span>
-                    <span className="font-semibold shrink-0">{formatINR(c.price)}{L.perQuintal}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
+              {/* Price Breakdown */}
+              <div className="bg-muted/40 p-3 rounded-xl border border-border/50 space-y-1.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-muted-foreground font-semibold">{L.modal}</span>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{formatINR(c.price)}</span>
+                    <span className="text-[11px] text-muted-foreground"> / quintal</span>
+                  </div>
+                </div>
 
-  const TAB_ITEMS: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: "prices", label: L.tabPrices, icon: TrendingUp },
-    { id: "advisor", label: L.tabAdvisor, icon: Bot },
-    { id: "trends", label: L.tabTrends, icon: LineChartIcon },
-    { id: "compare", label: L.tabCompare, icon: BarChart3 },
-    { id: "nearby", label: L.tabNearby, icon: MapPin },
-    { id: "alerts", label: L.tabAlerts, icon: Bell },
-  ];
+                <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-1.5 font-medium">
+                  <span>{L.min}: <b className="text-foreground">{c.minPrice > 0 ? formatINR(c.minPrice) : "N/A"}</b></span>
+                  <span>{L.max}: <b className="text-foreground">{c.maxPrice > 0 ? formatINR(c.maxPrice) : "N/A"}</b></span>
+                </div>
+              </div>
 
-  const renderDetailSheet = () => {
-    if (!selectedCrop) return null;
-    const c = selectedCrop;
-    const advice = c.sellingAdvice;
-    const fav = isFav(c);
-
-    return (
-      <div className="fixed inset-0 z-[60]">
-        <div className="absolute inset-0 bg-black/60 " onClick={() => setSelectedCrop(null)} />
-        <div className="absolute bottom-0 left-0 right-0 max-h-[92vh] overflow-y-auto rounded-t-3xl bg-card border-t border-border  " role="dialog" aria-modal="true" aria-label={`${c.crop} ${c.cropHi ? `(${c.cropHi})` : ""}`}>
-          <div className="sticky top-0 bg-card/95  pt-3 pb-2 px-5 flex items-center justify-between border-b border-border z-10">
-            <div className="mx-auto absolute left-1/2 -translate-x-1/2 top-1.5 w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-            <div className="pt-3">
-              <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                {c.crop} {c.cropHi && <span className="text-sm font-semibold opacity-80">({c.cropHi})</span>}
-              </h3>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin size={11} /> {c.market}, {c.district}, {c.state}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 pt-3">
-              <button onClick={() => toggleFavorite(c)} aria-label={t("mandi.hub.ariaFavorite")} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <Heart size={18} className={fav ? "fill-rose-500 text-rose-500" : "text-slate-400"} />
-              </button>
-              <button onClick={() => setSelectedCrop(null)} aria-label={t("mandi.hub.ariaClose")} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <X size={18} className="text-slate-400" />
-              </button>
-            </div>
-          </div>
-
-          {/* Selected Crop Image Banner */}
-          <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-            <CommodityImage
-              commodityName={c.crop}
-              commodityHi={c.cropHi}
-              category={c.category}
-              src={c.cropImage}
-              alt={c.crop}
-              className="w-full h-full object-cover"
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-            <div className="absolute bottom-3 left-4 right-4 text-white flex items-end justify-between">
-              <div>
-                <span className="text-xs bg-emerald-600/90 text-white font-bold px-2 py-0.5 rounded-full inline-block mb-1">
-                  {c.category}
+              {/* Footer Date & Action */}
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                <span className="flex items-center gap-1">
+                  <Calendar size={12} />
+                  {c.arrivalDate || "Latest"}
                 </span>
-                <p className="text-sm font-bold text-white/90">
-                  {c.market} · {c.district}, {c.state}
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs opacity-80 block">{L.arrivalLabel}</span>
-                <span className="text-sm font-semibold text-white">{c.arrivalDate || L.nullRange}</span>
+                <span className="font-bold text-emerald-600 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                  {hi ? "विवरण" : "Details"} <ChevronRight size={13} />
+                </span>
               </div>
             </div>
           </div>
-
-          <div className="p-5 space-y-5">
-            {/* Advice Hero Banner */}
-            {advice && (
-              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  {renderAdviceBadge(c)}
-                  <span className="type-meta font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded">
-                    {advice.confidence}{L.confidence}
-                  </span>
-                </div>
-
-                <div>
-                  <p className="type-h3 mb-1">{L.analysisTitle}</p>
-                  <p className="type-small text-muted-foreground">
-                    {hi ? advice.reasonHi : advice.reasonEn}
-                  </p>
-                </div>
-
-                <div className="bg-muted/50 p-3 rounded-lg border border-border flex items-center justify-between type-small">
-                  <span className="text-muted-foreground">{L.priceRangeLabel}</span>
-                  <span className="font-semibold text-foreground type-num">
-                    {formatINR(advice.minExpectedPrice)} – {formatINR(advice.maxExpectedPrice)} {L.perQuintal}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Price Details */}
-            <div className="flex items-end justify-between border-t border-border pt-4">
-              <div>
-                <span className="text-xs text-muted-foreground font-semibold block">{L.currentModalPrice}</span>
-                <p className="text-3xl font-semibold text-foreground">{formatINR(c.price)}</p>
-                <p className="text-xs text-muted-foreground">{L.perQuintal}</p>
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                {changeBadge(c)}
-                <div className="flex gap-3 text-xs text-muted-foreground font-medium">
-                  <span>{L.min}: <b className="text-foreground">{fmtRange(c.minPrice)}</b></span>
-                  <span>{L.max}: <b className="text-foreground">{fmtRange(c.maxPrice)}</b></span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <AgriButton className="flex-1" onClick={() => { setAlertPrefill({ commodity: c.crop, price: c.price }); setSelectedCrop(null); setTab("alerts"); }}>
-                <Bell size={15} /> {L.tabAlerts}
-              </AgriButton>
-              <AgriButton variant="outline" className="flex-1" onClick={() => setSelectedCrop(null)}>
-                {hi ? L.closeBtn : "Close"}
-              </AgriButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+        );
+      })}
+    </div>
+  );
 
   return (
-    <div className="pb-28 pt-5 px-4 space-y-4 max-w-3xl mx-auto">
-      {/* Offline Cache Timestamp Banner */}
-      {isCachedData && cachedAtText && typeof navigator !== 'undefined' && !navigator.onLine && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-medium text-amber-800 dark:text-amber-200">
-          <span className="flex items-center gap-2 min-w-0">
-            <WifiOff size={14} className="shrink-0" />
-            <span className="truncate">Showing cached prices from {cachedAtText} (Offline)</span>
-          </span>
-          <button onClick={() => fetchMandi(true)} className="shrink-0 font-semibold underline">{L.retry}</button>
-        </div>
-      )}
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24">
 
-      {/* Verified government snapshot banner — served from persisted AGMARKNET records */}
-      {!error && !isCachedData && servedFrom === "database" && (
-        <div className="rounded-lg border border-border bg-muted/40 px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
-          <span className="flex items-center gap-2 min-w-0">
-            <ShieldCheck size={14} className="shrink-0 text-primary" />
-            <span className="truncate">
-              {L.verifiedSource} · AGMARKNET
-              {rateLimited ? " · Live refresh is rate-limited right now; showing the last synced records." : ""}
-            </span>
-          </span>
-          <button onClick={resync} disabled={refreshing} className="shrink-0 font-semibold text-foreground flex items-center gap-1">
-            <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
-            {hi ? "सिंक करें" : "Sync now"}
-          </button>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="type-h1 text-foreground">{L.title}</h1>
-          <p className="type-small text-muted-foreground mt-1">{L.subtitle}</p>
-          {lastUpdated && !error && (
-            <p className="type-meta mt-1.5 flex items-center gap-1">
-              <Clock size={11} className="text-muted-foreground" />
-              {L.updated}: {lastUpdated.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · AGMARKNET
+      {/* Hero Header Section */}
+      <div className="relative rounded-3xl border border-border bg-gradient-to-br from-emerald-900/10 via-card to-card p-6 sm:p-8 shadow-sm overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
+              <ShieldCheck size={14} />
+              {L.verifiedSource}
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              {L.title}
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {L.subtitle}
             </p>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2 pt-1">
-          <span className={cn(
-            "flex items-center gap-1.5 rounded px-2 py-1 text-xs font-semibold tracking-wide",
-            error ? "bg-destructive/10 text-destructive" : isCachedData ? "bg-amber-500/10 text-amber-700" : "bg-primary/10 text-primary"
-          )}>
-            <span className={cn("h-1.5 w-1.5 rounded-full", error ? "bg-destructive" : isCachedData ? "bg-amber-500" : "bg-primary")} />
-            {error ? "Offline" : isCachedData ? "Cached" : refreshing ? "Syncing…" : servedFrom === "live" ? "Live" : "Verified"}
-          </span>
-          <AgriButton size="sm" variant="outline" onClick={() => fetchMandi(true)} disabled={refreshing} aria-label={t("mandi.hub.ariaRefresh")}>
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-          </AgriButton>
+          </div>
+
+          {/* Refresh & Update Status Panel */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-card border border-border/80 p-4 rounded-2xl shadow-sm shrink-0">
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                {L.updated}: <span className="text-emerald-600 font-bold">{lastSuccessfulUpdate ? lastSuccessfulUpdate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Just now"}</span>
+              </div>
+              <p className="text-muted-foreground">
+                {L.nextUpdate}: <span className="font-semibold text-foreground">{timeUntilNextUpdate}</span>
+              </p>
+            </div>
+
+            <AgriButton
+              size="sm"
+              variant="outline"
+              onClick={() => fetchMandi(true, { sync: true })}
+              disabled={refreshing}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw size={14} className={refreshing ? "animate-spin mr-1" : "mr-1"} />
+              {refreshing ? (hi ? "ताज़ा हो रहा है..." : "Refreshing...") : (hi ? "अभी रिफ्रेश करें" : "Refresh Now")}
+            </AgriButton>
+          </div>
         </div>
       </div>
 
-      {/* Search & Autocomplete Dropdown */}
-<div className="space-y-3 rounded-xl border border-border bg-card p-3.5">
+      {/* Filter & Search Bar Section */}
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4 shadow-sm">
+        
+        {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             type="text"
             placeholder={L.search}
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPage(1);
-              setShowSearchSuggestions(true);
-            }}
-            onFocus={() => setShowSearchSuggestions(true)}
-            className="w-full touch-target pl-10 pr-4 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm"
+            onChange={(e) => { setSearchTerm(e.target.value); setVisibleCount(24); }}
+            className="w-full pl-11 pr-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-medium transition-all"
           />
-
-          {/* Search suggestions */}
-          {showSearchSuggestions && searchSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-float z-30 overflow-hidden py-1">
-              {searchSuggestions.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setSearchTerm(s);
-                    setPage(1);
-                    setShowSearchSuggestions(false);
-                  }}
-                  className="w-full touch-target text-left px-4 py-2 text-[13px] text-foreground hover:bg-muted transition-colors flex items-center justify-between"
-                >
-                  <span>{s}</span>
-                  <ChevronRight size={12} className="text-muted-foreground" />
-                </button>
-              ))}
-            </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X size={15} />
+            </button>
           )}
         </div>
 
-        {/* Category Pills */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => { setSelectedCategory(cat); setPage(1); }}
-              className={cn(
-                "touch-target flex items-center px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
-                selectedCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              )}
+        {/* Cascading Location Selectors (State -> District -> Mandi) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          
+          {/* 1. State Selector (All 36 Indian States/UTs) */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{hi ? "राज्य चुनें" : "State / UT"}</label>
+            <select
+              value={selectedState}
+              onChange={(e) => handleStateChange(e.target.value)}
+              className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 truncate"
             >
-              {CATEGORY_LABELS[cat] ?? cat}
-            </button>
-          ))}
+              <option value="">{L.allStates}</option>
+              {states.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 2. District Selector (Cascading from State) */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{hi ? "जिला चुनें" : "District"}</label>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => handleDistrictChange(e.target.value)}
+              disabled={!selectedState && districts.length === 0}
+              className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 truncate disabled:opacity-60"
+            >
+              <option value="">{L.allDistricts}</option>
+              {districts.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 3. Mandi Selector (Cascading from District) */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{hi ? "मंडी चुनें" : "Mandi / Market"}</label>
+            <select
+              value={selectedMandi}
+              onChange={(e) => handleMandiChange(e.target.value)}
+              disabled={mandis.length === 0}
+              className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 truncate disabled:opacity-60"
+            >
+              <option value="">{L.allMandis}</option>
+              {mandis.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* 4. Sort Selector */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{hi ? "क्रमबद्ध करें" : "Sort By"}</label>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              className="w-full px-3 py-2.5 bg-background border border-input rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 truncate"
+            >
+              <option value="highest">{hi ? "उच्चतम मूल्य पहले" : "Highest Price First"}</option>
+              <option value="lowest">{hi ? "न्यूनतम मूल्य पहले" : "Lowest Price First"}</option>
+              <option value="latest">{hi ? "नवीनतम आवक तिथि" : "Latest Arrival Date"}</option>
+              <option value="alphabetical">{hi ? "वर्णानुक्रम (A-Z)" : "Alphabetical (A-Z)"}</option>
+            </select>
+          </div>
         </div>
 
-        {/* Filters & Sorting */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          <select
-            aria-label={t("mandi.hub.ariaFilterState")}
-            value={selectedState}
-            onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedMandi(""); setPage(1); }}
-            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
-          >
-            <option value="">{L.allStates}</option>
-            {states.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-
-          <select
-            aria-label={t("mandi.hub.ariaFilterDistrict")}
-            value={selectedDistrict}
-            onChange={(e) => { setSelectedDistrict(e.target.value); setSelectedMandi(""); setPage(1); }}
-            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
-          >
-            <option value="">{L.allDistricts}</option>
-            {districts.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-
-          <select
-            aria-label="Filter by Mandi"
-            value={selectedMandi}
-            onChange={(e) => { setSelectedMandi(e.target.value); setPage(1); }}
-            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
-          >
-            <option value="">All Mandis</option>
-            {mandis.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
-
-          <select
-            aria-label={t("mandi.hub.ariaSortPrices")}
-            value={sortOption}
-            onChange={(e) => { setSortOption(e.target.value as SortOption); setPage(1); }}
-            className="min-h-[44px] px-3 bg-background border border-input rounded-lg text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
-          >
-            <option value="highest">{t("mandi.hub.sortHighest")}</option>
-            <option value="lowest">{t("mandi.hub.sortLowest")}</option>
-            <option value="latest">{t("mandi.hub.sortLatest")}</option>
-            <option value="alphabetical">{t("mandi.hub.sortAlphabetical")}</option>
-          </select>
+        {/* Category Pills & Filters Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => { setSelectedCategory(cat); setVisibleCount(24); }}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors",
+                  selectedCategory === cat
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                )}
+              >
+                {CATEGORY_LABELS[cat] ?? cat}
+              </button>
+            ))}
+          </div>
 
           <button
-            onClick={() => { setFavoritesOnly(f => !f); setPage(1); }}
+            onClick={() => { setFavoritesOnly((f) => !f); setVisibleCount(24); }}
             className={cn(
-              "flex min-h-[44px] items-center justify-center gap-1.5 px-3 rounded-lg border text-[13px] font-medium transition-colors",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors shrink-0",
               favoritesOnly
-                ? "bg-destructive/5 text-destructive border-destructive/30"
+                ? "bg-rose-500/10 text-rose-600 border-rose-500/30"
                 : "bg-background text-muted-foreground border-input hover:text-foreground"
             )}
           >
-            <Heart size={13} className={favoritesOnly ? "fill-destructive text-destructive" : ""} />
+            <Heart size={13} className={favoritesOnly ? "fill-rose-500 text-rose-500" : ""} />
             {L.onlyFavs}
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar border-b border-border pb-px">
-        {TAB_ITEMS.map(item => (
-          <button
-            key={item.id}
-            onClick={() => { setTab(item.id); setPage(1); }}
-            className={cn(
-              "flex touch-target items-center gap-1.5 shrink-0 px-3 py-2 text-[13px] font-medium transition-colors border-b-2 -mb-px",
-              tab === item.id
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <item.icon size={13} aria-hidden="true" />
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {/* Selected Mandi Market Summary Header Banner */}
+      {marketSummary && (
+        <div className="rounded-2xl bg-emerald-950 text-white p-5 border border-emerald-800 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">
+              {hi ? "चयनित मंडी बाजार सारांश" : "Selected Market Overview"}
+            </span>
+            <h2 className="text-xl font-extrabold flex items-center gap-2">
+              <Store className="text-emerald-400" size={20} />
+              {marketSummary.name}
+              <span className="text-xs font-normal text-emerald-200">({marketSummary.district}, {marketSummary.state})</span>
+            </h2>
+          </div>
 
-      {/* Content */}
+          <div className="flex items-center gap-6 text-xs text-emerald-100 divide-x divide-emerald-800">
+            <div>
+              <span className="block opacity-75">{hi ? "कुल उपलब्ध फसलें" : "Total Commodities"}</span>
+              <span className="text-lg font-bold text-white">{marketSummary.count} {hi ? "फसलें" : "Crops"}</span>
+            </div>
+            <div className="pl-6">
+              <span className="block opacity-75">{hi ? "नवीनतम आवक तिथि" : "Latest Arrival"}</span>
+              <span className="text-lg font-bold text-white">{marketSummary.latestDate}</span>
+            </div>
+            <div className="pl-6">
+              <span className="block opacity-75">{hi ? "औसत मॉडल मूल्य" : "Avg Modal Rate"}</span>
+              <span className="text-lg font-bold text-emerald-300">{formatINR(marketSummary.avgPrice)} / q</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Grid / State Render */}
       {loading ? (
-        <div className="rounded-xl border border-border bg-card divide-y divide-border pt-2">
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-14 animate-pulse bg-muted/40" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="h-64 rounded-2xl bg-muted/50 border border-border animate-pulse" />
           ))}
         </div>
-      ) : error ? (
-        <ErrorState message={error} onRetry={() => fetchMandi(true)} />
-      ) : tab === "advisor" ? (
-        renderAdvisorTab()
-      ) : tab === "compare" ? (
-        renderCompareTab()
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-12 px-4 bg-card rounded-xl border border-border my-4 space-y-3">
-          <Store className="mx-auto w-10 h-10 text-muted-foreground" />
-          <h4 className="type-h3">No Government mandi records found for this selection</h4>
-          <p className="type-small text-muted-foreground max-w-sm mx-auto">
-            The government dataset has no published crop rate for this combination of state, district, mandi or category. Try a different selection.
-          </p>
+      ) : error && data.length === 0 ? (
+        <ErrorState message={error} onRetry={() => fetchMandi(true, { sync: true })} />
+      ) : filteredData.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-card rounded-3xl border border-border space-y-4 shadow-sm">
+          <Store className="mx-auto w-12 h-12 text-muted-foreground opacity-50" />
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-foreground">
+              {hi ? "कोई सरकारी मंडी रिकॉर्ड नहीं मिला" : "No Government Mandi Records Found"}
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+              {hi
+                ? "चयनित राज्य, जिले या मंडी के लिए कोई पंजीकृत फसल रेट उपलब्ध नहीं है। कृपया फ़िल्टर बदलें।"
+                : "No registered commodity prices returned for this combination of State, District, or Mandi. Try choosing another district or clearing filters."}
+            </p>
+          </div>
           <AgriButton
             variant="outline"
             size="sm"
@@ -913,25 +726,146 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast, onNavigateToAuth }) => {
               setSelectedMandi("");
               setSelectedCategory("All");
               setFavoritesOnly(false);
-              setPage(1);
+              setVisibleCount(24);
             }}
           >
-            Clear All Filters
+            {hi ? "सभी फ़िल्टर हटाएं" : "Clear All Filters"}
           </AgriButton>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card divide-y divide-border">
-          {paginated.map((c, i) => renderCard(c, i))}
-          {paginated.length < filtered.length && (
-            <button onClick={() => setPage(p => p + 1)} className="w-full px-3.5 py-3 text-center text-[12px] font-semibold text-primary hover:bg-muted/50 transition-colors">
-              {L.loadMore}
-            </button>
+        <>
+          {renderCardGrid()}
+
+          {/* Load More Button */}
+          {visibleItems.length < filteredData.length && (
+            <div className="flex justify-center pt-4">
+              <AgriButton
+                variant="outline"
+                onClick={() => setVisibleCount((prev) => prev + 24)}
+                className="px-8 py-3 rounded-xl border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold hover:bg-emerald-500/10"
+              >
+                {L.loadMore} ({filteredData.length - visibleItems.length} {hi ? "और बाकी" : "remaining"})
+              </AgriButton>
+            </div>
           )}
+        </>
+      )}
+
+      {/* Selected Crop Detail Modal Sheet */}
+      {selectedCrop && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div
+            className="relative w-full max-w-2xl bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Header Close & Favorite Bar */}
+            <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+              <button
+                onClick={() => toggleFavorite(selectedCrop)}
+                className="p-2.5 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+              >
+                <Heart size={18} className={isFav(selectedCrop) ? "fill-rose-500 text-rose-500" : "text-white"} />
+              </button>
+              <button
+                onClick={() => setSelectedCrop(null)}
+                className="p-2.5 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Image Header */}
+            <div className="relative h-64 w-full bg-muted">
+              <CommodityImage
+                commodityName={selectedCrop.crop}
+                commodityHi={selectedCrop.cropHi}
+                category={selectedCrop.category}
+                src={selectedCrop.cropImage}
+                alt={selectedCrop.crop}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+
+              <div className="absolute bottom-4 left-5 right-5 text-white space-y-1">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white inline-block mb-1">
+                  {selectedCrop.category}
+                </span>
+                <h2 className="text-2xl font-extrabold drop-shadow-md">
+                  {selectedCrop.crop} {selectedCrop.cropHi && <span className="text-lg font-semibold opacity-90">({selectedCrop.cropHi})</span>}
+                </h2>
+                <p className="text-xs text-emerald-200 flex items-center gap-1 font-medium">
+                  <MapPin size={12} /> {selectedCrop.market} · {selectedCrop.district}, {selectedCrop.state}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Details Body */}
+            <div className="p-6 space-y-6">
+
+              {/* Modal Price Highlight Box */}
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                <div>
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{L.modal}</span>
+                  <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400">
+                    {formatINR(selectedCrop.price)}
+                    <span className="text-xs font-medium text-muted-foreground"> / quintal</span>
+                  </div>
+                </div>
+                <div className="text-right space-y-1">
+                  {changeBadge(selectedCrop)}
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {hi ? "आवक तिथि" : "Arrival Date"}: <b className="text-foreground">{selectedCrop.arrivalDate}</b>
+                  </p>
+                </div>
+              </div>
+
+              {/* Price Range Details */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+                  <span className="text-xs font-bold text-muted-foreground block">{L.min}</span>
+                  <span className="text-lg font-bold text-foreground">
+                    {selectedCrop.minPrice > 0 ? formatINR(selectedCrop.minPrice) : "N/A"}
+                  </span>
+                </div>
+                <div className="p-3.5 rounded-xl border border-border bg-muted/30">
+                  <span className="text-xs font-bold text-muted-foreground block">{L.max}</span>
+                  <span className="text-lg font-bold text-foreground">
+                    {selectedCrop.maxPrice > 0 ? formatINR(selectedCrop.maxPrice) : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Selling Advice if Available */}
+              {selectedCrop.sellingAdvice && (
+                <div className="rounded-2xl border border-border bg-card p-4 space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                      <Sparkles size={14} /> {hi ? "AI स्मार्ट मंडी सलाह" : "AI Farmer Advisory"}
+                    </span>
+                    <span className="text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                      {selectedCrop.sellingAdvice.confidence}{L.confidence}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {hi ? selectedCrop.sellingAdvice.reasonHi : selectedCrop.sellingAdvice.reasonEn}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <AgriButton className="flex-1 py-3" onClick={() => setSelectedCrop(null)}>
+                  {hi ? "बंद करें" : "Close"}
+                </AgriButton>
+              </div>
+
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Detail Bottom Sheet */}
-      {renderDetailSheet()}
     </div>
   );
 };
