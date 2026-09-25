@@ -250,7 +250,8 @@ const DetailSheet = ({
         </div>
       </div>
 
-      <div className="p-4 pb-36 max-w-3xl mx-auto">
+      <div className="p-6 pb-36 max-w-4xl mx-auto space-y-4">
+
         {/* Category & Level Badges */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-semibold uppercase tracking-wide px-2.5 py-0.5 rounded bg-primary/10 text-primary">
@@ -852,7 +853,8 @@ const Schemes: React.FC<SchemesProps> = ({ onToast }) => {
   }, [schemes, bookmarks]);
 
   return (
-    <div className="pb-28 pt-4 px-4 max-w-4xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
+
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
         <div>

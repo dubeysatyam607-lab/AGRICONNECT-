@@ -222,30 +222,31 @@
   /* ------------------------------------------------------------
    * Global responsive container
    * ------------------------------------------------------------ */
-  .responsive-container {
+  /* ------------------------------------------------------------
+   * Global responsive layout container system (AgriConnect Standard)
+   * ------------------------------------------------------------ */
+  .responsive-container, .agri-container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    max-width: 1440px;               /* Desktop default */
-    padding-left: 1.5rem;            /* 24px */
-    padding-right: 1.5rem;
+    max-width: 1280px;               /* Desktop standard max-width */
+    padding-left: 1rem;            /* 16px mobile padding */
+    padding-right: 1rem;
   }
 
-  @media (min-width: 1440px) {
-    .responsive-container { max-width: 1500px; }
+  @media (min-width: 640px) {
+    .responsive-container, .agri-container {
+      padding-left: 1.5rem;        /* 24px tablet/desktop padding */
+      padding-right: 1.5rem;
+    }
   }
 
-  @media (max-width: 1024px) {   /* Laptop */
-    .responsive-container { padding-left: 1rem; padding-right: 1rem; }
+  @media (min-width: 1536px) {
+    .responsive-container, .agri-container {
+      max-width: 1320px;            /* Ultra-wide container */
+    }
   }
 
-  @media (max-width: 768px) {    /* Tablet */
-    .responsive-container { padding-left: 0.75rem; padding-right: 0.75rem; }
-  }
-
-  @media (max-width: 480px) {    /* Mobile */
-    .responsive-container { padding-left: 0.75rem; padding-right: 0.75rem; }
-  }
 
   /* Dynamic hero period/weather backgrounds */
   .gradient-hero-dawn { background: var(--gradient-hero-dawn); }

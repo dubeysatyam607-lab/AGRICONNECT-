@@ -717,14 +717,15 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
   };
 
   return (
-    <div className="pb-24">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-6">
       {toast && (
         <div className="fixed top-16 inset-x-4 z-[90] flex justify-center pointer-events-none">
           <div className="bg-foreground text-background text-sm font-semibold px-4 py-2.5 rounded-xl ">{toast}</div>
         </div>
       )}
 
-      <div className="px-4 pt-4">
+      <div className="pt-2">
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
@@ -842,7 +843,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
             </AgriCard>
           </div>
         ) : (
-          <div className="px-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+
             {visible.map(p => renderCard(p))}
           </div>
         )

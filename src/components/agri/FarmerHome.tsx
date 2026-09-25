@@ -240,7 +240,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
     <div className="pb-36">
       {/* App header */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2.5">
             <Logo size={30} />
             <div className="leading-tight">
@@ -274,7 +274,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         <FirstDayBoard onGo={go} />
 
         {user && typeof window !== 'undefined' && localStorage.getItem('agri_onboarding_seen') !== 'true' && localStorage.getItem('agri_profile_complete') !== 'true' && !farmProfile?.crop && (

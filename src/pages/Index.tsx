@@ -597,7 +597,8 @@ const getTabFromPath = (path: string) => {
           <DesktopSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         )}
         <div className={isFullScreen ? "" : "min-w-0 flex-1"}>
-          <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-screen-2xl px-4 sm:px-6 md:px-8 pb-28 sm:pb-32 lg:pb-12"}>
+          <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-28 sm:pb-32 lg:pb-12"}>
+
             <h1 className="sr-only">AgriConnect Dashboard</h1>
             <Suspense fallback={
               <div className="min-h-[60vh] flex items-center justify-center p-6">

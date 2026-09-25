@@ -133,7 +133,8 @@ const CattleMarket: React.FC = () => {
   }, [cattleList, selectedCategory, searchQuery]);
 
   return (
-    <div className="pb-24 pt-4 px-4 overflow-y-auto min-h-screen max-w-5xl mx-auto space-y-4">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 space-y-6">
+
       {/* Hero Banner */}
       <div className="relative rounded-xl overflow-hidden h-48 shadow-lg">
         <AgriImage
@@ -232,7 +233,8 @@ const CattleMarket: React.FC = () => {
           </AgriButton>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
           {filtered.map((animal) => (
             <div
               key={animal.id}

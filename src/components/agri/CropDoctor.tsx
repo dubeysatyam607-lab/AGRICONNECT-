@@ -637,7 +637,8 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   };
 
   return (
-    <div className="pb-28 pt-5 px-4 min-h-screen flex flex-col max-w-3xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 min-h-screen flex flex-col space-y-6">
+
       {/* Hidden inputs for gallery & camera */}
       <input
         type="file"
