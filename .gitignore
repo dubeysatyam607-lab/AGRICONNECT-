@@ -15,7 +15,6 @@ dist-ssr
 .env.local
 .env.*
 !.env.example
-!.env.production
 !server/.env.example
 
 # Playwright / test artifacts (can capture session & trace data)
