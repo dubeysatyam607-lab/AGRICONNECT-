@@ -237,35 +237,35 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   );
 
   return (
-    <div className="pb-36">
+    <div className="min-h-screen bg-gradient-to-b from-[#FAF7F2] via-[#F4F9F2] to-[#FAF7F2] pb-36">
       {/* App header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2.5">
-            <Logo size={30} />
+          <div className="flex items-center gap-3">
+            <Logo size={32} />
             <div className="leading-tight">
-              <p className="text-[15px] font-bold tracking-tight text-foreground">{t('agr207')}</p>
-              <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin size={10} aria-hidden="true" />
+              <p className="text-[16px] font-extrabold tracking-tight text-[#0F5132]">{t('agr207')}</p>
+              <p className="flex items-center gap-1 text-xs font-semibold text-emerald-800/80">
+                <MapPin size={11} className="text-[#00C26E]" aria-hidden="true" />
                 {liveCity} · {dateStr.split(",")[0]}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {wl && (
               <button
                 onClick={() => setWeatherOpen(true)}
-                className="hidden min-h-[36px] items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-[13px] font-bold text-foreground sm:flex"
+                className="hidden min-h-[38px] items-center gap-2 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 text-[13px] font-bold text-[#0F5132] shadow-xs hover:border-[#0F5132]/30 sm:flex"
                 aria-label={t("home.openWeather")}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-live-pulse" aria-hidden="true" />
+                <span className="h-2 w-2 rounded-full bg-[#00C26E] animate-live-pulse" aria-hidden="true" />
                 {weather.formatTemp(wl.live.temp)} · {wl.live.condition}
               </button>
             )}
             <NotificationBell onNavigate={go} />
             <button
               onClick={() => go("profile")}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-sm font-semibold text-primary ring-1 ring-primary/15"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#0F5132]/20 bg-[#0F5132] text-sm font-black text-white shadow-sm ring-2 ring-[#00C26E]/30 transition-transform hover:scale-105"
               aria-label={t("home.openProfile")}
             >
               {firstName.charAt(0).toUpperCase()}
@@ -274,7 +274,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-7">
 
         <FirstDayBoard onGo={go} />
 

@@ -42,10 +42,10 @@ export const ResponsiveLayout: React.FC<IResponsiveLayoutProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-b from-[#FAF7F2] via-[#F4F9F2] to-[#FAF7F2] text-slate-900 flex flex-col font-sans antialiased transition-colors duration-300">
       {/* Top Header */}
       {header && (
-        <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 ">
+        <header className="sticky top-0 z-40 w-full border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
           <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${maxWidthClassName}`}>{header}</div>
         </header>
       )}
