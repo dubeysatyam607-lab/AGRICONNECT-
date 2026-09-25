@@ -137,11 +137,11 @@ const Hero3DInner: React.FC<Hero3DProps> = ({
   const showFallback = !is3DActive;
 
   return (
-    <div className="relative h-full w-full overflow-hidden" aria-hidden="true">
+    <div className="relative flex h-full min-h-[260px] w-full flex-col overflow-hidden sm:min-h-[300px] lg:min-h-[360px]" aria-hidden="true">
       {/* Permanent agricultural base layer — never a blank box. Crossfades out
           only once the live 3D scene is confirmed on screen. */}
       <div
-        className="absolute inset-0 transition-opacity duration-700 ease-out"
+        className="absolute inset-0 z-0 h-full w-full transition-opacity duration-700 ease-out"
         style={{ opacity: showFallback ? 1 : 0 }}
       >
         <HeroFallback weatherCondition={weatherCondition} />
@@ -153,7 +153,7 @@ const Hero3DInner: React.FC<Hero3DProps> = ({
           onError={() => handleSceneError("SHADER_FAILED")}
         >
           <div
-            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            className="absolute inset-0 z-10 h-full w-full transition-opacity duration-700 ease-out"
             style={{ opacity: is3DActive ? 1 : 0 }}
           >
             <Suspense fallback={null}>
@@ -178,7 +178,7 @@ const Hero3DInner: React.FC<Hero3DProps> = ({
       )}
 
       {/* Agricultural live telemetry boundary scan line */}
-      <div className="animate-field-scan pointer-events-none absolute inset-x-2 h-px bg-[#00C26E]/40" />
+      <div className="animate-field-scan pointer-events-none absolute inset-x-2 z-20 h-px bg-[#00C26E]/40" />
     </div>
   );
 };
