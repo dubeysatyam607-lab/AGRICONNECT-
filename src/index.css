@@ -961,3 +961,65 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-hero-rise { animation: none; opacity: 1; }
 }
+
+/* ── REALISTIC INDIAN FARM NATURAL ENVIRONMENTAL KEYFRAMES ────────── */
+@keyframes wind-wave-sweep {
+  0% { transform: translateX(-30%) scaleY(1); opacity: 0.1; }
+  50% { transform: translateX(50%) scaleY(1.15); opacity: 0.35; }
+  100% { transform: translateX(130%) scaleY(1); opacity: 0.1; }
+}
+.animate-wind-wave {
+  animation: wind-wave-sweep 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes leaf-bend-gentle {
+  0%, 100% { transform: rotate(0deg) skewX(0deg); }
+  25% { transform: rotate(2.8deg) skewX(1.8deg); }
+  60% { transform: rotate(-2.2deg) skewX(-1.2deg); }
+  85% { transform: rotate(1.2deg) skewX(0.6deg); }
+}
+.animate-leaf-sway {
+  animation: leaf-bend-gentle 5.2s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes cloud-drift-horizontal {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(380%); }
+}
+.animate-cloud-drift-slow {
+  animation: cloud-drift-horizontal 52s linear infinite;
+}
+.animate-cloud-drift-mid {
+  animation: cloud-drift-horizontal 34s linear infinite;
+}
+
+@keyframes sun-glow-warm {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+.animate-sun-glow {
+  animation: sun-glow-warm 6.5s ease-in-out infinite alternate;
+}
+
+@keyframes pollen-float {
+  0% { transform: translate(0, 0) scale(0.7); opacity: 0; }
+  25% { opacity: 0.6; }
+  75% { opacity: 0.6; }
+  100% { transform: translate(28px, -42px) scale(1.15); opacity: 0; }
+}
+.animate-pollen {
+  animation: pollen-float 7.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-wind-wave,
+  .animate-leaf-sway,
+  .animate-cloud-drift-slow,
+  .animate-cloud-drift-mid,
+  .animate-sun-glow,
+  .animate-pollen {
+    animation: none !important;
+  }
+}
+

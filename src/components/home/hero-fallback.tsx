@@ -1,5 +1,5 @@
 import React from "react";
-import { Sprout, Cpu, Droplets } from "lucide-react";
+import { Sprout, Droplets } from "lucide-react";
 
 export interface HeroFallbackProps {
   weatherCondition?: string;
@@ -8,50 +8,35 @@ export interface HeroFallbackProps {
 export const HeroFallback: React.FC<HeroFallbackProps> = () => {
   return (
     <div
-      className="relative flex h-full min-h-[260px] w-full flex-col overflow-hidden bg-emerald-950 sm:min-h-[300px] lg:min-h-[360px]"
+      className="relative flex h-full min-h-[280px] sm:min-h-[320px] lg:min-h-[350px] max-h-[380px] w-full flex-col overflow-hidden bg-gradient-to-b from-[#EBF5ED] via-[#F4F9F2] to-[#FBF8F1]"
       aria-hidden="true"
     >
-      {/* ── REALISTIC INDIAN AGRICULTURAL FIELD IMAGE ───────────────────── */}
+      {/* Base Crop Field Image */}
       <img
         src="/images/smart-farm-hero.jpg"
-        alt="AgriConnect Smart Farm"
-        className="h-full w-full object-cover object-bottom"
+        alt="AgriConnect Indian Farm"
+        className="h-full w-full object-cover object-bottom opacity-90"
       />
       
-      {/* Ambient lighting vignettes */}
-      <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 via-transparent to-amber-500/15 mix-blend-overlay" />
-      <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/30 via-transparent to-amber-400/20" />
+      {/* Soft natural ambient lighting vignettes */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0F5132]/30 via-transparent to-[#F7D774]/10 mix-blend-overlay" />
 
       {/* Top Floating Field Status Badge */}
-      <div className="absolute left-4 top-4 z-20 flex items-center gap-2 rounded-xl border border-white/20 bg-emerald-950/80 px-3 py-1.5 shadow-md backdrop-blur-md">
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="relative h-2.5 w-2.5 rounded-full bg-[#00C26E]" />
-        </span>
-        <div className="flex items-center gap-1.5 text-[11.5px] font-extrabold text-white">
-          <Cpu size={13} className="text-[#00C26E]" />
-          <span className="tracking-wider uppercase">Soybean Field · Smart Intelligence</span>
-        </div>
+      <div className="absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-lg border border-emerald-900/15 bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
+        <span className="h-2 w-2 rounded-full bg-[#00C26E]" />
+        <span className="text-[11px] font-extrabold text-[#0F5132] tracking-wide">Soybean Field</span>
       </div>
 
-      {/* Telemetry Node 1 */}
-      <div className="absolute bottom-[24%] left-[12%] z-20">
-        <div className="rounded-xl border border-white/20 bg-emerald-950/80 px-3 py-1.5 shadow-lg backdrop-blur-md">
-          <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-emerald-300">
-            <Droplets size={12} className="text-[#00C26E]" />
-            <span>Soil Moisture · 48%</span>
-          </div>
-          <p className="text-[9.5px] font-semibold text-emerald-100/80">NPK: Optimal</p>
-        </div>
+      {/* Moisture Badge */}
+      <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-lg border border-emerald-900/15 bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
+        <Droplets size={12} className="text-[#00C26E]" />
+        <span className="text-[10.5px] font-bold text-[#0F5132]">Soil Moisture &bull; 48%</span>
       </div>
 
-      {/* Telemetry Node 2 */}
-      <div className="absolute bottom-[44%] right-[16%] z-20">
-        <div className="rounded-xl border border-white/20 bg-emerald-950/80 px-3 py-1.5 shadow-lg backdrop-blur-md">
-          <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-amber-300">
-            <Sprout size={12} className="text-amber-400" />
-            <span>Flowering Stage · Health 98%</span>
-          </div>
-        </div>
+      {/* Stage Badge */}
+      <div className="absolute bottom-3 right-3 z-20 hidden sm:flex items-center gap-1.5 rounded-lg border border-amber-900/15 bg-amber-50/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
+        <Sprout size={12} className="text-amber-700" />
+        <span className="text-[10.5px] font-bold text-amber-900">Flowering Stage</span>
       </div>
     </div>
   );
