@@ -798,6 +798,33 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* --- Photorealistic Smart Farm Hero Animations --- */
+  @keyframes slow-hero-pan {
+    0%, 100% { transform: scale(1.08) translate3d(0px, 0px, 0); }
+    50% { transform: scale(1.13) translate3d(-10px, -5px, 0); }
+  }
+  .animate-slow-hero-pan {
+    animation: slow-hero-pan 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes crop-scan-beam {
+    0% { top: 8%; opacity: 0.2; }
+    20% { opacity: 0.95; }
+    80% { opacity: 0.95; }
+    100% { top: 76%; opacity: 0.2; }
+  }
+  .animate-crop-scan-beam {
+    animation: crop-scan-beam 7.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes sunlight-sweep {
+    0%, 100% { transform: translateX(0) scale(1); opacity: 0.35; }
+    50% { transform: translateX(75%) scale(1.2); opacity: 0.75; }
+  }
+  .animate-sunlight-sweep {
+    animation: sunlight-sweep 9.5s ease-in-out infinite alternate;
+  }
   .story-ring {
     position: relative;
   }
