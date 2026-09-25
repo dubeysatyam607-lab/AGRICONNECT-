@@ -287,6 +287,9 @@ const getTabFromPath = (path: string) => {
       case "/payments": return "wallet";
       case "/profile":
       case "/settings": return "profile";
+      case "/iot":
+      case "/iot-dashboard":
+      case "/hardware-dashboard": return "hardware-dashboard";
       case "/farm":
       case "/farm-os": return "farm-os";
       case "/mandi":
@@ -393,6 +396,7 @@ const getTabFromPath = (path: string) => {
       "advisor": "/advisor",
       "network": "/network",
       "settings": "/settings",
+      "hardware-dashboard": "/iot",
       "admin": "/admin",
     };
     const path = tabPaths[activeTab];

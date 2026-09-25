@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
-  IndianRupee, Landmark, MapPin,
+  IndianRupee, Landmark, MapPin, Cpu, Radio,
   ArrowRight, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
 } from "lucide-react";
 import AiInsightCard from "./AiInsightCard";
@@ -95,6 +95,7 @@ class SectionErrorBoundary extends Component<
 const QUICK_ACTIONS = [
   { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor" },
   { id: "mandi", icon: TrendingUp, labelKey: "nav.mandi" },
+  { id: "hardware-dashboard", icon: Cpu, labelKey: "IoT Sensors" },
   { id: "tractors", icon: Tractor, labelKey: "svc.tractors" },
   { id: "store", icon: ShoppingBag, labelKey: "svc.store" },
   { id: "weather", icon: Sprout, labelKey: "svc.weather" },

@@ -289,6 +289,9 @@ const App = () => (
                   <Route path="/profile" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/farm" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/farm-os" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/iot" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/iot-dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/hardware-dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/crop-scan" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/crop-doctor" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/mandi" element={<ProtectedRoute><Index /></ProtectedRoute>} />

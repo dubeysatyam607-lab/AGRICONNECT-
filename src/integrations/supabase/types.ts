@@ -39,6 +39,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      iot_devices: {
+        Row: {
+          id: string
+          user_id: string | null
+          farm_id: string
+          device_name: string
+          device_type: string
+          device_uid: string
+          device_token_hash: string | null
+          status: 'ONLINE' | 'OFFLINE' | 'NOT_CONNECTED'
+          capabilities: Json
+          last_seen: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          farm_id?: string
+          device_name?: string
+          device_type?: string
+          device_uid: string
+          device_token_hash?: string | null
+          status?: 'ONLINE' | 'OFFLINE' | 'NOT_CONNECTED'
+          capabilities?: Json
+          last_seen?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          farm_id?: string
+          device_name?: string
+          device_type?: string
+          device_uid?: string
+          device_token_hash?: string | null
+          status?: 'ONLINE' | 'OFFLINE' | 'NOT_CONNECTED'
+          capabilities?: Json
+          last_seen?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sensor_readings: {
+        Row: {
+          id: string
+          device_id: string
+          farm_id: string
+          soil_moisture: number | null
+          temperature: number | null
+          humidity: number | null
+          rain_value: number | null
+          fence_status: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          device_id: string
+          farm_id: string
+          soil_moisture?: number | null
+          temperature?: number | null
+          humidity?: number | null
+          rain_value?: number | null
+          fence_status?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          device_id?: string
+          farm_id?: string
+          soil_moisture?: number | null
+          temperature?: number | null
+          humidity?: number | null
+          rain_value?: number | null
+          fence_status?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      iot_alerts: {
+        Row: {
+          id: string
+          farm_id: string
+          device_id: string
+          alert_type: 'LOW_SOIL_MOISTURE' | 'HEAVY_RAIN' | 'DEVICE_OFFLINE' | 'SENSOR_ERROR' | 'FENCE_INTRUSION'
+          severity: 'INFO' | 'WARNING' | 'CRITICAL'
+          message: string
+          is_read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          farm_id: string
+          device_id: string
+          alert_type: 'LOW_SOIL_MOISTURE' | 'HEAVY_RAIN' | 'DEVICE_OFFLINE' | 'SENSOR_ERROR' | 'FENCE_INTRUSION'
+          severity?: 'INFO' | 'WARNING' | 'CRITICAL'
+          message: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          farm_id?: string
+          device_id?: string
+          alert_type?: 'LOW_SOIL_MOISTURE' | 'HEAVY_RAIN' | 'DEVICE_OFFLINE' | 'SENSOR_ERROR' | 'FENCE_INTRUSION'
+          severity?: 'INFO' | 'WARNING' | 'CRITICAL'
+          message?: string
+          is_read?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
       admin_roles: {
         Row: {
           created_at: string | null

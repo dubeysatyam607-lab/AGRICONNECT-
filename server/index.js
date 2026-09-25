@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const imageRoutes = require('./routes/imageRoutes');
+const iotRoutes = require('./routes/iotRoutes');
 const chatController = require('./controllers/chatController');
 const voiceController = require('./controllers/voiceController');
 const whatsappController = require('./controllers/whatsappController');
@@ -55,7 +56,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
 app.use(
   cors({
     origin(origin, cb) {
-      // Non-browser clients (curl, native apps) send no Origin header — allow them.
+      // Non-browser clients (curl, native apps, ESP32) send no Origin header — allow them.
       if (!origin) return cb(null, true);
       // When no allowlist is configured, reject the request.
       if (allowedOrigins.length === 0) return cb(new Error('Origin not allowed by CORS'));
@@ -68,10 +69,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// The WhatsApp webhook is a server-to-server call (Twilio) that cannot obtain a
-// CSRF cookie. It is authenticated by its own bearer/verify token, so register
-// it BEFORE global csurf to exempt it.
+// The WhatsApp webhook and IoT Telemetry endpoints are device-to-server calls that cannot obtain a
+// CSRF cookie. Register them BEFORE global csurf to exempt them.
 app.post('/api/whatsapp/webhook', whatsappController.whatsappWebhook);
+app.use('/api/iot', iotRoutes);
 app.use(csurf({ cookie: true }));
 
 // Endpoint to get CSRF token for client

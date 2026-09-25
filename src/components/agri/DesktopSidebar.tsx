@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Home, TrendingUp, Sprout, Leaf, ShoppingBag, Tractor, PawPrint, Users,
-  Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Wallet,
+  Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Wallet, Cpu,
   Landmark, Newspaper, Bell, User, Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -50,6 +50,7 @@ const GROUPS: Group[] = [
     titleKey: "svc.hub.group.aiCropCare",
     title: "Crop Care",
     items: [
+      { id: "hardware-dashboard", icon: Cpu, labelKey: "svc.hub.aiCropCare.hardwareDashboard.label", label: "IoT Sensors (ESP32)" },
       { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor", label: "Crop Scan" },
       { id: "crop-calendar", icon: CalendarDays, labelKey: "svc.hub.aiCropCare.cropCalendar.label", label: "Crop Calendar" },
       { id: "soil", icon: FlaskConical, labelKey: "svc.hub.aiCropCare.soil.label", label: "Soil Health" },

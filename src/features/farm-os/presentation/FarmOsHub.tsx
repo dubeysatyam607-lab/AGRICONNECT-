@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  ArrowLeft, BarChart3, CalendarClock, ChevronDown, HeartPulse, Layers,
+  ArrowLeft, BarChart3, CalendarClock, ChevronDown, Cpu, HeartPulse, Layers,
   ListTree, MapPinned, Sparkles, Sprout, Wallet,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,8 +13,9 @@ import { HealthView } from './components/HealthView';
 import { FinanceView } from './components/FinanceView';
 import { ReportsView } from './components/ReportsView';
 import { FarmsView } from './components/FarmsView';
+import HardwareDashboard from '@/components/agri/HardwareDashboard';
 
-type HubTab = 'today' | 'timeline' | 'calendar' | 'health' | 'finance' | 'reports' | 'farms';
+type HubTab = 'today' | 'timeline' | 'calendar' | 'health' | 'finance' | 'reports' | 'farms' | 'iot';
 
 interface FarmOsHubProps {
   onNavigate: (tab: string) => void;
@@ -29,6 +30,7 @@ export const FarmOsHub: React.FC<FarmOsHubProps> = ({ onNavigate, onToast }) => 
 
   const tabs: Array<{ key: HubTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
     { key: 'today', label: t('fos.tab.today'), icon: Sparkles },
+    { key: 'iot', label: 'IoT Sensors', icon: Cpu },
     { key: 'timeline', label: t('fos.tab.timeline'), icon: ListTree },
     { key: 'calendar', label: t('fos.tab.calendar'), icon: CalendarClock },
     { key: 'health', label: t('fos.tab.health'), icon: HeartPulse },
@@ -120,6 +122,7 @@ export const FarmOsHub: React.FC<FarmOsHubProps> = ({ onNavigate, onToast }) => 
 
       {/* Views */}
       {tab === 'today' && <OverviewView data={data} onView={(v) => setTab(v as HubTab)} />}
+      {tab === 'iot' && <HardwareDashboard />}
       {tab === 'timeline' && <TimelineView data={data} onToast={(m) => onToast?.(m)} />}
       {tab === 'calendar' && <CalendarView data={data} onToast={(m) => onToast?.(m)} />}
       {tab === 'health' && <HealthView data={data} />}
