@@ -57,7 +57,7 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
       aria-labelledby="farm-hero-greeting"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative mt-3 overflow-hidden rounded-2xl border border-[#0F5132]/15 bg-gradient-to-br from-[#FBF8F1] via-[#F4F9F2] to-[#EBF5ED] p-5 shadow-card sm:p-7 md:p-8"
+      className="relative mt-3 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card sm:p-7 md:p-8"
     >
       <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
         {/* ── LEFT COLUMN ── */}

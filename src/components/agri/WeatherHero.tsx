@@ -62,7 +62,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
 
   if (isStorm) {
     return {
-      bgStyle: "from-[#0A0A10] via-[#2E1065] to-[#1E1B4B]",
+      bgStyle: "from-[#080C14] via-[#1E1035] to-[#0F172A]",
       period,
       isRain: true,
       isStorm: true,
@@ -72,7 +72,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
 
   if (isRain) {
     return {
-      bgStyle: "from-[#0F172A] via-[#1E293B] to-[#334155]",
+      bgStyle: "from-[#0B1329] via-[#1C2541] to-[#0B1329]",
       period,
       isRain: true,
       isStorm: false,
@@ -82,7 +82,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
 
   if (isFog) {
     return {
-      bgStyle: "from-[#1E293B] via-[#475569] to-[#64748B]",
+      bgStyle: "from-[#0B1329] via-[#1E293B] to-[#334155]",
       period,
       isRain: false,
       isStorm: false,
@@ -92,7 +92,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
 
   if (c.includes("loo") || (tempC !== undefined && tempC >= 40)) {
     return {
-      bgStyle: "from-[#7C2D12] via-[#C2410C] to-[#D97706]",
+      bgStyle: "from-[#451A03] via-[#78350F] to-[#0F172A]",
       period,
       isRain: false,
       isStorm: false,
@@ -103,7 +103,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
   switch (period) {
     case "dawn":
       return {
-        bgStyle: "from-[#2D1B4E] via-[#7C2D12] via-[#D97706] to-[#F59E0B]",
+        bgStyle: "from-[#1E1B4B] via-[#431407] to-[#0F172A]",
         period: "dawn",
         isRain: false,
         isStorm: false,
@@ -111,7 +111,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
       };
     case "dusk":
       return {
-        bgStyle: "from-[#31124C] via-[#881337] via-[#C2410C] to-[#F59E0B]",
+        bgStyle: "from-[#1A0B2E] via-[#5B132B] to-[#0F172A]",
         period: "dusk",
         isRain: false,
         isStorm: false,
@@ -119,7 +119,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
       };
     case "night":
       return {
-        bgStyle: "from-[#090D16] via-[#0F172A] to-[#1E1B4B]",
+        bgStyle: "from-[#0A0E1A] via-[#0F172A] to-[#1E293B]",
         period: "night",
         isRain: false,
         isStorm: false,
@@ -128,7 +128,7 @@ export function getSkyBackground(cond?: string, tempC?: number): {
     case "daytime":
     default:
       return {
-        bgStyle: "from-[#0369A1] via-[#0284C7] via-[#38BDF8] to-[#7DD3FC]",
+        bgStyle: "from-[#0B132B] via-[#1C2541] to-[#0B132B]",
         period: "daytime",
         isRain: false,
         isStorm: false,
