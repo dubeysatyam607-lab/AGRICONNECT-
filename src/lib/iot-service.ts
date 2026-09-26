@@ -256,11 +256,37 @@ export const registerIotDevice = async (params: {
   farmId: string;
   userId: string;
   capabilities?: Partial<IotDeviceCapabilities>;
-}): Promise<{ success: boolean; device?: IotDevice; error?: string }> => {
+}): Promise<{ success: boolean; alreadyRegistered?: boolean; device?: IotDevice; error?: string }> => {
   try {
     const uid = params.deviceUid.trim();
     if (!uid) return { success: false, error: "Device UID is required" };
     if (!params.userId) return { success: false, error: "Sign in to register a device" };
+
+    const existing = await supabase
+      .from("iot_devices")
+      .select("*")
+      .eq("device_uid", uid)
+      .maybeSingle();
+
+    if (existing.error) return { success: false, error: existing.error.message };
+
+    if (existing.data) {
+      if (existing.data.user_id === params.userId) {
+        return {
+          success: true,
+          alreadyRegistered: true,
+          device: {
+            ...existing.data,
+            capabilities: { ...DEFAULT_CAPABILITIES, ...(existing.data.capabilities as object) },
+            status: existing.data.status || "NOT_CONNECTED",
+          } as IotDevice,
+        };
+      }
+      return {
+        success: false,
+        error: "This device UID is already registered to another account. Use a unique name like AGRI-ESP32-002.",
+      };
+    }
 
     const payload = {
       device_uid: uid,
@@ -280,7 +306,13 @@ export const registerIotDevice = async (params: {
 
     if (error) {
       console.error("[iot-service] Error registering device:", error.message);
-      return { success: false, error: error.message };
+      const isConflict = typeof error.code === "string" && /^23/.test(error.code);
+      return {
+        success: false,
+        error: isConflict
+          ? "Device UID already exists. Use a unique name (e.g. AGRI-ESP32-002)."
+          : error.message,
+      };
     }
 
     return {
