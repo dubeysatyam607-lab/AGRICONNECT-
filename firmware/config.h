@@ -1,0 +1,44 @@
+/*
+ * AgriConnect ESP32 Node — Configuration
+ *
+ * COPY THIS FILE to `config.h` and fill in your own values. The committed
+ * version contains placeholders only — never commit real Wi-Fi credentials,
+ * server URLs, or device tokens to source control.
+ *
+ * Wi-Fi requirement: the ESP32 only supports 2.4 GHz networks.
+ */
+
+#ifndef AGRI_CONNECT_CONFIG_H
+#define AGRI_CONNECT_CONFIG_H
+
+// ── Wi-Fi ────────────────────────────────────────────────────────────────
+#define WIFI_SSID       "YOUR_2_4_GHZ_WIFI"
+#define WIFI_PASSWORD   "YOUR_WIFI_PASSWORD"
+
+// ── Server ────────────────────────────────────────────────────────────────
+// Production: "https://your-agriconnect-domain/api/iot"
+// Local dev:  "http://192.168.x.x:5000/api/iot"
+#define AGRI_SERVER_BASE   "http://192.168.1.100:5000/api/iot"
+
+// ── Device identity ───────────────────────────────────────────────────────
+// UID must match the device registered in the AgriConnect app profile.
+#define DEVICE_UID        "AGRI-ESP32-001"
+
+// Secret hardware token. First telemetry binds a SHA-256 hash of this value
+// in the database; afterwards every command poll/ack is verified against it.
+#define DEVICE_TOKEN      "replace_with_a_long_random_token"
+
+// ── Telemetry cadence ─────────────────────────────────────────────────────
+#define TELEMETRY_INTERVAL_MS   30000UL  // Sensor upload every 30 s
+#define COMMAND_POLL_INTERVAL_MS 15000UL // Command poll every 15 s
+
+// ── Sensor pins ───────────────────────────────────────────────────────────
+#define PIN_SOIL         34   // Soil moisture analog (ADC1_CH6)
+#define PIN_RAIN         35   // Rain sensor analog (ADC1_CH7)
+#define PIN_DHT          4    // DHT11 temp/humidity data
+#define PIN_FENCE_LASER  25   // Relay or GPIO that powers the fence laser beam
+#define PIN_FENCE_LDR    32   // LDR receiver signal (INT.)
+#define PIN_BUZZER       26   // Buzzer / acoustic deterrent
+#define PIN_PUMP_RELAY   27   // Water pump relay (active HIGH)
+
+#endif // AGRI_CONNECT_CONFIG_H

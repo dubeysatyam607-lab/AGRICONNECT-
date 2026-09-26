@@ -2,7 +2,10 @@
  * AgriConnect IoT Service
  *
  * Provides functions for querying real device status, telemetry readings,
- * alerts, device registration, and sending remote commands.
+ * alerts, device registration, reading history, and the acknowledge-based
+ * command lifecycle. All data here comes from physical hardware — the only
+ * place demo/simulated flows are ever possible is the gated mock mode in
+ * @/lib/iot-mock-mode.
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -14,10 +17,27 @@ export interface IotDeviceCapabilities {
   rain: boolean;
   laserFence: boolean;
   buzzer: boolean;
+  pump: boolean;
 }
 
 export type DeviceStatus = "ONLINE" | "OFFLINE" | "NOT_CONNECTED";
 export type FenceStatus = "NOT_CONNECTED" | "ARMED" | "NORMAL" | "INTRUSION" | "FAULT" | "OFFLINE";
+
+export type IotCommandName = "BUZZER_ON" | "BUZZER_OFF" | "ARM_FENCE" | "DISARM_FENCE" | "PUMP_ON" | "PUMP_OFF";
+export type IotCommandState = "QUEUED" | "EXECUTED" | "FAILED" | "EXPIRED";
+
+export interface IotCommand {
+  id: string;
+  device_id: string;
+  farm_id: string;
+  command: IotCommandName;
+  state: IotCommandState;
+  error: string | null;
+  issued_at: string;
+  acked_at: string | null;
+  updated_at: string;
+  created_at: string;
+}
 
 export interface IotDevice {
   id: string;
@@ -63,9 +83,20 @@ export const DEFAULT_CAPABILITIES: IotDeviceCapabilities = {
   rain: true,
   laserFence: false,
   buzzer: false,
+  pump: false,
 };
 
-/** Calculate effective device status based on last_seen timestamp */
+export const COMMAND_STATE_LABELS: Record<IotCommandState, string> = {
+  QUEUED: "Waiting for the device",
+  EXECUTED: "Confirmed by device",
+  FAILED: "Device reported a failure",
+  EXPIRED: "Timed out",
+};
+
+/**
+ * Effective device status based on the real last_seen heartbeat.
+ * A device is ONLINE only while its last_seen is within the timeout window.
+ */
 export const calculateDeviceStatus = (lastSeen: string | null, configuredTimeoutSec = 300): DeviceStatus => {
   if (!lastSeen) return "NOT_CONNECTED";
   const diffSec = (Date.now() - new Date(lastSeen).getTime()) / 1000;
@@ -74,21 +105,40 @@ export const calculateDeviceStatus = (lastSeen: string | null, configuredTimeout
   return "OFFLINE";
 };
 
-/** Fetch IoT devices belonging to a farm */
-export const fetchFarmDevices = async (farmId: string): Promise<IotDevice[]> => {
+export interface CommandLifecycle {
+  phase: "idle" | "sending" | "queued" | "executed" | "failed";
+  label: string;
+}
+
+export const describeCommandLifecycle = (issuedAt: string | null, state: IotCommandState | null): CommandLifecycle => {
+  if (state === "EXECUTED") return { phase: "executed", label: COMMAND_STATE_LABELS.EXECUTED };
+  if (state === "FAILED") return { phase: "failed", label: COMMAND_STATE_LABELS.FAILED };
+  if (state === "EXPIRED") return { phase: "failed", label: COMMAND_STATE_LABELS.EXPIRED };
+  if (state === "QUEUED" || issuedAt) return { phase: "queued", label: COMMAND_STATE_LABELS.QUEUED };
+  return { phase: "idle", label: "Ready" };
+};
+
+/** Fetch IoT devices owned by the authenticated user (RLS + explicit filter). */
+export const fetchFarmDevices = async (farmId: string, userId?: string | null): Promise<IotDevice[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("iot_devices")
       .select("*")
-      .eq("farm_id", farmId)
-      .order("created_at", { ascending: false });
+      .eq("farm_id", farmId);
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
       console.error("[iot-service] Error fetching devices:", error.message);
       return [];
     }
 
-    return (data || []).map((row) => ({
+    const rows = Array.isArray(data) ? data : [];
+    return rows.map((row) => ({
       ...row,
       capabilities: {
         ...DEFAULT_CAPABILITIES,
@@ -102,7 +152,7 @@ export const fetchFarmDevices = async (farmId: string): Promise<IotDevice[]> => 
   }
 };
 
-/** Fetch latest sensor reading for a device */
+/** Fetch the latest sensor reading for a device (real data only). */
 export const fetchLatestReading = async (deviceId: string): Promise<SensorReading | null> => {
   try {
     const { data, error } = await supabase
@@ -125,15 +175,36 @@ export const fetchLatestReading = async (deviceId: string): Promise<SensorReadin
   }
 };
 
-/** Fetch recent IoT alerts for a farm */
-export const fetchRecentAlerts = async (farmId: string): Promise<IotAlert[]> => {
+/** Fetch recent sensor reading history (used for charts). */
+export const fetchReadingHistory = async (deviceId: string, limit = 48): Promise<SensorReading[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("sensor_readings")
+      .select("id,device_id,farm_id,soil_moisture,temperature,humidity,rain_value,fence_status,created_at")
+      .eq("device_id", deviceId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("[iot-service] Error fetching reading history:", error.message);
+      return [];
+    }
+
+    return ((data as SensorReading[]) || []).slice().reverse();
+  } catch (e) {
+    console.error("[iot-service] Failed to fetch reading history:", e);
+    return [];
+  }
+};
+
+/** Fetch recent IoT alerts for the authenticated user's devices. */
+export const fetchRecentAlerts = async (limit = 10): Promise<IotAlert[]> => {
   try {
     const { data, error } = await supabase
       .from("iot_alerts")
       .select("*")
-      .eq("farm_id", farmId)
       .order("created_at", { ascending: false })
-      .limit(10);
+      .limit(limit);
 
     if (error) {
       console.error("[iot-service] Error fetching alerts:", error.message);
@@ -147,23 +218,55 @@ export const fetchRecentAlerts = async (farmId: string): Promise<IotAlert[]> => 
   }
 };
 
-/** Register a new ESP32 device for a farm */
+/** Mark a single alert as read. */
+export const markAlertRead = async (alertId: string): Promise<void> => {
+  try {
+    await supabase.from("iot_alerts").update({ is_read: true }).eq("id", alertId);
+  } catch (e) {
+    console.error("[iot-service] Failed to mark alert read:", e);
+  }
+};
+
+/** Recent command activity for a device (real ack states). */
+export const fetchRecentCommands = async (deviceId: string, limit = 5): Promise<IotCommand[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("iot_commands")
+      .select("*")
+      .eq("device_id", deviceId)
+      .order("issued_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("[iot-service] Error fetching commands:", error.message);
+      return [];
+    }
+
+    return (data as IotCommand[]) || [];
+  } catch (e) {
+    console.error("[iot-service] Failed to fetch commands:", e);
+    return [];
+  }
+};
+
+/** Register a real hardware device. user_id is required for ownership. */
 export const registerIotDevice = async (params: {
   deviceUid: string;
   deviceName?: string;
   farmId: string;
-  userId?: string | null;
+  userId: string;
   capabilities?: Partial<IotDeviceCapabilities>;
 }): Promise<{ success: boolean; device?: IotDevice; error?: string }> => {
   try {
     const uid = params.deviceUid.trim();
     if (!uid) return { success: false, error: "Device UID is required" };
+    if (!params.userId) return { success: false, error: "Sign in to register a device" };
 
     const payload = {
       device_uid: uid,
       device_name: params.deviceName || `ESP32 Node (${uid})`,
       farm_id: params.farmId,
-      user_id: params.userId || null,
+      user_id: params.userId,
       device_type: "ESP32_FARM_NODE",
       status: "NOT_CONNECTED" as const,
       capabilities: { ...DEFAULT_CAPABILITIES, ...(params.capabilities || {}) },
@@ -193,11 +296,21 @@ export const registerIotDevice = async (params: {
   }
 };
 
-/** Send remote command to an ESP32 device */
+/**
+ * Queue a remote command. Returns the server's QUEUED state with the commandId.
+ * The UI must NOT show success — it must wait for the device ack via realtime
+ * (iot_commands EXECUTED/FAILED).
+ */
 export const sendDeviceCommand = async (
   deviceUid: string,
-  command: "BUZZER_ON" | "BUZZER_OFF" | "ARM_FENCE" | "DISARM_FENCE"
-): Promise<{ success: boolean; message?: string; error?: string }> => {
+  command: IotCommandName
+): Promise<{
+  success: boolean;
+  status?: "QUEUED" | "ALREADY_QUEUED";
+  commandId?: string;
+  message?: string;
+  error?: string;
+}> => {
   try {
     const response = await fetch("/api/iot/device-command", {
       method: "POST",
@@ -207,16 +320,30 @@ export const sendDeviceCommand = async (
 
     const result = await response.json();
     if (!response.ok) {
-      return { success: false, error: result.error || "Failed to send command" };
+      return {
+        success: false,
+        error: result.error || (response.status === 409 ? "Command is already waiting for the device" : "Failed to send command"),
+        status: result.status,
+        commandId: result.commandId,
+      };
     }
 
-    return { success: true, message: result.message };
+    return {
+      success: true,
+      status: result.status || "QUEUED",
+      commandId: result.commandId,
+      message: result.message,
+    };
   } catch (e: any) {
     return { success: false, error: e?.message || "Network error sending command" };
   }
 };
 
-/** Send telemetry to backend for testing / hardware verification */
+/**
+ * Demo telemetry (mock mode only). This posts to the real backend — it is used
+ * ONLY to verify wiring while developing/test-benching, and is hidden whenever
+ * VITE_IOT_MOCK_MODE is not enabled.
+ */
 export const sendTestTelemetry = async (payload: {
   deviceUid: string;
   soilMoisture?: number | null;
@@ -243,9 +370,9 @@ export const sendTestTelemetry = async (payload: {
   }
 };
 
-/** Prepare real IoT readings as context for Kisan Saathi AI */
-export const getIotFarmContext = async (farmId: string): Promise<Record<string, unknown> | null> => {
-  const devices = await fetchFarmDevices(farmId);
+/** Prepare real IoT readings as context for Kisan Saathi AI. */
+export const getIotFarmContext = async (farmId: string, userId?: string | null): Promise<Record<string, unknown> | null> => {
+  const devices = await fetchFarmDevices(farmId, userId);
   const connectedDevice = devices.find((d) => d.status === "ONLINE");
   if (!connectedDevice) return null;
 

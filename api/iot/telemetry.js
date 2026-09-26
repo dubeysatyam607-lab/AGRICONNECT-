@@ -5,16 +5,19 @@
  * Payload:
  * {
  *   "deviceUid": "AGRI-ESP32-001",
- *   "deviceToken": "agri_secret_token_12345",
+ *   "deviceToken": "your_long_random_device_token",
  *   "soilMoisture": 1842,
  *   "temperature": 28.4,
  *   "humidity": 71,
  *   "rainValue": 840,
  *   "fenceStatus": "NOT_CONNECTED"
  * }
+ *
+ * All values must come from physical sensors. No client-side or demo values are
+ * ever generated here; invalid or out-of-range readings are rejected with 400.
  */
 
-import crypto from "crypto";
+import { resolveSupabaseConfig, hashToken, validateTelemetry, buildReadingRow, buildAlertsForReading } from "./_lib/iot-common.cjs";
 
 // Simple in-memory IP rate limiter
 const ipRateMap = new Map();
@@ -32,11 +35,6 @@ function checkRateLimit(ip) {
   }
   ipRateMap.set(ip, entry);
   return entry.count <= RATE_LIMIT_MAX;
-}
-
-function hashToken(rawToken) {
-  if (!rawToken || typeof rawToken !== "string") return null;
-  return crypto.createHash("sha256").update(rawToken.trim()).digest("hex");
 }
 
 export default async function handler(req, res) {
@@ -58,9 +56,9 @@ export default async function handler(req, res) {
   }
 
   const body = req.body || {};
-  const { deviceUid, deviceToken, soilMoisture, temperature, humidity, rainValue, fenceStatus } = body;
+  const { deviceUid } = body;
   const headerToken = req.headers["x-device-token"] || req.headers["x-device-secret"];
-  const rawToken = deviceToken || headerToken || null;
+  const rawToken = body.deviceToken || headerToken || null;
 
   if (!deviceUid || typeof deviceUid !== "string" || !deviceUid.trim()) {
     return res.status(400).json({ error: "Missing required parameter: deviceUid" });
@@ -68,51 +66,32 @@ export default async function handler(req, res) {
 
   const cleanUid = deviceUid.trim();
 
-  // Range checks
-  if (soilMoisture !== undefined && soilMoisture !== null) {
-    const num = Number(soilMoisture);
-    if (!Number.isFinite(num) || num < 0 || num > 10000) {
-      return res.status(400).json({ error: "Invalid soilMoisture value. Expected numeric ADC reading or percentage." });
-    }
+  const validation = validateTelemetry(body);
+  if (!validation.ok) {
+    return res.status(400).json({ error: validation.errors[0], deviceUid: cleanUid });
   }
 
-  if (temperature !== undefined && temperature !== null) {
-    const num = Number(temperature);
-    if (!Number.isFinite(num) || num < -50 || num > 100) {
-      return res.status(400).json({ error: "Invalid temperature value. Expected -50 to 100 (°C)" });
-    }
+  let supabaseUrl;
+  let supabaseKey;
+  try {
+    ({ url: supabaseUrl, key: supabaseKey } = resolveSupabaseConfig());
+  } catch (err) {
+    console.error("[api/iot/telemetry] Config error:", err.message);
+    return res.status(500).json({ error: "IoT telemetry is not configured on this server." });
   }
 
-  if (humidity !== undefined && humidity !== null) {
-    const num = Number(humidity);
-    if (!Number.isFinite(num) || num < 0 || num > 100) {
-      return res.status(400).json({ error: "Invalid humidity value. Expected 0 to 100 (%)" });
-    }
-  }
-
-  if (rainValue !== undefined && rainValue !== null) {
-    const num = Number(rainValue);
-    if (!Number.isFinite(num) || num < 0 || num > 10000) {
-      return res.status(400).json({ error: "Invalid rainValue. Expected numeric reading." });
-    }
-  }
-
-  const validFenceStates = ["NOT_CONNECTED", "ARMED", "NORMAL", "INTRUSION", "FAULT", "OFFLINE"];
-  const cleanFenceStatus = fenceStatus && validFenceStates.includes(String(fenceStatus).toUpperCase())
-    ? String(fenceStatus).toUpperCase()
-    : "NOT_CONNECTED";
-
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co";
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_PMQ7FkMezMesBBJiVQsNUQ_Lu3I4n6A";
+  const supabaseHeaders = {
+    "apikey": supabaseKey,
+    "Authorization": `Bearer ${supabaseKey}`,
+    "Content-Type": "application/json",
+  };
 
   try {
-    // 1. Fetch device record
-    const deviceRes = await fetch(`${supabaseUrl}/rest/v1/iot_devices?device_uid=eq.${encodeURIComponent(cleanUid)}`, {
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-      },
-    });
+    // 1. Fetch the registered device
+    const deviceRes = await fetch(
+      `${supabaseUrl}/rest/v1/iot_devices?device_uid=eq.${encodeURIComponent(cleanUid)}`,
+      { headers: supabaseHeaders }
+    );
 
     if (!deviceRes.ok) {
       throw new Error(`Database error querying device: ${deviceRes.statusText}`);
@@ -130,11 +109,15 @@ export default async function handler(req, res) {
     const device = devices[0];
     const incomingTokenHash = hashToken(rawToken);
 
-    // Validate device token hash if device_token_hash is configured in DB
+    // Validate device token whenever a hash is already bound on first telemetry
     if (device.device_token_hash) {
       if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
-        return res.status(401).json({ error: "Unauthorized: Invalid or missing device token." });
+        return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
       }
+    } else if (!incomingTokenHash) {
+      return res.status(401).json({
+        error: "Unauthorized: a device token is required to link this node. Configure DEVICE_TOKEN on the hardware.",
+      });
     }
 
     const nowIso = new Date().toISOString();
@@ -144,75 +127,33 @@ export default async function handler(req, res) {
       updated_at: nowIso,
     };
 
-    // If device had no token hash yet and token was supplied, bind it
+    // First telemetry binds the device token hash so later requests are verified
     if (!device.device_token_hash && incomingTokenHash) {
       updatePayload.device_token_hash = incomingTokenHash;
     }
 
-    // 2. Update status and last_seen
+    // 2. Update status and last_seen (heartbeat)
     await fetch(`${supabaseUrl}/rest/v1/iot_devices?id=eq.${encodeURIComponent(device.id)}`, {
       method: "PATCH",
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: supabaseHeaders,
       body: JSON.stringify(updatePayload),
     });
 
-    // 3. Insert sensor_readings row
-    const readingPayload = {
-      device_id: device.id,
-      farm_id: device.farm_id,
-      soil_moisture: soilMoisture !== undefined && soilMoisture !== null ? Number(soilMoisture) : null,
-      temperature: temperature !== undefined && temperature !== null ? Number(temperature) : null,
-      humidity: humidity !== undefined && humidity !== null ? Number(humidity) : null,
-      rain_value: rainValue !== undefined && rainValue !== null ? Number(rainValue) : null,
-      fence_status: cleanFenceStatus,
-      created_at: nowIso,
-    };
-
+    // 3. Insert sensor_readings row (real physical values only)
+    const reading = validation.reading;
+    const readingRow = buildReadingRow(device, reading, nowIso);
     await fetch(`${supabaseUrl}/rest/v1/sensor_readings`, {
       method: "POST",
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(readingPayload),
+      headers: supabaseHeaders,
+      body: JSON.stringify(readingRow),
     });
 
-    // 4. Trigger alerts if conditions are breached
-    const alertsToCreate = [];
-
-    if (cleanFenceStatus === "INTRUSION") {
-      alertsToCreate.push({
-        farm_id: device.farm_id,
-        device_id: device.id,
-        alert_type: "FENCE_INTRUSION",
-        severity: "CRITICAL",
-        message: `PERIMETER INTRUSION DETECTED on ${device.device_name}! Laser fence beam interrupted.`,
-      });
-    }
-
-    if (soilMoisture !== undefined && soilMoisture !== null && Number(soilMoisture) <= 100 && Number(soilMoisture) < 20) {
-      alertsToCreate.push({
-        farm_id: device.farm_id,
-        device_id: device.id,
-        alert_type: "LOW_SOIL_MOISTURE",
-        severity: "WARNING",
-        message: `Low soil moisture level (${soilMoisture}%) detected on ${device.device_name}.`,
-      });
-    }
-
+    // 4. Derive and insert real alerts
+    const alertsToCreate = buildAlertsForReading(device, reading, nowIso);
     if (alertsToCreate.length > 0) {
       await fetch(`${supabaseUrl}/rest/v1/iot_alerts`, {
         method: "POST",
-        headers: {
-          "apikey": supabaseKey,
-          "Authorization": `Bearer ${supabaseKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: supabaseHeaders,
         body: JSON.stringify(alertsToCreate),
       });
     }

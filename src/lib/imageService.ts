@@ -181,4 +181,33 @@ export function getRelevantImage(options: RelevantImageOptions): string {
   return fallbackUrl || CATEGORY_CROP_IMAGES.default;
 }
 
+const IOT_DEFAULT_IMAGE =
+  "https://images.pexels.com/photos/129731/pexels-photo-129731.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940";
+
+/**
+ * Real agricultural photograph for IoT / smart-farming surfaces
+ * (sensor dashboards, hardware empty states, setup guides).
+ */
+export function getIoTImage(options?: { name?: string }): string {
+  const name = (options?.name || "").toLowerCase();
+  if (name.includes("sensor") || name.includes("irrigation")) {
+    return getCropImage("wheat") || IOT_DEFAULT_IMAGE;
+  }
+  if (name.includes("tractor") || name.includes("machine")) {
+    return getMachineImage(name, "tractor");
+  }
+  return IOT_DEFAULT_IMAGE;
+}
+
+/** Real tractor photograph (alias of the machinery registry). */
+export function getTractorImage(name?: string): string {
+  return getMachineImage(name || "tractor", "tractor");
+}
+
+/** Real mandi / market photograph (alias of the crop registry + verified default). */
+export function getMandiImage(name?: string): string {
+  const resolved = getCropImage(name);
+  return resolved || CATEGORY_CROP_IMAGES.default;
+}
+
 export default getRelevantImage;

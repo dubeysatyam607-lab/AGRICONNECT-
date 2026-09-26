@@ -128,6 +128,14 @@
       "destination": "/api/iot/device-command.js"
     },
     {
+      "source": "/api/iot/commands",
+      "destination": "/api/iot/commands.js"
+    },
+    {
+      "source": "/api/iot/command-ack",
+      "destination": "/api/iot/command-ack.js"
+    },
+    {
       "source": "/((?!api/|assets/|sw.js|favicon.ico|manifest.json|robots.txt|sitemap.xml).*)",
       "destination": "/index.html"
     }

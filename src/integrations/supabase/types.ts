@@ -153,6 +153,45 @@ export type Database = {
         }
         Relationships: []
       }
+      iot_commands: {
+        Row: {
+          id: string
+          device_id: string
+          farm_id: string
+          command: 'BUZZER_ON' | 'BUZZER_OFF' | 'ARM_FENCE' | 'DISARM_FENCE' | 'PUMP_ON' | 'PUMP_OFF'
+          state: 'QUEUED' | 'EXECUTED' | 'FAILED' | 'EXPIRED'
+          error: string | null
+          issued_at: string
+          acked_at: string | null
+          updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          device_id: string
+          farm_id: string
+          command: 'BUZZER_ON' | 'BUZZER_OFF' | 'ARM_FENCE' | 'DISARM_FENCE' | 'PUMP_ON' | 'PUMP_OFF'
+          state?: 'QUEUED' | 'EXECUTED' | 'FAILED' | 'EXPIRED'
+          error?: string | null
+          issued_at?: string
+          acked_at?: string | null
+          updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          device_id?: string
+          farm_id?: string
+          command?: 'BUZZER_ON' | 'BUZZER_OFF' | 'ARM_FENCE' | 'DISARM_FENCE' | 'PUMP_ON' | 'PUMP_OFF'
+          state?: 'QUEUED' | 'EXECUTED' | 'FAILED' | 'EXPIRED'
+          error?: string | null
+          issued_at?: string
+          acked_at?: string | null
+          updated_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       admin_roles: {
         Row: {
           created_at: string | null
