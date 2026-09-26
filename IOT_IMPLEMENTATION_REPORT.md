@@ -98,7 +98,7 @@ This work rewrites the IoT backend and frontend into a real, acknowledge-based s
 
 **Capability gate:** each command requires the matching installed module — `buzzer`, `laserFence`, `pump`. Commands for uninstalled modules are rejected with a farmer-friendly message.
 
-**Device identity:** `device_uid` (unique) + secret token. The first telemetry exchange binds a SHA-256 hash of the token to the row; every later request is verified against it.
+**Device identity:** `device_uid` (unique) + secret token. The SHA-256 hash of the token is bound at **registration time** (Add ESP32 Node stores it, so the raw token only lives in the firmware `config.h`). Telemetry, command poll and command ack reject any request without a matching bound hash — the server never binds an arbitrary first-contact token, so a device cannot be hijacked by announcing itself first.
 
 **Telemetry payload (real sensors only):**
 
@@ -194,7 +194,7 @@ To run the live checks you must: apply the two migrations, set `SUPABASE_SERVICE
 1. **Apply migrations** (in order): `20260925000000_iot_integration.sql`, `20260926000000_iot_commands.sql`, `20260926010000_iot_ownership_fix.sql`. Warn: the ownership migration hides any pre-existing device with `user_id IS NULL`.
 2. **Server env (fail-closed):** `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`) on both Vercel and the Express host. IoT endpoints will return `501/500 "not configured"` otherwise.
 3. **Frontend env:** `VITE_IOT_MOCK_MODE` left unset in production. Set to `"true"` only in a dev-only build to reveal the Demo Test Bench (labelled "Demo Data").
-4. **Firmware:** copy/edit `firmware/config.h` with your 2.4 GHz Wi-Fi, server base URL, device UID (must match an app-registered device) and a long random token. Never commit real values.
-5. **Register the device** in the app (Add ESP32 Node → now binds it to your account). First telemetry binds the token hash.
+4. **Firmware:** copy/edit `firmware/agriconnect_esp32_node/config.h` with your 2.4 GHz Wi-Fi, server base URL, device UID (must match an app-registered device) and a long random token. Never commit real values.
+5. **Register the device** in the app (Add ESP32 Node → enter Device UID + the same **Device Token** from `config.h`). The token's SHA-256 is stored at registration; the token itself stays only in the firmware config. After that, the first real telemetry heartbeat flips the node ONLINE.
 6. **Re-audit for fake data:** production paths contain no `Math.random`/demo/`isOnline=true` shortcuts for IoT. The only demo surface is the mock-gated test bench.
 7. **Future:** optional MQTT transport for truly sub-second command latency; `EXPIRED` sweeper for stale `QUEUED` rows; per-zone device grouping once a real `farms` table exists.
