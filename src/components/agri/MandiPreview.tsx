@@ -82,59 +82,63 @@ export const MandiPreview: React.FC<MandiPreviewProps> = ({ items, loading, erro
             ))}
           </div>
         ) : visible.length > 0 ? (
-          <div className="no-scrollbar -mx-1 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1">
-            {visible.map((p) => {
-              const hasChange = Boolean(p.change && p.change.trim() && p.change !== "0%");
-              const up = p.status === "up";
-              const down = p.status === "down";
-              const belowMsp = p.msp != null && p.price < p.msp;
-              const imgSrc = p.cropImage || getCropImage(p.crop) || getCropSvgFallback(p.crop);
+          <div className="relative group/scroll mt-4">
+            <div className="no-scrollbar -mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 scroll-smooth">
+              {visible.map((p) => {
+                const hasChange = Boolean(p.change && p.change.trim() && p.change !== "0%");
+                const up = p.status === "up";
+                const down = p.status === "down";
+                const belowMsp = p.msp != null && p.price < p.msp;
+                const imgSrc = p.cropImage || getCropImage(p.crop) || getCropSvgFallback(p.crop);
+                const formattedMarket = p.market
+                  ? p.market.replace(/\(([^)]+)\)/g, " ($1)").replace(/\s+/g, " ").trim()
+                  : "";
 
-              return (
-                <button
-                  key={p.id}
-                  onClick={onOpen}
-                  className={cn(
-                    "flex w-[185px] shrink-0 snap-start flex-col rounded-xl border bg-card p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover active:scale-[0.98]",
-                    belowMsp ? "border-amber-500/50" : "border-border/60",
-                  )}
-                >
-                  {/* Crop Image & Commodity Name (Part 13) */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <img
-                      src={imgSrc}
-                      alt={cropName(p)}
-                      className="h-9 w-9 rounded-lg object-cover shrink-0 border border-border/40 bg-muted"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = getCropSvgFallback(p.crop);
-                      }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <span className="type-small font-bold text-foreground truncate block leading-tight">
-                        {cropName(p)}
+                return (
+                  <button
+                    key={p.id}
+                    onClick={onOpen}
+                    className={cn(
+                      "flex w-[185px] shrink-0 snap-start flex-col rounded-xl border bg-card p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover active:scale-[0.98]",
+                      belowMsp ? "border-amber-500/50" : "border-border/60",
+                    )}
+                  >
+                    {/* Crop Image & Commodity Name (Part 13) */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <img
+                        src={imgSrc}
+                        alt={cropName(p)}
+                        className="h-9 w-9 rounded-lg object-cover shrink-0 border border-border/40 bg-muted"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = getCropSvgFallback(p.crop);
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="type-small font-bold text-foreground truncate block leading-tight" title={cropName(p)}>
+                          {cropName(p)}
+                        </span>
+                        <span className="text-xs font-medium text-muted-foreground truncate block mt-0.5">
+                          {p.district || p.state}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Price & Unit (Part 5) */}
+                    <div className="mt-1 flex items-baseline gap-0.5 text-foreground">
+                      <IndianRupee size={15} className="translate-y-px" aria-hidden="true" />
+                      <span className="type-num text-2xl font-extrabold leading-none">
+                        {p.price.toLocaleString("en-IN")}
                       </span>
-                      <span className="text-[11px] font-medium text-muted-foreground truncate block mt-0.5">
-                        {p.district || p.state}
+                      <span className="type-meta text-muted-foreground ml-0.5 font-normal">
+                        {formatUnit(p.unit)}
                       </span>
                     </div>
-                  </div>
 
-                  {/* Price & Unit (Part 5) */}
-                  <div className="mt-1 flex items-baseline gap-0.5 text-foreground">
-                    <IndianRupee size={15} className="translate-y-px" aria-hidden="true" />
-                    <span className="type-num text-2xl font-extrabold leading-none">
-                      {p.price.toLocaleString("en-IN")}
+                    {/* Market APMC */}
+                    <span className="mt-1.5 flex items-center gap-1 type-meta text-muted-foreground truncate" title={formattedMarket}>
+                      <MapPin size={11} aria-hidden="true" className="shrink-0" />
+                      <span className="truncate">{formattedMarket}</span>
                     </span>
-                    <span className="type-meta text-muted-foreground ml-0.5 font-normal">
-                      {formatUnit(p.unit)}
-                    </span>
-                  </div>
-
-                  {/* Market APMC */}
-                  <span className="mt-1.5 flex items-center gap-1 type-meta text-muted-foreground truncate">
-                    <MapPin size={11} aria-hidden="true" className="shrink-0" />
-                    <span className="truncate">{p.market}</span>
-                  </span>
 
                   {/* Price Change & MSP Badge (Part 12) */}
                   {(hasChange || belowMsp) && (
@@ -161,8 +165,9 @@ export const MandiPreview: React.FC<MandiPreviewProps> = ({ items, loading, erro
                     </div>
                   )}
                 </button>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         ) : (
           /* Error State (Part 14) */

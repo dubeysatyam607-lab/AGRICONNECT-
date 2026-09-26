@@ -102,14 +102,14 @@ const AgriConnectFooter: React.FC = () => {
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:"
+                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 text-sm font-bold shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90"
                 >
-                  Open the App
+                  Get Started
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link
                   to="/features#ai-assistant"
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-bold text-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:"
+                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-bold text-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40"
                 >
                   Ask Kisan AI
                 </Link>
@@ -143,7 +143,7 @@ const AgriConnectFooter: React.FC = () => {
           {/* ── Social + Download band ──────────────────────── */}
           <div className="flex flex-col gap-6 border-t border-border/70 py-8 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase  text-muted-foreground">
+              <p className="type-small font-semibold text-foreground">
                 Follow AgriConnect
               </p>
               <ul className="mt-3 flex flex-wrap items-center gap-2.5" aria-label="Social media">
@@ -154,7 +154,7 @@ const AgriConnectFooter: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={s.label}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover: focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     >
                       <s.icon className="h-[18px] w-[18px]" />
                     </a>
@@ -198,12 +198,12 @@ const AgriConnectFooter: React.FC = () => {
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent('agri_open_cookie_settings'))}
                 aria-label="Manage cookie and privacy preferences"
-                className="rounded-full border border-border bg-card px-2.5 py-1 hover:border-primary/40 hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-medium transition-colors hover:border-primary/40 hover:text-foreground cursor-pointer"
               >
                 <Cookie className="h-3.5 w-3.5" aria-hidden="true" /> Privacy & Cookie Settings
               </button>
-              <span className="rounded-full border border-border bg-card px-2.5 py-1">v{APP_VERSION}</span>
-              <span className="rounded-full border border-border bg-card px-2.5 py-1">Updated {LAST_UPDATED}</span>
+              <span className="inline-flex h-8 items-center rounded-xl border border-border bg-card px-3">v{APP_VERSION}</span>
+              <span className="inline-flex h-8 items-center rounded-xl border border-border bg-card px-3">Updated {LAST_UPDATED}</span>
 
               {/* Language selector */}
               {lang && (

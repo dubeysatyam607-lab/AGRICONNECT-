@@ -116,7 +116,7 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
             <div key={group.titleKey} className="pt-2">
               <div className="mb-2 flex items-center gap-1.5 px-3">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#5E9F58]" />
-                <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-[#26332B]/60">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#26332B]/60">
                   {tr(group.titleKey, group.title)}
                 </p>
               </div>

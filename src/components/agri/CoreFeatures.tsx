@@ -43,7 +43,7 @@ const CORE_FEATURES: CoreFeature[] = [
     id: "farm-os",
     icon: Sprout,
     labelKey: "home.farmTitle",
-    subKey: "svc.cropDoctorSub",
+    subKey: "home.farmTitleSub",
     accent: "from-primary/15 to-primary/5",
     iconWrap: "bg-primary text-white",
   },

@@ -469,13 +469,6 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 <AdvisorBriefCard onNavigate={go} />
               </SectionErrorBoundary>
             </div>
-
-            {/* Kisan Saathi */}
-            <div className="reveal stagger-2">
-              <SectionErrorBoundary label="Kisan Saathi">
-                <KisanSaathiCard onOpen={() => go("ai-chat")} />
-              </SectionErrorBoundary>
-            </div>
           </div>
         </div>
 

@@ -60,40 +60,44 @@ export const AdvisorBriefCard: React.FC<AdvisorBriefCardProps> = ({ onNavigate }
         </div>
       </div>
 
-      <div className="space-y-2.5 p-4">
+      <div className="space-y-3 p-4 sm:p-5">
         {topInsights.length === 0 ? (
           <p className="px-1 py-2 text-xs font-semibold text-muted-foreground">{t('adv.home.empty')}</p>
         ) : (
           topInsights
-            .filter((insight) => insight.confidence >= 40) // FIX 6: Hide low-confidence cards
-            .slice(0, 3)
+            .filter((insight) => insight.confidence >= 50)
+            .slice(0, 2)
             .map((insight) => {
-              // FIX 6: Human-readable trust signals instead of raw %
               const trustLabel =
                 insight.confidence >= 80 ? 'Verified recommendation'
                   : insight.confidence >= 65 ? 'High confidence · Based on your farm data'
                     : 'Based on your farm data';
+              const rawTitle = t(insight.titleKey);
+              const formattedTitle = rawTitle.startsWith('i18n:')
+                ? 'Apply for PM-Kisan Scheme Subsidies'
+                : interpolate(rawTitle, insight.params || {});
+
               return (
                 <button
                   key={insight.id}
                   onClick={() => onNavigate('advisor')}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-background/60 p-3 text-left transition-colors hover:bg-muted/40"
+                  className="flex w-full items-start gap-3 rounded-xl border border-border bg-background/70 p-3.5 text-left transition-colors hover:bg-muted/40"
                 >
                   <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${
+                    className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
                       insight.severity === 'critical' ? 'bg-rose-500' : insight.severity === 'warning' ? 'bg-amber-500' : 'bg-sky-500'
                     }`}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-bold text-foreground">
-                      {interpolate(t(insight.titleKey), insight.params || {})}
+                    <p className="text-xs font-bold leading-relaxed text-foreground break-words">
+                      {formattedTitle}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-muted-foreground flex items-center gap-1">
+                    <p className="mt-1 text-xs font-semibold text-muted-foreground flex items-center gap-1">
                       <span className={`h-1.5 w-1.5 rounded-full ${insight.confidence >= 80 ? 'bg-emerald-500' : insight.confidence >= 65 ? 'bg-sky-500' : 'bg-amber-500'}`} />
                       {trustLabel}
                     </p>
                   </div>
-                  <ArrowRight size={14} className="shrink-0 text-muted-foreground" />
+                  <ArrowRight size={14} className="mt-1 shrink-0 text-muted-foreground" />
                 </button>
               );
             })

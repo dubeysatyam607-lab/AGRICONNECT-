@@ -104,21 +104,21 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data }) => {
                 )}
               </span>
               <span>
-                <span className="block text-[11.5px] font-bold uppercase tracking-wide text-muted-foreground">
+                <span className="block text-xs font-semibold tracking-wide text-muted-foreground">
                   {cell.title}
                 </span>
                 {cell.value && (
-                  <span className="mt-0.5 block text-[17px] font-extrabold leading-tight tracking-tight text-foreground">
+                  <span className="mt-0.5 block text-lg font-extrabold leading-tight tracking-tight text-foreground">
                     {cell.value}
                   </span>
                 )}
                 {cell.line && (
-                  <span className="mt-0.5 block text-[12px] font-semibold leading-snug text-foreground/80">
+                  <span className="mt-0.5 block text-xs font-semibold leading-snug text-foreground/80">
                     {cell.line}
                   </span>
                 )}
                 {cell.tag && !cell.movement && (
-                  <span className="mt-0.5 block text-[11px] font-medium text-muted-foreground">
+                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
                     {cell.tag && cell.tagValue ? `${cell.tag}: ${cell.tagValue}` : cell.tag}
                   </span>
                 )}
