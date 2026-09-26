@@ -127,6 +127,7 @@ const HardwareDashboard: React.FC = () => {
   // Registration form
   const [newUid, setNewUid] = useState<string>("AGRI-ESP32-001");
   const [newName, setNewName] = useState<string>("Main Field Node");
+  const [newToken, setNewToken] = useState<string>("");
   const [newCapabilities, setNewCapabilities] = useState(DEFAULT_CAPABILITIES);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
 
@@ -275,6 +276,10 @@ const HardwareDashboard: React.FC = () => {
       toast({ title: "Validation Error", description: "Device UID required.", variant: "destructive" });
       return;
     }
+    if (!newToken.trim()) {
+      toast({ title: "Validation Error", description: "Device Token required. Copy DEVICE_TOKEN from the firmware config.", variant: "destructive" });
+      return;
+    }
     if (!userId) {
       toast({ title: "Sign in required", description: "Please sign in before linking hardware.", variant: "destructive" });
       return;
@@ -284,6 +289,7 @@ const HardwareDashboard: React.FC = () => {
     const res = await registerIotDevice({
       deviceUid: newUid,
       deviceName: newName,
+      deviceToken: newToken,
       farmId: farmId,
       userId,
       capabilities: newCapabilities,
@@ -297,7 +303,7 @@ const HardwareDashboard: React.FC = () => {
 
     toast({
       title: "ESP32 Node Linked",
-      description: `Device ${newUid} registered for ${farmDisplayName}. It will show ONLINE after the first real telemetry heartbeat.`,
+      description: `Device ${newUid} registered for ${farmDisplayName}. Its token is now bound — it will show ONLINE after the first real telemetry heartbeat.`,
     });
     setRegisterOpen(false);
     await loadDashboardData();
@@ -1037,7 +1043,7 @@ const HardwareDashboard: React.FC = () => {
               Register ESP32 Hardware Node
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Enter the Device UID printed on your micro-controller. It becomes yours and only yours to view.
+              Enter the Device UID on your micro-controller and the Device Token in its firmware config. Only its SHA-256 hash is stored — the token never leaves the device and this dashboard.
             </DialogDescription>
           </DialogHeader>
 
@@ -1054,6 +1060,16 @@ const HardwareDashboard: React.FC = () => {
                 Device Name / Zone
               </Label>
               <Input id="deviceName" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. North Field Node" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="deviceToken" className="text-xs font-semibold">
+                Device Token (from firmware config) *
+              </Label>
+              <Input id="deviceToken" type="password" value={newToken} onChange={(e) => setNewToken(e.target.value)} placeholder="Paste DEVICE_TOKEN from config.h" className="text-sm" autoComplete="off" required />
+              <p className="text-[11px] text-muted-foreground">
+                Same token must be set as <code className="font-mono">DEVICE_TOKEN</code> in the firmware config.
+              </p>
             </div>
 
             <div className="space-y-2 pt-2 border-t border-border">

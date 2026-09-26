@@ -109,15 +109,16 @@ export default async function handler(req, res) {
     const device = devices[0];
     const incomingTokenHash = hashToken(rawToken);
 
-    // Validate device token whenever a hash is already bound on first telemetry
-    if (device.device_token_hash) {
-      if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
-        return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
-      }
-    } else if (!incomingTokenHash) {
+    // Token must be bound at REGISTRATION time (Add ESP32 Node stores the hash).
+    // Never bind an arbitrary first-contact token — that would let anyone
+    // hijack a device by sending telemetry with their own token first.
+    if (!device.device_token_hash) {
       return res.status(401).json({
-        error: "Unauthorized: a device token is required to link this node. Configure DEVICE_TOKEN on the hardware.",
+        error: "This node has no bound token yet. Register the device again in the app (Add ESP32 Node > Device Token) so the token hash is stored, then retry.",
       });
+    }
+    if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
+      return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
     }
 
     const nowIso = new Date().toISOString();
@@ -126,11 +127,6 @@ export default async function handler(req, res) {
       last_seen: nowIso,
       updated_at: nowIso,
     };
-
-    // First telemetry binds the device token hash so later requests are verified
-    if (!device.device_token_hash && incomingTokenHash) {
-      updatePayload.device_token_hash = incomingTokenHash;
-    }
 
     // 2. Update status and last_seen (heartbeat)
     await fetch(`${supabaseUrl}/rest/v1/iot_devices?id=eq.${encodeURIComponent(device.id)}`, {

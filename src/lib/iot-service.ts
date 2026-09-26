@@ -10,6 +10,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 export interface IotDeviceCapabilities {
   soilMoisture: boolean;
   temperature: boolean;
@@ -255,12 +263,19 @@ export const registerIotDevice = async (params: {
   deviceName?: string;
   farmId: string;
   userId: string;
+  deviceToken?: string;
   capabilities?: Partial<IotDeviceCapabilities>;
 }): Promise<{ success: boolean; alreadyRegistered?: boolean; device?: IotDevice; error?: string }> => {
   try {
     const uid = params.deviceUid.trim();
     if (!uid) return { success: false, error: "Device UID is required" };
     if (!params.userId) return { success: false, error: "Sign in to register a device" };
+
+    const rawToken = params.deviceToken?.trim() || "";
+    if (!rawToken) {
+      return { success: false, error: "Device Token is required. Copy DEVICE_TOKEN from the firmware config and paste it here." };
+    }
+    const tokenHash = await sha256Hex(rawToken);
 
     const existing = await supabase
       .from("iot_devices")
@@ -271,20 +286,38 @@ export const registerIotDevice = async (params: {
     if (existing.error) return { success: false, error: existing.error.message };
 
     if (existing.data) {
-      if (existing.data.user_id === params.userId) {
+      if (existing.data.user_id !== params.userId) {
+        return {
+          success: false,
+          error: "This device UID is already registered to another account. Use a unique name like AGRI-ESP32-002.",
+        };
+      }
+      if (!existing.data.device_token_hash) {
+        const patchRes = await supabase
+          .from("iot_devices")
+          .update({ device_token_hash: tokenHash, updated_at: new Date().toISOString() })
+          .eq("id", existing.data.id)
+          .select()
+          .single();
+        if (patchRes.error) return { success: false, error: patchRes.error.message };
         return {
           success: true,
           alreadyRegistered: true,
           device: {
-            ...existing.data,
-            capabilities: { ...DEFAULT_CAPABILITIES, ...(existing.data.capabilities as object) },
-            status: existing.data.status || "NOT_CONNECTED",
+            ...patchRes.data,
+            capabilities: { ...DEFAULT_CAPABILITIES, ...(patchRes.data.capabilities as object) },
+            status: patchRes.data.status || "NOT_CONNECTED",
           } as IotDevice,
         };
       }
       return {
-        success: false,
-        error: "This device UID is already registered to another account. Use a unique name like AGRI-ESP32-002.",
+        success: true,
+        alreadyRegistered: true,
+        device: {
+          ...existing.data,
+          capabilities: { ...DEFAULT_CAPABILITIES, ...(existing.data.capabilities as object) },
+          status: existing.data.status || "NOT_CONNECTED",
+        } as IotDevice,
       };
     }
 
@@ -295,6 +328,7 @@ export const registerIotDevice = async (params: {
       user_id: params.userId,
       device_type: "ESP32_FARM_NODE",
       status: "NOT_CONNECTED" as const,
+      device_token_hash: tokenHash,
       capabilities: { ...DEFAULT_CAPABILITIES, ...(params.capabilities || {}) },
     };
 
