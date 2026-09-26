@@ -30,6 +30,9 @@
 #include <ArduinoJson.h>
 #include <DHT.h>
 
+// DHT11 temperature/humidity sensor type (required by the Adafruit DHT library)
+#define DHTTYPE DHT11
+
 #include "config.h"
 
 // ── Derived server endpoints ──────────────────────────────────────────────
@@ -138,7 +141,7 @@ void sendTelemetry() {
   }
 
   String jsonPayload;
-  StaticJsonDocument<256> doc;
+  JsonDocument doc;
   doc["deviceUid"]    = DEVICE_UID;
   doc["soilMoisture"] = soilRaw;
   doc["temperature"]  = isnan(temp) ? 0.0 : temp;
@@ -183,7 +186,7 @@ void pollCommands() {
 
   if (code == HTTP_CODE_OK) {
     String body = http.getString();
-    StaticJsonDocument<512> doc;
+    JsonDocument doc;
     DeserializationError err = deserializeJson(doc, body);
     if (!err) {
       JsonArray commands = doc["commands"].as<JsonArray>();
@@ -229,7 +232,7 @@ void executeCommand(const String& commandId, const String& command) {
 
 void sendCommandAck(const String& commandId, const String& state, const String& error) {
   String jsonPayload;
-  StaticJsonDocument<256> doc;
+  JsonDocument doc;
   doc["deviceUid"] = DEVICE_UID;
   doc["commandId"] = commandId;
   doc["status"]    = state;
