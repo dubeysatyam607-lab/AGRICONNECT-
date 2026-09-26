@@ -11,6 +11,9 @@
 -- stored. Values are never fabricated by clients.
 -- ============================================================================
 
+-- Enable trigram index support used for fuzzy name/title search below.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- ---------------------------------------------------------------------------
 -- Government schemes (machine-readable basis for the Schemes & Subsidies tab)
 -- ---------------------------------------------------------------------------
