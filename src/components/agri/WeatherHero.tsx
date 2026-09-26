@@ -60,81 +60,13 @@ export function getSkyBackground(cond?: string, tempC?: number): {
   const isStorm = c.includes("thunder") || c.includes("storm");
   const isFog = c.includes("fog") || c.includes("mist");
 
-  if (isStorm) {
-    return {
-      bgStyle: "from-[#080C14] via-[#1E1035] to-[#0F172A]",
-      period,
-      isRain: true,
-      isStorm: true,
-      isFog: false,
-    };
-  }
-
-  if (isRain) {
-    return {
-      bgStyle: "from-[#0B1329] via-[#1C2541] to-[#0B1329]",
-      period,
-      isRain: true,
-      isStorm: false,
-      isFog: false,
-    };
-  }
-
-  if (isFog) {
-    return {
-      bgStyle: "from-[#0B1329] via-[#1E293B] to-[#334155]",
-      period,
-      isRain: false,
-      isStorm: false,
-      isFog: true,
-    };
-  }
-
-  if (c.includes("loo") || (tempC !== undefined && tempC >= 40)) {
-    return {
-      bgStyle: "from-[#451A03] via-[#78350F] to-[#0F172A]",
-      period,
-      isRain: false,
-      isStorm: false,
-      isFog: false,
-    };
-  }
-
-  switch (period) {
-    case "dawn":
-      return {
-        bgStyle: "from-[#1E1B4B] via-[#431407] to-[#0F172A]",
-        period: "dawn",
-        isRain: false,
-        isStorm: false,
-        isFog: false,
-      };
-    case "dusk":
-      return {
-        bgStyle: "from-[#1A0B2E] via-[#5B132B] to-[#0F172A]",
-        period: "dusk",
-        isRain: false,
-        isStorm: false,
-        isFog: false,
-      };
-    case "night":
-      return {
-        bgStyle: "from-[#0A0E1A] via-[#0F172A] to-[#1E293B]",
-        period: "night",
-        isRain: false,
-        isStorm: false,
-        isFog: false,
-      };
-    case "daytime":
-    default:
-      return {
-        bgStyle: "from-[#0B132B] via-[#1C2541] to-[#0B132B]",
-        period: "daytime",
-        isRain: false,
-        isStorm: false,
-        isFog: false,
-      };
-  }
+  return {
+    bgStyle: "from-[#0B1326] via-[#101A30] to-[#0B1326]",
+    period,
+    isRain,
+    isStorm,
+    isFog,
+  };
 }
 
 const weatherIcon = (cond?: string) => {
