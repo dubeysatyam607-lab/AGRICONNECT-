@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Milk, ExternalLink, MapPin, Filter, Search } from "lucide-react";
+import { Milk, ExternalLink, MapPin, Filter, Search, Check } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { AgriCard } from "@/components/ui/agri-card";
 import { SafeImage } from "@/components/ui/SafeImage";
@@ -318,8 +318,8 @@ const PashuMela: React.FC<PashuMelaProps> = ({ onToast }) => {
                 fallbackIcon={<Milk size={32} className="text-primary/50" />}
               />
               {animal.verified && (
-                <span className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  ✓ Verified
+                <span className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                  <Check size={10} /> Verified
                 </span>
               )}
             </div>

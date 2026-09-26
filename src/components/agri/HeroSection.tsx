@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Settings, Sparkles, Sun, Moon, Cloud, Tractor, Award, TrendingUp, Scan, ShieldCheck, ArrowUpRight, Zap, ChevronRight, ChevronLeft } from "lucide-react";
+import { Settings, Sparkles, Sun, Moon, Cloud, Tractor, Award, TrendingUp, Scan, ShieldCheck, ArrowUpRight, Zap, ChevronRight, ChevronLeft, Sprout } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -222,7 +222,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
               <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-white drop-shadow-md mb-2 flex items-center gap-2.5 leading-tight">
                 <span>{t("home.welcome") || "Welcome"}, {userName}!</span>
-                <span className="inline-block ">🌾</span>
+                <Sprout size={28} className="text-amber-300 inline-block" />
               </h1>
               <p className="text-sm md:text-base text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-sm">
                 {isMorning ? (t('hero.morningPrompt') || "Fresh morning! Check today's mandi rates and soil moisture across your fields.") :

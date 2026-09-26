@@ -311,7 +311,9 @@ export const OFFLINE_AGRI_SVG =
   </defs>
   <rect width="400" height="300" fill="url(#agri_grad)" />
   <circle cx="200" cy="120" r="44" fill="#10b981" opacity="0.25" />
-  <text x="200" y="135" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="36" text-anchor="middle">🌾</text>
+  <g transform="translate(184, 102) scale(1.3)" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 20h10" /><path d="M12 20v-8" /><path d="M12 12a5 5 0 0 1 5-5h3v3a5 5 0 0 1-5 5h-3z" />
+  </g>
   <text x="200" y="210" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="700" fill="#f0fdf4" text-anchor="middle" letter-spacing="1">AGRICONNECT</text>
   <text x="200" y="235" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="500" fill="#a7f3d0" text-anchor="middle">Smart Farm Marketplace</text>
 </svg>
@@ -471,7 +473,9 @@ export function getExactCategoryFallbackSvg(
   </defs>
   <rect width="400" height="300" fill="url(#mandi_grad)" />
   <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.22" />
-  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🏛️</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="21" x2="21" y2="21" /><line x1="6" y1="18" x2="6" y2="11" /><line x1="10" y1="18" x2="10" y2="11" /><line x1="14" y1="18" x2="14" y2="11" /><line x1="18" y1="18" x2="18" y2="11" /><polygon points="12 2 20 7 4 7 12 2" />
+  </g>
   <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0fdf4" text-anchor="middle">${contextName || "Agricultural Mandi"}</text>
   <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Krishi Mandi</text>
 </svg>
@@ -490,7 +494,9 @@ export function getExactCategoryFallbackSvg(
   </defs>
   <rect width="400" height="300" fill="url(#lab_grad)" />
   <circle cx="200" cy="115" r="48" fill="#3b82f6" opacity="0.22" />
-  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">👨‍🌾</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+  </g>
   <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#eff6ff" text-anchor="middle">${contextName || "Farm Labour"}</text>
   <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#bfdbfe" text-anchor="middle">AgriConnect Krishi Shram</text>
 </svg>
@@ -509,7 +515,9 @@ export function getExactCategoryFallbackSvg(
   </defs>
   <rect width="400" height="300" fill="url(#wth_grad)" />
   <circle cx="200" cy="115" r="48" fill="#38bdf8" opacity="0.22" />
-  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">☀️</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+  </g>
   <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0f9ff" text-anchor="middle">${contextName || "Live Weather"}</text>
   <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#bae6fd" text-anchor="middle">AgriConnect Mausam Forecast</text>
 </svg>
@@ -528,7 +536,9 @@ export function getExactCategoryFallbackSvg(
   </defs>
   <rect width="400" height="300" fill="url(#soil_grad)" />
   <circle cx="200" cy="115" r="48" fill="#f59e0b" opacity="0.22" />
-  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🧪</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" />
+  </g>
   <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#fffbeb" text-anchor="middle">${contextName || "Soil Testing"}</text>
   <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#fde68a" text-anchor="middle">AgriConnect Mitti Parikshan</text>
 </svg>
@@ -547,7 +557,9 @@ export function getExactCategoryFallbackSvg(
   </defs>
   <rect width="400" height="300" fill="url(#sch_grad)" />
   <circle cx="200" cy="115" r="48" fill="#10b981" opacity="0.22" />
-  <text x="200" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="44" text-anchor="middle">🏛️</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="21" x2="21" y2="21" /><line x1="6" y1="18" x2="6" y2="11" /><line x1="10" y1="18" x2="10" y2="11" /><line x1="14" y1="18" x2="14" y2="11" /><line x1="18" y1="18" x2="18" y2="11" /><polygon points="12 2 20 7 4 7 12 2" />
+  </g>
   <text x="200" y="195" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#f0fdf4" text-anchor="middle">${contextName || "Government Scheme"}</text>
   <text x="200" y="220" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">AgriConnect Sarkari Yojana</text>
 </svg>

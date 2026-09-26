@@ -589,7 +589,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
             <h3 className="font-semibold text-lg mb-1">My Orders</h3>
             <p className="text-sm text-muted-foreground mb-2">Seeds, fertilizers & tools you've bought.</p>
             <EmptyState
-              emoji="🛒"
+              emoji={<ShoppingBag className="h-6 w-6 text-emerald-600" />}
               title="No orders yet"
               subtitle="When you buy from the Agri Store, your orders and delivery tracking will appear here."
               actionLabel="Browse Agri Store"
@@ -616,7 +616,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
             <h3 className="font-semibold text-lg mb-1">Saved AI Chats</h3>
             <p className="text-sm text-muted-foreground mb-2">Your conversations with Kisan AI.</p>
             <EmptyState
-              emoji="🤖"
+              emoji={<MessageSquare className="h-6 w-6 text-emerald-600" />}
               title="No saved chats yet"
               subtitle="Ask Kisan AI about your crops or weather, then save the chat to revisit it here."
               actionLabel="Ask Kisan AI"
@@ -643,7 +643,7 @@ const ProfileSettingsContent: React.FC<ProfileSettingsProps> = ({
             <h3 className="font-semibold text-lg mb-1">Saved & Bookmarks</h3>
             <p className="text-sm text-muted-foreground mb-2">Articles, mandi prices and alerts you've saved.</p>
             <EmptyState
-              emoji="🔖"
+              emoji={<Bookmark className="h-6 w-6 text-emerald-600" />}
               title="Nothing bookmarked yet"
               subtitle="Tap the bookmark icon on mandi prices, news and articles to save them here."
               actionLabel="Browse Mandi Prices"

@@ -56,17 +56,17 @@ describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, St
     }
   });
 
-  it("assigns accurate emojis for crops", () => {
-    expect(getCropEmoji("Coconut")).toBe("🥥");
-    expect(getCropEmoji("नारियल")).toBe("🥥");
-    expect(getCropEmoji("Lemon")).toBe("🍋");
-    expect(getCropEmoji("नींबू")).toBe("🍋");
-    expect(getCropEmoji("Apple")).toBe("🍎");
-    expect(getCropEmoji("Garlic")).toBe("🧄");
-    expect(getCropEmoji("Ginger")).toBe("🫚");
-    expect(getCropEmoji("Tomato")).toBe("🍅");
-    expect(getCropEmoji("Potato")).toBe("🥔");
-    expect(getCropEmoji("Onion")).toBe("🧅");
+  it("assigns empty crop emoji fallback", () => {
+    expect(getCropEmoji("Coconut")).toBe("");
+    expect(getCropEmoji("नारियल")).toBe("");
+    expect(getCropEmoji("Lemon")).toBe("");
+    expect(getCropEmoji("नींबू")).toBe("");
+    expect(getCropEmoji("Apple")).toBe("");
+    expect(getCropEmoji("Garlic")).toBe("");
+    expect(getCropEmoji("Ginger")).toBe("");
+    expect(getCropEmoji("Tomato")).toBe("");
+    expect(getCropEmoji("Potato")).toBe("");
+    expect(getCropEmoji("Onion")).toBe("");
   });
 
   it("resolves specific Machinery photos by brand and implement", () => {
@@ -101,7 +101,7 @@ describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, St
 
     const cattleSvg = getCattleSvgFallback("Murrah Buffalo");
     expect(cattleSvg).toContain("data:image/svg+xml");
-    expect(decodeURIComponent(cattleSvg)).toContain("🐃");
+    expect(decodeURIComponent(cattleSvg)).toContain("path");
   });
 
   it("resolves specific Agri Store product photos by name", () => {
@@ -136,19 +136,19 @@ describe("Image Resolver — Exact Entity Mappings (Crops, Machinery, Cattle, St
 
     const mandiSvg = getExactCategoryFallbackSvg("mandi", "Jaipur APMC");
     expect(mandiSvg).toContain("data:image/svg+xml");
-    expect(decodeURIComponent(mandiSvg)).toContain("🏛️");
+    expect(decodeURIComponent(mandiSvg)).toContain("rect");
 
     const labourSvg = getExactCategoryFallbackSvg("labour", "Harvester Worker");
     expect(labourSvg).toContain("data:image/svg+xml");
-    expect(decodeURIComponent(labourSvg)).toContain("👨‍🌾");
+    expect(decodeURIComponent(labourSvg)).toContain("circle");
 
     const weatherSvg = getExactCategoryFallbackSvg("weather", "Sunny Day");
     expect(weatherSvg).toContain("data:image/svg+xml");
-    expect(decodeURIComponent(weatherSvg)).toContain("☀️");
+    expect(decodeURIComponent(weatherSvg)).toContain("circle");
 
     const soilSvg = getExactCategoryFallbackSvg("soil_testing", "Lab Test");
     expect(soilSvg).toContain("data:image/svg+xml");
-    expect(decodeURIComponent(soilSvg)).toContain("🧪");
+    expect(decodeURIComponent(soilSvg)).toContain("path");
   });
 
   it("never returns raw undefined or null strings when given invalid input", () => {

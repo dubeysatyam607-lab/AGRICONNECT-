@@ -9,85 +9,63 @@
   }
 
   :root {
-    /* Warm paper tint — sophisticated Indian AgTech surface canvas */
-    --background: 40 28% 97%; /* #FAF7F2 warm natural canvas */
-    --foreground: 221 39% 11%; /* #111827 deep crisp ink */
+    /* Warm Off-White background canvas (#F7F5ED) */
+    --background: 48 24% 95%;
+    /* Dark Forest / Charcoal text (#26332B) */
+    --foreground: 141 14% 17%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 221 39% 11%;
+    /* Soft Cream card surface (#FBFAF4) */
+    --card: 50 40% 97%;
+    --card-foreground: 141 14% 17%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 221 39% 11%;
+    --popover: 50 40% 97%;
+    --popover-foreground: 141 14% 17%;
 
-    /* Brand Forest #0F5132 — primary fills keep light text readable */
-    --primary: 152 69% 19%;
-    --primary-foreground: 45 50% 97%;
+    /* Primary: Deep Forest Green (#285943) */
+    --primary: 153 38% 25%;
+    --primary-foreground: 50 40% 97%;
 
-    --secondary: 40 22% 93%;
-    --secondary-foreground: 221 33% 15%;
+    /* Secondary surface */
+    --secondary: 48 20% 92%;
+    --secondary-foreground: 141 14% 17%;
 
-    --muted: 40 20% 93%;
-    --muted-foreground: 30 14% 40%;
+    /* Muted text (#66736B) & muted surfaces */
+    --muted: 48 18% 91%;
+    --muted-foreground: 143 6% 43%;
 
-    --accent: 154 50% 94%;
-    --accent-foreground: 152 58% 20%;
+    /* Active soft crop-green state (#EAF3E9) */
+    --accent: 115 28% 93%;
+    --accent-foreground: 153 38% 25%;
 
-    --destructive: 0 68% 52%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 38 18% 85%;
-    --input: 38 18% 85%;
-    --ring: 154 100% 38%; /* Brand Accent #00C26E */
+    /* Subtle warm border (#E2DFD4) */
+    --border: 45 15% 86%;
+    --input: 45 15% 86%;
+    --ring: 153 38% 25%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    /* Named material tokens */
-    --ink: 221 39% 11%;
-    --paper: 40 28% 97%;
-    --forest: 152 69% 19%;
-    --moss: 153 62% 26%;
-    --brand: 154 100% 38%; /* #00C26E */
-    --marigold: 38 92% 50%;
-    --soil: 24 40% 38%;
-    --clay: 30 30% 88%;
-    --sky: 199 84% 46%;
-    --leaf: 142 71% 45%;
-    --bark: 26 30% 32%;
+    /* AgriConnect Design System Tokens */
+    --forest: 153 38% 25%;  /* #285943 Deep Forest Green */
+    --crop: 115 28% 48%;    /* #5E9F58 Fresh Crop Green */
+    --sage: 104 21% 60%;    /* #8EAF82 Sage */
+    --paper: 48 24% 95%;    /* #F7F5ED Warm Off White */
+    --cream: 50 40% 97%;    /* #FBFAF4 Soft Cream */
+    --soil: 28 35% 45%;     /* #9A704B Natural Soil */
+    --wheat: 40 62% 56%;    /* #D5A84B Wheat / Harvest */
+    --sky: 194 49% 70%;     /* #8FC7D8 Sky Blue */
+    --ink: 141 14% 17%;     /* #26332B Dark Forest Text */
+    --muted-text: 143 6% 43%; /* #66736B Secondary Text */
 
-    /* Flat accent tokens (previously gradients) */
-    --gradient-hero: hsl(152 69% 15%);
-    --gradient-warm: hsl(38 92% 46%);
-    --gradient-sky: hsl(199 84% 46%);
-    --gradient-magic: hsl(152 69% 19%);
-    --gradient-ai: hsl(152 69% 19%);
-    --gradient-weather: hsl(199 84% 46%);
-    --gradient-market: hsl(152 69% 19%);
-    --gradient-govt: hsl(152 69% 19%);
-    --gradient-tractor: hsl(24 70% 45%);
-    --gradient-store: hsl(152 69% 19%);
-    --gradient-doctor: hsl(142 71% 45%);
-    --gradient-loans: hsl(38 92% 46%);
-    --gradient-community: hsl(152 69% 19%);
-    --gradient-news: hsl(152 69% 19%);
-    --gradient-analytics: hsl(199 84% 46%);
-    --gradient-ink: hsl(155 45% 18%);
-
-    /* Hero backdrop tokens — flat dark green */
-    --gradient-hero-dawn: hsl(152 65% 16%);
-    --gradient-hero-noon: hsl(152 65% 16%);
-    --gradient-hero-dusk: hsl(152 65% 16%);
-    --gradient-hero-night: hsl(155 45% 12%);
-    --gradient-hero-rain: hsl(205 30% 26%);
-    --gradient-hero-storm: hsl(222 35% 22%);
-    --gradient-hero-fog: hsl(200 16% 34%);
-    --gradient-hero-hot: hsl(24 80% 40%);
-
-    --shadow-soft: 0 1px 2px hsl(220 40% 8% / 0.04);
-    --shadow-card: 0 1px 2px hsl(220 40% 8% / 0.05);
-    --shadow-glow: 0 0 0 1px hsl(154 100% 38% / 0.14);
-    --shadow-colorful: 0 1px 2px hsl(220 40% 8% / 0.05);
-    --shadow-card-hover: 0 2px 6px hsl(220 40% 8% / 0.08);
-    --shadow-float: 0 8px 24px hsl(220 40% 8% / 0.12);
+    /* Subtle Natural Card Shadows */
+    --shadow-soft: 0 2px 10px rgba(40, 60, 45, 0.04);
+    --shadow-card: 0 4px 20px rgba(40, 60, 45, 0.06);
+    --shadow-card-hover: 0 6px 24px rgba(40, 60, 45, 0.1);
+    --shadow-float: 0 8px 24px rgba(40, 60, 45, 0.12);
+    --shadow-glow: 0 0 0 2px rgba(94, 159, 88, 0.2);
+    --shadow-colorful: 0 4px 20px rgba(40, 60, 45, 0.06);
 
     /* Feature colors (one brand hue per feature) */
     --feature-ai: 268 84% 58%;

@@ -78,9 +78,9 @@ export function generateSellingAdvice(item: MandiPrice): SellingAdvice {
   const maxExpectedPrice = Math.round(price * 1.06);
 
   const badgeLabels: Record<AdviceAction, { en: string; hi: string }> = {
-    SELL_NOW: { en: "🟢 Sell Today", hi: "🟢 आज बेचें" },
-    WAIT_FEW_DAYS: { en: "🟡 Wait 2–3 Days", hi: "🟡 2-3 दिन रुकें" },
-    HOLD_LONG_TERM: { en: "🔴 Hold for Better Price", hi: "🔴 बेहतर भाव के लिए रोकें" },
+    SELL_NOW: { en: "Sell Today", hi: "आज बेचें" },
+    WAIT_FEW_DAYS: { en: "Wait 2–3 Days", hi: "2-3 दिन रुकें" },
+    HOLD_LONG_TERM: { en: "Hold for Better Price", hi: "बेहतर भाव के लिए रोकें" },
   };
 
   return {

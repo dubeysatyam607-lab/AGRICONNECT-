@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Scan, Sparkles, Loader, X, Camera, Info, Upload, Volume2, VolumeX,
-  History, AlertTriangle, Plus, Trash2, MessageSquare, CheckCircle, ShieldAlert,
+  History, AlertTriangle, Plus, Trash2, MessageSquare, CheckCircle, ShieldAlert, Check, RotateCw,
 } from "lucide-react";
 import { AgriButton } from "@/components/ui/agri-button";
 import { SafeImage } from "@/components/ui/SafeImage";
@@ -77,9 +77,9 @@ interface CropDoctorProps {
 }
 
 const LOADING_STEPS = [
-  "📷 Photo received",
-  "🔍 Photo की जांच हो रही है...",
-  "🌿 Crop symptoms देख रहे हैं...",
+  "Photo received",
+  "Analyzing photo details...",
+  "Examining crop symptoms...",
   "Almost done..."
 ];
 
@@ -744,14 +744,14 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
 
           {/* Photo Quality Guidance Helper */}
           <div className="mb-4 bg-muted/40 p-3 rounded-xl border border-border">
-            <h4 className="type-h3 flex items-center gap-1 text-foreground text-xs sm:text-sm font-semibold mb-1.5">
-              📸 अच्छी फोटो के लिए:
+            <h4 className="type-h3 flex items-center gap-1.5 text-foreground text-xs sm:text-sm font-semibold mb-1.5">
+              <Camera size={15} className="text-primary" /> अच्छी फोटो के लिए:
             </h4>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-muted-foreground">
-              <li>✓ पत्ती को पूरा frame में रखें</li>
-              <li>✓ दिन की रोशनी में फोटो लें</li>
-              <li>✓ प्रभावित हिस्से के पास से फोटो लें</li>
-              <li>✓ कैमरा साफ रखें और focus करें</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> पत्ती को पूरा frame में रखें</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> दिन की रोशनी में फोटो लें</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> प्रभावित हिस्से के पास से फोटो लें</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> कैमरा साफ रखें और focus करें</li>
             </ul>
           </div>
 
@@ -842,7 +842,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                   onClick={handleDiagnosis}
                   className="shrink-0 px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold rounded-md text-xs transition-colors flex items-center gap-1"
                 >
-                  🔄 फिर से जांचें
+                  <RotateCw size={12} /> फिर से जांचें
                 </button>
               )}
             </div>

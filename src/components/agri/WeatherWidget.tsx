@@ -3,6 +3,7 @@ import { useWeatherViewModel } from '@/features/weather/presentation/viewmodels/
 import { LiveWeatherHeroCard } from '@/features/weather/presentation/components/LiveWeatherHeroCard';
 import { WeatherDashboardModal } from '@/features/weather/presentation/views/WeatherDashboardModal';
 import { ErrorState } from '@/components/ui/error-state';
+import { AlertTriangle } from 'lucide-react';
 import WeatherSkeleton from './skeletons/WeatherSkeleton';
 
 /**
@@ -45,8 +46,8 @@ const WeatherWidget: React.FC = () => {
     <div className="mx-4 my-2">
       {data.isOfflineCached && (
         <div className="mb-2 flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2">
-          <span className="text-amber-300 text-xs font-bold leading-snug">
-            ⚠️ Estimated weather — readings are not live. Connect to the weather service for real-time data.
+          <span className="text-amber-300 text-xs font-bold leading-snug flex items-center gap-1.5">
+            <AlertTriangle size={14} className="shrink-0 text-amber-300" /> Estimated weather — readings are not live. Connect to the weather service for real-time data.
           </span>
         </div>
       )}

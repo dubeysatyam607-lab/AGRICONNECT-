@@ -95,9 +95,6 @@ export function getCattleImage(nameOrBreed?: string): string {
 }
 
 export function getCattleSvgFallback(nameOrBreed?: string): string {
-  const isBuff = (nameOrBreed || "").toLowerCase().includes("buffalo") || (nameOrBreed || "").toLowerCase().includes("bhains");
-  const isGoat = (nameOrBreed || "").toLowerCase().includes("goat") || (nameOrBreed || "").toLowerCase().includes("bakri");
-  const emoji = isBuff ? "🐃" : isGoat ? "🐐" : "🐄";
   const title = nameOrBreed || "Livestock / Cattle";
 
   return (
@@ -113,7 +110,9 @@ export function getCattleSvgFallback(nameOrBreed?: string): string {
   </defs>
   <rect width="400" height="300" fill="url(#cattle_grad)" />
   <circle cx="200" cy="120" r="48" fill="#10b981" opacity="0.2" />
-  <text x="200" y="135" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="42" text-anchor="middle">${emoji}</text>
+  <g transform="translate(186, 99) scale(1.2)" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58 1.4 3.82-.38 5.83.22.7.34 1.44.34 2.17 0 5-5.37 9-12 9S0 16 0 11c0-.73.12-1.47.34-2.17-1.78-2.01-1.78-5.25-.38-5.83 1.39-.58 4.64.26 6.42 2.26.65-.17 1.33-.26 2-.26z" />
+  </g>
   <text x="200" y="200" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">${title}</text>
   <text x="200" y="225" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#6ee7b7" text-anchor="middle">AgriConnect Pashu Mela</text>
 </svg>

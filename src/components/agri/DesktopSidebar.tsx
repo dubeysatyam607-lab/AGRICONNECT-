@@ -84,15 +84,15 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
   return (
     <aside
       aria-label="Primary navigation"
-      className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-[#0F5132]/12 lg:bg-[#FAF7F2] shadow-sm"
+      className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-border lg:bg-[#FBFAF4] shadow-soft"
     >
       <div className="sticky top-0 flex h-screen flex-col">
         {/* Brand Header */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-[#0F5132]/10 bg-white/70 px-5 backdrop-blur-md">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white/80 px-5 backdrop-blur-md">
           <Logo size={28} />
           <div className="leading-tight">
-            <span className="block text-[15.5px] font-extrabold tracking-tight text-[#0F5132]">AgriConnect</span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-700/80">Kisan Ka Apna</span>
+            <span className="block text-[15.5px] font-bold tracking-tight text-[#285943]">AgriConnect</span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#5E9F58]">Kisan Ka Apna</span>
           </div>
         </div>
 
@@ -115,12 +115,12 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
           {GROUPS.map((group) => (
             <div key={group.titleKey} className="pt-2">
               <div className="mb-2 flex items-center gap-1.5 px-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00C26E]" />
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#0F5132]/70">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#5E9F58]" />
+                <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-[#26332B]/60">
                   {tr(group.titleKey, group.title)}
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-[3px]">
                 {group.items.map((item) => (
                   <SidebarLink
                     key={item.id}
@@ -136,7 +136,7 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
         </nav>
 
         {/* Footer Account Links */}
-        <div className="shrink-0 border-t border-[#0F5132]/10 bg-white/60 p-3 backdrop-blur-sm space-y-1">
+        <div className="shrink-0 border-t border-border bg-white/70 p-3 backdrop-blur-sm space-y-1">
           <SidebarLink
             item={{ id: "profile", icon: User, labelKey: "nav.profile", label: "Profile" }}
             label={tr("nav.profile", "Profile")}
@@ -175,24 +175,24 @@ const SidebarLink: React.FC<{
       className={cn(
         "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13.5px] transition-all duration-200",
         active
-          ? "bg-[#0F5132] font-bold text-white shadow-md shadow-emerald-950/15"
-          : "font-semibold text-slate-700 hover:bg-[#0F5132]/8 hover:text-[#0F5132]",
+          ? "bg-[#5E9F58]/12 text-[#285943] font-bold"
+          : "font-medium text-[#26332B]/75 hover:bg-[#285943]/6 hover:text-[#285943]"
       )}
     >
       {/* Active Indicator Bar */}
       <span
         className={cn(
           "absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full transition-all duration-200",
-          active ? "bg-[#00C26E] opacity-100" : "opacity-0 group-hover:bg-[#0F5132]/30 group-hover:opacity-100",
+          active ? "bg-[#5E9F58] opacity-100" : "opacity-0 group-hover:bg-[#285943]/20 group-hover:opacity-100"
         )}
         aria-hidden="true"
       />
       <Icon
         size={18}
-        strokeWidth={active ? 2.3 : 2}
+        strokeWidth={active ? 2.2 : 1.8}
         className={cn(
-          "shrink-0 transition-transform duration-200 group-hover:scale-110",
-          active ? "text-[#00C26E]" : "text-[#0F5132]/70 group-hover:text-[#0F5132]"
+          "shrink-0 transition-transform duration-200 group-hover:scale-105",
+          active ? "text-[#285943]" : "text-[#66736B] group-hover:text-[#285943]"
         )}
         aria-hidden="true"
       />

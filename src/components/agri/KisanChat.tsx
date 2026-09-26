@@ -99,8 +99,8 @@ const QUICK_ACTIONS = [
 ] as const;
 
 const OFFLINE_ADVISORIES = {
-  hindi: "⚠️ आप वर्तमान में ऑफ़लाइन हैं। किसान सहायक डेटाबेस में संग्रहीत जानकारी के अनुसार: अपनी खड़ी फसलों की सिंचाई को नियंत्रित रखें और रोगग्रस्त पत्तियों को तुरंत काटकर नष्ट कर दें।",
-  english: "⚠️ You are offline. Kisan Sahayak cached tips: Monitor soil moisture, remove dead foliage to prevent mold, and check mandi prices when reconnected.",
+  hindi: "आप वर्तमान में ऑफ़लाइन हैं। किसान सहायक डेटाबेस में संग्रहीत जानकारी के अनुसार: अपनी खड़ी फसलों की सिंचाई को नियंत्रित रखें और रोगग्रस्त पत्तियों को तुरंत काटकर नष्ट कर दें।",
+  english: "You are offline. Kisan Sahayak cached tips: Monitor soil moisture, remove dead foliage to prevent mold, and check mandi prices when reconnected.",
 };
 
 const ERRORS = {
@@ -738,8 +738,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
       const result: NearbyFetchResult = nearbyData ?? { places: [], hasLocation: false };
       const heading = type === "markets"
-        ? (result.hasLocation ? `📍 Nearby Mandis` : "📍 Popular Mandis")
-        : (result.hasLocation ? `🏪 Nearby Agri Shops` : "🏪 Popular Agri Shops");
+        ? (result.hasLocation ? `Nearby Mandis` : "Popular Mandis")
+        : (result.hasLocation ? `Nearby Agri Shops` : "Popular Agri Shops");
 
       const assistantMsg: ChatMessage = {
         role: "assistant",
@@ -809,21 +809,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     }
 
     try {
-      let assistantResponse = "";
-      let suggestions: string[] = [];
-      const source: ChatMessage["source"] = "cloud";
-
-      // 2. Crop Doctor Mode: If image is present
       if (base64Data) {
-        if (!user) {
-          assistantResponse = isHindi
-            ? "📸 फसल रोग जांच के लिए कृपया पहले लॉगिन करें ताकि आपकी फसल का इतिहास सुरक्षित रहे। या आप नीचे कोई भी कृषि प्रश्न लिखकर या बोलकर पूछ सकते हैं।"
-            : "📸 Please sign in to run AI crop leaf disease analysis so your diagnosis history is saved. You can also ask any farming question by typing or speaking below.";
-          suggestions = isHindi
-            ? ["खाद की सही मात्रा बताएं", "सिंचाई का सही समय", "नजदीकी मंडी भाव"]
-            : ["Fertilizer dosage", "Irrigation schedule", "Mandi prices"];
-        } else {
-          let r: Record<string, unknown> | null = null;
+        let r: Record<string, unknown> | null = null;
           try {
             const { data: cropData, error: cropErr } = await invokeEdgeWithTimeout<{ result: Record<string, unknown>; error?: string }>("crop-doctor", {
               description: messageToSend || "Analyze this crop health",
@@ -854,18 +841,18 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
               : "en";
 
             const errorMessages: Record<string, { msg: string; suggestions: string[] }> = {
-              hi: { msg: "📸 फसल रोग जांच में समस्या आई। कृपया दोबारा प्रयास करें। अगर समस्या बनी रहे तो स्पष्ट फोटो के साथ फिर से भेजें।", suggestions: ["फसल रोग जांच दोबारा करें", "कीटनाशक की सलाह", "नजदीकी मंडी भाव"] },
-              mr: { msg: "📸 पिक रोग तपासणीत अडचण आली. कृपया पुन्हा प्रयत्न करा. स्पष्ट फोटोसह पुन्हा पाठवा.", suggestions: ["पिक रोग तपासणी पुन्हा करा", "कीटकनाशक सल्ला", "जवळच्या बाजाराचा भाव"] },
-              gu: { msg: "📸 પાક રોગ તપાસમાં સમસ્યા આવી. કૃપા કરીને ફરી પ્રયાસ કરો. સ્પષ્ટ ફોટો સાથે મોકલો.", suggestions: ["પાક રોગ તપાસ ફરી કરો", "જંતુનાશક સલાહ", "નજીકની મંડી ભાવ"] },
-              pa: { msg: "📸 ਫਸਲ ਰੋਗ ਜਾਂਚ ਵਿੱਚ ਸਮੱਸਿਆ ਆਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ। ਸਾਫ਼ ਫੋਟੋ ਨਾਲ ਭੇਜੋ।", suggestions: ["ਫਸਲ ਰੋਗ ਜਾਂਚ ਦੁਬਾਰਾ ਕਰੋ", "ਕੀਟਨਾਸ਼ਕ ਸਲਾਹ", "ਨੇੜੇ ਦੀ ਮੰਡੀ ਭਾਵ"] },
-              ta: { msg: "📸 பயிர் நோய் பரிசோதனையில் சிக்கல். மீண்டும் முயற்சிக்கவும். தெளிவான புகைப்படத்துடன் அனுப்பவும்.", suggestions: ["பயிர் நோய் பரிசோதனை மீண்டும்", "பூச்சிக்கொல்லி ஆலோசனை", "அருகிலுள்ள சந்தை விலை"] },
-              te: { msg: "📸 పంట వ్యాధి పరీక్షలో సమస్య వచ్చింది. దయచేసి మళ్ళీ ప్రయత్నించండి. స్పష్టమైన ఫోటోతో పంపండి.", suggestions: ["పంట వ్యాధి పరీక్ష మళ్ళీ", "పురుగుమందు సలహా", "సమీపంలోని మార్కెట్ ధర"] },
-              kn: { msg: "📸 ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆಯಲ್ಲಿ ಸಮಸ್ಯೆ ಬಂದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಸ್ಪಷ್ಟ ಫೋಟೊದೊಂದಿಗೆ ಕಳುಹಿಸಿ.", suggestions: ["ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆ ಮತ್ತೆ", "ಕೀಟನಾಶಕ ಸಲಹೆ", "ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ"] },
-              ml: { msg: "📸 വിള രോഗ പരിശോധനയിൽ പ്രശ്നം. ദയവായി വീണ്ടും ശ്രമിക്കുക. വ്യക്തമായ ഫോട്ടോയോടെ അയക്കുക.", suggestions: ["വിള രോഗ പരിശോധന വീണ്ടും", "കീടനാശിനി ഉപദേശം", "അടുത്തുള്ള മാർക്കറ്റ് വില"] },
-              bn: { msg: "📸 ফসল রোগ পরীক্ষায় সমস্যা। দয়া করে আবার চেষ্টা করুন। স্পষ্ট ছবি সহ পাঠান।", suggestions: ["ফসল রোগ পরীক্ষা আবার", "কীটনাশক পরামর্শ", "কাছের বাজারের দাম"] },
-              or: { msg: "📸 ଫସଲ ରୋଗ ପରୀକ୍ଷାରେ ସମସ୍ୟା। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ। ସ୍ପଷ୍ଟ ଫୋଟୋ ସହ ପଠାନ୍ତୁ।", suggestions: ["ଫସଲ ରୋଗ ପରୀକ୍ଷା ପୁଣି", "କୀଟନାଶକ ପରାମର୍ଶ", "ନିକଟତମ ବଜାର ମୂଲ୍ୟ"] },
-              as: { msg: "📸 ফসল ৰোগ পৰীক্ষাত সমস্যা আহিল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক। স্পষ্ট ফটোৰ লগত আকৌ।", suggestions: ["ফসল ৰোগ পৰীক্ষা পুনৰ কৰক", "কীটনাশক পৰামৰ্শ", "ওচৰৰ বজাৰৰ দাম"] },
-              en: { msg: "📸 Crop disease analysis encountered an issue. Please try again. If the problem persists, resubmit with a clear photo.", suggestions: ["Retry crop scan", "Pesticide advice", "Nearby mandi prices"] },
+              hi: { msg: "फसल रोग जांच में समस्या आई। कृपया दोबारा प्रयास करें। अगर समस्या बनी रहे तो स्पष्ट फोटो के साथ फिर से भेजें।", suggestions: ["फसल रोग जांच दोबारा करें", "कीटनाशक की सलाह", "नजदीकी मंडी भाव"] },
+              mr: { msg: "पिक रोग तपासणीत अडचण आली. कृपया पुन्हा प्रयत्न करा. स्पष्ट फोटोसह पुन्हा पाठवा.", suggestions: ["पिक रोग तपासणी पुन्हा करा", "कीटकनाशक सल्ला", "जवळच्या बाजाराचा भाव"] },
+              gu: { msg: "પાક રોગ તપાસમાં સમસ્યા આવી. કૃપા કરીને ફરી પ્રયાસ કરો. સ્પષ્ટ ફોટો સાથે મોકલો.", suggestions: ["પાક રોગ તપાસ ફરી કરો", "જંતુનાશક સલાહ", "નજીકની મંડી ભાવ"] },
+              pa: { msg: "ਫਸਲ ਰੋਗ ਜਾਂਚ ਵਿੱਚ ਸਮੱਸਿਆ ਆਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ। ਸਾਫ਼ ਫੋਟੋ ਨਾਲ ਭੇਜੋ।", suggestions: ["ਫਸਲ ਰੋਗ ਜਾਂਚ ਦੁਬਾਰਾ ਕਰੋ", "ਕੀਟਨਾਸ਼ਕ ਸਲਾਹ", "ਨੇੜੇ ਦੀ ਮੰਡੀ ਭਾਵ"] },
+              ta: { msg: "பயிர் நோய் பரிசோதனையில் சிக்கல். மீண்டும் முயற்சிக்கவும். தெளிவான புகைப்படத்துடன் அனுப்பவும்.", suggestions: ["பயிர் நோய் பரிசோதனை மீண்டும்", "பூச்சிக்கொல்லி ஆலோசனை", "அருகிலுள்ள சந்தை விலை"] },
+              te: { msg: "పంట వ్యాధి పరీక్షలో సమస్య వచ్చింది. దయచేసి మళ్ళీ ప్రయత్నించండి. స్పష్టమైన ఫోటోతో పంపండి.", suggestions: ["పంట వ్యాధి పరీక్ష మళ్ళీ", "పురుగుమందు సలహా", "సమీపంలోని మార్కెట్ ధర"] },
+              kn: { msg: "ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆಯಲ್ಲಿ ಸಮಸ್ಯೆ ಬಂದಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಸ್ಪಷ್ಟ ಫೋಟೊದೊಂದಿಗೆ ಕಳುಹಿಸಿ.", suggestions: ["ಬೆಳೆ ರೋಗ ಪರೀಕ್ಷೆ ಮತ್ತೆ", "ಕೀಟನಾಶಕ ಸಲಹೆ", "ಹತ್ತಿರದ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ"] },
+              ml: { msg: "വിള രോഗ പരിശോധനയിൽ പ്രശ്നം. ദയവായി വീണ്ടും ശ്രമിക്കുക. വ്യക്തമായ ഫോട്ടോയോടെ അയക്കുക.", suggestions: ["വിള രോഗ പരിശോധന വീണ്ടും", "കീടനാശിനി ഉപദേശം", "അടുത്തുള്ള മാർക്കറ്റ് വില"] },
+              bn: { msg: "ফসল রোগ পরীক্ষায় সমস্যা। দয়া করে আবার চেষ্টা করুন। স্পষ্ট ছবি সহ পাঠান।", suggestions: ["ফসল রোগ পরীক্ষা আবার", "কীটনাশক পরামর্শ", "কাছের বাজারের দাম"] },
+              or: { msg: "ଫସଲ ରୋଗ ପରୀକ୍ଷାରେ ସମସ୍ୟା। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ। ସ୍ପଷ୍ଟ ଫୋଟୋ ସହ ପଠାନ୍ତୁ।", suggestions: ["ଫସଲ ରୋଗ ପରୀକ୍ଷା ପୁଣି", "କୀଟନାଶକ ପରାମର୍ଶ", "ନିକଟତମ ବଜାର ମୂଲ୍ୟ"] },
+              as: { msg: "ফসল ৰোগ পৰীক্ষাত সমস্যা আহিল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক। স্পষ্ট ফটোৰ লগত আকৌ।", suggestions: ["ফসল ৰোগ পৰীক্ষা পুনৰ কৰক", "কীটনাশক পৰামৰ্শ", "ওચৰৰ বজাৰৰ দাম"] },
+              en: { msg: "Crop disease analysis encountered an issue. Please try again. If the problem persists, resubmit with a clear photo.", suggestions: ["Retry crop scan", "Pesticide advice", "Nearby mandi prices"] },
             };
 
             const errData = errorMessages[langCode] || errorMessages.en;
@@ -885,7 +872,6 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           assistantResponse = lines.join("\n");
           suggestions = isHindi ? ["खाद की सही मात्रा बताएं", "सिंचाई का सही समय", "नजदीकी मंडी भाव"] : ["Fertilizer dosage", "Irrigation schedule", "Mandi prices"];
         }
-      }
       // 3. Conversational AI Chat Mode: If text-only
       else {
         // VoiceEngine memory — remember facts the farmer shares mid-chat and
@@ -1397,7 +1383,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             {chatHistory.length <= 1 && (
               <div className="py-6 flex flex-col items-center justify-center text-center space-y-4 max-w-md mx-auto">
                 <div className="w-14 h-14 bg-primary/10 text-2xl rounded-full flex items-center justify-center">
-                  🌱
+                  <Sprout className="w-7 h-7 text-emerald-600" />
                 </div>
                 <div>
                   <h3 className="type-h3">{t('agr220')}</h3>
@@ -1406,8 +1392,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-1.5">
-                  <span className="type-label text-foreground bg-muted border border-border rounded px-2 py-1">
-                    🌾 {t('chat.advisingFor', { crop: profile.crop, stage: profile.stage })}
+                  <span className="type-label text-foreground bg-muted border border-border rounded px-2 py-1 flex items-center gap-1">
+                    <Wheat size={13} className="text-emerald-600 shrink-0" /> {t('chat.advisingFor', { crop: profile.crop, stage: profile.stage })}
                   </span>
                   {[
                     `${profile.crop} mandi price`,
@@ -1449,7 +1435,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
                   <div className="flex items-start gap-2.5 max-w-[92%] sm:max-w-[85%]">
                     {msg.role === "assistant" && (
                       <div className="w-7 h-7 rounded-full bg-muted border border-border flex items-center justify-center shrink-0 text-xs">
-                        🤖
+                        <Bot size={15} className="text-emerald-600" />
                       </div>
                     )}
                     <div
@@ -1515,7 +1501,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             {isLoading && (
               <div className="flex justify-start items-start gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-muted border border-border flex items-center justify-center shrink-0 text-xs">
-                  🤖
+                  <Bot size={15} className="text-emerald-600" />
                 </div>
                 <div className="bg-card border border-border p-3.5 rounded-xl rounded-bl-sm flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full " style={{ animationDelay: '0ms' }} />

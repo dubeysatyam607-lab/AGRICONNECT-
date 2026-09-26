@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Newspaper, Radio, ExternalLink, ImageOff, RefreshCw, Search, BadgeCheck } from "lucide-react";
+import { Newspaper, Radio, ExternalLink, RefreshCw, Search, BadgeCheck, AlertCircle, Clock, FilterX } from "lucide-react";
 import { fetchLiveAgriNews, LiveAgriNewsArticle, NEWS_REFRESH_INTERVAL_MS, getNewsLastUpdatedInfo } from "@/lib/news-api";
 import { trackAgriEvent } from "@/lib/google-analytics";
 import { SafeImage } from "@/components/ui/SafeImage";
-import { Clock } from "lucide-react";
 
 const CATEGORIES = ["All", "Policy & MSP", "Weather & Monsoon", "Schemes & Subsidy", "Market & Mandi", "Agritech & Innovation"];
 
@@ -67,12 +66,17 @@ const AgriNews: React.FC = () => {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  const loadNews = async (force = false) => {
+  const loadNews = useCallback(async (force = false) => {
+    if (isRetrying) return;
     setLoading(true);
     setError(null);
+    setIsRetrying(true);
     try {
+      console.log(`[NEWS] Request started (forceRefresh=${force})`);
       const data = await fetchLiveAgriNews(force);
+      console.log(`[NEWS] Response received. Parsed article count: ${data.length}`);
       setArticles(data);
       const info = getNewsLastUpdatedInfo();
       if (info.lastUpdatedMs > 0) {
@@ -81,12 +85,14 @@ const AgriNews: React.FC = () => {
         setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       }
     } catch (e: any) {
-      setError(e?.message || 'Could not load the latest news.');
+      console.warn('[NEWS] Fetch error:', e);
+      setError(e?.message || 'Unable to load latest news.');
       setArticles([]);
     } finally {
       setLoading(false);
+      setIsRetrying(false);
     }
-  };
+  }, [isRetrying]);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,7 +112,7 @@ const AgriNews: React.FC = () => {
         }
       } catch (e: any) {
         if (!cancelled) {
-          setError(e?.message || 'Could not load the latest news.');
+          setError(e?.message || 'Unable to load latest news.');
           setArticles([]);
         }
       } finally {
@@ -114,10 +120,9 @@ const AgriNews: React.FC = () => {
       }
     })();
 
-    // Auto-refresh every 5 hours (18,000,000 ms) as per user requirement
     const timer = setInterval(() => {
       if (!cancelled) {
-        loadNews(true);
+        void loadNews(true);
       }
     }, NEWS_REFRESH_INTERVAL_MS);
 
@@ -143,6 +148,11 @@ const AgriNews: React.FC = () => {
     window.open(news.url, '_blank', 'noopener,noreferrer');
   };
 
+  const handleResetFilters = () => {
+    setQuery("");
+    setActiveCategory("All");
+  };
+
   return (
     <div className="pb-28 pt-4 px-4 max-w-4xl mx-auto">
       {/* Header */}
@@ -164,11 +174,11 @@ const AgriNews: React.FC = () => {
         </div>
         <button
           onClick={() => loadNews(true)}
-          disabled={loading}
-          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center gap-1.5 text-xs font-semibold"
+          disabled={loading || isRetrying}
+          className="p-2.5 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/40 transition-all flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50"
           aria-label="Refresh news"
         >
-          <RefreshCw size={15} className={loading ? "animate-spin text-primary" : ""} />
+          <RefreshCw size={15} className={loading || isRetrying ? "animate-spin text-primary" : ""} />
           <span>Refresh Now</span>
         </button>
       </div>
@@ -201,9 +211,13 @@ const AgriNews: React.FC = () => {
         ))}
       </div>
 
-      {/* Articles List */}
+      {/* Articles List or States */}
       {loading ? (
         <div className="space-y-4">
+          <div className="flex items-center justify-center gap-2 py-4 text-xs font-medium text-muted-foreground">
+            <RefreshCw size={14} className="animate-spin text-primary" />
+            <span>Loading latest agriculture news...</span>
+          </div>
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-card rounded-xl border border-border p-4 animate-pulse">
               <div className="w-full h-40 bg-muted rounded-xl mb-3" />
@@ -212,32 +226,37 @@ const AgriNews: React.FC = () => {
             </div>
           ))}
         </div>
-      ) : (
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6 shadow-sm">
+          <AlertCircle className="text-destructive mb-3" size={44} />
+          <p className="text-base font-bold text-foreground">Unable to load latest news</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">{error}</p>
+          <button
+            onClick={() => loadNews(true)}
+            disabled={isRetrying}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-primary-foreground transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} /> Retry
+          </button>
+        </div>
+      ) : filteredArticles.length > 0 ? (
         <div className="space-y-4">
           {filteredArticles.map((news) => (
             <NewsCard key={news.id} news={news} onClick={handleNewsClick} />
           ))}
-
-          {filteredArticles.length === 0 && error && (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6">
-              <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">Could not load news</p>
-              <p className="text-xs text-muted-foreground mt-1">{error}</p>
-              <button
-                onClick={() => { void loadNews(); }}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-transform hover:scale-105 active:scale-95"
-              >
-                <RefreshCw size={14} /> Retry
-              </button>
-            </div>
-          )}
-
-          {filteredArticles.length === 0 && !error && (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6">
-              <Newspaper className="text-muted-foreground/40 mb-3" size={44} />
-              <p className="text-base font-bold text-foreground">No news found</p>
-              <p className="text-xs text-muted-foreground mt-1">Try a different search or category.</p>
-            </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-border p-6">
+          <FilterX className="text-muted-foreground/40 mb-3" size={44} />
+          <p className="text-base font-bold text-foreground">No agriculture news is available right now</p>
+          <p className="text-xs text-muted-foreground mt-1">Try adjusting your category filter or search query.</p>
+          {(query || activeCategory !== "All") && (
+            <button
+              onClick={handleResetFilters}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-bold text-foreground hover:bg-muted transition-colors"
+            >
+              Reset Filters
+            </button>
           )}
         </div>
       )}

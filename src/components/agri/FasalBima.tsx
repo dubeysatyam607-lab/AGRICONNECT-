@@ -10,16 +10,16 @@ interface FasalBimaProps {
 type Lang = "en" | "hi";
 
 const CROPS = [
-  { key: "wheat", en: "Wheat", hi: "गेहूं", emoji: "🌾", sumInsured: 25000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
-  { key: "rice", en: "Rice", hi: "चावल", emoji: "🍚", sumInsured: 35000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
-  { key: "maize", en: "Maize", hi: "मक्का", emoji: "🌽", sumInsured: 20000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
-  { key: "soybean", en: "Soybean", hi: "सोयाबीन", emoji: "🫘", sumInsured: 30000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
-  { key: "mustard", en: "Mustard", hi: "सरसों", emoji: "🌻", sumInsured: 28000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
-  { key: "cotton", en: "Cotton", hi: "कपास", emoji: "🫧", sumInsured: 40000, premiumRate: 5.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
-  { key: "onion", en: "Onion", hi: "प्याज", emoji: "🧅", sumInsured: 60000, premiumRate: 5.0, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
-  { key: "potato", en: "Potato", hi: "आलू", emoji: "🥔", sumInsured: 50000, premiumRate: 5.0, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
-  { key: "gram", en: "Gram (Chana)", hi: "चना", emoji: "🫘", sumInsured: 22000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
-  { key: "groundnut", en: "Groundnut", hi: "मूंगफली", emoji: "🥜", sumInsured: 32000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
+  { key: "wheat", en: "Wheat", hi: "गेहूं", sumInsured: 25000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
+  { key: "rice", en: "Rice", hi: "चावल", sumInsured: 35000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
+  { key: "maize", en: "Maize", hi: "मक्का", sumInsured: 20000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
+  { key: "soybean", en: "Soybean", hi: "सोयाबीन", sumInsured: 30000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
+  { key: "mustard", en: "Mustard", hi: "सरसों", sumInsured: 28000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
+  { key: "cotton", en: "Cotton", hi: "कपास", sumInsured: 40000, premiumRate: 5.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
+  { key: "onion", en: "Onion", hi: "प्याज", sumInsured: 60000, premiumRate: 5.0, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
+  { key: "potato", en: "Potato", hi: "आलू", sumInsured: 50000, premiumRate: 5.0, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
+  { key: "gram", en: "Gram (Chana)", hi: "चना", sumInsured: 22000, premiumRate: 1.5, season: "Rabi", seasonHi: "रबी", minArea: 0.1 },
+  { key: "groundnut", en: "Groundnut", hi: "मूंगफली", sumInsured: 32000, premiumRate: 2.0, season: "Kharif", seasonHi: "खरीफ", minArea: 0.1 },
 ];
 
 const STATES = [
@@ -179,7 +179,7 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
               onClick={() => { setShowCropDD(!showCropDD); setShowStateDD(false); }}
               className="mt-1 w-full flex items-center justify-between p-3 rounded-xl border border-border bg-background hover:bg-muted/50 transition-colors text-sm"
             >
-              <span>{crop.emoji} {lang === "hi" ? crop.hi : crop.en}</span>
+              <span className="flex items-center gap-1.5"><Sprout size={14} className="text-primary" /> {lang === "hi" ? crop.hi : crop.en}</span>
               <ChevronDown size={14} className={`text-muted-foreground transition-transform ${showCropDD ? "rotate-180" : ""}`} />
             </button>
             {showCropDD && (
@@ -187,7 +187,7 @@ const FasalBima: React.FC<FasalBimaProps> = ({ onClose }) => {
                 {CROPS.map(c => (
                   <button key={c.key} onClick={() => { setSelectedCrop(c.key); setShowCropDD(false); setResult(null); }}
                     className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 text-left text-sm ${selectedCrop === c.key ? "bg-primary/10 text-primary" : ""}`}>
-                    {c.emoji} {lang === "hi" ? c.hi : c.en}
+                    <Sprout size={14} className="text-primary" /> {lang === "hi" ? c.hi : c.en}
                     <span className="ml-auto text-xs text-muted-foreground">{lang === "hi" ? c.seasonHi : c.season}</span>
                   </button>
                 ))}

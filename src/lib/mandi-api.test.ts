@@ -1,6 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { fetchMandiPrices, getMandiPriceQuote, setLatestRealPrices, normalizeCommodity, cleanCropName } from "./mandi-api";
+import {
+  fetchMandiPrices,
+  getMandiPriceQuote,
+  setLatestRealPrices,
+  normalizeCommodity,
+  cleanCropName,
+  isValidMandiRecord,
+  getCommodityPriority,
+  selectHomeMandiPreview,
+} from "./mandi-api";
 import { getCropImage, getCropCategory } from "./crop-images";
 
 vi.mock("@/lib/invoke-edge", () => ({
@@ -289,5 +298,100 @@ describe("Mandi Module — Live Verified Data & Image Mapping", () => {
   it("unknown crops map to the Other category (never deleted, never miscategorised)", () => {
     expect(getCropCategory("Wheat")).toBe("Cereals");
     expect(getCropCategory("Some Exotic Crop")).toBe("Other");
+  });
+
+  it("isValidMandiRecord rejects corrupted or invalid price records (Part 5 & 6)", () => {
+    const validRecord = {
+      id: "wheat::jaipur",
+      crop: "Wheat",
+      market: "Jaipur Mandi",
+      district: "Jaipur",
+      state: "Rajasthan",
+      price: 2400,
+      minPrice: 2200,
+      maxPrice: 2600,
+      unit: "₹/Quintal",
+      status: "stable" as const,
+      change: "",
+      category: "Cereals",
+      arrivalDate: "2026-09-26",
+      lastUpdatedText: "2026-09-26",
+    };
+
+    expect(isValidMandiRecord(validRecord)).toBe(true);
+
+    // Reject minPrice > modalPrice
+    expect(isValidMandiRecord({ ...validRecord, minPrice: 2800 })).toBe(false);
+
+    // Reject modalPrice > maxPrice
+    expect(isValidMandiRecord({ ...validRecord, maxPrice: 2200 })).toBe(false);
+
+    // Reject <= 0 modal price
+    expect(isValidMandiRecord({ ...validRecord, price: 0 })).toBe(false);
+    expect(isValidMandiRecord({ ...validRecord, price: -500 })).toBe(false);
+
+    // Reject empty crop or empty market
+    expect(isValidMandiRecord({ ...validRecord, crop: "" })).toBe(false);
+    expect(isValidMandiRecord({ ...validRecord, market: "  " })).toBe(false);
+  });
+
+  it("selectHomeMandiPreview prioritizes staple farmer crops and picks distinct commodities (Part 7 & 8)", () => {
+    const rawItems = [
+      {
+        id: "tube-flower::1",
+        crop: "Tube Flower",
+        market: "Bangalore",
+        district: "Bangalore",
+        state: "Karnataka",
+        price: 90000,
+        minPrice: 85000,
+        maxPrice: 95000,
+        unit: "₹/Quintal",
+        status: "stable" as const,
+        change: "",
+        category: "Other",
+        arrivalDate: "2026-09-26",
+        lastUpdatedText: "2026-09-26",
+      },
+      {
+        id: "wheat::1",
+        crop: "Wheat",
+        market: "Indore",
+        district: "Indore",
+        state: "Madhya Pradesh",
+        price: 2450,
+        minPrice: 2300,
+        maxPrice: 2600,
+        unit: "₹/Quintal",
+        status: "stable" as const,
+        change: "",
+        category: "Cereals",
+        arrivalDate: "2026-09-26",
+        lastUpdatedText: "2026-09-26",
+      },
+      {
+        id: "tomato::1",
+        crop: "Tomato",
+        market: "Nashik",
+        district: "Nashik",
+        state: "Maharashtra",
+        price: 1800,
+        minPrice: 1500,
+        maxPrice: 2100,
+        unit: "₹/Quintal",
+        status: "stable" as const,
+        change: "",
+        category: "Vegetables",
+        arrivalDate: "2026-09-26",
+        lastUpdatedText: "2026-09-26",
+      },
+    ];
+
+    const preview = selectHomeMandiPreview(rawItems, 6);
+    expect(preview.length).toBe(3);
+    // Major staple farmer crops (Wheat, Tomato) must be prioritized over Tube Flower (₹90,000)
+    expect(preview[0].crop).toBe("Tomato"); // Alphabetical among score 100
+    expect(preview[1].crop).toBe("Wheat");
+    expect(preview[2].crop).toBe("Tube Flower");
   });
 });

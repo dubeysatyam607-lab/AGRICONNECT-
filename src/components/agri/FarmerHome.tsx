@@ -237,7 +237,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FAF7F2] via-[#F4F9F2] to-[#FAF7F2] pb-36">
+    <div className="min-h-screen bg-[#F7F5ED] pb-36">
       {/* App header */}
       <header className="sticky top-0 z-40 border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">

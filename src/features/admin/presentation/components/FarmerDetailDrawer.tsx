@@ -247,7 +247,7 @@ export function FarmerDetailDrawer({
                 <div className="rounded-xl border bg-muted/40 p-3">
                   <p className="text-xs font-semibold text-muted-foreground">Rating</p>
                   <p className="text-sm font-bold text-foreground mt-0.5">
-                    ⭐ {farmer.rating || '5.0'} / 5.0
+                     {farmer.rating || '5.0'} / 5.0
                   </p>
                 </div>
               </div>

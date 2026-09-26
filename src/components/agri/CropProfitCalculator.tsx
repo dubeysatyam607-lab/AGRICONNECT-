@@ -16,6 +16,8 @@ import {
   X,
   Trophy,
   Share2,
+  Check,
+  Sprout,
 } from "lucide-react";
 import { fetchMandiPrices } from "@/lib/mandi-api";
 import { AgriImage } from "@/components/ui/agri-image";
@@ -48,7 +50,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     netProfit: "Net Profit",
     netLoss: "Net Loss",
     perAcre: "/acre",
-    tip: "💡 Tip: These are average estimates. Actual yield may vary by soil quality, irrigation, and weather.",
+    tip: "Tip: These are average estimates. Actual yield may vary by soil quality, irrigation, and weather.",
     compareBtn: "Compare Crops",
     singleBtn: "Single Crop",
     addCrop: "Add Crop",
@@ -85,7 +87,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     netProfit: "शुद्ध लाभ",
     netLoss: "शुद्ध नुकसान",
     perAcre: "/एकड़",
-    tip: "💡 सुझाव: ये औसत अनुमान हैं। वास्तविक उत्पादन मिट्टी, सिंचाई और मौसम पर निर्भर करता है।",
+    tip: "सुझाव: ये औसत अनुमान हैं। वास्तविक उत्पादन मिट्टी, सिंचाई और मौसम पर निर्भर करता है।",
     compareBtn: "फसल तुलना करें",
     singleBtn: "एक फसल",
     addCrop: "फसल जोड़ें",
@@ -103,7 +105,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
 const CROP_DATA: Record<string, {
   labelEn: string;
   labelHi: string;
-  emoji: string;
   yieldPerAcre: number;
   inputCost: number;
   mspFallback: number;
@@ -113,61 +114,61 @@ const CROP_DATA: Record<string, {
   image: string;
 }> = {
   wheat: {
-    labelEn: "Wheat", labelHi: "गेहूं", emoji: "🌾",
+    labelEn: "Wheat", labelHi: "गेहूं",
     yieldPerAcre: 18, inputCost: 8500, mspFallback: 2275,
     searchKey: "wheat", season: "Rabi (Nov–Apr)", seasonHi: "रबी (नव–अप्रैल)",
     image: "https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   rice: {
-    labelEn: "Rice", labelHi: "चावल", emoji: "🍚",
+    labelEn: "Rice", labelHi: "चावल",
     yieldPerAcre: 22, inputCost: 11000, mspFallback: 2183,
     searchKey: "rice", season: "Kharif (Jun–Nov)", seasonHi: "खरीफ (जून–नव)",
     image: "https://images.pexels.com/photos/36346840/pexels-photo-36346840.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   maize: {
-    labelEn: "Maize", labelHi: "मक्का", emoji: "🌽",
+    labelEn: "Maize", labelHi: "मक्का",
     yieldPerAcre: 20, inputCost: 7000, mspFallback: 1962,
     searchKey: "maize", season: "Kharif (Jun–Oct)", seasonHi: "खरीफ (जून–अक्टू)",
     image: "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   soybean: {
-    labelEn: "Soybean", labelHi: "सोयाबीन", emoji: "🫘",
+    labelEn: "Soybean", labelHi: "सोयाबीन",
     yieldPerAcre: 12, inputCost: 9000, mspFallback: 4600,
     searchKey: "soybean", season: "Kharif (Jun–Oct)", seasonHi: "खरीफ (जून–अक्टू)",
     image: "https://images.pexels.com/photos/36063252/pexels-photo-36063252.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   mustard: {
-    labelEn: "Mustard", labelHi: "सरसों", emoji: "🌻",
+    labelEn: "Mustard", labelHi: "सरसों",
     yieldPerAcre: 10, inputCost: 7500, mspFallback: 5650,
     searchKey: "mustard", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
     image: "https://images.pexels.com/photos/18346906/pexels-photo-18346906.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   cotton: {
-    labelEn: "Cotton", labelHi: "कपास", emoji: "🫧",
+    labelEn: "Cotton", labelHi: "कपास",
     yieldPerAcre: 8, inputCost: 14000, mspFallback: 6620,
     searchKey: "cotton", season: "Kharif (May–Nov)", seasonHi: "खरीफ (मई–नव)",
     image: "https://images.pexels.com/photos/5640079/pexels-photo-5640079.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   onion: {
-    labelEn: "Onion", labelHi: "प्याज", emoji: "🧅",
+    labelEn: "Onion", labelHi: "प्याज",
     yieldPerAcre: 80, inputCost: 20000, mspFallback: 800,
     searchKey: "onion", season: "Rabi (Oct–Mar)", seasonHi: "रबी (अक्टू–मार्च)",
     image: "https://images.pexels.com/photos/4307386/pexels-photo-4307386.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   potato: {
-    labelEn: "Potato", labelHi: "आलू", emoji: "🥔",
+    labelEn: "Potato", labelHi: "आलू",
     yieldPerAcre: 100, inputCost: 25000, mspFallback: 700,
     searchKey: "potato", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
     image: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   gram: {
-    labelEn: "Gram (Chana)", labelHi: "चना", emoji: "🫘",
+    labelEn: "Gram (Chana)", labelHi: "चना",
     yieldPerAcre: 9, inputCost: 6000, mspFallback: 5440,
     searchKey: "gram", season: "Rabi (Oct–Feb)", seasonHi: "रबी (अक्टू–फरवरी)",
     image: "https://images.pexels.com/photos/34945158/pexels-photo-34945158.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
   },
   groundnut: {
-    labelEn: "Groundnut", labelHi: "मूंगफली", emoji: "🥜",
+    labelEn: "Groundnut", labelHi: "मूंगफली",
     yieldPerAcre: 14, inputCost: 10000, mspFallback: 6377,
     searchKey: "groundnut", season: "Kharif (Jun–Oct)", seasonHi: "खरीफ (जून–अक्टू)",
     image: "https://images.pexels.com/photos/9799045/pexels-photo-9799045.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
@@ -303,9 +304,9 @@ const CropPanel: React.FC<{
                   onClick={() => { onChangeCrop(key); setShowDropdown(false); setResult(null); setCustomPrice(""); }}
                   className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 text-left text-sm ${cropKey === key ? "bg-primary/10" : ""}`}
                 >
-                  <span>{data.emoji}</span>
+                  <Sprout size={14} className="text-emerald-600 shrink-0" />
                   <span>{lang === "hi" ? data.labelHi : data.labelEn}</span>
-                  {cropKey === key && <span className="ml-auto text-primary text-xs">✓</span>}
+                  {cropKey === key && <Check size={14} className="ml-auto text-primary shrink-0" />}
                 </button>
               ))}
             </div>
@@ -321,7 +322,7 @@ const CropPanel: React.FC<{
             {loadingPrice
               ? <div className="h-5 bg-muted animate-pulse rounded" />
               : <p className="font-bold text-primary text-sm">₹{(livePrice || crop.mspFallback).toLocaleString("en-IN")}</p>}
-            <p className="text-xs text-muted-foreground">{livePrice ? `🟢 ${L.liveMandiLabel}` : `📋 ${L.mspLabel}`}</p>
+            <p className="text-xs text-muted-foreground">{livePrice ? L.liveMandiLabel : L.mspLabel}</p>
           </div>
           <input
             type="number"
@@ -376,8 +377,8 @@ const CropPanel: React.FC<{
                 const landLabel = lang === "hi" ? "एकड़" : "acres";
                 const profit = Math.abs(result.profit).toLocaleString("en-IN");
                 const msg = lang === "hi"
-                  ? `🌾 मैं इस सीजन ${landSize} ${landLabel} ${cropName} से ₹${profit} कमा सकता हूं! 📊 किसान साथी ऐप से जोड़ें।`
-                  : `🌾 I can earn ₹${profit} from ${landSize} ${landLabel} of ${cropName} this season! 📊 Calculated via Kisan Sathi app.`;
+                  ? `मैं इस सीजन ${landSize} ${landLabel} ${cropName} से ₹${profit} कमा सकता हूं! किसान साथी ऐप से जोड़ें।`
+                  : `I can earn ₹${profit} from ${landSize} ${landLabel} of ${cropName} this season! Calculated via Kisan Sathi app.`;
                 const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
                 window.open(url, "_blank", "noopener,noreferrer");
               }}

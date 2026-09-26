@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/ui/Logo';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { syncOAuthProfileFromIdentity } from '@/features/auth/data/datasources/AuthRemoteDataSource';
 import { SeoHead } from '@/components/seo/SeoHead';
@@ -128,8 +128,8 @@ export const AuthCallback: React.FC = () => {
         
         {errorMsg ? (
           <div className="w-full space-y-4">
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold ">
-              ⚠️ {errorMsg}
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-bold flex items-center justify-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-rose-300" aria-hidden="true" /> {errorMsg}
             </div>
             <button
               type="button"

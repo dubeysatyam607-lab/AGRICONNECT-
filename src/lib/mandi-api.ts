@@ -1,6 +1,6 @@
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
-import { getCropImage, getCropCategory } from "./crop-images";
 import { generateSellingAdvice, type SellingAdvice } from "./mandi-advisor";
+export { getCropImage, getCropCategory, getCropSvgFallback } from "./crop-images";
 
 const CACHE_KEY = "mandi_prices_live_cache_v3";
 
@@ -289,6 +289,119 @@ function dedupeByRecord(prices: MandiPrice[]): MandiPrice[] {
 }
 
 /**
+ * Validates a MandiPrice record for completeness and price sanity (Part 5 & 6).
+ * Enforces:
+ *  - Non-empty crop & market
+ *  - Modal price > 0 and finite
+ *  - Non-negative min & max prices
+ *  - minPrice <= modalPrice <= maxPrice when min & max prices exist and are non-zero
+ */
+export function isValidMandiRecord(p: MandiPrice): boolean {
+  if (!p || typeof p !== "object") return false;
+  if (!p.crop || !p.crop.trim()) return false;
+  if (!p.market || !p.market.trim()) return false;
+  if (typeof p.price !== "number" || isNaN(p.price) || p.price <= 0) return false;
+  if (typeof p.minPrice === "number" && (isNaN(p.minPrice) || p.minPrice < 0)) return false;
+  if (typeof p.maxPrice === "number" && (isNaN(p.maxPrice) || p.maxPrice < 0)) return false;
+
+  // PART 6 — PRICE SANITY CHECK: minimum <= modal <= maximum
+  if (p.minPrice > 0 && p.maxPrice > 0) {
+    if (p.minPrice > p.price || p.price > p.maxPrice) {
+      return false; // Reject corrupted record
+    }
+  } else if (p.minPrice > 0 && p.minPrice > p.price) {
+    return false;
+  } else if (p.maxPrice > 0 && p.price > p.maxPrice) {
+    return false;
+  }
+
+  if (p.arrivalDate && (p.arrivalDate.toLowerCase() === "null" || p.arrivalDate.toLowerCase() === "undefined")) {
+    return false;
+  }
+
+  return true;
+}
+
+const MAJOR_STAPLE_CROPS = new Set([
+  "wheat", "gehu", "gehun", "rice", "chawal", "paddy", "dhan", "soybean", "soyabean",
+  "mustard", "sarson", "potato", "aloo", "onion", "pyaj", "pyaaz", "tomato", "tamatar",
+  "cotton", "kapas", "maize", "makka", "gram", "chana", "groundnut", "mungfali",
+  "garlic", "lahsun", "chilli", "mirch", "ginger", "adrak", "turmeric", "haldi",
+  "cumin", "jeera", "arhar", "tur", "moong", "urad", "masoor", "bajra", "jowar",
+  "barley", "sugarcane", "ganna", "cabbage", "cauliflower", "okra", "bhindi",
+  "brinjal", "baingan", "apple", "banana", "mango", "pomegranate", "orange", "guava",
+  "peas", "matar", "carrot", "gajar", "watermelon"
+]);
+
+/**
+ * Returns a priority score for a commodity (Part 8).
+ * Major staple farmer crops receive high priority, while high-value rare flowers
+ * or exotic non-staple items receive low priority for Home preview selection.
+ */
+export function getCommodityPriority(cropName: string): number {
+  if (!cropName) return 0;
+  const clean = cleanCropName(cropName).toLowerCase();
+  if (MAJOR_STAPLE_CROPS.has(clean)) return 100;
+  for (const staple of MAJOR_STAPLE_CROPS) {
+    if (clean.includes(staple)) return 80;
+  }
+  // Lower priority for rare flowers, exotic spices, or wood so they don't crowd out staple crops on Home
+  if (
+    clean.includes("flower") ||
+    clean.includes("jasmine") ||
+    clean.includes("pepper") ||
+    clean.includes("cardamom") ||
+    clean.includes("wood") ||
+    clean.includes("orchid")
+  ) {
+    return 10;
+  }
+  return 50;
+}
+
+/**
+ * Selects a smart, diverse preview list for Home containing distinct major farmer commodities.
+ */
+export function selectHomeMandiPreview(prices: MandiPrice[], maxCount = 6): MandiPrice[] {
+  const valid = prices.filter(isValidMandiRecord);
+  if (valid.length === 0) return [];
+
+  // Sort valid records by crop priority score first
+  const sorted = [...valid].sort((a, b) => {
+    const priorityDiff = getCommodityPriority(b.crop) - getCommodityPriority(a.crop);
+    if (priorityDiff !== 0) return priorityDiff;
+    return a.crop.localeCompare(b.crop);
+  });
+
+  // Pick distinct major commodities for Home to ensure variety
+  const result: MandiPrice[] = [];
+  const seenCrops = new Set<string>();
+
+  for (const item of sorted) {
+    const key = normalizeCropKey(item.crop);
+    if (!seenCrops.has(key)) {
+      seenCrops.add(key);
+      result.push(item);
+      if (result.length >= maxCount) break;
+    }
+  }
+
+  // Fill up if fewer distinct crops are available
+  if (result.length < maxCount) {
+    const selectedIds = new Set(result.map((r) => r.id));
+    for (const item of sorted) {
+      if (!selectedIds.has(item.id)) {
+        selectedIds.add(item.id);
+        result.push(item);
+        if (result.length >= maxCount) break;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Maps a record returned by the mandi-prices edge function (which only emits
  * real AGMARKNET fields) to a MandiPrice. Prices that were not published are
  * mapped to 0 so the UI can show "Not available" instead of an invented number.
@@ -312,21 +425,20 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
   const variety = String(record.variety ?? "").trim();
   const arrivalDate = String(record.arrivalDate ?? record.arrival_date ?? "").trim();
 
-  // status/change reflect the modal price's position against the real
-  // published min/max range for the day — NOT a day-over-day comparison.
+  // Part 12: Only calculate price change when true previous-day comparison data exists
   let status: "up" | "down" | "stable" = "stable";
-  let change = "0%";
-  const range = maxPrice - minPrice;
-  if (modalPrice > 0 && range > 0) {
-    const position = (modalPrice - minPrice) / range;
-    if (position >= 0.7) {
-      status = "up";
-      change = `+${(((modalPrice - minPrice) / range) * 100).toFixed(0)}%`;
-    } else if (position <= 0.3) {
-      status = "down";
-      change = `-${(((maxPrice - modalPrice) / range) * 100).toFixed(0)}%`;
+  let change = "";
+  const yesterdayPrice = toNum(record.yesterdayPrice ?? record.prev_price ?? record.previousPrice);
+  if (yesterdayPrice > 0 && modalPrice > 0) {
+    const diffPct = ((modalPrice - yesterdayPrice) / yesterdayPrice) * 100;
+    if (Math.abs(diffPct) >= 0.1) {
+      status = diffPct > 0 ? "up" : "down";
+      change = `${diffPct > 0 ? "+" : ""}${diffPct.toFixed(1)}%`;
     }
   }
+
+  const rawUnit = String(record.unit ?? record.price_unit ?? "₹/Quintal").trim();
+  const unit = rawUnit.toLowerCase().includes("kg") ? "₹/kg" : rawUnit.toLowerCase().includes("tonne") ? "₹/tonne" : "₹/Quintal";
 
   const uniqueId = `${crop}::${variety}::${market}::${district}::${state}::${arrivalDate}`.toLowerCase();
 
@@ -349,7 +461,7 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
     minPrice: Math.round(minPrice),
     maxPrice: Math.round(maxPrice),
     msp: getCropMSP(crop),
-    unit: "₹/Quintal",
+    unit,
     status,
     change,
     arrivalDate: arrivalDate || "Not available",
@@ -400,11 +512,16 @@ async function fetchFromEdge(
     const rawPrices = (result?.prices || []) as Record<string, unknown>[];
     const prices = rawPrices
       .map(parseEdgeRecord)
-      .filter((p) => p.crop && p.price > 0);
+      .filter(isValidMandiRecord);
 
     const uniquePrices = dedupeByRecord(prices);
     if (uniquePrices.length > 0) {
-      uniquePrices.sort((a, b) => b.price - a.price);
+      // Sort by crop priority score first, then crop name (Part 8 — do NOT sort by highest price)
+      uniquePrices.sort((a, b) => {
+        const priorityDiff = getCommodityPriority(b.crop) - getCommodityPriority(a.crop);
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.crop.localeCompare(b.crop);
+      });
       return { prices: uniquePrices, raw: result as Record<string, unknown> | null };
     }
     throw new Error("No published prices returned from edge function");
@@ -774,8 +891,8 @@ export function getMandiPriceQuote(req: MandiQuoteRequest, dataset?: MandiPrice[
     msp: selected.msp,
     arrivalDate: selected.arrivalDate,
     arrivalQuantity: selected.arrivalQuantity,
-    messageHi: `📍 **${cropTitleHi}** — ${mktName} (${stateName})\n\n• न्यूनतम भाव: **₹${selected.minPrice.toLocaleString("en-IN")}/क्विंटल**\n• अधिकतम भाव: **₹${selected.maxPrice.toLocaleString("en-IN")}/क्विंटल**\n• मॉडल (औसत) भाव: **₹${selected.price.toLocaleString("en-IN")}/क्विंटल**${selected.msp ? `\n• सरकारी MSP: **₹${selected.msp.toLocaleString("en-IN")}/क्विंटल**` : ""}${arrivalLine}`,
-    messageHinglish: `📍 **${cropTitleHinglish}** — ${mktName} (${stateName})\n\n• Minimum: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Avg) Bhav: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
-    messageEn: `📍 **${cropEn}** — ${mktName} (${stateName})\n\n• Minimum Price: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum Price: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Average) Price: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
+    messageHi: `**${cropTitleHi}** — ${mktName} (${stateName})\n\n• न्यूनतम भाव: **₹${selected.minPrice.toLocaleString("en-IN")}/क्विंटल**\n• अधिकतम भाव: **₹${selected.maxPrice.toLocaleString("en-IN")}/क्विंटल**\n• मॉडल (औसत) भाव: **₹${selected.price.toLocaleString("en-IN")}/क्विंटल**${selected.msp ? `\n• सरकारी MSP: **₹${selected.msp.toLocaleString("en-IN")}/क्विंटल**` : ""}${arrivalLine}`,
+    messageHinglish: `**${cropTitleHinglish}** — ${mktName} (${stateName})\n\n• Minimum: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Avg) Bhav: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
+    messageEn: `**${cropEn}** — ${mktName} (${stateName})\n\n• Minimum Price: **₹${selected.minPrice.toLocaleString("en-IN")}/quintal**\n• Maximum Price: **₹${selected.maxPrice.toLocaleString("en-IN")}/quintal**\n• Modal (Average) Price: **₹${selected.price.toLocaleString("en-IN")}/quintal**${selected.msp ? `\n• Govt MSP: **₹${selected.msp.toLocaleString("en-IN")}/quintal**` : ""}${arrivalLine}`,
   };
 }
