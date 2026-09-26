@@ -1,8 +1,9 @@
 /*
- * AgriConnect ESP32 Node — Configuration
+ * AgriConnect ESP32 Node — Configuration template
  *
- * COPY THIS FILE to `config.h` and fill in your own values. The committed
- * version contains placeholders only — never commit real Wi-Fi credentials,
+ * Copy this file to `config.h` in the SAME folder as
+ * `agriconnect_esp32_node.ino` and fill in your own values.
+ * config.h is gitignored — never commit real Wi-Fi credentials,
  * server URLs, or device tokens to source control.
  *
  * Wi-Fi requirement: the ESP32 only supports 2.4 GHz networks.
@@ -18,7 +19,7 @@
 // ── Server ────────────────────────────────────────────────────────────────
 // Production: "https://your-agriconnect-domain/api/iot"
 // Local dev:  "http://192.168.x.x:5000/api/iot"
-#define AGRI_SERVER_BASE   "http://192.168.1.100:5000/api/iot"
+#define AGRI_SERVER_BASE   "https://your-agriconnect-domain/api/iot"
 
 // ── Device identity ───────────────────────────────────────────────────────
 // UID must match the device registered in the AgriConnect app profile.
