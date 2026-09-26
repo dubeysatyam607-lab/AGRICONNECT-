@@ -48,6 +48,9 @@ const CropProfitCalculator = lazy(() => import("@/components/agri/CropProfitCalc
 const PriceAlerts = lazy(() => import("@/components/agri/PriceAlerts"));
 const ServicesHub = lazy(() => import("@/components/agri/ServicesHub"));
 const HardwareDashboard = lazy(() => import("@/components/agri/HardwareDashboard"));
+const WeatherPageView = lazy(() =>
+  import("@/features/weather/presentation/views/WeatherPageView").then((m) => ({ default: m.WeatherPageView })),
+);
 const PaymentsHub = lazy(() =>
   import("@/features/payments/presentation/PaymentsHub").then((m) => ({ default: m.PaymentsHub })),
 );
@@ -319,6 +322,8 @@ const getTabFromPath = (path: string) => {
     switch (path) {
       case "/news":
       case "/agri-news": return "news";
+      case "/weather":
+      case "/live-weather": return "weather";
       case "/mandi-finder": return "mandi-finder";
       case "/cold-storage": return "cold-storage";
       case "/community": return "community";
@@ -506,6 +511,8 @@ const getTabFromPath = (path: string) => {
         return <ServicesHub onNavigate={handleNavigate} />;
       case "hardware-dashboard":
         return <HardwareDashboard />;
+      case "weather":
+        return <WeatherPageView />;
       case "profile":
         return <DigitalProfileDashboard onNavigate={handleNavigate} />;
       case "wallet":

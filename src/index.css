@@ -226,15 +226,15 @@
   }
 
 
-  /* Dynamic hero period/weather backgrounds */
-  .gradient-hero-dawn { background: var(--gradient-hero-dawn); }
-  .gradient-hero-noon { background: var(--gradient-hero-noon); }
-  .gradient-hero-dusk { background: var(--gradient-hero-dusk); }
-  .gradient-hero-night { background: var(--gradient-hero-night); }
-  .gradient-hero-rain { background: var(--gradient-hero-rain); }
-  .gradient-hero-storm { background: var(--gradient-hero-storm); }
-  .gradient-hero-fog { background: var(--gradient-hero-fog); }
-  .gradient-hero-hot { background: var(--gradient-hero-hot); }
+  /* Dynamic hero period/weather backgrounds - Rich high contrast agriculture gradients */
+  .gradient-hero-dawn { background: linear-gradient(135deg, #134e4a 0%, #15803d 40%, #b45309 85%, #d97706 100%); }
+  .gradient-hero-noon { background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%); }
+  .gradient-hero-dusk { background: linear-gradient(135deg, #451a03 0%, #78350f 40%, #9a3412 75%, #c2410c 100%); }
+  .gradient-hero-night { background: linear-gradient(135deg, #022c22 0%, #0f172a 60%, #1e1b4b 100%); }
+  .gradient-hero-rain { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%); }
+  .gradient-hero-storm { background: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #311b92 100%); }
+  .gradient-hero-fog { background: linear-gradient(135deg, #1c1917 0%, #44403c 50%, #064e3b 100%); }
+  .gradient-hero-hot { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #b45309 100%); }
 
   .shadow-soft {
     box-shadow: var(--shadow-soft);

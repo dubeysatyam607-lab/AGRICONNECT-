@@ -95,7 +95,7 @@ const AgriConnectFooter: React.FC = () => {
               </p>
               <p className="mt-3 max-w-sm type-small leading-relaxed text-muted-foreground">
                 Live mandi bhav, AI crop assistance, hyperlocal weather, government schemes and a
-                farmer-first marketplace — free in 12 Indian languages.
+                farmer-first marketplace, free in 12 Indian languages.
               </p>
 
               {/* CTAs */}

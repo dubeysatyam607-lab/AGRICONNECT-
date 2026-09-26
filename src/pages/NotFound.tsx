@@ -27,7 +27,7 @@ const NotFound = () => {
   return (
     <>
       <SeoHead
-        title={isGone ? 'Page Removed — AgriConnect' : '404 — Page Not Found | AgriConnect'}
+        title={isGone ? 'Page Removed : AgriConnect' : '404 : Page Not Found | AgriConnect'}
         description={
           isGone
             ? 'This page has been permanently removed. Explore live mandi bhav, AI crop doctor, weather, and tractor rental on AgriConnect.'
@@ -48,8 +48,8 @@ const NotFound = () => {
         </h1>
         <p className="text-emerald-100/80 mt-3 max-w-xl text-center leading-relaxed">
           {isGone
-            ? 'The page you tried to open has been permanently removed. But your farm tools are still here — find what you need below.'
-            : 'The page you are looking for may have moved or never existed. But your farm tools are still here — find what you need below.'}
+            ? 'The page you tried to open has been permanently removed. Your farm tools are still available below.'
+            : 'The page you are looking for may have moved or never existed. Your farm tools are still available below.'}
         </p>
 
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl w-full">

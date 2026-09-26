@@ -23,7 +23,7 @@ const About: React.FC = () => {
   return (
     <>
       <SeoHead
-        title="About Us — AgriConnect | Making AI Work for Every Indian Farmer"
+        title="About Us : AgriConnect | Making AI Work for Every Indian Farmer"
         description="AgriConnect is on a mission to make AI work for every Indian farmer, in their language, for free. Built in India for India's 150 million farming families."
         canonical="/about"
         keywords={['about AgriConnect', 'AI farming India', 'digital agriculture ecosystem India', 'smart farming platform', 'agritech company India', 'Kisan AI']}
@@ -52,7 +52,7 @@ const About: React.FC = () => {
             <p className="max-w-3xl type-body text-muted-foreground leading-relaxed">
               Built in India for <strong>India's 150 million farming families</strong>. We connect
               farmers, service providers, buyers, and agricultural experts on a single intuitive
-              platform — live mandi bhav, personalized AI advisory, machinery rental, hyperlocal
+              platform, live mandi bhav, personalized AI advisory, machinery rental, hyperlocal
               weather, crop disease detection, and government scheme alerts in <strong>12 Indian languages</strong>.
             </p>
 

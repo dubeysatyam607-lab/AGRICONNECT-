@@ -59,7 +59,7 @@ async function uploadImage(filename = "leaf.jpg") {
   const input = document.querySelector('input[type="file"]') as HTMLInputElement;
   fireEvent.change(input, { target: { files: [file] } });
   await waitFor(() =>
-    (screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }) as HTMLButtonElement).disabled === false
+    (screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }) as HTMLButtonElement).disabled === false
   );
 }
 
@@ -98,7 +98,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("soybean_healthy.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Healthy green foliage/)).toBeTruthy();
     expect(screen.getByText("Soybean")).toBeTruthy();
@@ -128,7 +128,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("tomato_blight.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Likely early blight/)).toBeTruthy();
     expect(screen.getByText("Tomato")).toBeTruthy();
@@ -158,7 +158,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("wheat_rust.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Likely stripe\/yellow rust/)).toBeTruthy();
     expect(screen.getByText("Wheat")).toBeTruthy();
@@ -188,7 +188,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("cotton_aphids.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Likely aphid colony/)).toBeTruthy();
     expect(screen.getByText("Cotton")).toBeTruthy();
@@ -217,7 +217,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("rice_nitrogen.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Uniform yellowing starting from older lower leaves/)).toBeTruthy();
     expect(screen.getByText("Rice")).toBeTruthy();
@@ -246,7 +246,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("blurry_leaf.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Photo is not clear enough for a reliable analysis/)).toBeTruthy();
   });
@@ -275,7 +275,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     await uploadImage("chilli_plant.jpg");
     await uploadImage("chilli_fruit.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Chilli anthracnose fruit rot/)).toBeTruthy();
     expect(screen.getByText("Chilli")).toBeTruthy();
@@ -291,7 +291,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
 
     renderDoctor();
     await uploadImage("timeout_leaf.jpg");
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/AI analysis took too long/)).toBeTruthy();
   });
@@ -306,7 +306,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
 
     renderDoctor();
     await uploadImage("rate_limit.jpg");
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Too many requests/)).toBeTruthy();
   });
@@ -335,7 +335,7 @@ describe("CropDoctor — 10 Consecutive Production Scans Test Suite", () => {
     renderDoctor();
     await uploadImage("sugarcane_redrot.jpg");
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Likely Red Rot/)).toBeTruthy();
     expect(screen.getByText("Sugarcane")).toBeTruthy();

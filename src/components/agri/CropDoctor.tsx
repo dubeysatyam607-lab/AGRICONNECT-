@@ -99,10 +99,44 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const [isDesktopCameraOpen, setIsDesktopCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
   const { toast } = useToast();
   const { user } = useAuth();
   const { profile } = useFarm();
   const { languageName, t } = useLanguage();
+
+  // Stop video stream tracks cleanly
+  const stopCameraStream = useCallback(() => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch {
+          // ignore track stop error
+        }
+      });
+      setCameraStream(null);
+    }
+  }, [cameraStream]);
+
+  // Clean up camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, [stopCameraStream]);
+
+  // Attach stream to video element when desktop camera opens
+  useEffect(() => {
+    if (isDesktopCameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [isDesktopCameraOpen, cameraStream]);
 
   // Dynamic loading step timer
   useEffect(() => {
@@ -174,6 +208,8 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   };
 
   const processFile = async (file: File) => {
+    console.log(`[CROP SCAN] Image selected: filename=${file.name}, type=${file.type}, size=${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+
     if (images.length >= MAX_IMAGES) {
       toast({
         title: "Maximum photos reached",
@@ -184,15 +220,17 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
+      setError("Please upload a JPG, PNG, or WEBP image.");
       toast({
         title: t("doctor.error.invalidTypeTitle") || "Invalid file type",
-        description: "Photo open nahi ho rahi. Please doosri photo try karein.",
+        description: "Please upload a JPG, PNG, or WEBP image.",
         variant: "destructive",
       });
       return;
     }
 
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      setError("Image is too large. Please choose a photo under 8MB.");
       toast({
         title: t("doctor.error.tooLargeTitle") || "File too large",
         description: t("doctor.error.tooLarge") || `Image size must be less than ${MAX_FILE_MB}MB.`,
@@ -202,7 +240,9 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     }
 
     try {
+      console.log("[CROP SCAN] Image preprocessing / compression started...");
       const compressed = await compressImageFile(file);
+      console.log(`[CROP SCAN] Image processed successfully: dimensions ${compressed.width}x${compressed.height}`);
       
       let qResult: ImageQualityResult = { isUsable: true };
       try {
@@ -214,7 +254,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       }
 
       if (!qResult.isUsable) {
-        setQualityWarning(qResult.warningHi || qResult.warningEn || "Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
+        setQualityWarning(qResult.warningHi || qResult.warningEn || "Photo is too dark. Please take a well-lit photo of the leaf.");
       } else {
         setQualityWarning(null);
       }
@@ -232,9 +272,11 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       setImages((prev) => [...prev, newItem]);
       setError(null);
     } catch (err: any) {
+      console.error("[CROP SCAN] Image processing failed:", err);
+      setError("Selected photo could not be read. Please choose another image.");
       toast({
         title: t("doctor.error.uploadFailedTitle") || "Upload failed",
-        description: err?.message || "Photo open nahi ho rahi. Please doosri photo try karein.",
+        description: err?.message || "Selected photo could not be read. Please choose another image.",
         variant: "destructive",
       });
     }
@@ -249,26 +291,92 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       }
       if (e.target) e.target.value = "";
     } catch {
-      setError("Camera permission nahi mili. Gallery se photo upload karein.");
+      setError("Camera access was denied. You can choose a photo from your gallery instead.");
     }
   };
 
-  const openCameraInput = () => {
-    try {
+  const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  const openCameraInput = async () => {
+    if (isMobileDevice() || !navigator.mediaDevices?.getUserMedia) {
       if (cameraInputRef.current) {
         cameraInputRef.current.click();
       }
-    } catch {
-      toast({
-        title: "Camera error",
-        description: "Camera permission nahi mili. Gallery se photo upload karein.",
-        variant: "destructive",
-      });
+      return;
     }
+
+    // Desktop Camera flow via getUserMedia
+    setCameraError(null);
+    setIsDesktopCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+      setCameraStream(stream);
+    } catch (err: any) {
+      console.warn("[CROP SCAN] Desktop camera access denied or unavailable:", err);
+      setCameraError("Camera access is required to take a crop photo.");
+    }
+  };
+
+  const closeDesktopCamera = () => {
+    stopCameraStream();
+    setIsDesktopCameraOpen(false);
+    setCameraError(null);
+  };
+
+  const captureDesktopPhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      if (blob) {
+        const file = new File([blob], `camera-crop-${Date.now()}.jpg`, { type: "image/jpeg" });
+        await processFile(file);
+      }
+      closeDesktopCamera();
+    }, "image/jpeg", 0.9);
   };
 
   const removeImage = (id: string) => {
     setImages((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleRetake = () => {
+    setImages([]);
+    setResult(null);
+    setError(null);
+    openCameraInput();
+  };
+
+  const getSpecificErrorMessage = (code: ScanErrorCode, rawErr?: string | null): string => {
+    if (code === "validation") {
+      return rawErr || t("doctor.error.validation") || "Please choose a valid crop image (JPG, PNG, or WEBP).";
+    }
+    if (code === "network" || (rawErr && rawErr.toLowerCase().includes("network"))) {
+      return t("doctor.error.network") || "You appear to be offline. Check your connection and try again.";
+    }
+    if (code === "timeout") {
+      return t("doctor.error.timeout") || "Analysis is taking longer than expected. Please retry.";
+    }
+    if (code === "rate_limit") {
+      return t("doctor.error.rateLimit") || "Too many requests. Please wait a moment and try again.";
+    }
+    if (code === "quota") {
+      return t("doctor.error.quota") || "Crop analysis service limit reached for today. Please try again later.";
+    }
+    if (code === "config" || code === "deploy") {
+      return t("doctor.error.config") || "Crop analysis service is temporarily unavailable. Please try again later.";
+    }
+    return rawErr && rawErr.length > 5 && !rawErr.includes("Failed to fetch")
+      ? rawErr
+      : t("doctor.error.api") || "Something went wrong with the analysis. Please try again.";
   };
 
   const handleDiagnosis = async () => {
@@ -282,16 +390,16 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     setError(null);
     setResult(null);
 
-    console.log("[CropScan] scan started");
-    console.log(`[CropScan] attached images count = ${images.length}`);
+    console.log("[CROP SCAN] Scan started");
+    console.log(`[CROP SCAN] Attached images count = ${images.length}`);
     images.forEach((img, idx) => {
-      console.log(`[CropScan] image #${idx + 1} type = ${img.blob.type || "image/jpeg"}, size = ${(img.blob.size / 1024).toFixed(1)} KB`);
+      console.log(`[CROP SCAN] Image #${idx + 1} type = ${img.blob.type || "image/jpeg"}, size = ${(img.blob.size / 1024).toFixed(1)} KB`);
     });
 
     // Best-effort background upload of primary image to private bucket (non-blocking)
     if (images[0]?.blob && user?.id) {
       uploadScanImage(user.id, images[0].blob).catch((uploadErr) => {
-        console.warn("[CropScan] non-blocking background image upload failed:", uploadErr);
+        console.warn("[CROP SCAN] Non-blocking background image upload notice:", uploadErr);
       });
     }
 
@@ -305,7 +413,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         soil: profile.soilType,
       };
 
-      console.log("[CropScan] API request started (calling edge function crop-doctor)");
+      console.log("[CROP SCAN] Analysis request started (calling edge function crop-doctor)");
       const { data, error: err, code, timedOut } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
         "crop-doctor",
         {
@@ -318,82 +426,55 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         20000,
       );
 
-      if (err) {
-        console.warn(`[CropScan] edge call returned error code = ${code || "none"}:`, err);
+      let scanResult: CropScanResult | null = data?.result || null;
+
+      if (err || !scanResult) {
+        console.warn(`[CROP SCAN] Edge call error (code = ${code || "none"}):`, err);
         const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
-        
-        // Attempt direct client-side AI fallback only when the edge service itself is
-        // unavailable (unconfigured / not deployed / session). A genuine server error
-        // (api / timeout / rate_limit / validation / network) must surface the honest error.
+
+        // Attempt client-side AI analysis fallback only when edge service is unconfigured / not deployed / session expired
         if (edgeCode === "config" || edgeCode === "deploy" || edgeCode === "session") {
-          console.log("[CropScan] attempting client-side Gemini fallback");
-          const fallbackResult = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
-          if (fallbackResult) {
-            console.log("[CropScan] client-side Gemini fallback succeeded");
-            setIsLoading(false);
-            setResult(fallbackResult as CropScanResult);
-            if (fallbackResult.needs_clearer_image) {
-              setError("Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
+          console.log("[CROP SCAN] Attempting client-side AI analysis fallback...");
+          try {
+            const fallback = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
+            if (fallback) {
+              console.log("[CROP SCAN] Client-side AI analysis fallback succeeded");
+              scanResult = fallback as CropScanResult;
             }
-            if (autoSpeak && (fallbackResult.possible_issue || fallbackResult.health_status)) {
-              setTimeout(speakResultText, 500);
-            }
-            loadHistory().catch(() => {});
-            return;
+          } catch (fbErr) {
+            console.warn("[CROP SCAN] Client-side fallback error:", fbErr);
           }
         }
-
-        const key = SCAN_ERROR_KEYS[edgeCode];
-        const localized = key ? t(key) : null;
-        // Show validation error verbatim; use localized message for network/timeout/config/quota, or err as fallback
-        const message = edgeCode === "validation" 
-          ? err 
-          : edgeCode === "network" 
-          ? (t("doctor.error.network") || "Internet connection check karein aur dobara try karein.")
-          : edgeCode === "timeout"
-          ? (t("doctor.error.timeout") || "Scan में ज्यादा समय लग गया. Please retry करें.")
-          : (localized || err || "Scan service mein temporary problem hai. Please retry karein.");
-        setIsLoading(false);
-        setError(message);
-        loadHistory().catch(() => {});
-        return;
       }
 
-      if (!data?.result) {
-        console.warn("[CropScan] empty result from edge function, attempting fallback");
-        const fallbackResult = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
-        if (fallbackResult) {
-          console.log("[CropScan] client-side fallback succeeded after empty edge payload");
-          setIsLoading(false);
-          setResult(fallbackResult as CropScanResult);
-          loadHistory().catch(() => {});
-          return;
+      if (scanResult) {
+        console.log("[CROP SCAN] AI response parsed successfully");
+        setIsLoading(false);
+        setResult(scanResult);
+
+        if (scanResult.needs_clearer_image) {
+          setError("Photo is not clear enough. Please take a closer, well-lit photo of the affected leaf.");
         }
 
-        setIsLoading(false);
-        setError("Scan service mein temporary problem hai. Please retry karein.");
+        if (autoSpeak && (scanResult.possible_issue || scanResult.health_status)) {
+          setTimeout(speakResultText, 500);
+        }
+
         loadHistory().catch(() => {});
+        console.log("[CROP SCAN] Scan complete");
         return;
       }
 
-      console.log("[CropScan] AI response parsed successfully");
+      // Handle unrecoverable failure with specific error mapping
+      const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
+      const message = getSpecificErrorMessage(edgeCode, err);
       setIsLoading(false);
-      setResult(data.result);
-
-      if (data.result.needs_clearer_image) {
-        setError("Photo thodi dark hai. Please leaf ko light mein clearly capture karein.");
-      }
-
-      if (autoSpeak && (data.result.possible_issue || data.result.health_status)) {
-        setTimeout(speakResultText, 500);
-      }
-
+      setError(message);
       loadHistory().catch(() => {});
-      console.log("[CropScan] complete");
     } catch (err: any) {
-      console.error("[CropScan] exception caught during diagnosis:", err?.message || err);
+      console.error("[CROP SCAN] Exception caught during diagnosis:", err?.message || err);
       setIsLoading(false);
-      setError(err?.message || "Scan service mein temporary problem hai. Please retry karein.");
+      setError(getSpecificErrorMessage("unknown", err?.message));
     }
   };
 
@@ -404,6 +485,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
     setQualityWarning(null);
     setInput("");
     setImages([]);
+    closeDesktopCamera();
     if (galleryInputRef.current) galleryInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
@@ -638,6 +720,78 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 min-h-screen flex flex-col space-y-6">
+      {/* Desktop Camera Modal */}
+      {isDesktopCameraOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col items-center">
+            <div className="w-full flex justify-between items-center mb-4">
+              <h3 className="type-h3 flex items-center gap-2">
+                <Camera size={20} className="text-primary" /> Camera Preview
+              </h3>
+              <button
+                onClick={closeDesktopCamera}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-muted hover:bg-muted/80 text-muted-foreground transition-colors"
+                aria-label="Close camera"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {cameraError ? (
+              <div className="w-full bg-destructive/10 border border-destructive/25 rounded-xl p-5 text-center my-4">
+                <AlertTriangle size={32} className="text-destructive mx-auto mb-2" />
+                <p className="type-body font-semibold text-destructive mb-1">{cameraError}</p>
+                <p className="type-meta text-muted-foreground mb-4">You can select a crop photo directly from your device gallery.</p>
+                <div className="flex gap-3 justify-center">
+                  <AgriButton
+                    variant="primary"
+                    onClick={() => {
+                      closeDesktopCamera();
+                      galleryInputRef.current?.click();
+                    }}
+                  >
+                    <Upload size={16} /> Choose from Gallery
+                  </AgriButton>
+                  <AgriButton variant="outline" onClick={closeDesktopCamera}>
+                    Cancel
+                  </AgriButton>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full space-y-4">
+                <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-border flex items-center justify-center">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  {!cameraStream && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white type-small">
+                      <Loader className="animate-spin mr-2" size={18} /> Initializing camera...
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <AgriButton variant="outline" onClick={closeDesktopCamera}>
+                    Cancel
+                  </AgriButton>
+                  <AgriButton
+                    variant="primary"
+                    onClick={captureDesktopPhoto}
+                    disabled={!cameraStream}
+                    className="flex-1 font-semibold"
+                  >
+                    <Camera size={18} /> Capture Photo
+                  </AgriButton>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Hidden inputs for gallery & camera */}
       <input
@@ -745,13 +899,13 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
           {/* Photo Quality Guidance Helper */}
           <div className="mb-4 bg-muted/40 p-3 rounded-xl border border-border">
             <h4 className="type-h3 flex items-center gap-1.5 text-foreground text-xs sm:text-sm font-semibold mb-1.5">
-              <Camera size={15} className="text-primary" /> अच्छी फोटो के लिए:
+              <Camera size={15} className="text-primary" /> photo guidance:
             </h4>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-muted-foreground">
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> पत्ती को पूरा frame में रखें</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> दिन की रोशनी में फोटो लें</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> प्रभावित हिस्से के पास से फोटो लें</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> कैमरा साफ रखें और focus करें</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Keep leaf full inside frame</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Take photo in daylight</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Close-up of affected leaf part</li>
+              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Ensure camera lens is clean</li>
             </ul>
           </div>
 
@@ -798,6 +952,24 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                     </button>
                   )}
                 </div>
+
+                {/* Preview controls toolbar: Retake & Choose Another */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleRetake}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <RotateCw size={13} /> Retake Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <Upload size={13} /> Choose Another
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -807,7 +979,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                 >
                   <Camera size={28} className="text-primary" aria-hidden="true" />
                   <span className="type-h3">Take a photo</span>
-                  <span className="type-meta">Use your mobile camera</span>
+                  <span className="type-meta">Use device camera</span>
                 </button>
 
                 <button
@@ -842,7 +1014,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                   onClick={handleDiagnosis}
                   className="shrink-0 px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold rounded-md text-xs transition-colors flex items-center gap-1"
                 >
-                  <RotateCw size={12} /> फिर से जांचें
+                  <RotateCw size={12} /> Retry Scan
                 </button>
               )}
             </div>
@@ -858,11 +1030,11 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader className="animate-spin" size={20} />
-                {LOADING_STEPS[loadingStepIndex]}
+                Analyzing crop... ({LOADING_STEPS[loadingStepIndex]})
               </span>
             ) : (
               <>
-                <Scan size={20} /> Scan &amp; Diagnose
+                <Scan size={20} /> Analyze Crop
               </>
             )}
           </AgriButton>

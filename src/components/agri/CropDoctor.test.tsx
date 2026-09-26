@@ -59,7 +59,7 @@ async function uploadImage() {
   const input = document.querySelector('input[type="file"]') as HTMLInputElement;
   fireEvent.change(input, { target: { files: [file] } });
   await waitFor(() =>
-    (screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }) as HTMLButtonElement).disabled === false
+    (screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }) as HTMLButtonElement).disabled === false
   );
 }
 
@@ -84,7 +84,7 @@ describe("CropDoctor — Phase 6 honest AI error handling", () => {
 
     renderDoctor();
     await uploadImage();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/Something went wrong with the analysis/)).toBeTruthy();
     expect(screen.queryByText(/Crop Scan Result/)).toBeNull();
@@ -102,9 +102,9 @@ describe("CropDoctor — Phase 6 honest AI error handling", () => {
 
     renderDoctor();
     await uploadImage();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
-    expect(await screen.findByText(/You appear to be offline/)).toBeTruthy();
+    expect(await screen.findByText(/Unable to connect|You appear to be offline/i)).toBeTruthy();
   });
 
   it("shows the server validation message verbatim for invalid images", async () => {
@@ -118,7 +118,7 @@ describe("CropDoctor — Phase 6 honest AI error handling", () => {
 
     renderDoctor();
     await uploadImage();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(msg)).toBeTruthy();
   });
@@ -147,7 +147,7 @@ describe("CropDoctor — Phase 6 honest AI error handling", () => {
     renderDoctor();
     await uploadImage();
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/AI assessment — not a definitive diagnosis\./)).toBeTruthy();
     expect(screen.getByText(/Possible early fungal spot/)).toBeTruthy();
@@ -173,7 +173,7 @@ describe("CropDoctor — Phase 6 honest AI error handling", () => {
     renderDoctor();
     await uploadImage();
     disableAutoSpeak();
-    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan & Diagnose|Diagnose|Analyze Crop/i }));
 
     expect(await screen.findByText(/No confidence score/)).toBeTruthy();
     expect(screen.getByText(/AI is not confident in this assessment/)).toBeTruthy();
