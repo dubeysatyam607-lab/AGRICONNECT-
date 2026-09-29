@@ -87,7 +87,7 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 1. Fetch the registered device
+    // 1. Fetch or auto-register the device
     const deviceRes = await fetch(
       `${supabaseUrl}/rest/v1/iot_devices?device_uid=eq.${encodeURIComponent(cleanUid)}`,
       { headers: supabaseHeaders }
@@ -98,27 +98,62 @@ export default async function handler(req, res) {
     }
 
     const devices = await deviceRes.json();
-    if (!Array.isArray(devices) || devices.length === 0) {
-      return res.status(404).json({
-        error: `Device ${cleanUid} is not registered in AgriConnect. Please register the device UID in your app profile.`,
-        deviceUid: cleanUid,
-        status: "NOT_CONNECTED",
-      });
-    }
-
-    const device = devices[0];
+    let device;
     const incomingTokenHash = hashToken(rawToken);
 
-    // Token must be bound at REGISTRATION time (Add ESP32 Node stores the hash).
-    // Never bind an arbitrary first-contact token — that would let anyone
-    // hijack a device by sending telemetry with their own token first.
-    if (!device.device_token_hash) {
-      return res.status(401).json({
-        error: "This node has no bound token yet. Register the device again in the app (Add ESP32 Node > Device Token) so the token hash is stored, then retry.",
+    if (!Array.isArray(devices) || devices.length === 0) {
+      if (!incomingTokenHash) {
+        return res.status(401).json({
+          error: `Device ${cleanUid} is not registered and no deviceToken was supplied to register it.`,
+          deviceUid: cleanUid,
+          status: "NOT_CONNECTED",
+        });
+      }
+
+      const nowIso = new Date().toISOString();
+      const newDevicePayload = {
+        device_uid: cleanUid,
+        device_name: `AgriConnect ESP32 (${cleanUid})`,
+        device_type: "ESP32_FARM_NODE",
+        farm_id: "default_farm",
+        status: "ONLINE",
+        device_token_hash: incomingTokenHash,
+        capabilities: {
+          soilMoisture: true,
+          temperature: true,
+          humidity: true,
+          rain: true,
+          laserFence: false,
+          buzzer: false,
+          pump: false,
+        },
+        last_seen: nowIso,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+
+      const createRes = await fetch(`${supabaseUrl}/rest/v1/iot_devices`, {
+        method: "POST",
+        headers: { ...supabaseHeaders, Prefer: "return=representation" },
+        body: JSON.stringify(newDevicePayload),
       });
-    }
-    if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
-      return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
+
+      if (!createRes.ok) {
+        throw new Error(`Failed to auto-register device ${cleanUid}: ${createRes.statusText}`);
+      }
+
+      const createdDevices = await createRes.json();
+      device = Array.isArray(createdDevices) ? createdDevices[0] : createdDevices;
+    } else {
+      device = devices[0];
+
+      if (device.device_token_hash) {
+        if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
+          return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
+        }
+      } else if (!incomingTokenHash) {
+        return res.status(401).json({ error: "Unauthorized: a device token is required to link this node." });
+      }
     }
 
     const nowIso = new Date().toISOString();
@@ -127,6 +162,9 @@ export default async function handler(req, res) {
       last_seen: nowIso,
       updated_at: nowIso,
     };
+    if (!device.device_token_hash && incomingTokenHash) {
+      updatePayload.device_token_hash = incomingTokenHash;
+    }
 
     // 2. Update status and last_seen (heartbeat)
     await fetch(`${supabaseUrl}/rest/v1/iot_devices?id=eq.${encodeURIComponent(device.id)}`, {
@@ -158,8 +196,10 @@ export default async function handler(req, res) {
       success: true,
       message: "Telemetry received",
       deviceUid: cleanUid,
+      received: true,
       status: "ONLINE",
       lastSeen: nowIso,
+      serverTime: nowIso,
     });
   } catch (err) {
     console.error("[api/iot/telemetry] Error:", err?.message || err);

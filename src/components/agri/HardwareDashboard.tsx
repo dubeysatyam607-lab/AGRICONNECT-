@@ -117,6 +117,10 @@ const HardwareDashboard: React.FC = () => {
   // Live relative timestamps
   const [now, setNow] = useState<number>(Date.now());
 
+  // Diagnostics state
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState<boolean>(false);
+  const [lastApiStatus, setLastApiStatus] = useState<number | string>(200);
+
   // Dialog states
   const [registerOpen, setRegisterOpen] = useState<boolean>(false);
   const [testModeOpen, setTestModeOpen] = useState<boolean>(false);
@@ -184,6 +188,14 @@ const HardwareDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+  }, [loadDashboardData]);
+
+  // Auto-poll telemetry & device status every 12 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 12000);
+    return () => clearInterval(interval);
   }, [loadDashboardData]);
 
   // Single realtime subscription, created once. Navigation Home → IoT → Home
@@ -257,7 +269,13 @@ const HardwareDashboard: React.FC = () => {
     setIsSyncing(true);
     await loadDashboardData();
     setIsSyncing(false);
-    toast({ title: "Sensors Synced", description: "Updated with the latest telemetry status." });
+    if (selectedDevice?.status === "ONLINE") {
+      toast({ title: "Sensors Synced", description: "Latest telemetry received from hardware." });
+    } else if (selectedDevice?.status === "OFFLINE") {
+      toast({ title: "Device Offline", description: `No telemetry received for over 90 seconds. Last seen ${formatRelativeTime(selectedDevice.last_seen, Date.now())}.`, variant: "destructive" });
+    } else {
+      toast({ title: "Waiting for Telemetry", description: "Power on your ESP32 node to connect.", variant: "destructive" });
+    }
   };
 
   const handleSelectDevice = (deviceUid: string) => {
@@ -990,6 +1008,65 @@ const HardwareDashboard: React.FC = () => {
             </div>
           )}
         </CardContent>
+      </Card>
+
+      {/* ── DEVELOPER DIAGNOSTICS (HIDDEN BEHIND TOGGLE) ───────────────────── */}
+      <Card className="border-border shadow-card rounded-2xl overflow-hidden">
+        <div className="p-4 bg-muted/20">
+          <button
+            type="button"
+            onClick={() => setDiagnosticsOpen((prev) => !prev)}
+            className="flex items-center justify-between w-full text-xs font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <Cpu className="w-4 h-4 text-emerald-600" />
+              Diagnostics
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] normal-case font-normal text-muted-foreground">Developer view</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${diagnosticsOpen ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+
+          {diagnosticsOpen && (
+            <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Device</span>
+                <p className="font-bold text-foreground">{selectedDevice ? selectedDevice.device_uid : "N/A"}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Connection</span>
+                <p className={`font-bold ${selectedDevice?.status === "ONLINE" ? "text-emerald-600" : selectedDevice?.status === "OFFLINE" ? "text-red-600" : "text-slate-500"}`}>
+                  ● {selectedDevice ? selectedDevice.status : "NOT_CONNECTED"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Last Telemetry</span>
+                <p className="font-bold text-foreground">
+                  {latestReading?.created_at ? new Date(latestReading.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "None"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Last API Response</span>
+                <p className="font-bold text-emerald-600">{lastApiStatus}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Last Command</span>
+                <p className="font-bold text-foreground">{commands[0]?.command || "None"}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Command Status</span>
+                <p className={`font-bold ${commands[0]?.state === "EXECUTED" ? "text-emerald-600" : commands[0]?.state === "FAILED" ? "text-red-600" : "text-amber-600"}`}>
+                  {commands[0]?.state || "N/A"}
+                </p>
+              </div>
+              <div className="space-y-1 col-span-2">
+                <span className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-wider">Last Error</span>
+                <p className="font-bold text-red-500 truncate">{commands[0]?.error || "None"}</p>
+              </div>
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* ── ALERTS SECTION ──────────────────────────────────────────────── */}

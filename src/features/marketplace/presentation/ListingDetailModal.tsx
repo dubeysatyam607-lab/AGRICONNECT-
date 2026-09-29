@@ -265,14 +265,30 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
             <button
               onClick={() => {
-                onOpenChange(false);
-                onBook(listing);
+                if (listing.availability === 'available') {
+                  onOpenChange(false);
+                  onBook(listing);
+                }
               }}
               disabled={listing.availability !== 'available'}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-xs text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md transition-all"
+              className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all ${
+                listing.availability === 'available'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed border border-border'
+              }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>Request / Book Now</span>
+              <span>
+                {listing.availability !== 'available'
+                  ? 'Currently Unavailable'
+                  : listing.listing_type === 'labour'
+                  ? 'Hire Worker / Service'
+                  : listing.listing_type === 'service'
+                  ? 'Request Service'
+                  : listing.listing_type === 'cattle'
+                  ? 'Book Now'
+                  : 'Request Rental'}
+              </span>
             </button>
           </div>
         </div>

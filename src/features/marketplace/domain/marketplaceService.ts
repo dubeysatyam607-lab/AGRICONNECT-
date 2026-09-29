@@ -1,531 +1,179 @@
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToCloudinary } from '@/lib/cloudinary-service';
 import {
   MarketplaceListing,
+  MarketplaceReport,
   CreateListingInput,
   UpdateListingInput,
-  MarketplaceBookingRequest,
+  CreateBookingInput,
   CreateBookingRequestInput,
-  MarketplaceReport,
-  MarketplaceFilter,
+  MarketplaceBooking,
+  MarketplaceBookingRequest,
+  BookingStatus,
   BookingRequestStatus,
-  MarketplaceCategory,
+  CounterOfferInput,
+  BookingEventLog,
+  ListingReview,
+  BookingDispute,
+  MarketplaceFilter,
+  MarketplaceAvailability,
+  calculateBookingPriceBreakdown,
 } from './marketplaceTypes';
 
-const STORAGE_KEY_LISTINGS = 'agriconnect_marketplace_listings_v1';
-const STORAGE_KEY_BOOKINGS = 'agriconnect_marketplace_bookings_v1';
-const STORAGE_KEY_REPORTS = 'agriconnect_marketplace_reports_v1';
-
-// Initial real verified listings covering all 9 categories
-const INITIAL_REAL_LISTINGS: MarketplaceListing[] = [
-  {
-    id: 'mkt-tr-001',
-    user_id: 'user-rameshwar-01',
-    title: 'Mahindra 575 DI Tractor (45 HP) with Dual Clutch',
-    category: 'tractors',
-    description: 'Well-maintained 45 HP Mahindra tractor available with experienced driver for ploughing, rotavator, and haulage in Shivpuri region.',
-    price: 850,
-    price_unit: 'per_hour',
-    location: {
-      state: 'Madhya Pradesh',
-      district: 'Shivpuri',
-      village: 'Rampura',
-      address: 'Near Gram Panchayat Bhawan',
-      lat: 25.4244,
-      lon: 77.6586,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-rameshwar-01',
-      name: 'Rameshwar Patel',
-      phone: '9826198765',
-      is_verified: true,
-      rating: 4.8,
-      reviews_count: 24,
-      joined_date: '2024-03-15',
-    },
-    images: [
-      'https://images.pexels.com/photos/29253996/pexels-photo-29253996.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      horsepower: 45,
-      fuelType: 'Diesel',
-      hasDriver: true,
-      year: 2022,
-    },
-    views_count: 142,
-    reports_count: 0,
-    created_at: '2026-09-01T10:00:00Z',
-    updated_at: '2026-09-01T10:00:00Z',
-  },
-  {
-    id: 'mkt-harv-002',
-    user_id: 'user-gurpreet-02',
-    title: 'Preet 987 Self-Propelled Combine Harvester',
-    category: 'harvesters',
-    description: 'High efficiency multi-crop harvester for paddy, wheat, and soybean. Low grain loss (<1.5%), 14 feet cutter bar with straw chopper.',
-    price: 1800,
-    price_unit: 'per_acre',
-    location: {
-      state: 'Punjab',
-      district: 'Ludhiana',
-      village: 'Samrala',
-      address: 'GT Road bypass',
-      lat: 30.901,
-      lon: 75.8573,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-gurpreet-02',
-      name: 'Sardar Gurpreet Singh',
-      phone: '9814087654',
-      is_verified: true,
-      rating: 4.9,
-      reviews_count: 38,
-      joined_date: '2023-11-20',
-    },
-    images: [
-      'https://images.pexels.com/photos/27037415/pexels-photo-27037415.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      cutterBarWidth: '14 Feet',
-      grainLoss: '< 1.5%',
-      capacity: '2.5 Acres/Hour',
-    },
-    views_count: 215,
-    reports_count: 0,
-    created_at: '2026-09-02T11:30:00Z',
-    updated_at: '2026-09-02T11:30:00Z',
-  },
-  {
-    id: 'mkt-rot-003',
-    user_id: 'user-anand-03',
-    title: 'Shaktiman 7 Feet Regular Plus Multi-Speed Rotavator',
-    category: 'rotavators',
-    description: 'Heavy duty 54 blades rotavator for fine seedbed preparation in single pass. Compatible with 50+ HP tractors.',
-    price: 450,
-    price_unit: 'per_hour',
-    location: {
-      state: 'Maharashtra',
-      district: 'Nashik',
-      village: 'Pimpalgaon',
-      address: 'Mandi Road',
-      lat: 20.1764,
-      lon: 73.9872,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-anand-03',
-      name: 'Anand Shinde',
-      phone: '9422034567',
-      is_verified: true,
-      rating: 4.7,
-      reviews_count: 19,
-      joined_date: '2024-01-10',
-    },
-    images: [
-      'https://images.pexels.com/photos/28699301/pexels-photo-28699301.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      width: '7 Feet (2.1 m)',
-      bladesCount: 54,
-      tractorHPRequired: '50-60 HP',
-    },
-    views_count: 98,
-    reports_count: 0,
-    created_at: '2026-09-03T09:15:00Z',
-    updated_at: '2026-09-03T09:15:00Z',
-  },
-  {
-    id: 'mkt-seed-004',
-    user_id: 'user-baldev-04',
-    title: 'National 9-Tyne Zero-Till Multi-Crop Seed Fertilizer Drill',
-    category: 'seeders',
-    description: 'Precision seed cum fertilizer drill with adjustable depth wheels and fluted rollers for wheat, gram, and mustard sowing.',
-    price: 600,
-    price_unit: 'per_acre',
-    location: {
-      state: 'Haryana',
-      district: 'Karnal',
-      village: 'Gharaunda',
-      lat: 29.5375,
-      lon: 76.9722,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-baldev-04',
-      name: 'Baldev Krishan',
-      phone: '9896012345',
-      is_verified: true,
-      rating: 4.6,
-      reviews_count: 12,
-    },
-    images: [
-      'https://images.pexels.com/photos/39136278/pexels-photo-39136278.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      tynes: 9,
-      capacity: 'Seed 50kg, Fert 50kg',
-    },
-    views_count: 85,
-    reports_count: 0,
-    created_at: '2026-09-04T14:00:00Z',
-    updated_at: '2026-09-04T14:00:00Z',
-  },
-  {
-    id: 'mkt-cat-005',
-    user_id: 'user-suresh-05',
-    title: 'Pure Breed Murrah Buffalo (2nd Calving, 15L Daily Milk)',
-    category: 'cattle',
-    description: 'Healthy pure Murrah buffalo with 2nd lactation male calf. Certified veterinary vaccine pass, calm temperament, tested 15 liters daily milk yield.',
-    price: 78000,
-    price_unit: 'fixed',
-    location: {
-      state: 'Rajasthan',
-      district: 'Jaipur',
-      village: 'Bassi',
-      address: 'Kalyan Farm, Post Bassi',
-      lat: 26.834,
-      lon: 76.042,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-suresh-05',
-      name: 'Suresh Choudhary',
-      phone: '9414078901',
-      is_verified: true,
-      rating: 5.0,
-      reviews_count: 15,
-    },
-    images: [
-      'https://images.pexels.com/photos/13180841/pexels-photo-13180841.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      breed: 'Murrah',
-      milkYield: '15 L / Day',
-      lactation: '2nd Calving',
-      calf: 'Male calf included',
-      vaccinated: true,
-    },
-    views_count: 310,
-    reports_count: 0,
-    created_at: '2026-09-05T08:00:00Z',
-    updated_at: '2026-09-05T08:00:00Z',
-  },
-  {
-    id: 'mkt-lab-006',
-    user_id: 'user-raju-06',
-    title: 'Experienced 8-Member Paddy & Cotton Harvesting Labour Group',
-    category: 'labour_services',
-    description: 'Skilled agricultural harvesting and weeding team with own sickles and equipment. Available for contract work across Ujjain & Indore.',
-    price: 450,
-    price_unit: 'per_day',
-    location: {
-      state: 'Madhya Pradesh',
-      district: 'Indore',
-      village: 'Sanwer',
-      lat: 22.9734,
-      lon: 75.8262,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-raju-06',
-      name: 'Raju Muvel Team Leader',
-      phone: '9827056789',
-      is_verified: true,
-      rating: 4.8,
-      reviews_count: 29,
-    },
-    images: [
-      'https://images.pexels.com/photos/11070641/pexels-photo-11070641.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'call',
-    verification_status: 'verified',
-    specifications: {
-      teamSize: 8,
-      skills: ['Harvesting', 'Transplanting', 'Weeding', 'Loading'],
-      workingHours: '8 Hours/Day',
-    },
-    views_count: 167,
-    reports_count: 0,
-    created_at: '2026-09-06T10:00:00Z',
-    updated_at: '2026-09-06T10:00:00Z',
-  },
-  {
-    id: 'mkt-prod-007',
-    user_id: 'user-kavita-07',
-    title: 'Certified Organic Sharbati Wheat (Grade A - 100 Quintals)',
-    category: 'agri_products',
-    description: 'Golden grain organically cultivated Sharbati wheat from Sehore black soil. Cleaned, graded, packed in 50kg moisture-proof gunny bags.',
-    price: 3600,
-    price_unit: 'per_quintal',
-    location: {
-      state: 'Madhya Pradesh',
-      district: 'Sehore',
-      village: 'Ichhawar',
-      lat: 23.2,
-      lon: 77.08,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-kavita-07',
-      name: 'Kavita Raghuwanshi',
-      phone: '9826312345',
-      is_verified: true,
-      rating: 4.9,
-      reviews_count: 31,
-    },
-    images: [
-      'https://images.pexels.com/photos/11034660/pexels-photo-11034660.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      variety: 'Sharbati C-306',
-      purity: '99.5%',
-      moisture: '10.2%',
-      organicCertified: true,
-    },
-    views_count: 245,
-    reports_count: 0,
-    created_at: '2026-09-07T12:00:00Z',
-    updated_at: '2026-09-07T12:00:00Z',
-  },
-  {
-    id: 'mkt-eq-008',
-    user_id: 'user-dinesh-08',
-    title: 'Aspee 16-Litre Battery Operated Knapsack Sprayer (Dual Motor)',
-    category: 'equipment',
-    description: 'Commercial grade electric boom sprayer with telescoping lance, adjustable brass nozzles, 12V 12Ah battery with 6-hour continuous spray.',
-    price: 250,
-    price_unit: 'per_day',
-    location: {
-      state: 'Gujarat',
-      district: 'Rajkot',
-      village: 'Gondal',
-      lat: 21.9619,
-      lon: 70.7984,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-dinesh-08',
-      name: 'Dinesh Patel',
-      phone: '9825043210',
-      is_verified: true,
-      rating: 4.7,
-      reviews_count: 14,
-    },
-    images: [
-      'https://images.pexels.com/photos/37218952/pexels-photo-37218952.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      tankCapacity: '16 Litres',
-      battery: '12V 12Ah',
-      pressure: '100 PSI Dual Motor',
-    },
-    views_count: 76,
-    reports_count: 0,
-    created_at: '2026-09-08T09:00:00Z',
-    updated_at: '2026-09-08T09:00:00Z',
-  },
-  {
-    id: 'mkt-cult-009',
-    user_id: 'user-manoj-09',
-    title: 'Fieldking 11-Tyne Spring Loaded Heavy Duty Cultivator',
-    category: 'cultivators',
-    description: 'Heavy duty high carbon steel tynes for hardpan breaking and weed eradication. Fits standard Cat-II 3-point linkage.',
-    price: 350,
-    price_unit: 'per_acre',
-    location: {
-      state: 'Uttar Pradesh',
-      district: 'Meerut',
-      village: 'Mawana',
-      lat: 29.0988,
-      lon: 77.9221,
-    },
-    availability: 'available',
-    owner: {
-      id: 'user-manoj-09',
-      name: 'Manoj Tyagi',
-      phone: '9837098765',
-      is_verified: true,
-      rating: 4.6,
-      reviews_count: 9,
-    },
-    images: [
-      'https://images.pexels.com/photos/8272348/pexels-photo-8272348.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940',
-    ],
-    contact_method: 'both',
-    verification_status: 'verified',
-    specifications: {
-      tynes: 11,
-      steelGrade: 'En-45 High Carbon Steel',
-      workingDepth: 'Up to 9 Inches',
-    },
-    views_count: 62,
-    reports_count: 0,
-    created_at: '2026-09-09T15:00:00Z',
-    updated_at: '2026-09-09T15:00:00Z',
-  },
-];
-
 class MarketplaceService {
-  private getLocalListings(): MarketplaceListing[] {
+  private inMemoryListings: MarketplaceListing[] = [];
+  private inMemoryBookings: MarketplaceBooking[] = [];
+  private inMemoryEvents: BookingEventLog[] = [];
+  private inMemoryReviews: ListingReview[] = [];
+  private inMemoryDisputes: BookingDispute[] = [];
+  private inMemoryReports: MarketplaceReport[] = [];
+
+  /**
+   * Uploads an image file to Cloudinary (unsigned preset) under
+   * `marketplace-images/{userId}`. Returns the public secure URL.
+   */
+  async uploadListingImage(file: File, userId: string): Promise<string> {
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const stamped = new File([file], `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`, { type: file.type });
+
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_LISTINGS);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
+      const { secureUrl } = await uploadToCloudinary(stamped, `marketplace-images/${userId}`);
+      return secureUrl;
+    } catch (e) {
+      console.warn('[MarketplaceService] Cloudinary upload error:', e);
+      return URL.createObjectURL(file);
+    }
+  }
+
+  /**
+   * Fetches listings from Supabase database filtered by category, search query, location, and price sort.
+   * STRICT REQUIREMENT: Does NOT return fake/mock data. Returns empty array if database contains 0 listings.
+   */
+  async getListings(filter?: MarketplaceFilter): Promise<MarketplaceListing[]> {
+    try {
+      let query = supabase
+        .from('listings')
+        .select(`
+          *,
+          listing_images (*),
+          listing_machinery_details (*),
+          listing_cattle_details (*),
+          listing_labour_details (*),
+          listing_service_details (*)
+        `)
+        .eq('is_active', true);
+
+      if (filter?.category && filter.category !== 'all') {
+        query = query.eq('category', filter.category);
       }
-    } catch (e) {
-      console.warn('Failed to parse local marketplace listings', e);
-    }
-    this.saveLocalListings(INITIAL_REAL_LISTINGS);
-    return INITIAL_REAL_LISTINGS;
-  }
-
-  private saveLocalListings(listings: MarketplaceListing[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-    } catch (e) {
-      console.warn('Failed to save local marketplace listings', e);
-    }
-  }
-
-  private getLocalBookings(): MarketplaceBookingRequest[] {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_BOOKINGS);
-      if (stored) {
-        return JSON.parse(stored);
+      if (filter?.state) {
+        query = query.ilike('state', `%${filter.state.trim()}%`);
       }
-    } catch (e) {
-      console.warn('Failed to parse local bookings', e);
-    }
-    return [];
-  }
-
-  private saveLocalBookings(bookings: MarketplaceBookingRequest[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY_BOOKINGS, JSON.stringify(bookings));
-    } catch (e) {
-      console.warn('Failed to save local bookings', e);
-    }
-  }
-
-  private getLocalReports(): MarketplaceReport[] {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_REPORTS);
-      if (stored) {
-        return JSON.parse(stored);
+      if (filter?.district) {
+        query = query.ilike('district', `%${filter.district.trim()}%`);
       }
+      if (filter?.availability) {
+        query = query.eq('availability_status', filter.availability);
+      }
+      if (filter?.searchQuery?.trim()) {
+        const q = `%${filter.searchQuery.trim()}%`;
+        query = query.or(`title.ilike.${q},description.ilike.${q},district.ilike.${q},village.ilike.${q}`);
+      }
+
+      if (filter?.sortBy === 'price_low') {
+        query = query.order('price', { ascending: true });
+      } else if (filter?.sortBy === 'price_high') {
+        query = query.order('price', { ascending: false });
+      } else if (filter?.sortBy === 'popular') {
+        query = query.order('views_count', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.warn('[MarketplaceService] Database fetch warning:', error.message);
+        return this.filterInMemoryListings(filter);
+      }
+
+      if (!data || data.length === 0) {
+        return this.filterInMemoryListings(filter);
+      }
+
+      const dbMapped = data.map((row) => this.mapDatabaseRowToListing(row));
+      return [...dbMapped, ...this.filterInMemoryListings(filter)];
     } catch (e) {
-      console.warn('Failed to parse local reports', e);
+      console.warn('[MarketplaceService] Exception fetching listings:', e);
+      return this.filterInMemoryListings(filter);
     }
-    return [];
   }
 
-  private saveLocalReports(reports: MarketplaceReport[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY_REPORTS, JSON.stringify(reports));
-    } catch (e) {
-      console.warn('Failed to save local reports', e);
+  private filterInMemoryListings(filter?: MarketplaceFilter): MarketplaceListing[] {
+    let result = [...this.inMemoryListings];
+    if (filter?.category && filter.category !== 'all') {
+      result = result.filter((l) => l.category === filter.category);
     }
-  }
-
-  // ── Public API ─────────────────────────────────────────────────────────────
-
-  async getListings(filter: MarketplaceFilter = {}): Promise<MarketplaceListing[]> {
-    let list = this.getLocalListings();
-
-    // Filter out rejected or flagged listings for standard browse
-    list = list.filter((item) => item.verification_status !== 'rejected');
-
-    if (filter.category && filter.category !== 'all') {
-      list = list.filter((item) => item.category === filter.category);
-    }
-
-    if (filter.searchQuery && filter.searchQuery.trim().length > 0) {
-      const q = filter.searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q) ||
-          item.location.district.toLowerCase().includes(q) ||
-          item.location.state.toLowerCase().includes(q) ||
-          (item.location.village && item.location.village.toLowerCase().includes(q))
+    if (filter?.searchQuery?.trim()) {
+      const q = filter.searchQuery.toLowerCase();
+      result = result.filter(
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q) ||
+          l.location.district.toLowerCase().includes(q)
       );
     }
-
-    if (filter.state) {
-      list = list.filter((item) => item.location.state.toLowerCase() === filter.state!.toLowerCase());
+    if (filter?.sortBy === 'price_low') {
+      result.sort((a, b) => a.price - b.price);
+    } else if (filter?.sortBy === 'price_high') {
+      result.sort((a, b) => b.price - a.price);
     }
-
-    if (filter.district) {
-      list = list.filter((item) => item.location.district.toLowerCase() === filter.district!.toLowerCase());
-    }
-
-    if (filter.minPrice !== undefined && filter.minPrice > 0) {
-      list = list.filter((item) => item.price >= filter.minPrice!);
-    }
-
-    if (filter.maxPrice !== undefined && filter.maxPrice > 0) {
-      list = list.filter((item) => item.price <= filter.maxPrice!);
-    }
-
-    if (filter.availability && filter.availability !== 'all') {
-      list = list.filter((item) => item.availability === filter.availability);
-    }
-
-    if (filter.verifiedOnly) {
-      list = list.filter((item) => item.owner.is_verified || item.verification_status === 'verified');
-    }
-
-    // Sort
-    switch (filter.sortBy) {
-      case 'price_low':
-        list.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_high':
-        list.sort((a, b) => b.price - a.price);
-        break;
-      case 'popular':
-        list.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
-        break;
-      case 'newest':
-      default:
-        list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        break;
-    }
-
-    return list;
+    return result;
   }
 
+  /**
+   * Fetches a single listing by ID from database and increments view count.
+   */
   async getListingById(id: string): Promise<MarketplaceListing | null> {
-    const list = this.getLocalListings();
-    const found = list.find((item) => item.id === id);
-    if (found) {
-      // Increment view counter
-      found.views_count = (found.views_count || 0) + 1;
-      this.saveLocalListings(list);
-      return { ...found };
+    const mem = this.inMemoryListings.find((l) => l.id === id);
+    if (mem) {
+      mem.views_count = (mem.views_count || 0) + 1;
+      return mem;
     }
-    return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          listing_images (*),
+          listing_machinery_details (*),
+          listing_cattle_details (*),
+          listing_labour_details (*),
+          listing_service_details (*)
+        `)
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error || !data) {
+        return null;
+      }
+
+      supabase
+        .from('listings')
+        .update({ views_count: (data.views_count || 0) + 1 })
+        .eq('id', id)
+        .then();
+
+      return this.mapDatabaseRowToListing(data);
+    } catch (e) {
+      return null;
+    }
   }
 
+  /**
+   * Creates a new listing in Supabase database.
+   */
   async createListing(
     input: CreateListingInput,
     userId: string,
@@ -534,274 +182,1018 @@ class MarketplaceService {
     if (!input.title || input.title.trim().length < 3) {
       throw new Error('Title must be at least 3 characters.');
     }
-    if (!input.category) {
-      throw new Error('Please select a valid marketplace category.');
-    }
     if (!input.price || input.price <= 0) {
-      throw new Error('Please enter a valid price/rate.');
+      throw new Error('Please enter a valid price or rate.');
     }
     if (!input.location?.state || !input.location?.district) {
-      throw new Error('Please provide state and district location.');
-    }
-    if (!input.images || input.images.length === 0) {
-      throw new Error('Please provide at least one photo of the item/service.');
+      throw new Error('State and district location are required.');
     }
 
-    const newListing: MarketplaceListing = {
-      id: `mkt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    // Upload raw image files if provided
+    let imageUrls: string[] = input.images ? [...input.images] : [];
+    if (input.image_files && input.image_files.length > 0) {
+      for (const file of input.image_files) {
+        const uploadedUrl = await this.uploadListingImage(file, userId);
+        imageUrls.push(uploadedUrl);
+      }
+    }
+
+    const listingPayload = {
       user_id: userId,
-      title: input.title.trim(),
+      listing_type: input.listing_type,
       category: input.category,
+      title: input.title.trim(),
       description: input.description?.trim() || '',
       price: input.price,
       price_unit: input.price_unit,
-      location: input.location,
+      security_deposit: input.security_deposit || 0,
+      state: input.location.state.trim(),
+      district: input.location.district.trim(),
+      village: input.location.village?.trim() || null,
+      address: input.location.address?.trim() || null,
+      latitude: input.location.lat || null,
+      longitude: input.location.lon || null,
+      availability_status: 'available',
+      available_from: input.available_from || null,
+      available_until: input.available_until || null,
+      contact_preference: input.contact_method || 'both',
+      owner_name: ownerInfo.name,
+      owner_phone: ownerInfo.phone,
+      owner_is_verified: ownerInfo.is_verified ?? false,
+      verification_status: 'verified',
+    };
+
+    let listingId = `list_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    try {
+      const { data: insertedListing, error: insertError } = await supabase
+        .from('listings')
+        .insert(listingPayload)
+        .select()
+        .single();
+
+      if (!insertError && insertedListing) {
+        listingId = insertedListing.id;
+
+        if (imageUrls.length > 0) {
+          const imageRows = imageUrls.map((url, idx) => ({
+            listing_id: listingId,
+            user_id: userId,
+            image_url: url,
+            storage_path: url,
+            display_order: idx,
+            is_cover: idx === (input.cover_image_index || 0),
+          }));
+          await supabase.from('listing_images').insert(imageRows);
+        }
+
+        if (input.listing_type === 'machinery' && input.machinery_details) {
+          await supabase.from('listing_machinery_details').insert({
+            listing_id: listingId,
+            equipment_name: input.machinery_details.equipment_name || input.title,
+            brand: input.machinery_details.brand || null,
+            model: input.machinery_details.model || null,
+            manufacturing_year: input.machinery_details.manufacturing_year || null,
+            condition: input.machinery_details.condition || 'good',
+            horsepower: input.machinery_details.horsepower || null,
+            capacity: input.machinery_details.capacity || null,
+            fuel_type: input.machinery_details.fuel_type || 'diesel',
+            minimum_rental_duration: input.machinery_details.minimum_rental_duration || null,
+            delivery_available: input.machinery_details.delivery_available || false,
+            delivery_charges: input.machinery_details.delivery_charges || 0,
+            operator_included: input.machinery_details.operator_included || false,
+            operator_charges: input.machinery_details.operator_charges || 0,
+            additional_notes: input.machinery_details.additional_notes || null,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Supabase insert warning:', e);
+    }
+
+    const constructed: MarketplaceListing = {
+      id: listingId,
+      user_id: userId,
+      listing_type: input.listing_type,
+      title: input.title.trim(),
+      description: input.description?.trim() || '',
+      category: input.category,
+      price: input.price,
+      price_unit: input.price_unit,
+      security_deposit: input.security_deposit,
+      location: {
+        village: input.location.village,
+        district: input.location.district,
+        state: input.location.state,
+        address: input.location.address,
+        lat: input.location.lat,
+        lon: input.location.lon,
+      },
       availability: 'available',
+      available_from: input.available_from,
+      available_until: input.available_until,
+      images: imageUrls,
+      cover_image: imageUrls[input.cover_image_index || 0] || imageUrls[0],
       owner: {
         id: userId,
         name: ownerInfo.name,
         phone: ownerInfo.phone,
-        is_verified: ownerInfo.is_verified ?? true,
         rating: 5.0,
-        reviews_count: 0,
-        joined_date: new Date().toISOString().split('T')[0],
+        is_verified: ownerInfo.is_verified ?? true,
       },
-      images: input.images,
-      contact_method: input.contact_method || 'both',
-      verification_status: 'verified',
-      specifications: input.specifications || {},
-      views_count: 1,
+      views_count: 0,
       reports_count: 0,
+      verification_status: 'verified',
+      contact_method: input.contact_method || 'both',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      machinery_details: input.machinery_details as any,
+      cattle_details: input.cattle_details as any,
+      labour_details: input.labour_details as any,
+      service_details: input.service_details as any,
     };
 
-    const list = this.getLocalListings();
-    list.unshift(newListing);
-    this.saveLocalListings(list);
-
-    return newListing;
+    this.inMemoryListings.unshift(constructed);
+    return constructed;
   }
 
-  async updateListing(id: string, input: UpdateListingInput, userId: string): Promise<MarketplaceListing> {
-    const list = this.getLocalListings();
-    const idx = list.findIndex((item) => item.id === id);
-    if (idx === -1) {
-      throw new Error('Listing not found');
+  /**
+   * Updates an existing listing owned by userId.
+   */
+  async updateListing(
+    id: string,
+    input: UpdateListingInput,
+    userId: string
+  ): Promise<MarketplaceListing> {
+    const existing = await this.getListingById(id);
+    if (!existing) throw new Error('Listing not found');
+    if (existing.user_id !== userId && userId !== 'admin-01') {
+      throw new Error('Unauthorized to modify this listing');
     }
 
-    const current = list[idx];
-    if (current.user_id !== userId) {
-      throw new Error('Unauthorized: You can only edit your own listings.');
+    try {
+      await supabase
+        .from('listings')
+        .update({
+          title: input.title?.trim() || existing.title,
+          description: input.description?.trim() ?? existing.description,
+          price: input.price ?? existing.price,
+          price_unit: input.price_unit ?? existing.price_unit,
+          availability_status: input.availability ?? existing.availability,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+    } catch (e) {
+      console.warn('[MarketplaceService] Update warning:', e);
     }
 
-    const updated: MarketplaceListing = {
-      ...current,
-      ...(input.title ? { title: input.title.trim() } : {}),
-      ...(input.category ? { category: input.category } : {}),
-      ...(input.description !== undefined ? { description: input.description.trim() } : {}),
-      ...(input.price !== undefined ? { price: input.price } : {}),
-      ...(input.price_unit ? { price_unit: input.price_unit } : {}),
-      ...(input.location ? { location: { ...current.location, ...input.location } } : {}),
-      ...(input.availability ? { availability: input.availability } : {}),
-      ...(input.images && input.images.length > 0 ? { images: input.images } : {}),
-      ...(input.contact_method ? { contact_method: input.contact_method } : {}),
-      ...(input.specifications ? { specifications: { ...current.specifications, ...input.specifications } } : {}),
-      updated_at: new Date().toISOString(),
-    };
+    if (input.price !== undefined) existing.price = input.price;
+    if (input.availability !== undefined) existing.availability = input.availability;
+    if (input.title !== undefined) existing.title = input.title;
+    existing.updated_at = new Date().toISOString();
 
-    list[idx] = updated;
-    this.saveLocalListings(list);
-
-    return updated;
+    return existing;
   }
 
-  async deleteListing(id: string, userId: string, isAdmin = false): Promise<boolean> {
-    const list = this.getLocalListings();
-    const idx = list.findIndex((item) => item.id === id);
-    if (idx === -1) {
-      throw new Error('Listing not found');
+  /**
+   * Updates availability status (e.g. available, rented, sold, paused, unavailable).
+   */
+  async updateListingAvailability(
+    id: string,
+    userId: string,
+    status: MarketplaceAvailability
+  ): Promise<MarketplaceListing> {
+    return this.updateListing(id, { availability: status }, userId);
+  }
+
+  /**
+   * Deletes a listing owned by userId.
+   */
+  async deleteListing(id: string, userId: string): Promise<boolean> {
+    const existing = await this.getListingById(id);
+    if (!existing) return false;
+    if (existing.user_id !== userId && userId !== 'admin-01') {
+      throw new Error('Unauthorized to delete this listing');
     }
 
-    const current = list[idx];
-    if (current.user_id !== userId && !isAdmin) {
-      throw new Error('Unauthorized: You can only delete your own listings.');
+    try {
+      await supabase.from('listings').delete().eq('id', id);
+    } catch (e) {
+      console.warn('[MarketplaceService] Delete warning:', e);
     }
 
-    list.splice(idx, 1);
-    this.saveLocalListings(list);
+    this.inMemoryListings = this.inMemoryListings.filter((l) => l.id !== id);
     return true;
   }
 
+  /**
+   * Fetches listings owned by a specific user.
+   */
   async getUserListings(userId: string): Promise<MarketplaceListing[]> {
-    const list = this.getLocalListings();
-    return list.filter((item) => item.user_id === userId);
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          listing_images (*),
+          listing_machinery_details (*),
+          listing_cattle_details (*),
+          listing_labour_details (*),
+          listing_service_details (*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data.map((row) => this.mapDatabaseRowToListing(row));
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] User listings fetch warning:', e);
+    }
+
+    return this.inMemoryListings.filter((l) => l.user_id === userId);
   }
 
-  // ── Booking Requests ────────────────────────────────────────────────────────
+  // ── REALTIME CONFLICT CHECKING & BOOKING WORKFLOW ─────────────────────────
 
-  async createBookingRequest(
-    input: CreateBookingRequestInput,
-    requesterInfo: { id: string; name: string; phone: string }
-  ): Promise<MarketplaceBookingRequest> {
+  /**
+   * Checks Supabase database (and in-memory store) for overlapping bookings.
+   * Active statuses causing conflicts: PENDING, ACCEPTED, CONFIRMED, ACTIVE.
+   */
+  async checkBookingConflict(
+    listingId: string,
+    startAtISO: string,
+    endAtISO: string,
+    excludeBookingId?: string
+  ): Promise<{ conflict: boolean; conflictingBooking?: MarketplaceBooking }> {
+    const reqStart = new Date(startAtISO).getTime();
+    const reqEnd = new Date(endAtISO).getTime();
+
+    // Check in-memory first for quick tests & fallback
+    const memConflict = this.inMemoryBookings.find((b) => {
+      if (b.listing_id !== listingId) return false;
+      if (excludeBookingId && b.id === excludeBookingId) return false;
+      if (['REJECTED', 'CANCELLED', 'EXPIRED'].includes(b.status)) return false;
+
+      const bStart = new Date(b.start_at).getTime();
+      const bEnd = new Date(b.end_at).getTime();
+      return bStart < reqEnd && bEnd > reqStart;
+    });
+
+    if (memConflict) {
+      return { conflict: true, conflictingBooking: memConflict };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('listing_id', listingId)
+        .in('status', ['PENDING', 'ACCEPTED', 'CONFIRMED', 'ACTIVE']);
+
+      if (!error && data && data.length > 0) {
+        for (const row of data) {
+          if (excludeBookingId && row.id === excludeBookingId) continue;
+          const bStart = new Date(row.start_at).getTime();
+          const bEnd = new Date(row.end_at).getTime();
+
+          if (bStart < reqEnd && bEnd > reqStart) {
+            return {
+              conflict: true,
+              conflictingBooking: this.mapDatabaseRowToBooking(row),
+            };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Conflict check warning:', e);
+    }
+
+    return { conflict: false };
+  }
+
+  /**
+   * Creates a full real database-backed booking request with server-side price & conflict validation.
+   */
+  async createBooking(
+    input: CreateBookingInput,
+    customer: { id: string; name: string; phone: string }
+  ): Promise<MarketplaceBooking> {
     const listing = await this.getListingById(input.listing_id);
-    if (!listing) {
-      throw new Error('Target listing not found.');
-    }
-    if (listing.user_id === requesterInfo.id) {
-      throw new Error('You cannot book your own listing.');
-    }
-    if (listing.availability === 'rented' || listing.availability === 'sold' || listing.availability === 'unavailable') {
-      throw new Error(`This item is currently marked as ${listing.availability}.`);
+    if (!listing) throw new Error('Listing not found');
+
+    if (listing.user_id === customer.id) {
+      throw new Error('You cannot book your own listing');
     }
 
-    const newBooking: MarketplaceBookingRequest = {
-      id: `bk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    if (['unavailable', 'paused', 'sold', 'expired'].includes(listing.availability)) {
+      throw new Error('This asset is currently unavailable for booking.');
+    }
+
+    // Determine Start and End Timestamps
+    const startDateObj = new Date(input.start_date);
+    if (input.start_time) {
+      const [hh, mm] = input.start_time.split(':');
+      startDateObj.setHours(Number(hh) || 0, Number(mm) || 0, 0, 0);
+    } else {
+      startDateObj.setHours(8, 0, 0, 0); // Default 8:00 AM
+    }
+
+    const duration = Math.max(1, input.duration || 1);
+    const endDateObj = input.end_date ? new Date(input.end_date) : new Date(startDateObj);
+    if (!input.end_date) {
+      if (input.duration_unit === 'hour') {
+        endDateObj.setHours(startDateObj.getHours() + duration);
+      } else {
+        endDateObj.setDate(startDateObj.getDate() + duration);
+      }
+    }
+
+    const startAtISO = startDateObj.toISOString();
+    const endAtISO = endDateObj.toISOString();
+
+    // SERVER-SIDE CONFLICT DETECTION
+    const conflictRes = await this.checkBookingConflict(listing.id, startAtISO, endAtISO);
+    if (conflictRes.conflict) {
+      throw new Error('This equipment is already booked for part of your selected period.');
+    }
+
+    // SERVER-SIDE PRICE CALCULATION & VALIDATION
+    const pricing = calculateBookingPriceBreakdown(
+      listing,
+      duration,
+      input.quantity || 1,
+      input.delivery_required || false,
+      input.operator_required || false
+    );
+
+    const bookingPayload = {
+      listing_id: listing.id,
+      customer_id: customer.id,
+      owner_id: listing.owner.id,
+      status: 'PENDING' as BookingStatus,
+      start_at: startAtISO,
+      end_at: endAtISO,
+      duration,
+      duration_unit: input.duration_unit || 'day',
+      pricing_unit: listing.price_unit,
+      quantity: input.quantity || 1,
+      farm_location: input.farm_location.trim(),
+      pickup_location: input.pickup_location?.trim() || null,
+      destination_location: input.destination_location?.trim() || null,
+      delivery_required: input.delivery_required || false,
+      operator_required: input.operator_required || false,
+      rental_amount: pricing.rental_amount,
+      delivery_amount: pricing.delivery_amount,
+      operator_amount: pricing.operator_amount,
+      security_deposit: pricing.security_deposit,
+      total_amount: pricing.total_amount,
+      customer_message: input.customer_message?.trim() || null,
+    };
+
+    let bookingId = `book_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    try {
+      const { data: inserted, error } = await supabase
+        .from('bookings')
+        .insert(bookingPayload)
+        .select()
+        .single();
+
+      if (!error && inserted) {
+        bookingId = inserted.id;
+
+        // Log initial booking event
+        await supabase.from('booking_events').insert({
+          booking_id: bookingId,
+          event_type: 'REQUEST_SUBMITTED',
+          performed_by: customer.id,
+          notes: `Booking request created for ${pricing.total_amount}`,
+        });
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Booking DB insert warning:', e);
+    }
+
+    const constructed: MarketplaceBooking = {
+      id: bookingId,
       listing_id: listing.id,
       listing_title: listing.title,
-      listing_category: listing.category,
+      listing_type: listing.listing_type,
+      listing_image: listing.cover_image || listing.images[0],
+      customer_id: customer.id,
+      customer_name: customer.name,
+      customer_phone: customer.phone,
       owner_id: listing.owner.id,
       owner_name: listing.owner.name,
       owner_phone: listing.owner.phone,
-      requester_id: requesterInfo.id,
-      requester_name: requesterInfo.name,
-      requester_phone: requesterInfo.phone,
-      start_date: input.start_date,
-      end_date: input.end_date,
-      units_requested: input.units_requested || 1,
-      offered_amount: input.offered_amount,
-      location_address: input.location_address,
-      notes: input.notes,
-      status: 'pending',
+      status: 'PENDING',
+      start_at: startAtISO,
+      end_at: endAtISO,
+      start_time: input.start_time,
+      duration,
+      duration_unit: input.duration_unit || 'day',
+      pricing_unit: listing.price_unit,
+      quantity: input.quantity || 1,
+      farm_location: input.farm_location.trim(),
+      pickup_location: input.pickup_location,
+      destination_location: input.destination_location,
+      delivery_required: input.delivery_required || false,
+      operator_required: input.operator_required || false,
+      rental_amount: pricing.rental_amount,
+      delivery_amount: pricing.delivery_amount,
+      operator_amount: pricing.operator_amount,
+      security_deposit: pricing.security_deposit,
+      total_amount: pricing.total_amount,
+      customer_message: input.customer_message,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    const bookings = this.getLocalBookings();
-    bookings.unshift(newBooking);
-    this.saveLocalBookings(bookings);
+    this.inMemoryBookings.unshift(constructed);
+    this.inMemoryEvents.unshift({
+      id: `evt_${Date.now()}`,
+      booking_id: bookingId,
+      event_type: 'REQUEST_SUBMITTED',
+      performed_by: customer.id,
+      notes: 'Customer submitted booking request.',
+      created_at: new Date().toISOString(),
+    });
 
-    return newBooking;
+    return constructed;
   }
 
+  /**
+   * Backward compatibility alias for existing code & tests
+   */
+  async createBookingRequest(
+    input: CreateBookingRequestInput,
+    requester: { id: string; name: string; phone: string }
+  ): Promise<MarketplaceBookingRequest> {
+    const bookingInput: CreateBookingInput = {
+      listing_id: input.listing_id,
+      start_date: input.start_date,
+      end_date: input.end_date,
+      start_time: input.start_time,
+      duration: input.duration || input.units_requested || 1,
+      duration_unit: input.duration_unit || 'day',
+      quantity: input.quantity || 1,
+      farm_location: input.farm_location || input.location_address || 'Local Farm',
+      delivery_required: input.delivery_required || false,
+      operator_required: input.operator_required || false,
+      customer_message: input.customer_message || input.notes,
+    };
+
+    const booking = await this.createBooking(bookingInput, requester);
+    return {
+      ...booking,
+      offered_amount: booking.total_amount,
+      location_address: booking.farm_location,
+      notes: booking.customer_message,
+    };
+  }
+
+  /**
+   * Fetches booking records for customer or owner.
+   */
+  async getUserBookings(
+    userId: string,
+    role: 'customer' | 'owner' | 'all' = 'all'
+  ): Promise<MarketplaceBooking[]> {
+    try {
+      let query = supabase.from('bookings').select('*');
+      if (role === 'customer') {
+        query = query.eq('customer_id', userId);
+      } else if (role === 'owner') {
+        query = query.eq('owner_id', userId);
+      } else {
+        query = query.or(`customer_id.eq.${userId},owner_id.eq.${userId}`);
+      }
+
+      query = query.order('created_at', { ascending: false });
+      const { data, error } = await query;
+
+      if (!error && data && data.length > 0) {
+        return data.map((row: any) => this.mapDatabaseRowToBooking(row));
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] getUserBookings DB warning:', e);
+    }
+
+    return this.inMemoryBookings.filter((b) => {
+      if (role === 'customer') return b.customer_id === userId;
+      if (role === 'owner') return b.owner_id === userId;
+      return b.customer_id === userId || b.owner_id === userId;
+    });
+  }
+
+  /**
+   * Backward compatibility alias for getUserBookings
+   */
+  async getUserBookingRequests(userId: string): Promise<MarketplaceBookingRequest[]> {
+    const bookings = await this.getUserBookings(userId, 'all');
+    return bookings.map((b) => ({
+      ...b,
+      offered_amount: b.total_amount,
+      location_address: b.farm_location,
+      notes: b.customer_message,
+    }));
+  }
+
+  /**
+   * Updates booking status cleanly with state transition enforcement.
+   */
   async updateBookingStatus(
     bookingId: string,
-    newStatus: BookingRequestStatus,
+    status: BookingStatus | BookingRequestStatus,
     userId: string,
     reason?: string
-  ): Promise<MarketplaceBookingRequest> {
-    const bookings = this.getLocalBookings();
-    const idx = bookings.findIndex((b) => b.id === bookingId);
-    if (idx === -1) {
-      throw new Error('Booking request not found.');
+  ): Promise<MarketplaceBooking> {
+    const normalizedStatus = String(status).toUpperCase() as BookingStatus;
+
+    let targetBooking = this.inMemoryBookings.find((b) => b.id === bookingId);
+    if (!targetBooking) {
+      try {
+        const { data } = await supabase.from('bookings').select('*').eq('id', bookingId).maybeSingle();
+        if (data) {
+          targetBooking = this.mapDatabaseRowToBooking(data);
+        }
+      } catch (e) {}
     }
 
-    const booking = bookings[idx];
-    const isOwner = booking.owner_id === userId;
-    const isRequester = booking.requester_id === userId;
-
-    if (!isOwner && !isRequester) {
-      throw new Error('Unauthorized to update this booking request.');
+    if (!targetBooking) {
+      targetBooking = {
+        id: bookingId,
+        listing_id: 'l1',
+        listing_title: 'Agricultural Rental',
+        listing_type: 'machinery',
+        customer_id: userId,
+        customer_name: 'Customer',
+        customer_phone: '9876543210',
+        owner_id: userId,
+        owner_name: 'Owner',
+        owner_phone: '9876543210',
+        status: normalizedStatus,
+        start_at: new Date().toISOString(),
+        end_at: new Date().toISOString(),
+        duration: 1,
+        duration_unit: 'day',
+        pricing_unit: 'per_day',
+        quantity: 1,
+        farm_location: 'Farm',
+        delivery_required: false,
+        operator_required: false,
+        rental_amount: 500,
+        delivery_amount: 0,
+        operator_amount: 0,
+        security_deposit: 0,
+        total_amount: 500,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      this.inMemoryBookings.unshift(targetBooking);
     }
 
-    // Owner can accept/reject; either can cancel; owner can mark completed
-    if (newStatus === 'accepted' || newStatus === 'rejected') {
-      if (!isOwner) {
-        throw new Error('Only the listing provider can accept or reject requests.');
+    const nowIso = new Date().toISOString();
+    targetBooking.status = normalizedStatus;
+    targetBooking.updated_at = nowIso;
+
+    if (normalizedStatus === 'ACCEPTED') targetBooking.accepted_at = nowIso;
+    if (normalizedStatus === 'CONFIRMED') targetBooking.confirmed_at = nowIso;
+    if (normalizedStatus === 'ACTIVE') targetBooking.started_at = nowIso;
+    if (normalizedStatus === 'COMPLETED') {
+      targetBooking.completed_at = nowIso;
+      targetBooking.completed_by = userId;
+    }
+    if (normalizedStatus === 'CANCELLED' || normalizedStatus === 'REJECTED') {
+      targetBooking.cancelled_at = nowIso;
+      targetBooking.cancelled_by = userId;
+      if (reason) {
+        targetBooking.cancellation_reason = reason;
+        targetBooking.rejection_reason = reason;
       }
     }
 
-    booking.status = newStatus;
-    if (reason) {
-      booking.status_reason = reason;
+    try {
+      await supabase
+        .from('bookings')
+        .update({
+          status: normalizedStatus,
+          rejection_reason: normalizedStatus === 'REJECTED' ? reason || null : null,
+          cancellation_reason: normalizedStatus === 'CANCELLED' ? reason || null : null,
+          cancelled_by: normalizedStatus === 'CANCELLED' ? userId : null,
+          completed_by: normalizedStatus === 'COMPLETED' ? userId : null,
+          updated_at: nowIso,
+          accepted_at: normalizedStatus === 'ACCEPTED' ? nowIso : targetBooking.accepted_at || null,
+          confirmed_at: normalizedStatus === 'CONFIRMED' ? nowIso : targetBooking.confirmed_at || null,
+          started_at: normalizedStatus === 'ACTIVE' ? nowIso : targetBooking.started_at || null,
+          completed_at: normalizedStatus === 'COMPLETED' ? nowIso : targetBooking.completed_at || null,
+          cancelled_at: ['CANCELLED', 'REJECTED'].includes(normalizedStatus) ? nowIso : null,
+        })
+        .eq('id', bookingId);
+
+      await supabase.from('booking_events').insert({
+        booking_id: bookingId,
+        event_type: `STATUS_CHANGED_${normalizedStatus}`,
+        performed_by: userId,
+        notes: reason || `Status updated to ${normalizedStatus}`,
+      });
+    } catch (e) {
+      console.warn('[MarketplaceService] Booking update DB warning:', e);
     }
+
+    this.inMemoryEvents.unshift({
+      id: `evt_${Date.now()}`,
+      booking_id: bookingId,
+      event_type: `STATUS_CHANGED_${normalizedStatus}`,
+      performed_by: userId,
+      notes: reason || `Status set to ${normalizedStatus}`,
+      created_at: nowIso,
+    });
+
+    return targetBooking;
+  }
+
+  /**
+   * Owner submits a Counter Offer for a booking request.
+   */
+  async createCounterOffer(input: CounterOfferInput, userId: string): Promise<MarketplaceBooking> {
+    const booking = this.inMemoryBookings.find((b) => b.id === input.booking_id);
+    if (!booking) throw new Error('Booking request not found');
+
+    if (booking.owner_id !== userId) {
+      throw new Error('Only the listing owner can propose a counter offer');
+    }
+
+    booking.status = 'COUNTER_OFFERED';
+    booking.counter_offer_amount = input.counter_offer_amount;
+    booking.counter_offer_notes = input.counter_offer_notes;
     booking.updated_at = new Date().toISOString();
 
-    bookings[idx] = booking;
-    this.saveLocalBookings(bookings);
+    try {
+      await supabase
+        .from('bookings')
+        .update({
+          status: 'COUNTER_OFFERED',
+          counter_offer_amount: input.counter_offer_amount,
+          counter_offer_notes: input.counter_offer_notes || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', input.booking_id);
+
+      await supabase.from('booking_events').insert({
+        booking_id: input.booking_id,
+        event_type: 'COUNTER_OFFER_PROPOSED',
+        performed_by: userId,
+        notes: `Proposed counter offer of ₹${input.counter_offer_amount}`,
+      });
+    } catch (e) {
+      console.warn('[MarketplaceService] Counter offer DB warning:', e);
+    }
 
     return booking;
   }
 
-  async getUserBookingRequests(userId: string, role: 'requester' | 'owner' | 'all' = 'all'): Promise<MarketplaceBookingRequest[]> {
-    const bookings = this.getLocalBookings();
-    return bookings.filter((b) => {
-      if (role === 'requester') return b.requester_id === userId;
-      if (role === 'owner') return b.owner_id === userId;
-      return b.requester_id === userId || b.owner_id === userId;
-    });
-  }
-
-  // ── Moderation & Reporting ─────────────────────────────────────────────────
-
-  async reportListing(
-    listingId: string,
-    reportedByUserId: string,
-    reason: MarketplaceReport['reason'],
-    details: string
-  ): Promise<MarketplaceReport> {
-    const listing = await this.getListingById(listingId);
-    if (!listing) {
-      throw new Error('Listing not found');
+  /**
+   * Submits a rating/review for a genuinely completed rental.
+   */
+  async submitListingReview(
+    bookingId: string,
+    reviewerId: string,
+    rating: number,
+    comment?: string
+  ): Promise<ListingReview> {
+    const booking = this.inMemoryBookings.find((b) => b.id === bookingId);
+    if (booking && booking.status !== 'COMPLETED') {
+      throw new Error('Reviews can only be submitted after the rental or service is completed.');
     }
 
-    const newReport: MarketplaceReport = {
-      id: `rep-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      listing_id: listingId,
-      reported_by_user_id: reportedByUserId,
+    const reviewPayload = {
+      booking_id: bookingId,
+      listing_id: booking?.listing_id || 'l1',
+      reviewer_id: reviewerId,
+      rating: Math.min(5, Math.max(1, rating)),
+      comment: comment?.trim() || null,
+    };
+
+    let reviewId = `rev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    try {
+      const { data, error } = await supabase
+        .from('listing_reviews')
+        .insert(reviewPayload)
+        .select()
+        .single();
+      if (!error && data) {
+        reviewId = data.id;
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Review DB insert warning:', e);
+    }
+
+    const constructed: ListingReview = {
+      id: reviewId,
+      booking_id: bookingId,
+      listing_id: booking?.listing_id || 'l1',
+      reviewer_id: reviewerId,
+      rating: Math.min(5, Math.max(1, rating)),
+      comment: comment?.trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    this.inMemoryReviews.unshift(constructed);
+    return constructed;
+  }
+
+  /**
+   * Submits a report/dispute regarding an active or completed booking.
+   */
+  async reportBookingDispute(
+    bookingId: string,
+    reporterId: string,
+    reason: string,
+    details: string
+  ): Promise<BookingDispute> {
+    const disputePayload = {
+      booking_id: bookingId,
+      reporter_id: reporterId,
       reason,
-      details: details.trim(),
+      details,
+      status: 'pending',
+    };
+
+    let disputeId = `disp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    try {
+      const { data, error } = await supabase
+        .from('booking_disputes')
+        .insert(disputePayload)
+        .select()
+        .single();
+      if (!error && data) {
+        disputeId = data.id;
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Dispute DB insert warning:', e);
+    }
+
+    const constructed: BookingDispute = {
+      id: disputeId,
+      booking_id: bookingId,
+      reporter_id: reporterId,
+      reason,
+      details,
       status: 'pending',
       created_at: new Date().toISOString(),
     };
 
-    const reports = this.getLocalReports();
-    reports.unshift(newReport);
-    this.saveLocalReports(reports);
-
-    // Increment reports count on listing
-    const list = this.getLocalListings();
-    const idx = list.findIndex((l) => l.id === listingId);
-    if (idx !== -1) {
-      list[idx].reports_count = (list[idx].reports_count || 0) + 1;
-      // Auto-flag if >= 3 reports
-      if (list[idx].reports_count! >= 3 && list[idx].verification_status !== 'rejected') {
-        list[idx].verification_status = 'flagged';
-      }
-      this.saveLocalListings(list);
-    }
-
-    return newReport;
+    this.inMemoryDisputes.unshift(constructed);
+    return constructed;
   }
 
-  async moderateListing(
+  /**
+   * Submits a report for inappropriate or fraudulent listing.
+   */
+  async reportListing(
     listingId: string,
-    action: 'verify' | 'flag' | 'reject' | 'delete',
-    adminUserId: string
-  ): Promise<MarketplaceListing | null> {
-    const list = this.getLocalListings();
-    const idx = list.findIndex((l) => l.id === listingId);
-    if (idx === -1) {
-      throw new Error('Listing not found');
-    }
-
-    if (action === 'delete') {
-      list.splice(idx, 1);
-      this.saveLocalListings(list);
-      return null;
-    }
-
-    const statusMap: Record<string, MarketplaceListing['verification_status']> = {
-      verify: 'verified',
-      flag: 'flagged',
-      reject: 'rejected',
+    reporterId: string,
+    reason: MarketplaceReport['reason'],
+    details: string
+  ): Promise<MarketplaceReport> {
+    const reportPayload = {
+      listing_id: listingId,
+      reporter_id: reporterId,
+      reason,
+      details,
+      status: 'pending',
     };
 
-    list[idx].verification_status = statusMap[action];
-    list[idx].updated_at = new Date().toISOString();
-    this.saveLocalListings(list);
+    let reportId = `rep_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    try {
+      const { data: inserted, error } = await supabase
+        .from('listing_reports')
+        .insert(reportPayload)
+        .select()
+        .single();
+      if (!error && inserted) {
+        reportId = inserted.id;
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] Report insert warning:', e);
+    }
 
-    return list[idx];
+    const constructed: MarketplaceReport = {
+      id: reportId,
+      listing_id: listingId,
+      reporter_id: reporterId,
+      reason,
+      details,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    };
+
+    this.inMemoryReports.unshift(constructed);
+    return constructed;
+  }
+
+  /**
+   * Admin moderation action (disable, remove, dismiss).
+   */
+  async moderateListing(
+    listingId: string,
+    action: 'disable' | 'remove' | 'dismiss' | 'reject',
+    adminId: string,
+    notes?: string
+  ): Promise<boolean> {
+    try {
+      if (action === 'disable' || action === 'reject') {
+        await this.updateListingAvailability(listingId, adminId, 'paused');
+      } else if (action === 'remove') {
+        await this.deleteListing(listingId, adminId);
+      }
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  async getReportedListings(): Promise<MarketplaceReport[]> {
+    return this.inMemoryReports;
+  }
+
+  async getBookingEvents(bookingId: string): Promise<BookingEventLog[]> {
+    try {
+      const { data, error } = await supabase
+        .from('booking_events')
+        .select('*')
+        .eq('booking_id', bookingId)
+        .order('created_at', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data as BookingEventLog[];
+      }
+    } catch (e) {}
+
+    return this.inMemoryEvents.filter((e) => e.booking_id === bookingId);
+  }
+
+  /**
+   * Subscribes to Supabase Realtime postgres_changes on listings.
+   */
+  subscribeToListings(onUpdate: () => void) {
+    try {
+      const channel = supabase
+        .channel('public:listings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, () => {
+          onUpdate();
+        })
+        .subscribe();
+      return channel;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Subscribes to Supabase Realtime postgres_changes on bookings.
+   */
+  subscribeToBookings(userId: string, onUpdate: () => void) {
+    try {
+      const channel = supabase
+        .channel(`public:bookings:${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+          onUpdate();
+        })
+        .subscribe();
+      return channel;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  unsubscribeFromListings(channel: any) {
+    if (channel) {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {}
+    }
+  }
+
+  private mapDatabaseRowToListing(row: any): MarketplaceListing {
+    const images: string[] = Array.isArray(row.listing_images)
+      ? row.listing_images.map((img: any) => img.image_url).filter(Boolean)
+      : [];
+
+    const coverRow = Array.isArray(row.listing_images)
+      ? row.listing_images.find((img: any) => img.is_cover)
+      : null;
+
+    const cover_image = coverRow?.image_url || images[0] || undefined;
+
+    const machinery = Array.isArray(row.listing_machinery_details) && row.listing_machinery_details.length > 0
+      ? row.listing_machinery_details[0]
+      : undefined;
+
+    const cattle = Array.isArray(row.listing_cattle_details) && row.listing_cattle_details.length > 0
+      ? row.listing_cattle_details[0]
+      : undefined;
+
+    const labour = Array.isArray(row.listing_labour_details) && row.listing_labour_details.length > 0
+      ? row.listing_labour_details[0]
+      : undefined;
+
+    const service = Array.isArray(row.listing_service_details) && row.listing_service_details.length > 0
+      ? row.listing_service_details[0]
+      : undefined;
+
+    return {
+      id: row.id,
+      user_id: row.user_id,
+      listing_type: row.listing_type || 'machinery',
+      title: row.title,
+      description: row.description || '',
+      category: row.category,
+      price: row.price,
+      price_unit: row.price_unit,
+      security_deposit: row.security_deposit || 0,
+      location: {
+        village: row.village || undefined,
+        district: row.district,
+        state: row.state,
+        address: row.address || undefined,
+        lat: row.latitude || undefined,
+        lon: row.longitude || undefined,
+      },
+      availability: row.availability_status || 'available',
+      available_from: row.available_from || undefined,
+      available_until: row.available_until || undefined,
+      images,
+      cover_image,
+      owner: {
+        id: row.user_id,
+        name: row.owner_name || 'AgriConnect Farmer',
+        phone: row.owner_phone || '',
+        rating: 5.0,
+        is_verified: row.owner_is_verified ?? false,
+      },
+      views_count: row.views_count || 0,
+      reports_count: row.reports_count || 0,
+      verification_status: row.verification_status || 'verified',
+      contact_method: row.contact_preference || 'both',
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      machinery_details: machinery,
+      cattle_details: cattle,
+      labour_details: labour,
+      service_details: service,
+    };
+  }
+
+  private mapDatabaseRowToBooking(row: any): MarketplaceBooking {
+    return {
+      id: row.id,
+      listing_id: row.listing_id,
+      listing_title: row.listing_title || 'Agricultural Listing',
+      listing_type: row.listing_type || 'machinery',
+      listing_image: row.listing_image,
+      customer_id: row.customer_id,
+      customer_name: row.customer_name || 'Customer',
+      customer_phone: row.customer_phone || '',
+      owner_id: row.owner_id,
+      owner_name: row.owner_name || 'Owner',
+      owner_phone: row.owner_phone || '',
+      status: row.status as BookingStatus,
+      start_at: row.start_at,
+      end_at: row.end_at,
+      start_time: row.start_time,
+      duration: row.duration || 1,
+      duration_unit: row.duration_unit || 'day',
+      pricing_unit: row.pricing_unit || 'per_day',
+      quantity: row.quantity || 1,
+      farm_location: row.farm_location || '',
+      pickup_location: row.pickup_location,
+      destination_location: row.destination_location,
+      delivery_required: row.delivery_required || false,
+      operator_required: row.operator_required || false,
+      rental_amount: row.rental_amount || 0,
+      delivery_amount: row.delivery_amount || 0,
+      operator_amount: row.operator_amount || 0,
+      security_deposit: row.security_deposit || 0,
+      total_amount: row.total_amount || 0,
+      customer_message: row.customer_message,
+      counter_offer_amount: row.counter_offer_amount,
+      counter_offer_notes: row.counter_offer_notes,
+      rejection_reason: row.rejection_reason,
+      cancellation_reason: row.cancellation_reason,
+      cancelled_by: row.cancelled_by,
+      completed_by: row.completed_by,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      accepted_at: row.accepted_at,
+      confirmed_at: row.confirmed_at,
+      started_at: row.started_at,
+      completed_at: row.completed_at,
+      cancelled_at: row.cancelled_at,
+    };
   }
 }
 

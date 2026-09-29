@@ -83,22 +83,61 @@ exports.postTelemetry = async (req, res) => {
       return res.status(400).json({ error: validation.errors[0], deviceUid: cleanUid });
     }
 
-    const device = await fetchDeviceByUid(cleanUid);
-    if (!device) {
-      return res.status(404).json({
-        error: `Device ${cleanUid} is not registered in AgriConnect. Please register the device UID in your app profile.`,
-        deviceUid: cleanUid,
-        status: "NOT_CONNECTED",
-      });
-    }
-
+    let device = await fetchDeviceByUid(cleanUid);
     const incomingTokenHash = hashToken(rawToken);
-    if (device.device_token_hash) {
-      if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
-        return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
+
+    if (!device) {
+      if (!incomingTokenHash) {
+        return res.status(401).json({
+          error: `Device ${cleanUid} is not registered and no deviceToken was supplied to register it.`,
+          deviceUid: cleanUid,
+          status: "NOT_CONNECTED",
+        });
       }
-    } else if (!incomingTokenHash) {
-      return res.status(401).json({ error: "Unauthorized: a device token is required to link this node." });
+
+      const nowIso = new Date().toISOString();
+      const newDevicePayload = {
+        device_uid: cleanUid,
+        device_name: `AgriConnect ESP32 (${cleanUid})`,
+        device_type: "ESP32_FARM_NODE",
+        farm_id: "default_farm",
+        status: "ONLINE",
+        device_token_hash: incomingTokenHash,
+        capabilities: {
+          soilMoisture: true,
+          temperature: true,
+          humidity: true,
+          rain: true,
+          laserFence: false,
+          buzzer: false,
+          pump: false,
+        },
+        last_seen: nowIso,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+
+      const { supabaseUrl } = getSupabase();
+      const createRes = await fetch(`${supabaseUrl}/rest/v1/iot_devices`, {
+        method: "POST",
+        headers: { ...headers(), Prefer: "return=representation" },
+        body: JSON.stringify(newDevicePayload),
+      });
+
+      if (!createRes.ok) {
+        throw new Error(`Failed to auto-register device ${cleanUid}: ${createRes.statusText}`);
+      }
+
+      const createdDevices = await createRes.json();
+      device = Array.isArray(createdDevices) ? createdDevices[0] : createdDevices;
+    } else {
+      if (device.device_token_hash) {
+        if (!incomingTokenHash || incomingTokenHash !== device.device_token_hash) {
+          return res.status(401).json({ error: "Unauthorized: invalid or missing device token." });
+        }
+      } else if (!incomingTokenHash) {
+        return res.status(401).json({ error: "Unauthorized: a device token is required to link this node." });
+      }
     }
 
     const nowIso = new Date().toISOString();

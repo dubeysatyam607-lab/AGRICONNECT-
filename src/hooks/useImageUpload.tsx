@@ -1,86 +1,71 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useState } from "react";
+import { useAuth } from "./useAuth";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+  publicIdFromUrl,
+} from "@/lib/cloudinary-service";
 
-export const useImageUpload = (bucket: string = 'cattle-images') => {
+/**
+ * Uploads and deletes user images through Cloudinary (unsigned preset, so no
+ * secret is exposed). The `folder` argument keeps listing images organised
+ * (e.g. "cattle-images", "store-images", "equipment-images") and images are
+ * namespaced under the signed-in user's id to prevent cross-user deletion.
+ */
+export const useImageUpload = (folder: string = "cattle-images") => {
   const [uploading, setUploading] = useState(false);
   const { user } = useAuth();
 
-  const uploadImage = async (file: File): Promise<string | null> => {
+  const uploadImage = async (file: File): Promise<string> => {
     if (!user) {
-      throw new Error('Must be logged in to upload images');
+      throw new Error("Must be logged in to upload images");
     }
 
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Please select an image file");
     }
-    
-    // Additional client-side strict check to prevent arbitrary extensions 
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
+
+    // Strict client-side check to prevent arbitrary extensions
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
     if (!fileExt || !allowedExtensions.includes(fileExt)) {
-      throw new Error('Only JPG, PNG, and WebP images are allowed');
+      throw new Error("Only JPG, PNG, and WebP images are allowed");
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      throw new Error('Image must be less than 5MB');
+      throw new Error("Image must be less than 5MB");
     }
 
     setUploading(true);
 
     try {
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(fileName);
-
-      return urlData.publicUrl;
+      const fileName = `${Date.now()}.${fileExt}`;
+      // Rename the file before upload so Cloudinary's public_id is deterministic
+      const stamped = new File([file], fileName, { type: file.type });
+      const { secureUrl } = await uploadToCloudinary(stamped, `${folder}/${user.id}`);
+      return secureUrl;
     } finally {
       setUploading(false);
     }
   };
 
   const deleteImage = async (imageUrl: string): Promise<void> => {
-    if (!user) throw new Error('You must be signed in to remove a photo.');
+    if (!user) throw new Error("You must be signed in to remove a photo.");
 
-    try {
-      // Extract path from URL
-      const urlParts = imageUrl.split(`/${bucket}/`);
-      if (urlParts.length < 2) return;
+    const publicId = publicIdFromUrl(imageUrl);
+    if (!publicId || !publicId.includes("/")) return; // legacy (non-Cloudinary) URLs are left alone
 
-      const filePath = urlParts[1];
-
-      // Prevent IDOR: Ensure users can only delete their own uploaded files
-      if (!filePath.startsWith(`${user.id}/`)) {
-        throw new Error('Unauthorized: You can only delete your own photos.');
-      }
-
-      const { error } = await supabase.storage
-        .from(bucket)
-        .remove([filePath]);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting image:', error);
-      throw error;
+    // Prevent IDOR: users can only delete their own uploaded images
+    if (!publicId.startsWith(`${folder}/${user.id}/`)) {
+      throw new Error("Unauthorized: You can only delete your own photos.");
     }
+
+    await deleteFromCloudinary(publicId);
   };
 
   return {
     uploadImage,
     deleteImage,
-    uploading
+    uploading,
   };
 };

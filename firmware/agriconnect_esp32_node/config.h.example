@@ -1,45 +1,71 @@
 /*
- * AgriConnect ESP32 Node — Configuration template
+ * AgriConnect ESP32 Hardware Node — Configuration Template
+ * ==========================================================
+ * Copy this file to `config.h` in the same directory as `agriconnect_esp32_node.ino`.
+ * Fill in your network, server URL, device identity credentials, and hardware calibration settings.
  *
- * Copy this file to `config.h` in the SAME folder as
- * `agriconnect_esp32_node.ino` and fill in your own values.
- * config.h is gitignored — never commit real Wi-Fi credentials,
- * server URLs, or device tokens to source control.
- *
- * Wi-Fi requirement: the ESP32 only supports 2.4 GHz networks.
+ * NOTE: ESP32 only supports 2.4 GHz Wi-Fi networks (5 GHz is not supported by ESP32 hardware).
  */
 
 #ifndef AGRI_CONNECT_CONFIG_H
 #define AGRI_CONNECT_CONFIG_H
 
-// ── Wi-Fi ────────────────────────────────────────────────────────────────
-#define WIFI_SSID       "YOUR_2_4_GHZ_WIFI"
+// ── 1. Wi-Fi Configuration ───────────────────────────────────────────────────
+#define WIFI_SSID       "YOUR_2_4_GHZ_WIFI_NAME"
 #define WIFI_PASSWORD   "YOUR_WIFI_PASSWORD"
+#define WIFI_TIMEOUT_MS 15000UL               // Connection timeout per attempt
 
-// ── Server ────────────────────────────────────────────────────────────────
-// Production: "https://your-agriconnect-domain/api/iot"
-// Local dev:  "http://192.168.x.x:5000/api/iot"
+// ── 2. AgriConnect Backend API ────────────────────────────────────────────────
+// Production Example: "https://agriconnect-farm.vercel.app/api/iot"
+// Local Dev Example:  "http://192.168.1.100:5000/api/iot"
 #define AGRI_SERVER_BASE   "https://your-agriconnect-domain/api/iot"
 
-// ── Device identity ───────────────────────────────────────────────────────
-// UID must match the device registered in the AgriConnect app profile.
-#define DEVICE_UID        "AGRI-ESP32-001"
+// ── 3. Device Identity Credentials ───────────────────────────────────────────
+// Unique physical hardware identity string
+#define DEVICE_UID        "AGRI-ESP32-002"
 
-// Secret hardware token. First telemetry binds a SHA-256 hash of this value
-// in the database; afterwards every command poll/ack is verified against it.
-#define DEVICE_TOKEN      "replace_with_a_long_random_token"
+// Secret hardware authorization token.
+// The backend binds a SHA-256 hash of this token on first telemetry exchange.
+#define DEVICE_TOKEN      "AGRI_SECURE_TOKEN_ESP32_NODE_002"
 
-// ── Telemetry cadence ─────────────────────────────────────────────────────
-#define TELEMETRY_INTERVAL_MS   30000UL  // Sensor upload every 30 s
-#define COMMAND_POLL_INTERVAL_MS 15000UL // Command poll every 15 s
+// ── 4. Timing & Task Cadence (Millis-based, non-blocking) ──────────────────────
+#define TELEMETRY_INTERVAL_MS     30000UL     // Telemetry POST every 30 seconds
+#define COMMAND_POLL_INTERVAL_MS   15000UL     // Command poll GET every 15 seconds
+#define SENSOR_READ_INTERVAL_MS    2000UL      // Physical sensor read every 2 seconds
+#define DISPLAY_UPDATE_INTERVAL_MS 1000UL      // Display refresh every 1 second
+#define WIFI_RECONNECT_INTERVAL_MS 10000UL     // Wi-Fi retry interval when disconnected
 
-// ── Sensor pins ───────────────────────────────────────────────────────────
-#define PIN_SOIL         34   // Soil moisture analog (ADC1_CH6)
-#define PIN_RAIN         35   // Rain sensor analog (ADC1_CH7)
-#define PIN_DHT          4    // DHT11 temp/humidity data
-#define PIN_FENCE_LASER  25   // Relay or GPIO that powers the fence laser beam
-#define PIN_FENCE_LDR    32   // LDR receiver signal (INT.)
-#define PIN_BUZZER       26   // Buzzer / acoustic deterrent
-#define PIN_PUMP_RELAY   27   // Water pump relay (active HIGH)
+// ── 5. Pin Assignments ───────────────────────────────────────────────────────
+#define PIN_SOIL          34                  // Soil moisture sensor Analog (ADC1_CH6)
+#define PIN_RAIN          35                  // Rain sensor Analog (ADC1_CH7)
+#define PIN_DHT           4                   // DHT11 / DHT22 Data pin
+#define PIN_PUMP_RELAY    27                  // Water pump relay module
+#define PIN_BUZZER        26                  // Acoustic buzzer output
+#define PIN_FENCE_LASER   25                  // Laser beam transmitter power
+#define PIN_FENCE_LDR     32                  // Laser fence LDR receiver input
+
+// ── 6. Sensor Hardware Types & Polarity ──────────────────────────────────────
+#define DHTTYPE           DHT11               // Set to DHT11 or DHT22
+#define RELAY_ACTIVE_LOW  true                // Set true if Relay triggers on LOW (0V), false if active HIGH (3.3V)
+
+// ── 7. Soil Moisture Calibration ────────────────────────────────────────────
+// Measure raw ADC values with your sensor exposed to completely dry air vs submerged in wet soil.
+// Higher raw ADC = Drier soil for typical resistive/capacitive sensor modules.
+#define SOIL_DRY_VALUE    3200                // ADC value when soil is completely dry (0% moisture)
+#define SOIL_WET_VALUE    1300                // ADC value when soil is fully saturated (100% moisture)
+
+// ── 8. Rain Sensor Calibration ──────────────────────────────────────────────
+// ADC raw value thresholds for rain sensor board
+#define RAIN_DRY_VALUE    3500                // Above this value = Dry / No Rain
+#define RAIN_LIGHT_VALUE  2800                // Between LIGHT and DRY = Light Rain
+#define RAIN_HEAVY_VALUE  1500                // Below this value = Heavy Rain
+
+// ── 9. Display Configuration ─────────────────────────────────────────────────
+#define ENABLE_OLED_DISPLAY true              // Set to false if no physical screen is attached
+#define OLED_SDA           21                 // I2C SDA Pin
+#define OLED_SCL           22                 // I2C SCL Pin
+#define OLED_ADDR          0x3C               // I2C Address (0x3C or 0x3D for SSD1306 / SH1106)
+#define SCREEN_WIDTH       128                // Display width in pixels
+#define SCREEN_HEIGHT      64                 // Display height in pixels
 
 #endif // AGRI_CONNECT_CONFIG_H

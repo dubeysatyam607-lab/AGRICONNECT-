@@ -105,7 +105,7 @@ export const COMMAND_STATE_LABELS: Record<IotCommandState, string> = {
  * Effective device status based on the real last_seen heartbeat.
  * A device is ONLINE only while its last_seen is within the timeout window.
  */
-export const calculateDeviceStatus = (lastSeen: string | null, configuredTimeoutSec = 300): DeviceStatus => {
+export const calculateDeviceStatus = (lastSeen: string | null, configuredTimeoutSec = 90): DeviceStatus => {
   if (!lastSeen) return "NOT_CONNECTED";
   const diffSec = (Date.now() - new Date(lastSeen).getTime()) / 1000;
   if (isNaN(diffSec) || diffSec < 0) return "NOT_CONNECTED";
@@ -126,16 +126,15 @@ export const describeCommandLifecycle = (issuedAt: string | null, state: IotComm
   return { phase: "idle", label: "Ready" };
 };
 
-/** Fetch IoT devices owned by the authenticated user (RLS + explicit filter). */
-export const fetchFarmDevices = async (farmId: string, userId?: string | null): Promise<IotDevice[]> => {
+/** Fetch IoT devices owned by the authenticated user or unassigned nodes. */
+export const fetchFarmDevices = async (farmId?: string | null, userId?: string | null): Promise<IotDevice[]> => {
   try {
-    let query = supabase
-      .from("iot_devices")
-      .select("*")
-      .eq("farm_id", farmId);
+    let query = supabase.from("iot_devices").select("*");
 
     if (userId) {
-      query = query.eq("user_id", userId);
+      query = query.or(`user_id.eq.${userId},user_id.is.null`);
+    } else if (farmId) {
+      query = query.or(`farm_id.eq.${farmId},farm_id.eq.default_farm`);
     }
 
     const { data, error } = await query.order("created_at", { ascending: false });
@@ -146,6 +145,19 @@ export const fetchFarmDevices = async (farmId: string, userId?: string | null): 
     }
 
     const rows = Array.isArray(data) ? data : [];
+
+    // Auto-bind any unassigned devices (user_id is null) to the currently logged in user
+    if (userId) {
+      const unassigned = rows.filter((d) => !d.user_id);
+      for (const dev of unassigned) {
+        await supabase
+          .from("iot_devices")
+          .update({ user_id: userId, updated_at: new Date().toISOString() })
+          .eq("id", dev.id);
+        dev.user_id = userId;
+      }
+    }
+
     return rows.map((row) => ({
       ...row,
       capabilities: {

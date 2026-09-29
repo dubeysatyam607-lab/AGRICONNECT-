@@ -10,7 +10,7 @@ const crypto = require("crypto");
 // ── Device / command protocol constants ───────────────────────────────────
 const COMMANDS = ["BUZZER_ON", "BUZZER_OFF", "ARM_FENCE", "DISARM_FENCE", "PUMP_ON", "PUMP_OFF"];
 const FENCE_STATES = ["NOT_CONNECTED", "ARMED", "NORMAL", "INTRUSION", "FAULT", "OFFLINE"];
-const OFFLINE_TIMEOUT_SEC = 300; // matches client calculateDeviceStatus default
+const OFFLINE_TIMEOUT_SEC = 90; // matches client calculateDeviceStatus default (90 seconds)
 const COMMAND_DEDUPE_MS = 60 * 1000; // identical outstanding command dedupe window
 const COMMAND_POLL_INTERVAL_SEC = 15; // ESP32 polls /api/iot/commands every 15s
 

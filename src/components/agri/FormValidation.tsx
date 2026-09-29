@@ -38,8 +38,18 @@ export const bookingFormSchema = z.object({
     .min(1, "Select crop type"),
   weight: z.string()
     .regex(/^\d+$/, "Enter weight in quintals"),
-  date: z.string()
-    .min(1, "Select date"),
+  date: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string' || !val.trim()) return '';
+      const str = val.trim();
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(str)) {
+        const parts = str.split(/[\/\-]/);
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+      return str;
+    },
+    z.string().min(1, "Select date")
+  ),
 });
 
 export const laborHireSchema = z.object({
@@ -50,11 +60,22 @@ export const laborHireSchema = z.object({
   workType: z.string()
     .min(1, "Select work type"),
   laborCount: z.string()
+    .min(1, "Enter number of laborers")
     .regex(/^\d+$/, "Enter number of laborers"),
-  date: z.string()
-    .min(1, "Select date"),
+  date: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string' || !val.trim()) return '';
+      const str = val.trim();
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(str)) {
+        const parts = str.split(/[\/\-]/);
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+      return str;
+    },
+    z.string().min(1, "Select date")
+  ),
   location: z.string()
-    .min(3, "Enter work location"),
+    .min(2, "Enter work location"),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -80,11 +101,11 @@ export const FormField: React.FC<FormInputProps> = ({ label, error, children, re
   return (
     <div className="space-y-1">
       <label htmlFor={fieldId} className="block text-sm font-medium text-foreground">
-        {label} {required && <span className="text-destructive">*</span>}
+        {label} {required && <span className="text-amber-600 dark:text-amber-400 font-semibold ml-0.5" title="Required">*</span>}
       </label>
       {labelledChild}
       {error && (
-        <p className="text-xs text-destructive animate-in slide-in-from-top-1">{error}</p>
+        <p className="text-xs text-destructive animate-in slide-in-from-top-1 font-medium">{error}</p>
       )}
     </div>
   );
@@ -428,10 +449,10 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields, isSubmitted },
   } = useForm<LaborHireFormData>({
     resolver: zodResolver(laborHireSchema),
-    mode: "onChange",
+    mode: "onTouched",
   });
 
   const onSubmit = async (data: LaborHireFormData) => {
@@ -459,12 +480,18 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
 
   const workTypes = [
     { value: '', label: language === 'hi' ? 'काम चुनें' : 'Select Work' },
-    { value: 'harvesting', label: language === 'hi' ? 'कटाई' : 'Harvesting' },
-    { value: 'sowing', label: language === 'hi' ? 'बुवाई' : 'Sowing' },
-    { value: 'weeding', label: language === 'hi' ? 'निराई' : 'Weeding' },
-    { value: 'spraying', label: language === 'hi' ? 'छिड़काव' : 'Spraying' },
-    { value: 'loading', label: language === 'hi' ? 'लोडिंग' : 'Loading' },
-    { value: 'other', label: language === 'hi' ? 'अन्य' : 'Other' },
+    { value: 'Harvesting', label: language === 'hi' ? 'कटाई (Harvesting)' : 'Harvesting' },
+    { value: 'harvesting', label: language === 'hi' ? 'कटाई (harvesting)' : 'Harvesting' },
+    { value: 'Sowing', label: language === 'hi' ? 'बुवाई (Sowing)' : 'Sowing' },
+    { value: 'sowing', label: language === 'hi' ? 'बुवाई (sowing)' : 'Sowing' },
+    { value: 'Weeding', label: language === 'hi' ? 'निराई (Weeding)' : 'Weeding' },
+    { value: 'weeding', label: language === 'hi' ? 'निराई (weeding)' : 'Weeding' },
+    { value: 'Spraying', label: language === 'hi' ? 'छिड़काव (Spraying)' : 'Spraying' },
+    { value: 'spraying', label: language === 'hi' ? 'छिड़काव (spraying)' : 'Spraying' },
+    { value: 'Loading', label: language === 'hi' ? 'लोडिंग (Loading)' : 'Loading' },
+    { value: 'loading', label: language === 'hi' ? 'लोडिंग (loading)' : 'Loading' },
+    { value: 'Other', label: language === 'hi' ? 'अन्य (Other)' : 'Other' },
+    { value: 'other', label: language === 'hi' ? 'अन्य (other)' : 'Other' },
   ];
 
   return (
@@ -472,19 +499,19 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
       <div className="grid grid-cols-2 gap-3">
         <FormField 
           label={language === 'hi' ? 'नाम' : 'Name'} 
-          error={errors.name?.message}
+          error={(touchedFields.name || isSubmitted) ? errors.name?.message : undefined}
           required
         >
           <StyledInput
             {...register("name")}
             placeholder={language === 'hi' ? "नाम" : "Name"}
-            hasError={!!errors.name}
+            hasError={!!errors.name && (touchedFields.name || isSubmitted)}
           />
         </FormField>
 
         <FormField 
           label={language === 'hi' ? 'मोबाइल' : 'Mobile'} 
-          error={errors.phone?.message}
+          error={(touchedFields.phone || isSubmitted) ? errors.phone?.message : undefined}
           required
         >
           <StyledInput
@@ -492,7 +519,7 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
             type="tel"
             placeholder="9876543210"
             maxLength={10}
-            hasError={!!errors.phone}
+            hasError={!!errors.phone && (touchedFields.phone || isSubmitted)}
           />
         </FormField>
       </div>
@@ -500,19 +527,19 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
       <div className="grid grid-cols-2 gap-3">
         <FormField 
           label={language === 'hi' ? 'काम का प्रकार' : 'Work Type'} 
-          error={errors.workType?.message}
+          error={(touchedFields.workType || isSubmitted) ? errors.workType?.message : undefined}
           required
         >
-          <StyledSelect {...register("workType")} hasError={!!errors.workType}>
-            {workTypes.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <StyledSelect {...register("workType")} hasError={!!errors.workType && (touchedFields.workType || isSubmitted)}>
+            {workTypes.map((opt, idx) => (
+              <option key={`${opt.value}-${idx}`} value={opt.value}>{opt.label}</option>
             ))}
           </StyledSelect>
         </FormField>
 
         <FormField 
           label={language === 'hi' ? 'मज़दूरों की संख्या' : 'Laborers Count'} 
-          error={errors.laborCount?.message}
+          error={(touchedFields.laborCount || isSubmitted) ? errors.laborCount?.message : undefined}
           required
         >
           <StyledInput
@@ -520,33 +547,33 @@ export const LaborHireForm: React.FC<LaborHireFormProps> = ({ onSuccess }) => {
             type="number"
             placeholder="5"
             min="1"
-            hasError={!!errors.laborCount}
+            hasError={!!errors.laborCount && (touchedFields.laborCount || isSubmitted)}
           />
         </FormField>
       </div>
 
       <FormField 
         label={language === 'hi' ? 'कार्य स्थान' : 'Work Location'} 
-        error={errors.location?.message}
+        error={(touchedFields.location || isSubmitted) ? errors.location?.message : undefined}
         required
       >
         <StyledInput
           {...register("location")}
           placeholder={language === 'hi' ? "खेत/गांव का पता" : "Farm/Village address"}
-          hasError={!!errors.location}
+          hasError={!!errors.location && (touchedFields.location || isSubmitted)}
         />
       </FormField>
 
       <FormField 
         label={language === 'hi' ? 'तिथि' : 'Date'} 
-        error={errors.date?.message}
+        error={(touchedFields.date || isSubmitted) ? errors.date?.message : undefined}
         required
       >
         <StyledInput
           {...register("date")}
           type="date"
           min={new Date().toISOString().split('T')[0]}
-          hasError={!!errors.date}
+          hasError={!!errors.date && (touchedFields.date || isSubmitted)}
         />
       </FormField>
 
