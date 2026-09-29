@@ -70,7 +70,7 @@ import {
   Legend,
 } from "recharts";
 
-export type DashboardState = "INITIAL" | "NO_DEVICE" | "CONNECTING" | "ONLINE" | "OFFLINE" | "ERROR";
+export type DashboardState = "INITIAL" | "NO_DEVICE" | "CONNECTING" | "ONLINE" | "OFFLINE" | "NOT_CONNECTED" | "ERROR";
 
 const formatRelativeTime = (timestamp: string | null, now = Date.now()): string => {
   if (!timestamp) return "Never";
@@ -179,7 +179,7 @@ const HardwareDashboard: React.FC = () => {
 
       if (activeDev.status === "ONLINE") setDashboardState("ONLINE");
       else if (activeDev.status === "OFFLINE") setDashboardState("OFFLINE");
-      else setDashboardState("NO_DEVICE");
+      else setDashboardState("NOT_CONNECTED");
     } catch (err) {
       console.error("[HardwareDashboard] Error loading IoT data:", err);
       setDashboardState("ERROR");
@@ -594,6 +594,18 @@ const HardwareDashboard: React.FC = () => {
             )}
           </div>
         </Card>
+      )}
+
+      {dashboardState === "NOT_CONNECTED" && selectedDevice && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200 text-xs">
+          <Cpu className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 animate-pulse" />
+          <div className="space-y-1">
+            <p className="font-semibold text-sm">Awaiting ESP32 Hardware Connection ({selectedDevice.device_uid})</p>
+            <p>
+              Your node <span className="font-mono font-bold">{selectedDevice.device_uid}</span> is registered. Flash the ESP32 using the Arduino IDE code below and connect it to Wi-Fi. As soon as it powers ON, live telemetry will stream here automatically.
+            </p>
+          </div>
+        </div>
       )}
 
       {dashboardState === "OFFLINE" && selectedDevice && (
