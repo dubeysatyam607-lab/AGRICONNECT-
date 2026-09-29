@@ -154,7 +154,7 @@ const HardwareDashboard: React.FC = () => {
     try {
       const farmDevs = await fetchFarmDevices(farmId, userId);
 
-      if (farmDevs.length === 0) {
+      if (!farmDevs || farmDevs.length === 0) {
         setDevices([]);
         setSelectedDevice(null);
         setLatestReading(null);
@@ -166,15 +166,40 @@ const HardwareDashboard: React.FC = () => {
       }
 
       const activeDev = farmDevs[0];
-      const reading = await fetchLatestReading(activeDev.id);
-      setLatestReading(reading);
-      setHistory(await fetchReadingHistory(activeDev.id, 48));
-      setAlerts(await fetchRecentAlerts(12));
-      setCommands(await fetchRecentCommands(activeDev.id, 5));
 
-      const effectiveLastSeen = (reading?.created_at && (!activeDev.last_seen || new Date(reading.created_at) > new Date(activeDev.last_seen)))
-        ? reading.created_at
-        : activeDev.last_seen;
+      // Safely fetch telemetry sub-data using Promise.allSettled so partial errors don't fail the whole view
+      const [readingRes, historyRes, alertsRes, commandsRes] = await Promise.allSettled([
+        fetchLatestReading(activeDev.id),
+        fetchReadingHistory(activeDev.id, 48),
+        fetchRecentAlerts(12),
+        fetchRecentCommands(activeDev.id, 5),
+      ]);
+
+      const reading = readingRes.status === "fulfilled" ? readingRes.value : null;
+      const historyData = historyRes.status === "fulfilled" ? historyRes.value : [];
+      const alertsData = alertsRes.status === "fulfilled" ? alertsRes.value : [];
+      const commandsData = commandsRes.status === "fulfilled" ? commandsRes.value : [];
+
+      if (reading) setLatestReading(reading);
+      setHistory(historyData);
+      setAlerts(alertsData);
+      setCommands(commandsData);
+
+      const readingTime = reading?.created_at;
+      const devTime = activeDev.last_seen;
+
+      let effectiveLastSeen = devTime;
+      if (readingTime) {
+        if (!devTime) {
+          effectiveLastSeen = readingTime;
+        } else {
+          const rDate = new Date(readingTime).getTime();
+          const dDate = new Date(devTime).getTime();
+          if (!isNaN(rDate) && (isNaN(dDate) || rDate > dDate)) {
+            effectiveLastSeen = readingTime;
+          }
+        }
+      }
 
       const effectiveStatus = calculateDeviceStatus(effectiveLastSeen);
       const updatedDev: IotDevice = {
@@ -192,10 +217,10 @@ const HardwareDashboard: React.FC = () => {
       });
       setDashboardState(effectiveStatus);
 
-      if (reading?.created_at && (!activeDev.last_seen || new Date(reading.created_at) > new Date(activeDev.last_seen))) {
+      if (readingTime && (!devTime || new Date(readingTime) > new Date(devTime))) {
         supabase
           .from("iot_devices")
-          .update({ last_seen: reading.created_at, status: effectiveStatus, updated_at: new Date().toISOString() })
+          .update({ last_seen: readingTime, status: effectiveStatus, updated_at: new Date().toISOString() })
           .eq("id", activeDev.id)
           .then(() => {});
       }
@@ -203,7 +228,10 @@ const HardwareDashboard: React.FC = () => {
       return updatedDev;
     } catch (err) {
       console.error("[HardwareDashboard] Error loading IoT data:", err);
-      setDashboardState("ERROR");
+      setSelectedDevice((prev) => {
+        if (!prev) setDashboardState("ERROR");
+        return prev;
+      });
       return null;
     }
   }, [farmId, userId]);
