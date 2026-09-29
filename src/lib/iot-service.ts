@@ -105,9 +105,15 @@ export const COMMAND_STATE_LABELS: Record<IotCommandState, string> = {
  * Effective device status based on the real last_seen heartbeat.
  * A device is ONLINE only while its last_seen is within the timeout window.
  */
-export const calculateDeviceStatus = (lastSeen: string | null, configuredTimeoutSec = 90): DeviceStatus => {
-  if (!lastSeen) return "NOT_CONNECTED";
-  const diffSec = (Date.now() - new Date(lastSeen).getTime()) / 1000;
+export const calculateDeviceStatus = (
+  lastSeen: string | null,
+  configuredTimeoutSec = 90,
+  fallbackTimestamp?: string | null
+): DeviceStatus => {
+  const ts = lastSeen || fallbackTimestamp;
+  if (!ts) return "NOT_CONNECTED";
+  const date = new Date(ts);
+  const diffSec = (Date.now() - date.getTime()) / 1000;
   if (isNaN(diffSec) || diffSec < 0) return "NOT_CONNECTED";
   if (diffSec <= configuredTimeoutSec) return "ONLINE";
   return "OFFLINE";

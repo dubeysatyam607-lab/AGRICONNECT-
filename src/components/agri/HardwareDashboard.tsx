@@ -149,25 +149,20 @@ const HardwareDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (): Promise<IotDevice | null> => {
     setDashboardState((prev) => (prev === "INITIAL" ? "CONNECTING" : prev));
     try {
       const farmDevs = await fetchFarmDevices(farmId, userId);
-      setDevices(farmDevs);
-
-      setSelectedDevice((prev) => {
-        if (!prev) return farmDevs[0] || null;
-        const stillThere = farmDevs.find((d) => d.id === prev.id);
-        return stillThere || farmDevs[0] || null;
-      });
 
       if (farmDevs.length === 0) {
+        setDevices([]);
+        setSelectedDevice(null);
         setLatestReading(null);
         setHistory([]);
         setAlerts([]);
         setCommands([]);
         setDashboardState("NO_DEVICE");
-        return;
+        return null;
       }
 
       const activeDev = farmDevs[0];
@@ -177,12 +172,39 @@ const HardwareDashboard: React.FC = () => {
       setAlerts(await fetchRecentAlerts(12));
       setCommands(await fetchRecentCommands(activeDev.id, 5));
 
-      if (activeDev.status === "ONLINE") setDashboardState("ONLINE");
-      else if (activeDev.status === "OFFLINE") setDashboardState("OFFLINE");
-      else setDashboardState("NOT_CONNECTED");
+      const effectiveLastSeen = (reading?.created_at && (!activeDev.last_seen || new Date(reading.created_at) > new Date(activeDev.last_seen)))
+        ? reading.created_at
+        : activeDev.last_seen;
+
+      const effectiveStatus = calculateDeviceStatus(effectiveLastSeen);
+      const updatedDev: IotDevice = {
+        ...activeDev,
+        last_seen: effectiveLastSeen,
+        status: effectiveStatus,
+      };
+
+      const updatedDevices = farmDevs.map((d) => (d.id === updatedDev.id ? updatedDev : d));
+      setDevices(updatedDevices);
+      setSelectedDevice((prev) => {
+        if (!prev) return updatedDev;
+        const matched = updatedDevices.find((d) => d.id === prev.id);
+        return matched || updatedDev;
+      });
+      setDashboardState(effectiveStatus);
+
+      if (reading?.created_at && (!activeDev.last_seen || new Date(reading.created_at) > new Date(activeDev.last_seen))) {
+        supabase
+          .from("iot_devices")
+          .update({ last_seen: reading.created_at, status: effectiveStatus, updated_at: new Date().toISOString() })
+          .eq("id", activeDev.id)
+          .then(() => {});
+      }
+
+      return updatedDev;
     } catch (err) {
       console.error("[HardwareDashboard] Error loading IoT data:", err);
       setDashboardState("ERROR");
+      return null;
     }
   }, [farmId, userId]);
 
@@ -218,6 +240,11 @@ const HardwareDashboard: React.FC = () => {
           const current = selectedDeviceRef.current;
           if (current && row.device_id === current.id) {
             setLatestReading(row);
+            const newStatus = calculateDeviceStatus(row.created_at);
+            const updatedDev: IotDevice = { ...current, last_seen: row.created_at, status: newStatus };
+            setSelectedDevice(updatedDev);
+            setDevices((prev) => prev.map((d) => (d.id === current.id ? updatedDev : d)));
+            setDashboardState(newStatus);
             setHistory((prev) => {
               const next = [...prev, row];
               return next.length > 48 ? next.slice(next.length - 48) : next;
@@ -267,24 +294,35 @@ const HardwareDashboard: React.FC = () => {
 
   const handleManualSync = async () => {
     setIsSyncing(true);
-    await loadDashboardData();
+    const freshDev = await loadDashboardData();
     setIsSyncing(false);
-    if (selectedDevice?.status === "ONLINE") {
+    if (freshDev?.status === "ONLINE") {
       toast({ title: "Sensors Synced", description: "Latest telemetry received from hardware." });
-    } else if (selectedDevice?.status === "OFFLINE") {
-      toast({ title: "Device Offline", description: `No telemetry received for over 90 seconds. Last seen ${formatRelativeTime(selectedDevice.last_seen, Date.now())}.`, variant: "destructive" });
+    } else if (freshDev?.status === "OFFLINE") {
+      toast({ title: "Device Offline", description: `No telemetry received for over 90 seconds. Last seen ${formatRelativeTime(freshDev.last_seen, Date.now())}.`, variant: "destructive" });
     } else {
       toast({ title: "Waiting for Telemetry", description: "Power on your ESP32 node to connect.", variant: "destructive" });
     }
   };
 
-  const handleSelectDevice = (deviceUid: string) => {
-    const next = devices.find((d) => d.device_uid === deviceUid) || null;
-    setSelectedDevice(next);
-    if (next) {
-      fetchLatestReading(next.id).then(setLatestReading);
-      fetchReadingHistory(next.id, 48).then(setHistory);
-      fetchRecentCommands(next.id, 5).then(setCommands);
+  const handleSelectDevice = async (deviceUid: string) => {
+    const target = devices.find((d) => d.device_uid === deviceUid) || null;
+    if (target) {
+      const reading = await fetchLatestReading(target.id);
+      setLatestReading(reading);
+      fetchReadingHistory(target.id, 48).then(setHistory);
+      fetchRecentCommands(target.id, 5).then(setCommands);
+
+      const effectiveLastSeen = (reading?.created_at && (!target.last_seen || new Date(reading.created_at) > new Date(target.last_seen)))
+        ? reading.created_at
+        : target.last_seen;
+      const effectiveStatus = calculateDeviceStatus(effectiveLastSeen);
+      const updatedDev: IotDevice = { ...target, last_seen: effectiveLastSeen, status: effectiveStatus };
+
+      setSelectedDevice(updatedDev);
+      setDashboardState(effectiveStatus);
+    } else {
+      setSelectedDevice(null);
     }
   };
 
