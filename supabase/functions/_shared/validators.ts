@@ -1,5 +1,31 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+/**
+ * Free-text field that tolerates a number or boolean as well as a string.
+ *
+ * The web client stores `farmArea` as a number (`FarmProfile.farmArea: number`)
+ * and sends it straight through as `farmContext.area`. A strict `z.string()`
+ * rejected that with "Invalid request data", so every real scan failed while
+ * API-level tests that happened to pass a string kept working.
+ */
+const flexText = (max: number) =>
+  z
+    .union([z.string().max(max), z.number(), z.boolean()])
+    .transform((value) => String(value))
+    .optional();
+
+/** Shared farm-context shape used by the crop scan and kisan chat endpoints. */
+const farmContextSchema = z
+  .object({
+    crop: flexText(200),
+    variety: flexText(200),
+    stage: flexText(200),
+    area: flexText(200),
+    soil: flexText(200),
+    location: flexText(200),
+  })
+  .optional();
+
 // Weather request schema
 export const weatherRequestSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
@@ -38,13 +64,7 @@ export const kisanChatRequestSchema = z.object({
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
   }).optional(),
-  farmContext: z.object({
-    crop: z.string().max(200).optional(),
-    variety: z.string().max(200).optional(),
-    stage: z.string().max(200).optional(),
-    area: z.string().max(200).optional(),
-    soil: z.string().max(200).optional(),
-  }).optional(),
+  farmContext: farmContextSchema,
 });
 
 // Crop doctor request schema
@@ -55,14 +75,7 @@ export const cropDoctorRequestSchema = z.object({
   language: z.string().max(50).optional(),
   storagePath: z.string().max(500).nullable().optional(),   // private bucket object path
   mimeType: z.string().max(50).optional(),
-  farmContext: z.object({
-    crop: z.string().max(200).optional(),
-    variety: z.string().max(200).optional(),
-    stage: z.string().max(200).optional(),
-    area: z.string().max(200).optional(),
-    soil: z.string().max(200).optional(),
-    location: z.string().max(200).optional(),
-  }).optional(),
+  farmContext: farmContextSchema,
 });
 
 // Nearby services (mandis / agri shops) request schema
@@ -104,13 +117,16 @@ export const agriDataRequestSchema = z.object({
 export function validationErrorResponse(error: z.ZodError, corsHeaders: Record<string, string>) {
   const errors = error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
   return new Response(
-    JSON.stringify({ 
-      error: "Invalid request data", 
-      details: errors 
+    JSON.stringify({
+      error: "Invalid request data",
+      // Lets the client map this to a farmer-friendly message instead of
+      // echoing a raw developer string into the UI.
+      code: "validation",
+      details: errors,
     }),
-    { 
-      status: 400, 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
+    {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     }
   );
 }

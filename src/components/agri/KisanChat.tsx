@@ -955,7 +955,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
             crop: profile.crop,
             variety: profile.variety,
             stage: profile.stage,
-            area: profile.farmArea,
+            area: profile.farmArea != null ? `${profile.farmArea} acre` : undefined,
             soil: profile.soilType,
           },
         }, 30000);

@@ -405,11 +405,14 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
 
     try {
       const payloadImages = images.map((img) => img.base64Data);
+      // `farmArea` is a number in FarmProfile; send text so the edge schema
+      // never rejects the whole scan, and keep the description under the
+      // server's 5000-character cap.
       const farmCtx = {
         crop: profile.crop,
         variety: profile.variety,
         stage: profile.stage,
-        area: profile.farmArea,
+        area: profile.farmArea != null ? `${profile.farmArea} acre` : undefined,
         soil: profile.soilType,
       };
 
@@ -417,7 +420,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       const { data, error: err, code, timedOut } = await invokeEdgeWithTimeout<{ result: CropScanResult; error?: string }>(
         "crop-doctor",
         {
-          description: input,
+          description: (input || "").slice(0, 5000),
           imagesBase64: payloadImages,
           imageBase64: payloadImages[0],
           language: languageName,
