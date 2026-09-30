@@ -73,6 +73,7 @@ app.use(cookieParser());
 // CSRF cookie. Register them BEFORE global csurf to exempt them.
 app.post('/api/whatsapp/webhook', whatsappController.whatsappWebhook);
 app.use('/api/iot', iotRoutes);
+app.use('/', iotRoutes);
 app.use(csurf({ cookie: true }));
 
 // Endpoint to get CSRF token for client

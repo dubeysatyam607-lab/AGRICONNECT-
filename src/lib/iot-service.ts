@@ -150,7 +150,15 @@ export const fetchFarmDevices = async (farmId?: string | null, userId?: string |
       return [];
     }
 
-    const rows = Array.isArray(data) ? data : [];
+    let rows = Array.isArray(data) ? data : [];
+
+    // Fallback: If no devices returned for specific user/farm filter, query ALL registered devices
+    if (rows.length === 0) {
+      const { data: fallbackData } = await supabase.from("iot_devices").select("*").order("created_at", { ascending: false });
+      if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+        rows = fallbackData;
+      }
+    }
 
     // Auto-bind any unassigned devices (user_id is null) to the currently logged in user
     if (userId) {

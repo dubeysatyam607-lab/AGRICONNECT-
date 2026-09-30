@@ -124,7 +124,15 @@
       "destination": "/api/iot/telemetry.js"
     },
     {
+      "source": "/telemetry",
+      "destination": "/api/iot/telemetry.js"
+    },
+    {
       "source": "/api/iot/device-command",
+      "destination": "/api/iot/device-command.js"
+    },
+    {
+      "source": "/device-command",
       "destination": "/api/iot/device-command.js"
     },
     {
@@ -132,7 +140,15 @@
       "destination": "/api/iot/commands.js"
     },
     {
+      "source": "/commands",
+      "destination": "/api/iot/commands.js"
+    },
+    {
       "source": "/api/iot/command-ack",
+      "destination": "/api/iot/command-ack.js"
+    },
+    {
+      "source": "/command-ack",
       "destination": "/api/iot/command-ack.js"
     },
     {
