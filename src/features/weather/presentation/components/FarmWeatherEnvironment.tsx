@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { WeatherConditionType, ILiveWeather, IWeatherLocation } from '../../domain/models/WeatherModels';
+import { WeatherConditionType } from '../../domain/models/WeatherModels';
 
 interface FarmWeatherEnvironmentProps {
   condition: WeatherConditionType;
@@ -42,9 +42,10 @@ export function getConditionCategory(condition: string): 'clear' | 'partly_cloud
 }
 
 /**
- * Realistic Agriculture Farm Weather Environment.
- * Multi-layered dynamic background simulating a real agricultural field in India (e.g. Rajasthan / MP / Punjab farmland).
- * Dynamically reacts to weather condition, wind speed, time of day, and temperature.
+ * World-Class Photorealistic Agriculture Farm Weather Environment.
+ * Blends real high-resolution smart farm photography with dynamic atmospheric time-of-day solar palettes
+ * (Golden Dawn, Emerald Farm Daylight, Crimson Twilight, Starry Midnight, and Monsoon Dew),
+ * live weather particles (falling rain, lightning, mist haze), and swaying crop fields.
  */
 export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
   condition,
@@ -76,32 +77,47 @@ export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
 
   const weatherCategory = useMemo(() => getConditionCategory(condition), [condition]);
 
-  // Dynamic sky gradients based on time of day and weather condition
-  const skyStyle = useMemo(() => {
+  // Resolve photorealistic background imagery & dynamic atmospheric gradient overlays
+  const theme = useMemo(() => {
+    let photoSrc = '/images/smart-farm-hero.jpg';
+    let gradientOverlay = 'from-[#062c43]/70 via-[#055147]/70 to-[#022c22]/85'; // Emerald farm daytime
+
     if (weatherCategory === 'storm') {
-      return 'from-slate-900 via-slate-800 to-zinc-900';
-    }
-    if (weatherCategory === 'rain') {
-      return 'from-slate-800 via-slate-700 to-emerald-950/80';
-    }
-    if (weatherCategory === 'fog') {
-      return 'from-slate-300 via-stone-200 to-amber-100/60 dark:from-slate-900 dark:via-zinc-800 dark:to-stone-900';
+      photoSrc = '/images/paddy-smart-farm.jpg';
+      gradientOverlay = 'from-[#040812]/92 via-[#0f172a]/92 to-[#1e1b4b]/95';
+    } else if (weatherCategory === 'rain') {
+      photoSrc = '/images/paddy-smart-farm.jpg';
+      gradientOverlay = 'from-[#06141d]/85 via-[#0e2a36]/85 to-[#052e2b]/90';
+    } else if (weatherCategory === 'fog') {
+      photoSrc = '/images/wheat-smart-farm.jpg';
+      gradientOverlay = 'from-[#0b131a]/85 via-[#1c2a36]/85 to-[#0e1f26]/90';
+    } else {
+      switch (timeOfDay) {
+        case 'dawn':
+          photoSrc = '/images/wheat-smart-farm.jpg';
+          gradientOverlay = 'from-[#2a1306]/85 via-[#451a03]/75 to-[#78350f]/85';
+          break;
+        case 'morning':
+        case 'afternoon':
+          photoSrc = temperature > 36 ? '/images/wheat-smart-farm.jpg' : '/images/smart-farm-hero.jpg';
+          gradientOverlay = temperature > 36
+            ? 'from-[#451a03]/70 via-[#1e293b]/80 to-[#022c22]/90'
+            : 'from-[#062c43]/70 via-[#055147]/70 to-[#022c22]/85';
+          break;
+        case 'evening':
+          photoSrc = '/images/wheat-smart-farm.jpg';
+          gradientOverlay = 'from-[#1f0a24]/85 via-[#4a1236]/80 to-[#9a3412]/85';
+          break;
+        case 'night':
+        default:
+          photoSrc = '/images/paddy-smart-farm.jpg';
+          gradientOverlay = 'from-[#030712]/90 via-[#0b1329]/90 to-[#022c22]/90';
+          break;
+      }
     }
 
-    switch (timeOfDay) {
-      case 'dawn':
-        return 'from-amber-700/80 via-rose-600/60 to-sky-700';
-      case 'morning':
-        return 'from-sky-400 via-sky-300 to-amber-100';
-      case 'afternoon':
-        return 'from-sky-500 via-sky-400 to-amber-50';
-      case 'evening':
-        return 'from-amber-600 via-orange-500 to-rose-900';
-      case 'night':
-      default:
-        return 'from-slate-950 via-indigo-950 to-emerald-950';
-    }
-  }, [timeOfDay, weatherCategory]);
+    return { photoSrc, gradientOverlay };
+  }, [timeOfDay, weatherCategory, temperature]);
 
   // Calculated wind duration for CSS animation (lower = faster)
   const windAnimDuration = useMemo(() => {
@@ -113,83 +129,74 @@ export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-1000">
-      {/* ── ENVIRONMENT BACKGROUND CANVAS & SVG LAYERS ───────────────────────── */}
+      {/* ── ENVIRONMENT BACKGROUND CANVAS & PHOTOREALISTIC LAYERS ───────────────── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* 1. SKY GRADIENT BACKDROP */}
-        <div className={`absolute inset-0 bg-gradient-to-b ${skyStyle} transition-all duration-1000`} />
+        {/* 1. PHOTOREALISTIC FARM SCENERY BACKDROP */}
+        <div
+          className="absolute inset-0 bg-cover bg-center filter contrast-105 brightness-95 scale-105 transition-all duration-1000"
+          style={{ backgroundImage: `url(${theme.photoSrc})` }}
+        />
 
-        {/* 2. SUN & ATMOSPHERIC LIGHTING */}
+        {/* 2. DYNAMIC ATMOSPHERIC TIME-OF-DAY & WEATHER GRADIENT OVERLAY */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradientOverlay} transition-all duration-1000`} />
+
+        {/* 3. SOLAR FLARE / ATMOSPHERIC GLOW */}
         {(timeOfDay === 'morning' || timeOfDay === 'afternoon' || timeOfDay === 'dawn') && weatherCategory !== 'rain' && weatherCategory !== 'storm' && (
           <div
-            className="absolute rounded-full blur-3xl opacity-40 transition-all duration-1000"
+            className="absolute rounded-full blur-3xl opacity-35 transition-all duration-1000 pointer-events-none"
             style={{
-              top: timeOfDay === 'dawn' ? '45%' : timeOfDay === 'morning' ? '15%' : '10%',
-              left: timeOfDay === 'dawn' ? '20%' : timeOfDay === 'morning' ? '40%' : '65%',
-              width: '320px',
-              height: '320px',
-              background: timeOfDay === 'dawn' ? 'radial-gradient(circle, #f97316 0%, transparent 70%)' : 'radial-gradient(circle, #fef08a 0%, transparent 70%)',
+              top: timeOfDay === 'dawn' ? '40%' : '10%',
+              left: timeOfDay === 'dawn' ? '15%' : '60%',
+              width: '400px',
+              height: '400px',
+              background: timeOfDay === 'dawn'
+                ? 'radial-gradient(circle, rgba(249, 115, 22, 0.4) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(254, 240, 138, 0.4) 0%, transparent 70%)',
             }}
           />
         )}
 
-        {/* 3. MOONLIGHT AT NIGHT */}
+        {/* 4. MOONLIGHT & STARRY ATMOSPHERE AT NIGHT */}
         {timeOfDay === 'night' && weatherCategory !== 'storm' && (
-          <div className="absolute top-12 right-16 w-24 h-24 rounded-full bg-slate-100/20 blur-xl pointer-events-none" />
+          <>
+            <div className="absolute top-12 right-16 w-32 h-32 rounded-full bg-indigo-200/20 blur-2xl pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
+          </>
         )}
 
-        {/* 4. MOVING CLOUDS (PARALLAX LAYERS) */}
+        {/* 5. PARALLAX DRIFTING CLOUDS */}
         {(weatherCategory === 'partly_cloudy' || weatherCategory === 'cloudy' || weatherCategory === 'rain' || weatherCategory === 'storm') && (
-          <div className={`absolute inset-x-0 top-0 h-96 pointer-events-none opacity-60 ${motionEnabled ? 'animate-pulse duration-[10000ms]' : ''}`}>
-            {/* Far cloud layer */}
-            <svg className="absolute top-4 -left-20 w-[1200px] h-32 fill-current text-white/30 dark:text-slate-400/20" viewBox="0 0 1000 100">
+          <div className={`absolute inset-x-0 top-0 h-96 pointer-events-none opacity-50 ${motionEnabled ? 'animate-pulse duration-[10000ms]' : ''}`}>
+            <svg className="absolute top-4 -left-20 w-[1200px] h-32 fill-current text-white/20 dark:text-slate-400/15" viewBox="0 0 1000 100">
               <path d="M0 60 Q 150 20 300 60 T 600 60 T 900 60 L 1000 100 L 0 100 Z" />
             </svg>
-            {/* Near cloud layer */}
-            <svg className="absolute top-16 -right-10 w-[1400px] h-44 fill-current text-white/40 dark:text-slate-500/25" viewBox="0 0 1000 100">
+            <svg className="absolute top-16 -right-10 w-[1400px] h-44 fill-current text-white/25 dark:text-slate-500/20" viewBox="0 0 1000 100">
               <path d="M0 70 Q 200 30 400 70 T 800 70 L 1000 100 L 0 100 Z" />
             </svg>
           </div>
         )}
 
-        {/* 5. DISTANT HILLS & TREELINE (DEPTH LAYER) */}
-        <div className="absolute inset-x-0 bottom-36 sm:bottom-48 h-48 pointer-events-none opacity-80">
-          <svg className="w-full h-full preserve-3d" viewBox="0 0 1440 240" preserveAspectRatio="none">
-            {/* Far Aravalli-style rolling hills */}
-            <path
-              fill={timeOfDay === 'night' ? '#0f172a' : timeOfDay === 'evening' ? '#451a03' : '#15803d'}
-              fillOpacity={timeOfDay === 'night' ? '0.6' : '0.35'}
-              d="M0,160 C320,100 480,210 800,140 C1120,70 1280,180 1440,120 L1440,240 L0,240 Z"
-            />
-            {/* Midground treeline & farm ridge */}
-            <path
-              fill={timeOfDay === 'night' ? '#022c22' : timeOfDay === 'evening' ? '#365314' : '#166534'}
-              fillOpacity={timeOfDay === 'night' ? '0.8' : '0.65'}
-              d="M0,190 C240,150 480,220 720,170 C960,120 1200,200 1440,160 L1440,240 L0,240 Z"
-            />
-          </svg>
-        </div>
-
-        {/* 6. REALISTIC CROP FIELD & ANIMATED CROP ROWS */}
+        {/* 6. REALISTIC BASE CROP FIELD & ANIMATED CROP ROWS */}
         <div className="absolute inset-x-0 bottom-0 h-44 sm:h-64 pointer-events-none">
-          {/* Ground soil gradient */}
+          {/* Ground soil blend */}
           <div
             className="absolute inset-0"
             style={{
               background: timeOfDay === 'night'
-                ? 'linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(2, 44, 34, 1))'
-                : 'linear-gradient(to bottom, rgba(20, 83, 45, 0.4), rgba(69, 26, 3, 0.7), rgba(42, 15, 3, 0.95))',
+                ? 'linear-gradient(to bottom, transparent, rgba(3, 7, 18, 0.95))'
+                : 'linear-gradient(to bottom, transparent, rgba(69, 26, 3, 0.8), rgba(42, 15, 3, 0.95))',
             }}
           />
 
           {/* Animated SVG Crop Rows swaying with wind */}
-          <svg className="w-full h-full absolute inset-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="w-full h-full absolute inset-0 opacity-85" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <defs>
               <linearGradient id="cropGrad1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity="0.9" />
+                <stop offset="0%" stopColor="#22c55e" stopOpacity="0.85" />
                 <stop offset="100%" stopColor="#14532d" stopOpacity="0.95" />
               </linearGradient>
               <linearGradient id="cropGrad2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#84cc16" stopOpacity="0.95" />
+                <stop offset="0%" stopColor="#84cc16" stopOpacity="0.9" />
                 <stop offset="100%" stopColor="#3f6212" stopOpacity="1" />
               </linearGradient>
             </defs>
@@ -226,7 +233,7 @@ export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
           </svg>
         </div>
 
-        {/* 7. RAIN PARTICLES OVER FIELD (when raining) */}
+        {/* 7. RAIN PARTICLES OVER FIELD (when raining or storm) */}
         {(weatherCategory === 'rain' || weatherCategory === 'storm') && motionEnabled && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-75">
             <div className="rain-layer absolute inset-0" />
@@ -235,11 +242,11 @@ export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
 
         {/* 8. FOG / MIST OVERLAY */}
         {weatherCategory === 'fog' && (
-          <div className="absolute inset-0 bg-stone-200/30 dark:bg-stone-900/40 backdrop-blur-[2px] pointer-events-none" />
+          <div className="absolute inset-0 bg-stone-200/25 dark:bg-stone-900/35 backdrop-blur-[2px] pointer-events-none" />
         )}
       </div>
 
-      {/* ── WIND ANIMATION KEYFRAMES (CSS INLINED FOR GPU PERFORMANCE) ──────── */}
+      {/* ── WIND & WEATHER ANIMATION KEYFRAMES ───────────────────────── */}
       <style>{`
         @keyframes fieldWindBack {
           0% { transform: skewX(0deg) scaleY(1); }
@@ -276,3 +283,4 @@ export const FarmWeatherEnvironment: React.FC<FarmWeatherEnvironmentProps> = ({
     </div>
   );
 };
+
