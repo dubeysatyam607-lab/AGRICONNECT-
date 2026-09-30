@@ -301,12 +301,13 @@ serve(async (req) => {
 
     const { text: raw, provider } = await aiChatCompletion(messages, {
       temperature: 0.2,
-      // Hindi output is token-heavy and the model also spends budget on
-      // thinking tokens, so a low cap truncates the JSON mid-object and the
-      // whole diagnosis is discarded. 8192 leaves ample headroom.
-      maxTokens: 8192,
+      // Hindi output is token-heavy, so a low cap truncates the JSON mid-object
+      // and the whole diagnosis gets discarded. Thinking is left at the model
+      // default because `thinkingConfig` is rejected outright by some of the
+      // fallback models, and the gateway rotates models per request.
+      maxTokens: 4096,
       jsonMode: true,
-      timeoutMs: 45000,
+      timeoutMs: 40000,
     });
 
     // Parse the strict JSON result (spec §15). Fall back to a clear-error result

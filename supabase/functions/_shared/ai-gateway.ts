@@ -30,6 +30,12 @@ export interface AiGatewayOptions {
   timeoutMs?: number;
   /** Force `responseMimeType: application/json` so strict-JSON consumers never get prose/fences. */
   jsonMode?: boolean;
+  /**
+   * Reasoning-token budget. `0` disables the model's internal thinking, which is
+   * dramatically faster and cheaper for classification-style vision work where
+   * a long chain of thought only adds latency and timeouts.
+   */
+  thinkingBudget?: number;
 }
 
 export class AiGatewayError extends Error {
@@ -78,7 +84,7 @@ function configuredProviders(): Provider[] {
       name: "lovable",
       key: lovableKey,
       baseUrl: "https://ai.gateway.lovable.dev/v1",
-      defaultModel: "google/gemini-2.5-flash",
+      defaultModel: "google/gemini-3.1-flash-lite",
     });
   }
 
@@ -86,15 +92,24 @@ function configuredProviders(): Provider[] {
 }
 
 /**
- * Vision-capable Gemini models served on standard Google AI APIs.
+ * Vision-capable Gemini models actually served today.
+ * The 1.5/2.0/2.5 generation is retired for new API keys and answers 404, so a
+ * stale model name makes every AI call fail ("Temporary problem in the
+ * analysis service").
+ *
+ * Order matters: the `-lite` models run first because they sit in their own
+ * free-tier quota bucket and answer a vision request in ~3-4s, while the larger
+ * flash models frequently return 429 quota errors and would otherwise burn the
+ * entire request window before reaching a model that can actually answer.
  */
-const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
+const GEMINI_DEFAULT_MODEL = "gemini-3.1-flash-lite";
 const GEMINI_FALLBACK_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-2.5-pro",
-  "gemini-1.5-pro",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
 ];
 
 function pickProviders(preferred?: "auto" | "gemini" | "openai" | "lovable"): Provider[] {
@@ -164,7 +179,7 @@ function toGeminiParts(content: string | AiContentPart[]): Array<{ text?: string
   return parts;
 }
 
-function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: number, jsonMode = false) {
+function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: number, jsonMode = false, thinkingBudget?: number) {
   const systemParts: string[] = [];
   const contents: Array<{ role: string; parts: unknown[] }> = [];
   for (const message of messages) {
@@ -183,6 +198,7 @@ function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: 
       temperature,
       maxOutputTokens: maxTokens,
       ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+      ...(typeof thinkingBudget === "number" ? { thinkingConfig: { thinkingBudget } } : {}),
     },
   };
   if (systemParts.length > 0) {
@@ -200,7 +216,6 @@ async function callProvider(
   const temperature = options.temperature ?? 0.3;
   const maxTokens = options.maxTokens ?? 1024;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const signal = AbortSignal.timeout(timeoutMs);
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   let url = "";
@@ -210,21 +225,30 @@ async function callProvider(
     const primaryModel = model.replace(/^google\//, "");
     const candidateModels = Array.from(new Set([primaryModel, ...GEMINI_FALLBACK_MODELS]));
     let lastGeminiErr = "";
-    let terminal: AiGatewayError | null = null;
+    let sawQuotaError = false;
+    let sawTimeoutError = false;
 
     headers["x-goog-api-key"] = provider.key!;
-    body = buildGeminiBody(messages, temperature, maxTokens, options.jsonMode);
+    body = buildGeminiBody(messages, temperature, maxTokens, options.jsonMode, options.thinkingBudget);
+
+    // Budget the attempt list evenly and give every candidate its own signal,
+    // so one slow model can no longer consume the whole request window and
+    // leave the remaining (working) models no time to answer.
+    const perModelMs = Math.max(8000, Math.floor(timeoutMs / Math.min(candidateModels.length, 3)));
 
     for (const m of candidateModels) {
+      const signal = AbortSignal.timeout(perModelMs);
       const gUrl = `${provider.baseUrl}/models/${m}:generateContent`;
       try {
         const res = await fetch(gUrl, { method: "POST", headers, body: JSON.stringify(body), signal });
         if (res.status === 429) {
+          sawQuotaError = true;
           lastGeminiErr = "quota/rate limit on this model";
           console.warn(`[AiGateway] Gemini model ${m} HTTP 429 (quota) — trying next model`);
           continue;
         }
         if (res.status === 402 || res.status === 403) {
+          sawQuotaError = true;
           lastGeminiErr = `HTTP ${res.status} (access denied)`;
           console.warn(`[AiGateway] Gemini model ${m} HTTP ${res.status} — trying next model`);
           continue;
@@ -243,16 +267,27 @@ async function callProvider(
       } catch (err) {
         if (err instanceof AiGatewayError) throw err;
         const aborted = err instanceof DOMException && err.name === "TimeoutError";
-        if (aborted) throw new AiGatewayError("timeout", "AI provider unreachable (timeout)");
+        if (aborted) {
+          // One slow model must not kill the whole attempt list: remember it and
+          // let the remaining candidates answer instead of failing the request.
+          sawTimeoutError = true;
+          lastGeminiErr = `model ${m} timed out`;
+          console.warn(`[AiGateway] Gemini model ${m} timed out after ${perModelMs}ms — trying next model`);
+          continue;
+        }
         lastGeminiErr = err instanceof Error ? err.message : String(err);
       }
     }
 
-    if (lastGeminiErr.includes("429") || lastGeminiErr.includes("quota")) {
+    if (sawQuotaError) {
       throw new AiGatewayError("quota", "AI quota exhausted");
     }
-    throw terminal ?? new AiGatewayError("upstream", `AI provider error: ${lastGeminiErr || "all Gemini models failed"}`);
+    if (sawTimeoutError) {
+      throw new AiGatewayError("timeout", "AI provider unreachable (timeout)");
+    }
+    throw new AiGatewayError("upstream", `AI provider error: ${lastGeminiErr || "all Gemini models failed"}`);
   } else {
+    const signal = AbortSignal.timeout(timeoutMs);
     headers.Authorization = `Bearer ${provider.key}`;
     url = `${provider.baseUrl}/chat/completions`;
     body = {

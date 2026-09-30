@@ -344,7 +344,9 @@ Respond entirely in ${language}.`;
       }
 
       // Official supported vision-capable Gemini models
-      const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro", "gemini-1.5-pro"];
+      // The 1.5/2.0/2.5 Gemini generation is retired for new API keys and
+      // answers 404, which is why the fallback scan used to fail too.
+      const candidateModels = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash"];
       for (const modelName of candidateModels) {
         try {
           const res = await fetch(
@@ -354,7 +356,11 @@ Respond entirely in ${language}.`;
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 contents: [{ role: "user", parts }],
-                generationConfig: { temperature: 0.2, maxOutputTokens: 1536 },
+                generationConfig: {
+                  temperature: 0.2,
+                  maxOutputTokens: 4096,
+                  responseMimeType: "application/json",
+                },
               }),
             },
           );
