@@ -9,8 +9,10 @@
  */
 
 export const CLOUDINARY_CONFIG = {
-  cloudName: (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ?? "",
-  apiKey: (import.meta.env.VITE_CLOUDINARY_API_KEY as string | undefined) ?? "",
+  // Cloud name is public (it is part of every delivery URL), so it is baked as
+  // a build fallback — Cloudinary uploads work even before the env var is set.
+  cloudName: (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) || "twev85cy",
+  apiKey: (import.meta.env.VITE_CLOUDINARY_API_KEY as string | undefined) || "153752454716339",
   uploadPreset: "agriconnect_preset",
 };
 
