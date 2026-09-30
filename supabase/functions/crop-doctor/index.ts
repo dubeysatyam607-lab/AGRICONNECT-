@@ -301,7 +301,12 @@ serve(async (req) => {
 
     const { text: raw, provider } = await aiChatCompletion(messages, {
       temperature: 0.2,
-      maxTokens: 1536,
+      // Hindi output is token-heavy and the model also spends budget on
+      // thinking tokens, so a low cap truncates the JSON mid-object and the
+      // whole diagnosis is discarded. 8192 leaves ample headroom.
+      maxTokens: 8192,
+      jsonMode: true,
+      timeoutMs: 45000,
     });
 
     // Parse the strict JSON result (spec §15). Fall back to a clear-error result

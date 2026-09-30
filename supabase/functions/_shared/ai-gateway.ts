@@ -28,6 +28,8 @@ export interface AiGatewayOptions {
   temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;
+  /** Force `responseMimeType: application/json` so strict-JSON consumers never get prose/fences. */
+  jsonMode?: boolean;
 }
 
 export class AiGatewayError extends Error {
@@ -50,13 +52,13 @@ interface Provider {
 function configuredProviders(): Provider[] {
   const providers: Provider[] = [];
 
-  const geminiKey = Deno.env.get("GEMINI_API_KEY");
+  const geminiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("Google Gemini API Key");
   if (geminiKey && geminiKey.trim().length > 10 && !geminiKey.includes("your_gemini_key")) {
     providers.push({
       name: "gemini",
       key: geminiKey,
       baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-      defaultModel: "gemini-1.5-flash",
+      defaultModel: GEMINI_DEFAULT_MODEL,
     });
   }
 
@@ -76,12 +78,24 @@ function configuredProviders(): Provider[] {
       name: "lovable",
       key: lovableKey,
       baseUrl: "https://ai.gateway.lovable.dev/v1",
-      defaultModel: "google/gemini-1.5-flash",
+      defaultModel: "google/gemini-2.5-flash",
     });
   }
 
   return providers;
 }
+
+/**
+ * Vision-capable Gemini models served on standard Google AI APIs.
+ */
+const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
+const GEMINI_FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-2.5-pro",
+  "gemini-1.5-pro",
+];
 
 function pickProviders(preferred?: "auto" | "gemini" | "openai" | "lovable"): Provider[] {
   const all = configuredProviders();
@@ -150,7 +164,7 @@ function toGeminiParts(content: string | AiContentPart[]): Array<{ text?: string
   return parts;
 }
 
-function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: number) {
+function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: number, jsonMode = false) {
   const systemParts: string[] = [];
   const contents: Array<{ role: string; parts: unknown[] }> = [];
   for (const message of messages) {
@@ -165,7 +179,11 @@ function buildGeminiBody(messages: AiMessage[], temperature: number, maxTokens: 
   }
   const body: Record<string, unknown> = {
     contents,
-    generationConfig: { temperature, maxOutputTokens: maxTokens },
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+      ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+    },
   };
   if (systemParts.length > 0) {
     body.systemInstruction = { parts: systemParts.map((text) => ({ text })) };
@@ -190,18 +208,27 @@ async function callProvider(
 
   if (provider.name === "gemini") {
     const primaryModel = model.replace(/^google\//, "");
-    const candidateModels = Array.from(new Set([primaryModel, "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"]));
+    const candidateModels = Array.from(new Set([primaryModel, ...GEMINI_FALLBACK_MODELS]));
     let lastGeminiErr = "";
+    let terminal: AiGatewayError | null = null;
 
     headers["x-goog-api-key"] = provider.key!;
-    body = buildGeminiBody(messages, temperature, maxTokens);
+    body = buildGeminiBody(messages, temperature, maxTokens, options.jsonMode);
 
     for (const m of candidateModels) {
       const gUrl = `${provider.baseUrl}/models/${m}:generateContent`;
       try {
         const res = await fetch(gUrl, { method: "POST", headers, body: JSON.stringify(body), signal });
-        if (res.status === 429) throw new AiGatewayError("rate_limit", "Too many requests to AI provider");
-        if (res.status === 402 || res.status === 403) throw new AiGatewayError("quota", "AI quota exhausted");
+        if (res.status === 429) {
+          lastGeminiErr = "quota/rate limit on this model";
+          console.warn(`[AiGateway] Gemini model ${m} HTTP 429 (quota) — trying next model`);
+          continue;
+        }
+        if (res.status === 402 || res.status === 403) {
+          lastGeminiErr = `HTTP ${res.status} (access denied)`;
+          console.warn(`[AiGateway] Gemini model ${m} HTTP ${res.status} — trying next model`);
+          continue;
+        }
 
         if (!res.ok) {
           lastGeminiErr = (await res.text().catch(() => "")).slice(0, 300);
@@ -220,7 +247,11 @@ async function callProvider(
         lastGeminiErr = err instanceof Error ? err.message : String(err);
       }
     }
-    throw new AiGatewayError("upstream", `AI provider error: ${lastGeminiErr || "all Gemini models failed"}`);
+
+    if (lastGeminiErr.includes("429") || lastGeminiErr.includes("quota")) {
+      throw new AiGatewayError("quota", "AI quota exhausted");
+    }
+    throw terminal ?? new AiGatewayError("upstream", `AI provider error: ${lastGeminiErr || "all Gemini models failed"}`);
   } else {
     headers.Authorization = `Bearer ${provider.key}`;
     url = `${provider.baseUrl}/chat/completions`;

@@ -343,7 +343,8 @@ Respond entirely in ${language}.`;
         }
       }
 
-      const candidateModels = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-pro"];
+      // Official supported vision-capable Gemini models
+      const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-pro", "gemini-1.5-pro"];
       for (const modelName of candidateModels) {
         try {
           const res = await fetch(

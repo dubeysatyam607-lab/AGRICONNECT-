@@ -423,7 +423,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
           language: languageName,
           farmContext: farmCtx,
         },
-        20000,
+        35000,
       );
 
       let scanResult: CropScanResult | null = data?.result || null;
