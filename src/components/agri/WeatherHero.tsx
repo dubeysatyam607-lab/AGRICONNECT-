@@ -14,8 +14,6 @@ import {
   Thermometer,
   Sparkles,
   Zap,
-  Gauge,
-  Eye,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { IWeatherModuleData } from "@/features/weather/domain/models/WeatherModels";
@@ -48,14 +46,18 @@ export function getSkyPeriod(): SkyPeriod {
 
 /**
  * Dynamically resolves atmospheric sky condition parameters.
+ * Eliminates repetitive generic blue backgrounds in favor of rich time-of-day palettes:
+ * Golden Dawn, Vibrant Emerald Daytime, Crimson Twilight, Midnight Starry Sapphire, and Monsoon Rain.
  */
-export function getSkyConfig(cond?: string, tempC?: number): {
+export function getAtmosphericTheme(cond?: string, tempC?: number): {
   period: SkyPeriod;
   isRain: boolean;
   isStorm: boolean;
   isFog: boolean;
   isSunny: boolean;
-  overlayGradient: string;
+  gradientOverlay: string;
+  photoSrc: string;
+  themeLabel: string;
 } {
   const c = (cond || "").toLowerCase();
   const period = getSkyPeriod();
@@ -64,30 +66,46 @@ export function getSkyConfig(cond?: string, tempC?: number): {
   const isFog = c.includes("fog") || c.includes("mist") || c.includes("haze");
   const isSunny = c.includes("sun") || c.includes("clear") || c.includes("hot");
 
-  let overlayGradient = "from-[#0f172a]/75 via-[#0f172a]/85 to-[#020617]/95";
+  let photoSrc = "/images/smart-farm-hero.jpg";
+  let gradientOverlay = "from-[#062c43]/70 via-[#055147]/70 to-[#022c22]/85";
+  let themeLabel = "Vibrant Daytime Field";
 
   if (isStorm) {
-    overlayGradient = "from-[#050814]/90 via-[#0b1324]/90 to-[#020617]/98";
+    photoSrc = "/images/paddy-smart-farm.jpg";
+    gradientOverlay = "from-[#040812]/92 via-[#0f172a]/92 to-[#1e1b4b]/95";
+    themeLabel = "Stormy Nimbus Sky";
   } else if (isRain) {
-    overlayGradient = "from-[#061426]/85 via-[#0c1f38]/90 to-[#020914]/95";
+    photoSrc = "/images/paddy-smart-farm.jpg";
+    gradientOverlay = "from-[#06141d]/85 via-[#0e2a36]/85 to-[#052e2b]/90";
+    themeLabel = "Monsoon Dew Field";
   } else if (isFog) {
-    overlayGradient = "from-[#0c1724]/85 via-[#162536]/90 to-[#0a121c]/95";
+    photoSrc = "/images/wheat-smart-farm.jpg";
+    gradientOverlay = "from-[#0b131a]/85 via-[#1c2a36]/85 to-[#0e1f26]/90";
+    themeLabel = "Morning Mist Haze";
   } else {
     switch (period) {
       case "dawn":
-        overlayGradient = "from-[#1a0f2e]/70 via-[#2d123d]/80 to-[#0c0a1a]/95";
+        photoSrc = "/images/wheat-smart-farm.jpg";
+        gradientOverlay = "from-[#2a1306]/85 via-[#451a03]/75 to-[#78350f]/85";
+        themeLabel = "Golden Sunrise Hour";
         break;
       case "daytime":
-        overlayGradient = tempC && tempC > 36
-          ? "from-[#1e1b4b]/60 via-[#0f172a]/80 to-[#020617]/95"
-          : "from-[#061b2e]/65 via-[#0f2d4a]/80 to-[#020d1a]/95";
+        photoSrc = tempC && tempC > 36 ? "/images/wheat-smart-farm.jpg" : "/images/smart-farm-hero.jpg";
+        gradientOverlay = tempC && tempC > 36
+          ? "from-[#451a03]/70 via-[#1e293b]/80 to-[#022c22]/90"
+          : "from-[#062c43]/70 via-[#055147]/70 to-[#022c22]/85";
+        themeLabel = "Sunny Agricultural Field";
         break;
       case "dusk":
-        overlayGradient = "from-[#180b26]/70 via-[#2d0e3a]/80 to-[#080512]/95";
+        photoSrc = "/images/wheat-smart-farm.jpg";
+        gradientOverlay = "from-[#1f0a24]/85 via-[#4a1236]/80 to-[#9a3412]/85";
+        themeLabel = "Crimson Twilight Hour";
         break;
       case "night":
       default:
-        overlayGradient = "from-[#020617]/80 via-[#0b1329]/88 to-[#020617]/98";
+        photoSrc = "/images/paddy-smart-farm.jpg";
+        gradientOverlay = "from-[#030712]/90 via-[#0b1329]/90 to-[#022c22]/90";
+        themeLabel = "Starry Midnight Farm";
         break;
     }
   }
@@ -98,7 +116,9 @@ export function getSkyConfig(cond?: string, tempC?: number): {
     isStorm,
     isFog,
     isSunny,
-    overlayGradient,
+    gradientOverlay,
+    photoSrc,
+    themeLabel,
   };
 }
 
@@ -125,10 +145,9 @@ const interpretWeather = (cond?: string, rainPct?: number, tempC?: number): stri
 };
 
 /**
- * World-Class Realistic Agriculture Weather Engine Card.
- * Combines high-resolution real farm photography background with interactive 60fps
- * celestial visual effects, real rain particle streams, glowing sun flare halos,
- * starry night sky, and ultra-sleek glassmorphic telemetry HUD controls.
+ * World-Class Photorealistic Dynamic Weather Card Engine.
+ * Dynamically transforms themes between Golden Dawn, Emerald Daylight, Crimson Twilight,
+ * Midnight Sapphire Starfield, and Monsoon Rain based on real-time solar hour and live weather data.
  */
 export const WeatherHero: React.FC<WeatherHeroProps> = ({
   wl,
@@ -143,22 +162,14 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
 }) => {
   const { t } = useLanguage();
   const conditionIcon = weatherIcon(wl?.live?.condition);
-  const skyConfig = getSkyConfig(wl?.live?.condition, wl?.live?.temp);
+  const theme = getAtmosphericTheme(wl?.live?.condition, wl?.live?.temp);
   const interpretationLine =
     interpretation ||
     (wl ? interpretWeather(wl.live.condition, wl.daily?.[0]?.rainProbability, wl.live.temp) : undefined);
 
-  // Background photographic farm scenery
-  const farmPhotoSrc = useMemo(() => {
-    const c = (wl?.live?.condition || "").toLowerCase();
-    if (c.includes("rain") || c.includes("shower")) return "/images/paddy-smart-farm.jpg";
-    if (c.includes("cloud") || c.includes("overcast")) return "/images/wheat-smart-farm.jpg";
-    return "/images/smart-farm-hero.jpg";
-  }, [wl?.live?.condition]);
-
-  // Generate 20 rain drops
+  // Generate 22 rain drop positions
   const rainDrops = useMemo(() => {
-    return Array.from({ length: 20 }).map((_, i) => ({
+    return Array.from({ length: 22 }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
       delay: Math.random() * 0.8,
@@ -168,9 +179,9 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
     }));
   }, []);
 
-  // Generate 24 twinkling stars
+  // Generate 26 twinkling stars
   const stars = useMemo(() => {
-    return Array.from({ length: 24 }).map((_, i) => ({
+    return Array.from({ length: 26 }).map((_, i) => ({
       id: i,
       left: Math.random() * 98,
       top: Math.random() * 70,
@@ -182,29 +193,29 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
 
   return (
     <section aria-labelledby="weather-heading" className="mt-6">
-      <div className="relative overflow-hidden rounded-3xl border border-white/20 text-white shadow-2xl transition-all duration-500 hover:shadow-emerald-950/20 group">
+      <div className="relative overflow-hidden rounded-3xl border border-white/20 text-white shadow-2xl transition-all duration-700 hover:shadow-amber-950/20 group">
         
-        {/* ── 1. PHOTOREALISTIC HIGH-RESOLUTION FARM BACKDROP ── */}
+        {/* ── 1. REALISTIC DYNAMIC FARM PHOTOGRAPHY BACKDROP ── */}
         <div className="absolute inset-0 select-none overflow-hidden">
           <img
-            src={farmPhotoSrc}
+            src={theme.photoSrc}
             alt="Real agricultural farm field"
             className="h-full w-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
             loading="eager"
           />
-          {/* Dynamic Sky & Time-of-Day Gradient Tint Overlay */}
-          <div className={cn("absolute inset-0 bg-gradient-to-br transition-colors duration-1000", skyConfig.overlayGradient)} />
+          {/* Dynamic Time-of-Day & Weather Atmospheric Overlay */}
+          <div className={cn("absolute inset-0 bg-gradient-to-br transition-colors duration-1000", theme.gradientOverlay)} />
         </div>
 
-        {/* ── 2. REALISTIC ANIMATED ATMOSPHERIC EFFECTS ── */}
+        {/* ── 2. REALISTIC ANIMATED ATMOSPHERIC CELESTIAL EFFECTS ── */}
 
         {/* Thunderstorm Lightning Flash */}
-        {skyConfig.isStorm && (
+        {theme.isStorm && (
           <div className="pointer-events-none absolute inset-0 bg-white/20 animate-lightning-flash z-[1]" />
         )}
 
-        {/* Dynamic Sun Flare & Rays */}
-        {(skyConfig.period === "daytime" || skyConfig.period === "dawn") && !skyConfig.isRain && (
+        {/* Golden Dawn / Sunny Daytime Solar Flare Rays */}
+        {(theme.period === "daytime" || theme.period === "dawn") && !theme.isRain && (
           <div className="pointer-events-none absolute -right-12 -top-12 h-96 w-96 overflow-hidden z-[1]">
             <div className="absolute inset-0 rounded-full bg-amber-400/20 blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
             <div className="absolute right-12 top-12 h-44 w-44 rounded-full bg-amber-300/15 blur-2xl animate-pulse" style={{ animationDuration: '6s' }} />
@@ -217,8 +228,13 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           </div>
         )}
 
-        {/* Night Sapphire Starfield */}
-        {skyConfig.period === "night" && !skyConfig.isRain && (
+        {/* Dusk Crimson Sunset Horizon Flare */}
+        {theme.period === "dusk" && !theme.isRain && (
+          <div className="pointer-events-none absolute -right-10 bottom-0 h-64 w-96 rounded-full bg-amber-500/25 blur-3xl animate-pulse z-[1]" style={{ animationDuration: '5s' }} />
+        )}
+
+        {/* Night Sapphire Sky & Twinkling Constellations */}
+        {theme.period === "night" && !theme.isRain && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden z-[1]">
             <div className="absolute right-10 top-6 h-20 w-20 rounded-full bg-amber-100/15 blur-xl animate-pulse" style={{ animationDuration: '5s' }} />
             <div className="absolute right-14 top-8 h-10 w-10 rounded-full bg-amber-100/80 shadow-[0_0_20px_rgba(251,191,36,0.6)] border border-amber-200/40">
@@ -243,7 +259,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
         )}
 
         {/* Realistic Animated Raindrops */}
-        {skyConfig.isRain && (
+        {theme.isRain && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden z-[1]">
             {rainDrops.map((drop) => (
               <div
@@ -262,7 +278,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
         )}
 
         {/* Dynamic Fog / Mist Layer */}
-        {skyConfig.isFog && (
+        {theme.isFog && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-35 z-[1]">
             <div className="absolute inset-0 bg-gradient-to-r from-slate-200/20 via-white/30 to-slate-200/20 blur-md animate-mist-drift" />
           </div>
@@ -282,8 +298,10 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
                   <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate">
                     {wl.location.name || wl.location.district || 'Jaipur Municipal Corporation, India'}
                   </h3>
-                  <p className="text-xs font-semibold text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] truncate">
-                    Live weather near your farm
+                  <p className="text-xs font-semibold text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] truncate flex items-center gap-1.5">
+                    <span>{theme.themeLabel}</span>
+                    <span>·</span>
+                    <span>Live weather near your farm</span>
                   </p>
                 </div>
               </div>
