@@ -120,6 +120,10 @@
       "destination": "/api/cron/agri-sync.js"
     },
     {
+      "source": "/api/iot/devices",
+      "destination": "/api/iot/devices.js"
+    },
+    {
       "source": "/api/iot/telemetry",
       "destination": "/api/iot/telemetry.js"
     },
