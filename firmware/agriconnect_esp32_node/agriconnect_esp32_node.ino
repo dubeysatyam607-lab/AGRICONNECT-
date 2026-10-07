@@ -276,12 +276,14 @@ void sendTelemetryPayload() {
   json += "\"deviceStatus\":\"ONLINE\"}";
 
   int httpCode = http.POST(json);
+  Serial.println("[Telemetry] URL: " + url);
   if (httpCode > 0) {
     String responseStr = http.getString();
-    Serial.println("[Telemetry] Response Code: " + String(httpCode));
-    Serial.println("[Telemetry] Response Body: " + responseStr);
+    Serial.println("[Telemetry] HTTP Code: " + String(httpCode));
+    Serial.println("[Telemetry] Response: " + responseStr);
   } else {
-    Serial.println("[Telemetry] POST Error: " + String(http.errorToString(httpCode).c_str()));
+    Serial.println("[Telemetry] HTTP Code: " + String(httpCode));
+    Serial.println("[Telemetry] Response: " + String(http.errorToString(httpCode).c_str()));
   }
   http.end();
 }
