@@ -12,6 +12,21 @@
     },
     "api/cron/agri-sync.js": {
       "maxDuration": 120
+    },
+    "api/iot/devices.js": {
+      "maxDuration": 15
+    },
+    "api/iot/telemetry.js": {
+      "maxDuration": 15
+    },
+    "api/iot/commands.js": {
+      "maxDuration": 15
+    },
+    "api/iot/command-ack.js": {
+      "maxDuration": 15
+    },
+    "api/iot/device-command.js": {
+      "maxDuration": 15
     }
   },
   "crons": [
