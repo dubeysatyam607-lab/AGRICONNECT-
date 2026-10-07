@@ -65,9 +65,16 @@ export const OfficialUpiQrCard: React.FC<OfficialUpiQrCardProps> = ({
         </div>
       )}
 
-      {/* QR Code Container */}
+      {/* QR Code Container (Dynamic Vector QR with Locked Amount) */}
       <div className="mt-3 relative rounded-xl bg-white p-3 shadow-md ring-1 ring-black/10">
-        {!imgError ? (
+        {amount && amount > 0 ? (
+          <div className="flex flex-col items-center">
+            <QRCode value={upiUri} size={176} />
+            <span className="mt-2 text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              Locked Payable Amount: ₹{amount.toLocaleString('en-IN')}
+            </span>
+          </div>
+        ) : !imgError ? (
           <img
             src={OFFICIAL_UPI_CONFIG.qrImagePath}
             alt="Official UPI QR Code - SATYAM DUBEY"

@@ -2,7 +2,7 @@ import React from "react";
 import {
   Home, TrendingUp, Sprout, Leaf, ShoppingBag, Tractor, PawPrint, Users,
   Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Wallet, Cpu,
-  Landmark, Newspaper, Bell, User, Settings, Sparkles,
+  Landmark, Newspaper, Bell, User, Settings, Sparkles, Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ interface Group {
 
 const PRIMARY: Item[] = [
   { id: "home", icon: Home, labelKey: "nav.home", label: "Home" },
+  { id: "bookings", icon: Calendar, labelKey: "profile.bookings.title", label: "My Bookings" },
   { id: "mandi", icon: TrendingUp, labelKey: "nav.mandi", label: "Mandi Bhav" },
   { id: "farm-os", icon: Sprout, labelKey: "nav.farm", label: "My Crop" },
   { id: "ai-chat", icon: Leaf, labelKey: "nav.ai", label: "Kisan Saathi" },

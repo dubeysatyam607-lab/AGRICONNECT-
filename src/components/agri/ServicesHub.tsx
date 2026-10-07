@@ -53,6 +53,7 @@ const GROUP_DATA: Group[] = [
     icon: ShoppingBag,
     titleKey: "svc.hub.group.marketplace",
     items: [
+      { id: "bookings", icon: CalendarDays, labelKey: "profile.bookings.title", subKey: "fnet.stat.bookings", tint: "bg-emerald-500/12 text-emerald-600" },
       { id: "mandi", icon: TrendingUp, labelKey: "svc.hub.marketplace.mandi.label", subKey: "svc.hub.marketplace.mandi.sub", tint: "bg-feature-mandi/12 text-feature-mandi" },
       { id: "mandi-finder", icon: Navigation, labelKey: "svc.hub.marketplace.mandiFinder.label", subKey: "svc.hub.marketplace.mandiFinder.sub", tint: "bg-feature-transport/12 text-feature-transport" },
       { id: "store", icon: ShoppingBag, labelKey: "svc.hub.marketplace.store.label", subKey: "svc.hub.marketplace.store.sub", tint: "bg-feature-store/12 text-feature-store" },

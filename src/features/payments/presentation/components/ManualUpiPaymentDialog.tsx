@@ -201,11 +201,28 @@ export function ManualUpiPaymentDialog({
  {done ? (
  <div className="flex flex-col items-center gap-3 py-6 text-center">
  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15">
- <FileCheck2 size={26} />
+ <FileCheck2 size={28} />
  </div>
- <p className="text-sm font-semibold text-foreground">{t('submit')} </p>
- <p className="max-w-xs text-xs font-semibold text-muted-foreground">{t('verifyWait')}</p>
- <Button className="mt-2" onClick={() => onOpenChange(false)}>{t('back')}</Button>
+ <p className="text-base font-bold text-foreground">
+   {hi ? 'भुगतान प्रमाण सबमिट हुआ! (Payment Proof Submitted)' : 'Payment Proof Submitted!'}
+ </p>
+ <p className="max-w-xs text-xs font-semibold text-muted-foreground">
+   {hi ? 'प्रमाण का सत्यापन हो रहा है। स्थिति: "प्रक्रियाधीन (Under Review)"' : 'Verification team is checking your proof. Status: Payment Under Review.'}
+ </p>
+ <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 w-full">
+   <Button
+     className="w-full font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+     onClick={() => {
+       onOpenChange(false);
+       if (typeof window !== 'undefined') window.location.href = '/bookings';
+     }}
+   >
+     {hi ? 'मेरी बुकिंग्स में देखें (View in My Bookings)' : 'View in My Bookings'}
+   </Button>
+   <Button variant="outline" className="w-full font-bold" onClick={() => onOpenChange(false)}>
+     {hi ? 'बंद करें (Close)' : 'Close'}
+   </Button>
+ </div>
  </div>
  ) : step === 'method' ? (
  <div className="space-y-3 pt-1">
@@ -239,26 +256,13 @@ export function ManualUpiPaymentDialog({
  <span className="text-foreground">{config.payee_name}</span>
  </div>
 
- <div className="flex flex-col items-center justify-center rounded-xl border border-primary/20 bg-emerald-700 p-5 text-center">
+ <div className="flex flex-col items-center justify-center rounded-xl border border-primary/20 bg-emerald-800/10 p-5 text-center">
  <div className="relative rounded-xl bg-white p-3 shadow-md ring-1 ring-black/10">
- <img
- src="/images/payment-qr.jpg"
- alt="Official Payment QR Code - SATYAM DUBEY"
- className="h-48 w-48 rounded-xl object-contain"
- onError={(e) => {
- // Fallback if image fails to render
- e.currentTarget.style.display = 'none';
- const fallback = document.getElementById('qr-svg-fallback');
- if (fallback) fallback.style.display = 'block';
- }}
- />
- <div id="qr-svg-fallback" style={{ display: 'none' }}>
  <QRCode value={upiUri} size={190} />
- </div>
  </div>
  <div className="mt-3 flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
  <CheckCircle2 size={13} />
- <span>Official Verified UPI QR (Satyam Dubey)</span>
+ <span>Official Merchant QR · Payable Amount Locked ₹{amount}</span>
  </div>
  <p className="mt-1 font-mono text-xs font-semibold text-foreground">
  UPI ID: <span className="text-primary">{config.upi_id || '7067820256@airtel'}</span>

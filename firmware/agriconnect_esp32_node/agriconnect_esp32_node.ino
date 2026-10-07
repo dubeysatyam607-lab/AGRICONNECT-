@@ -277,7 +277,9 @@ void sendTelemetryPayload() {
 
   int httpCode = http.POST(json);
   if (httpCode > 0) {
-    Serial.println("[Telemetry] Sent successfully. Response Code: " + String(httpCode));
+    String responseStr = http.getString();
+    Serial.println("[Telemetry] Response Code: " + String(httpCode));
+    Serial.println("[Telemetry] Response Body: " + responseStr);
   } else {
     Serial.println("[Telemetry] POST Error: " + String(http.errorToString(httpCode).c_str()));
   }

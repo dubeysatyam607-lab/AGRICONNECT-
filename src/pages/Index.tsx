@@ -70,6 +70,7 @@ const AgriMarketplaceHub = lazy(() =>
   import("@/features/marketplace/presentation/AgriMarketplaceHub").then((m) => ({ default: m.AgriMarketplaceHub })),
 );
 const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
+const MyBookings = lazy(() => import("@/components/agri/MyBookings"));
 
 // ── Per-tab SEO Metadata (dynamic title/description for SPA sections) ──
 const TAB_SEO_META: Record<string, { title: string; description: string; path: string; noindex?: boolean }> = {
@@ -261,6 +262,12 @@ const TAB_SEO_META: Record<string, { title: string; description: string; path: s
     path: '/market',
     noindex: true,
   },
+  bookings: {
+    title: 'My Bookings & Rental History — AgriConnect',
+    description: 'Centralized record of all your tractor rentals, soil test bookings, labour hire requests, and farm transport orders.',
+    path: '/bookings',
+    noindex: true,
+  },
 };
 
 const DEFAULT_TAB_META = TAB_SEO_META.home;
@@ -274,12 +281,15 @@ const getTabFromPath = (path: string) => {
     const deep = path.split("?")[0];
     if (deep.startsWith("/machinery/") || deep.startsWith("/tractors/")) return "tractors";
     if (deep.startsWith("/soil-test/")) return "soil";
+    if (deep.startsWith("/bookings/") || deep.startsWith("/my-bookings/")) return "bookings";
     switch(deep) {
       case "/dashboard": return "home";
       case "/marketplace": return "store";
       case "/market":
       case "/agri-store":
       case "/store": return "store";
+      case "/bookings":
+      case "/my-bookings": return "bookings";
       case "/ai":
       case "/kisan-ai":
       case "/kisan-chat": return "ai-chat";
@@ -387,6 +397,7 @@ const getTabFromPath = (path: string) => {
       "cattle": "/cattle",
       "transport": "/transport",
       "soil": "/soil-test",
+      "bookings": "/bookings",
       "news": "/news",
       "mandi-finder": "/mandi-finder",
       "cold-storage": "/cold-storage",
@@ -527,6 +538,8 @@ const getTabFromPath = (path: string) => {
         return <FarmOsHub onNavigate={handleNavigate} onToast={showToast} />;
       case "marketplace":
         return <AgriMarketplaceHub onNavigate={handleNavigate} onToast={showToast} />;
+      case "bookings":
+        return <MyBookings onNavigate={handleNavigate} onToast={showToast} />;
       case "admin":
         return <AdminDashboard />;
       case "settings":

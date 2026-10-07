@@ -340,6 +340,9 @@ const App = () => (
                   <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/payments" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/kisan-chat" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/bookings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/my-bookings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/bookings/:bookingId" element={<ProtectedRoute><Index /></ProtectedRoute>} />
 
                   {/* ── SEO / Marketing Pages ───────────────── */}
                   <Route path="/about" element={<SafeLazy><MarketingLayout><About /></MarketingLayout></SafeLazy>} />

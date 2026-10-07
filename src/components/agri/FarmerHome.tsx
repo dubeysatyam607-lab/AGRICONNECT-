@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState, Component, type ReactNode } from "react";
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
-  IndianRupee, Landmark, MapPin, Cpu, Radio,
+  IndianRupee, Landmark, MapPin, Cpu, Radio, Calendar,
   ArrowRight, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
 } from "lucide-react";
 import AiInsightCard from "./AiInsightCard";
@@ -93,6 +93,7 @@ class SectionErrorBoundary extends Component<
 }
 
 const QUICK_ACTIONS = [
+  { id: "bookings", icon: Calendar, labelKey: "profile.bookings.title" },
   { id: "crop-doctor", icon: Scan, labelKey: "svc.cropDoctor" },
   { id: "mandi", icon: TrendingUp, labelKey: "nav.mandi" },
   { id: "hardware-dashboard", icon: Cpu, labelKey: "IoT Sensors" },
