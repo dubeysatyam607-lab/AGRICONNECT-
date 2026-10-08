@@ -92,16 +92,36 @@ const SCRIPT_RANGES: Array<{ lang: string; display: string; ranges: Array<[numbe
   { lang: "as", display: "Assamese (অসমীয়া)", ranges: [[0x0980, 0x09FF]] },
 ];
 
+// NOTE: never put plain English words here ("me", "rate", "help", "spray",
+// "price", "market"). The broad list only decides the language when SEVERAL
+// hits appear together, and English loanwords alone must not flip an English
+// question into a Hindi answer.
 const HINGLISH_KEYWORDS = [
-  "kya", "hai", "hain", "kaise", "kare", "karna", "ka", "ki", "ke", "ko", "me", "mein",
-  "bhav", "bhaav", "rate", "kheti", "dawa", "dawai", "khad", "paani", "pani",
+  "kya", "hai", "hain", "kaise", "kare", "karna", "ka", "ki", "ke", "ko", "mein",
+  "bhav", "bhaav", "kheti", "dawa", "dawai", "khad", "paani", "pani",
   "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi", "kab",
   "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
   "patta", "patti", "peela", "sukha", "kharif", "rabi", "mandi", "tamatr", "tamatar",
   "aalu", "aloo", "pyaj", "pyaz", "gehu", "gehun", "chana", "sarson", "mirch", "lahsun",
-  "ganna", "chawal", "dhan", "makka", "kisan", "spray", "jhulsa", "ilaj", "keede", "upay",
-  "yojana", "paisey", "paisa", "rupaye", "rupiya", "dost", "bhaiya", "madad", "help", "samasya",
-  "kharab", "bachav", "tarika", "kaise", "kab", "kyu", "kyon", "karen"
+  "ganna", "chawal", "dhan", "makka", "kisan", "jhulsa", "ilaj", "keede", "upay",
+  "yojana", "paisey", "paisa", "rupaye", "rupiya", "dost", "bhaiya", "madad", "samasya",
+  "kharab", "bachav", "tarika", "kaise", "kab", "kyu", "kyon", "karen", "karo", "kardo"
+];
+
+// Unmistakable Roman-Hindi tokens: a single hit is enough to decide the
+// farmer is writing Hinglish. (HINGLISH_KEYWORDS above also contains words
+// that are normal English — "rate", "me", "spray", "help", "mandi" — so a
+// single broad hit can never flip an English question into Hindi.)
+const HINGLISH_STRONG = [
+  "kya", "hai", "hain", "kaise", "kare", "karna", "ka", "ki", "ke", "ko", "mein",
+  "bhav", "bhaav", "kheti", "dawa", "dawai", "khad", "paani", "pani",
+  "rog", "kida", "keeda", "beej", "kitna", "kitni", "konsi", "kaunsi",
+  "kaha", "kahan", "batao", "bataiye", "bhai", "namaste", "pranam", "fasal",
+  "patti", "peela", "sukha", "kharif", "rabi", "tamatr", "tamatar", "aalu", "aloo",
+  "pyaj", "gehu", "gehun", "chana", "sarson", "mirch", "lahsun",
+  "ganna", "chawal", "dhan", "makka", "kisan", "ilaj", "upay", "yojana",
+  "paisa", "bhaiya", "madad", "samasya", "kharab", "bachav", "tarika", "kyu", "kyon", "karen",
+  "karo", "kardo",
 ];
 
 export const CROP_DICTIONARY: Record<string, string> = {
@@ -251,13 +271,17 @@ function detectLanguage(text: string, requestedLang?: string): { lang: string; d
   // Check for Hinglish / Roman Hindi keywords
   const words = text.toLowerCase().split(/\s+/);
   let hinglishHits = 0;
+  let strongHits = 0;
   for (const w of words) {
     const cleanWord = w.replace(/[^a-z]/g, "");
-    if (cleanWord && HINGLISH_KEYWORDS.includes(cleanWord)) {
-      hinglishHits++;
-    }
+    if (!cleanWord) continue;
+    if (HINGLISH_KEYWORDS.includes(cleanWord)) hinglishHits++;
+    if (HINGLISH_STRONG.includes(cleanWord)) strongHits++;
   }
-  if (hinglishHits >= 1) {
+  // One unmistakable Roman-Hindi word, or several broad ones, flips the reply
+  // to Hindi. A lone English loanword ("rate", "mandi", "help", "spray") never
+  // does — otherwise plain English questions get answered in Hindi.
+  if (strongHits >= 1 || hinglishHits >= 3) {
     return { lang: "hi", display: "Hindi (हिंदी)" };
   }
 
@@ -526,6 +550,9 @@ Specific crop / topic focus: "{cropFocus}"
 You are Kisan Sahayak AI, an intelligent agriculture assistant inside AgriConnect.
 Your primary goal is to help Indian farmers understand agriculture in simple, practical, natural, and friendly language.
 
+PERSONA & TONE:
+{persona}
+
 ============================================================
 2. MULTILINGUAL & RESPONSE LANGUAGE RULES (CRITICAL & ABSOLUTE)
 ============================================================
@@ -538,6 +565,8 @@ Your primary goal is to help Indian farmers understand agriculture in simple, pr
   - If user asks in Marathi / Gujarati / Punjabi / Tamil / Telugu / etc. -> Reply in that EXACT language & native script.
   - If user mixes Hindi + English -> Reply in the same natural mix.
 - Do NOT unnecessarily switch to English. Do NOT force Hindi if the user is speaking another Indian language.
+- HARD RULE: the "Target Response Language" above is the FINAL answer language. Never reply in a different language than the one the farmer used, even if the question contains a few English words.
+- If the farmer writes in English (even with Hindi crop/mandi words like "mandi", "gehu", "rate"), reply in English — not Hindi.
 - Phonetic / Roman Hindi understanding: Farmers may type Hindi phonetically in English (e.g. tamatar, tamtar, gehu, gehun, pyaj, pyaaz, soyabean, aloo, aalu). Contextually understand intended meaning and spelling variations without asking the user to write proper English.
 
 ============================================================
@@ -564,6 +593,17 @@ Your primary goal is to help Indian farmers understand agriculture in simple, pr
 - Crop Disease: Use hedged language ("Ye symptoms ___ ke saath match kar sakte hain"). Ask for crop name, stage, or photo when helpful.
 - Chemical Safety: Never invent pesticide names, dosages, or mixing ratios. Always recommend caution and advise verifying exact product/dosage with your local Krishi Vigyan Kendra (KVK) or Kisan Call Centre (1800-180-1551). Never recommend exceeding product label directions.
 - Government Schemes: Never invent eligibility or benefits. Use verified tool data or state if unavailable.
+
+============================================================
+5b. EPISTEMIC HONESTY — HOW SURE ARE YOU? (CRITICAL)
+============================================================
+Every substantive claim must match exactly one of these four levels, and you must make the level obvious to the farmer:
+  • KNOWN   — confirmed by the REAL-TIME DATA RESULTS / TOOLS / FARM CONTEXT above, or by general, well-established agronomy. State it directly.
+  • LIKELY  — strong inference from known facts. Prefix with "shayad / probably / most likely".
+  • POSSIBLE— one option among others, weak evidence. Prefix with "ho sakta hai / it could be / possible".
+  • UNKNOWN — you have no data. Say plainly that you do not know and say exactly WHAT is missing.
+NEVER present LIKELY or POSSIBLE as KNOWN. NEVER guess a number, price, dosage or diagnosis to fill a gap — an honest "I don't have this data" is always better than a confident wrong answer.
+If the farmer's question needs information that is not in the tools, farm context, or chat memory, do NOT improvise. Ask for the missing detail instead.
 
 ============================================================
 6. SOURCE & API PRIVACY IN USER RESPONSES (CRITICAL)

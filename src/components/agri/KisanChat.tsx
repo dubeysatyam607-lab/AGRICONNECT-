@@ -11,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFarm } from "@/contexts/FarmContext";
 import { useLocation } from "@/features/location/LocationContext";
-import { getLocalAnswer, type LocalAnswerKind } from "@/lib/local-advisor";
+import { getLocalAnswer, isHinglish, type LocalAnswerKind } from "@/lib/local-advisor";
 import { dialogService } from "@/core/services/DialogService";
 import {
   fetchConversations, fetchConversationMessages, deleteConversation,
@@ -218,6 +218,10 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
   // of the stale value captured at the moment listening started.
   const voiceTranscriptRef = useRef("");
 
+  // Monotonic id for the newest send() in flight. A slow reply must never
+  // overwrite the answer to a newer question (stale-response guard).
+  const requestSeqRef = useRef(0);
+
   // VoiceEngine: speaking progress subtitles
   const [speakingSentence, setSpeakingSentence] = useState("");
   const [speakPaused, setSpeakPaused] = useState(false);
@@ -264,6 +268,14 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Invalidate any in-flight reply when the panel unmounts so a late response
+  // cannot setState on a dead tree.
+  useEffect(() => {
+    return () => {
+      requestSeqRef.current += 1;
     };
   }, []);
 
@@ -773,6 +785,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     if (isLoading) return;
 
     stopAllSpeaking();
+    const seq = ++requestSeqRef.current;
     setIsLoading(true);
     setInput("");
 
@@ -809,6 +822,13 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
     }
 
     try {
+      // Declared once so every branch (crop scan, chat, honest error) can
+      // assign them — previously they were undeclared, which threw a
+      // ReferenceError in strict-mode bundles and hid the real AI answer.
+      let assistantResponse = "";
+      let suggestions: string[] = DEFAULT_SUGGESTIONS;
+      const source: "cloud" | "local" = "cloud";
+
       if (base64Data) {
         let r: Record<string, unknown> | null = null;
           try {
@@ -991,6 +1011,8 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         }
       }
 
+      if (seq !== requestSeqRef.current) return; // a newer question superseded this one
+
       const finalHistory = [...nextHistory, {
         role: "assistant" as const,
         content: assistantResponse,
@@ -1008,6 +1030,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
       }
 
     } catch (err: any) {
+      if (seq !== requestSeqRef.current) return; // stale failure — newer request owns the UI
       console.error("AI Assistant processing error:", err);
       // Smart local fallback with instant agricultural knowledge
       const qLang = detectLanguageOf(messageToSend);
@@ -1034,7 +1057,9 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
         playAssistantVoice(fallbackContent);
       }
     } finally {
-      setIsLoading(false);
+      if (seq === requestSeqRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 

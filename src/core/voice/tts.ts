@@ -100,16 +100,25 @@ export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
   const targetLang = (lang || 'hi-IN').toLowerCase().replace('_', '-');
   const baseCode = targetLang.split('-')[0];
 
-  const preferredPatterns = [
+  // Hindi-specific voice names must never win for Tamil/Telugu/etc., otherwise
+  // the farmer hears their answer read in the wrong language.
+  const hindiPreferred: RegExp[] = [
     /google.*(hindi|हिन्दी|indian)/i,
     /microsoft.*(natural|swara|madhur|hemant|neerja|prabhat|heera|ravi|madhav|priya)/i,
     /(lekha|neerja|veena|rishi|pradeep|kaveri|ananya|kavya|aravind)/i,
     /hi[-_]in/i,
   ];
+  // A voice whose own language tag matches the requested language always wins.
+  const langMatch = voices.find(
+    (v) => v.lang.toLowerCase().split(/[-_]/)[0] === baseCode,
+  );
+  if (langMatch) return langMatch;
 
-  for (const pat of preferredPatterns) {
-    const match = voices.find((v) => pat.test(v.name) || pat.test(v.lang));
-    if (match) return match;
+  if (baseCode === 'hi') {
+    for (const pat of hindiPreferred) {
+      const match = voices.find((v) => pat.test(v.name) || pat.test(v.lang));
+      if (match) return match;
+    }
   }
 
   const exactMatch = voices.find((v) => v.lang.toLowerCase() === targetLang);
@@ -128,7 +137,12 @@ export function getBestIndianVoice(lang: string): SpeechSynthesisVoice | null {
 const activeAudioSet = new Set<HTMLAudioElement>();
 let activeGlobalAudio: HTMLAudioElement | null = null;
 
+// Bumped by every stopSpeaking()/speakText() so an orphaned playback chain from
+// a previous answer can never keep talking over the current one.
+let playbackGeneration = 0;
+
 export function stopSpeaking(): void {
+  playbackGeneration += 1;
   if (activeGlobalAudio) {
     try {
       activeGlobalAudio.pause();
@@ -168,6 +182,9 @@ export function speakText(
   callbacks: TtsCallbacks = {},
 ): TtsController {
   stopSpeaking();
+
+  const myGeneration = playbackGeneration;
+  const isCurrent = (): boolean => !isStopped && myGeneration === playbackGeneration;
 
   const sanitized = prepareTextForTTS(text, lang);
   const chunks = chunkForSpeech(sanitized, lang);
@@ -227,7 +244,7 @@ export function speakText(
 
   // Play chunks sequentially to prevent audio truncation on long responses
   const playNextChunk = async () => {
-    if (isStopped) return;
+    if (!isCurrent()) return;
 
     if (currentChunkIndex >= totalChunks) {
       callbacks.onEnd?.();
@@ -237,7 +254,7 @@ export function speakText(
     const chunkText = chunks[currentChunkIndex] || sanitized;
     const blob = await fetchChunkAudio(chunkText);
 
-    if (isStopped) return;
+    if (!isCurrent()) return;
 
     if (!blob) {
       // Fallback to browser Web Speech API for remaining chunks
@@ -258,7 +275,7 @@ export function speakText(
       audio.playbackRate = currentPlaybackRate;
 
       audio.onplay = () => {
-        if (isStopped) return;
+        if (!isCurrent()) return;
         callbacks.onProgress?.({
           charIndex: Math.floor((currentChunkIndex / totalChunks) * sanitized.length),
           sentenceIndex: currentChunkIndex,
@@ -271,7 +288,7 @@ export function speakText(
           URL.revokeObjectURL(currentAudioUrl);
           currentAudioUrl = null;
         }
-        if (isStopped) return;
+        if (!isCurrent()) return;
         currentChunkIndex++;
         playNextChunk();
       };
@@ -282,22 +299,26 @@ export function speakText(
           URL.revokeObjectURL(currentAudioUrl);
           currentAudioUrl = null;
         }
-        if (isStopped) return;
+        if (!isCurrent()) return;
         startSpeechSynthesisFallback();
       };
 
       await audio.play();
     } catch {
-      if (!isStopped) {
+      if (isCurrent()) {
         startSpeechSynthesisFallback();
       }
     }
   };
 
-  // Graceful browser SpeechSynthesis fallback
+  // Graceful browser SpeechSynthesis fallback.
+  // Speaks ONE chunk at a time: browsers silently cut long utterances short
+  // (Chrome stops around 15s), which is why answers used to stop mid-reply.
+  const speakableChunks = (): string[] => (chunks.length > 0 ? chunks : [sanitized]);
+
   const startSpeechSynthesisFallback = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window) || isStopped) {
-      callbacks.onEnd?.();
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || !isCurrent()) {
+      if (isCurrent()) callbacks.onEnd?.();
       return;
     }
 
@@ -307,32 +328,47 @@ export function speakText(
       // noop
     }
 
-    const remainingText = chunks.slice(currentChunkIndex).join(' ') || sanitized;
-    const utterance = new SpeechSynthesisUtterance(remainingText);
-    utterance.lang = sarvamCode || 'hi-IN';
-    utterance.rate = currentPlaybackRate * 0.95;
-    utterance.pitch = 1.02;
+    const speakChunkAt = (index: number) => {
+      const list = speakableChunks();
+      if (!isCurrent()) return;
+      if (index >= list.length) {
+        callbacks.onEnd?.();
+        return;
+      }
 
-    const voice = getBestIndianVoice(sarvamCode);
-    if (voice) utterance.voice = voice;
+      const utterance = new SpeechSynthesisUtterance(list[index]);
+      utterance.lang = sarvamCode || 'hi-IN';
+      utterance.rate = currentPlaybackRate * 0.95;
+      utterance.pitch = 1.02;
 
-    utterance.onstart = () => {
-      if (isStopped) return;
-      callbacks.onProgress?.({ charIndex: 0, sentenceIndex: currentChunkIndex });
+      const voice = getBestIndianVoice(sarvamCode);
+      if (voice) utterance.voice = voice;
+
+      utterance.onstart = () => {
+        if (!isCurrent()) return;
+        callbacks.onProgress?.({
+          charIndex: Math.floor((index / Math.max(1, list.length)) * sanitized.length),
+          sentenceIndex: index,
+        });
+      };
+
+      utterance.onend = () => {
+        if (!isCurrent()) return;
+        speakChunkAt(index + 1);
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error === 'canceled' || e.error === 'interrupted') return;
+        if (!isCurrent()) return;
+        // Skip the chunk that failed rather than abandoning the whole answer.
+        speakChunkAt(index + 1);
+      };
+
+      fallbackUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
     };
 
-    utterance.onend = () => {
-      if (isStopped) return;
-      callbacks.onEnd?.();
-    };
-
-    utterance.onerror = (e) => {
-      if (e.error === 'canceled' || e.error === 'interrupted') return;
-      callbacks.onEnd?.();
-    };
-
-    fallbackUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
+    speakChunkAt(currentChunkIndex);
   };
 
   // Launch Sarvam TTS

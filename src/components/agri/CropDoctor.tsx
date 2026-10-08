@@ -13,7 +13,8 @@ import {
   classifyEdgeError,
   SCAN_ERROR_KEYS,
   checkImageQuality,
-  analyzeCropClientSide,
+  MAX_RAW_IMAGE_MB,
+  MAX_PAYLOAD_IMAGE_MB,
   type ScanErrorCode,
   type ImageQualityResult,
 } from "@/lib/crop-scan";
@@ -51,7 +52,6 @@ interface SelectedImageItem {
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_MB = 8;
 const MAX_IMAGES = 4;
 const IMAGE_ROLES = ["Whole Plant", "Affected Leaf", "Stem/Fruit", "Close-up"];
 
@@ -229,11 +229,14 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       return;
     }
 
-    if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      setError("Image is too large. Please choose a photo under 8MB.");
+    // The RAW camera file may be big — it is resized/compressed to a small JPEG
+    // before it ever reaches the API. Reject only what we cannot decode, then
+    // enforce the real payload cap on the COMPRESSED blob below.
+    if (file.size > MAX_RAW_IMAGE_MB * 1024 * 1024) {
+      setError(`Image is too large. Please choose a photo under ${MAX_RAW_IMAGE_MB}MB.`);
       toast({
         title: t("doctor.error.tooLargeTitle") || "File too large",
-        description: t("doctor.error.tooLarge") || `Image size must be less than ${MAX_FILE_MB}MB.`,
+        description: t("doctor.error.tooLarge") || `Image size must be less than ${MAX_RAW_IMAGE_MB}MB.`,
         variant: "destructive",
       });
       return;
@@ -243,6 +246,16 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       console.log("[CROP SCAN] Image preprocessing / compression started...");
       const compressed = await compressImageFile(file);
       console.log(`[CROP SCAN] Image processed successfully: dimensions ${compressed.width}x${compressed.height}`);
+
+      if (compressed.blob.size > MAX_PAYLOAD_IMAGE_MB * 1024 * 1024) {
+        setError(`Compressed image is still over ${MAX_PAYLOAD_IMAGE_MB}MB. Please choose a different photo.`);
+        toast({
+          title: t("doctor.error.tooLargeTitle") || "File too large",
+          description: `Compressed image is still over ${MAX_PAYLOAD_IMAGE_MB}MB. Please choose a different photo.`,
+          variant: "destructive",
+        });
+        return;
+      }
       
       let qResult: ImageQualityResult = { isUsable: true };
       try {
@@ -396,11 +409,21 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       console.log(`[CROP SCAN] Image #${idx + 1} type = ${img.blob.type || "image/jpeg"}, size = ${(img.blob.size / 1024).toFixed(1)} KB`);
     });
 
-    // Best-effort background upload of primary image to private bucket (non-blocking)
+    // Upload the primary photo to the private bucket BEFORE analysis so the
+    // edge function can attach a signed image URL to this scan's history row.
+    // Failure is non-fatal — the scan still runs from the base64 payload.
+    let storagePath: string | undefined;
     if (images[0]?.blob && user?.id) {
-      uploadScanImage(user.id, images[0].blob).catch((uploadErr) => {
-        console.warn("[CROP SCAN] Non-blocking background image upload notice:", uploadErr);
-      });
+      try {
+        const upload = await uploadScanImage(user.id, images[0].blob);
+        if (upload.ok && upload.storagePath) {
+          storagePath = upload.storagePath;
+        } else {
+          console.warn("[CROP SCAN] Image upload did not complete; scan continues without a stored image.");
+        }
+      } catch (uploadErr) {
+        console.warn("[CROP SCAN] Image upload notice:", uploadErr);
+      }
     }
 
     try {
@@ -425,29 +448,18 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
           imageBase64: payloadImages[0],
           language: languageName,
           farmContext: farmCtx,
+          storagePath,
         },
         35000,
       );
 
-      let scanResult: CropScanResult | null = data?.result || null;
+      const scanResult: CropScanResult | null = data?.result || null;
 
       if (err || !scanResult) {
         console.warn(`[CROP SCAN] Edge call error (code = ${code || "none"}):`, err);
         const edgeCode: ScanErrorCode = (code as ScanErrorCode) || classifyEdgeError(err, timedOut, navigator.onLine);
-
-        // Attempt client-side AI analysis fallback only when edge service is unconfigured / not deployed / session expired
-        if (edgeCode === "config" || edgeCode === "deploy" || edgeCode === "session") {
-          console.log("[CROP SCAN] Attempting client-side AI analysis fallback...");
-          try {
-            const fallback = await analyzeCropClientSide(payloadImages, input, languageName, farmCtx);
-            if (fallback) {
-              console.log("[CROP SCAN] Client-side AI analysis fallback succeeded");
-              scanResult = fallback as CropScanResult;
-            }
-          } catch (fbErr) {
-            console.warn("[CROP SCAN] Client-side fallback error:", fbErr);
-          }
-        }
+        // No description-driven fallback: if the AI service did not answer,
+        // the caller surfaces an honest error instead of a fabricated result.
       }
 
       if (scanResult) {
@@ -991,7 +1003,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                 >
                   <Upload size={28} className="text-muted-foreground" aria-hidden="true" />
                   <span className="type-h3">Choose from gallery</span>
-                  <span className="type-meta">JPG, PNG or WebP · up to {MAX_FILE_MB}MB</span>
+                  <span className="type-meta">JPG, PNG or WebP · up to {MAX_RAW_IMAGE_MB}MB</span>
                 </button>
               </div>
             )}

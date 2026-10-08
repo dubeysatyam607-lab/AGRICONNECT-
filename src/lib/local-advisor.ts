@@ -187,7 +187,7 @@ const HINGLISH_WORDS = [
  "bhaiya", "madad", "help", "samasya", "kharab", "bachav", "tarika", "kyu", "kyon", "karen"
 ];
 
-const isHinglish = (q: string) => {
+export const isHinglish = (q: string) => {
  const words = q.toLowerCase().split(/\s+/);
  return words.some((w) => HINGLISH_WORDS.includes(w.replace(/[^a-z]/g, "")));
 };
@@ -205,7 +205,7 @@ const OFF_TOPIC_PATTERNS = [
  /(शाहरुख|सलमान|फिल्म|मूवी|सिनेमा|गाना|अभिनेता|अभिनेत्री|क्रिकेट|मैच|राजनीति|चुनाव|कोडिंग|प्रोग्राम|गाना|गीत|चित्रपट|गाणी|ಚಲನಚಿತ್ರ|సినిమా|திரைப்படம்|সিনেমা)/i,
 ];
 
-const OFF_TOPIC_RESPONSES: Record<string, string> = {
+export const OFF_TOPIC_RESPONSES: Record<string, string> = {
  hi: "AgriConnect AI केवल कृषि, फसल प्रबंधन, कीट-रोग उपचार, मौसम, मंडी भाव और सरकारी किसान योजनाओं से जुड़े प्रश्नों में सहायता करने के लिए तैयार किया गया है। कृपया अपनी फसल या खेती से संबंधित प्रश्न पूछें। ",
  en: "AgriConnect AI is specialized exclusively for agriculture — it is specifically designed to assist with agriculture, crop health, pest & disease management, weather, mandi prices, and government farming schemes. Please ask a farming-related question! ",
  mr: "AgriConnect AI केवळ कृषी, पीक व्यवस्थापन, कीड-रोग नियंत्रण, हवामान, बाजारभाव आणि शेतकरी योजनांसंबंधित प्रश्नांमध्ये मदत करू शकतो. कृपया शेतीशी संबंधित प्रश्न विचारा. ",
@@ -235,7 +235,7 @@ interface FourPartSolution {
  warning: { en: string; hi: string };
 }
 
-const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
+export const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
  aphid: {
  title: "Aphid Attack (माहू / चेपा कीट)",
  whatHappening: {
@@ -371,7 +371,7 @@ const FOUR_PART_PESTS: Record<string, FourPartSolution> = {
  }
 };
 
-const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
+export const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
  blight: {
  title: "Blight / Jhulsa (झुलसा / ব্লাস্ট / করপানি रोग)",
  whatHappening: {
@@ -1120,9 +1120,9 @@ export const getLocalAnswer = (
  if (["dhanyawad", "dhanyavad", "shukriya", "thank", "thanks", "धन्यवाद", "शुक्रिया", "बहुत अच्छा", "bohot accha"].some((w) => q.includes(w))) {
  const thankText = hi
  ? "आपका स्वागत है किसान साथी! किसी भी अन्य फसल समस्या या सलाह के लिए बेझिझक पूछें। जय जवान, जय किसान! "
- : "You're most welcome, farmer friend! Feel free to ask anytime for any crop advisory or agricultural assistance. Happy farming! ";
- return { text, matched: true, kind: "general" };
- }
+  : "You're most welcome, farmer friend! Feel free to ask anytime for any crop advisory or agricultural assistance. Happy farming! ";
+  return { text: thankText, matched: true, kind: "general" };
+  }
 
  // 1d. Frost / Cold Wave / Pala Advisory
  if (["pala", "पाला", "frost", "cold wave", "sardi", "thand", "ठंड", "शीतलहर"].some((w) => q.includes(w))) {

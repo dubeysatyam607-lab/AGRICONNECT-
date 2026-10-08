@@ -3,7 +3,7 @@
  *
  * Implements:
  * 1. 5-second no-speech auto-timeout (stops if user stays silent on mic open).
- * 2. 3-second natural sentence-finalization timer (grace period for pauses).
+ * 2. 6-second natural sentence-finalization timer (grace period for pauses).
  * 3. Immediate cancellation of timer when farmer resumes speaking.
  * 4. Contextual Speech-to-Text phonetic correction for Indian agricultural words.
  */
@@ -40,6 +40,15 @@ export const sttSupported = (): boolean =>
     (window as unknown as Record<string, unknown>).webkitSpeechRecognition
   );
 
+export interface SpeechResultLike extends ArrayLike<{ transcript: string }> {
+  isFinal: boolean;
+}
+
+export interface SpeechRecognitionEventLike {
+  resultIndex: number;
+  results: ArrayLike<SpeechResultLike> & { length: number };
+}
+
 export interface SpeechRecognitionLike {
   lang: string;
   continuous: boolean;
@@ -51,12 +60,7 @@ export interface SpeechRecognitionLike {
   onstart: (() => void) | null;
   onend: (() => void) | null;
   onerror: ((event: { error: string }) => void) | null;
-  onresult:
-    | ((event: {
-        resultIndex: number;
-        results: ArrayLike<ArrayLike<{ transcript: string }>> & { length: number };
-      }) => void)
-    | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
 }
 
 const getRecognitionCtor = (): (new () => SpeechRecognitionLike) | null => {
@@ -97,8 +101,14 @@ export function correctTranscription(text: string): string {
 }
 
 const NO_SPEECH_TIMEOUT_MS = 5000; // Rule 1: 5s if user does not speak at all
-const SENTENCE_END_PAUSE_MS = 3000; // Rule 2: 3s grace period after speaking ends
+// Rule 2: grace period after speech stops. Farmers pause mid-sentence while
+// thinking — a 3-second cutoff was truncating their question and sending
+// half a sentence to the AI. 6s keeps the flow without cutting people off.
+const SENTENCE_END_PAUSE_MS = 6000;
 const MAX_RECORDING_DURATION_MS = 60000; // Max 60 seconds
+// Chrome/Android routinely end a recognition session on their own. Restart it
+// instead of silently going deaf mid-sentence (only while we did not stop it).
+const MAX_UNEXPECTED_RESTARTS = 10;
 
 /**
  * Start listening with live transcripts and adaptive silence detection.
@@ -121,6 +131,8 @@ export function listen(
   let listening = false;
   let stopped = false;
   let hasSpoken = false;
+  let restarts = 0;
+  let pendingRestart = false;
   let finalText = '';
   let liveText = '';
 
@@ -163,13 +175,13 @@ export function listen(
     }, NO_SPEECH_TIMEOUT_MS);
   };
 
-  // Rule 2: Arm 3-second sentence completion detector
+  // Rule 2: Arm sentence completion detector (6-second grace period)
   const armSentenceEndTimer = () => {
     if (pauseTimer) window.clearTimeout(pauseTimer);
     callbacks.onStateChange?.('PAUSE_DETECTED');
 
     pauseTimer = window.setTimeout(() => {
-      // 3 seconds of silence after speaking -> finalize utterance
+      // Grace period of silence after speaking -> finalize utterance
       callbacks.onStateChange?.('FINALIZING');
       stop();
     }, SENTENCE_END_PAUSE_MS);
@@ -198,16 +210,26 @@ export function listen(
   };
 
   recognition.onstart = () => {
+    // A restart must not look like a brand-new session: it would wipe the
+    // partial transcript state and emit a second onStart to the UI.
+    const isRestart = pendingRestart;
+    pendingRestart = false;
     listening = true;
     stopped = false;
-    hasSpoken = false;
     callbacks.onStateChange?.('LISTENING');
-    callbacks.onStart?.();
+    if (isRestart) {
+      // The farmer was already mid-sentence. Re-arm the silence rule so the
+      // mic still switches off if nobody speaks after the restart.
+      if (hasSpoken) armSentenceEndTimer();
+    } else {
+      hasSpoken = false;
+      callbacks.onStart?.();
+      // Start 5-second initial silence check
+      armInitialSilence();
+    }
 
-    // Start 5-second initial silence check
-    armInitialSilence();
-
-    // Arm max duration guard
+    // Arm max duration guard (cleared by the previous session's onend)
+    if (maxDurationTimer) window.clearTimeout(maxDurationTimer);
     maxDurationTimer = window.setTimeout(() => {
       stop();
     }, MAX_RECORDING_DURATION_MS);
@@ -236,7 +258,11 @@ export function listen(
       const cleanCombined = correctTranscription(rawCombined);
       callbacks.onTranscript?.(cleanCombined, !liveText);
 
-      // Arm the 3-second grace period for sentence completion
+      // As long as speech keeps arriving, the browser may end the session as
+      // often as it likes — we can always restart from a clean budget.
+      restarts = 0;
+
+      // Arm the silence grace period for sentence completion
       armSentenceEndTimer();
     }
   };
@@ -244,11 +270,19 @@ export function listen(
   recognition.onerror = (event) => {
     clearAllTimers();
     if (event.error === 'no-speech') {
+      // The engine is still alive; onend decides whether to restart.
       if (!hasSpoken) {
         callbacks.onStateChange?.('IDLE');
       }
       return;
     }
+    if (event.error === 'aborted') {
+      stopped = true;
+      return;
+    }
+    // Fatal for this session (permission denied, network, service unavailable):
+    // never auto-restart, or we would spin forever.
+    stopped = true;
     callbacks.onStateChange?.('ERROR');
     callbacks.onError?.(event.error);
   };
@@ -256,6 +290,28 @@ export function listen(
   recognition.onend = () => {
     listening = false;
     clearAllTimers();
+
+    if (stopped) {
+      callbacks.onStateChange?.('IDLE');
+      callbacks.onEnd?.();
+      return;
+    }
+
+    // The browser ended the session on its own (Chrome/Android do this
+    // routinely). Keep listening so the farmer can finish the sentence — but
+    // only if they had actually started speaking. A silent mic must stop.
+    if (hasSpoken && restarts < MAX_UNEXPECTED_RESTARTS) {
+      restarts += 1;
+      pendingRestart = true;
+      try {
+        recognition.start();
+        return;
+      } catch {
+        // Already running or unusable — fall through and end honestly.
+      }
+      pendingRestart = false;
+    }
+
     callbacks.onStateChange?.('IDLE');
     callbacks.onEnd?.();
   };
