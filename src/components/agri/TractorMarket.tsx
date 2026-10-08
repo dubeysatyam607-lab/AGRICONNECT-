@@ -18,6 +18,7 @@ import { EquipmentAssetForm } from "./AssetForms";
 import { MACHINERY_FILTER_CATEGORIES, MACHINERY_CATEGORY_LABELS, findMachineryGroup } from "@/lib/machinery-categories";
 import { PlusCircle } from "lucide-react";
 import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
+import { ManualUpiPaymentDialog } from "@/features/payments/presentation/components/ManualUpiPaymentDialog";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/tractor-hire`;
@@ -632,10 +633,17 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
 }) => {
  const [stage, setStage] = useState<"pick" | "paying" | "done">("pick");
  const [method, setMethod] = useState(booking.paymentMethod || "upi");
+ const [showProofModal, setShowProofModal] = useState(false);
 
  const pay = () => {
- setStage("paying");
- setTimeout(() => setStage("done"), 1900);
+  if (method === "cash") {
+    setStage("paying");
+    setTimeout(() => {
+      setStage("done");
+    }, 1000);
+  } else {
+    setShowProofModal(true);
+  }
  };
 
  return (
@@ -646,9 +654,15 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
  <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
  <Check size={34} />
  </div>
- <h3 className="font-semibold text-foreground text-lg">{t("paymentSuccess")}</h3>
- <p className="text-sm text-muted-foreground mt-1">{fmt(booking.total)} {t("paidVia")} {method.toUpperCase()}</p>
- <p className="text-xs text-muted-foreground mt-2">{t("receiptSent")}</p>
+ <h3 className="font-semibold text-foreground text-lg">
+   {method === "cash" ? "Booking Requested (COD)" : "Payment Proof Submitted!"}
+ </h3>
+ <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mt-1">
+   {method === "cash" ? "Payment: Cash on Arrival" : "Payment: Under Review"}
+ </p>
+ <p className="text-xs text-muted-foreground mt-2">
+   {method === "cash" ? "Your booking request has been sent to the owner." : "Verification team is reviewing your payment proof. Status: Booking Pending Confirmation."}
+ </p>
  <div className="mt-4 space-y-2">
  <AgriButton className="w-full" onClick={() => { onSuccess(); }}><Navigation size={15} /> {t("trackBooking")}</AgriButton>
  <AgriButton variant="outline" className="w-full" onClick={onClose}>{t("done")}</AgriButton>
@@ -674,7 +688,7 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
  ) : (
  <>
  <div className="space-y-2 mb-4">
- {[["upi", "UPI / Official QR (GPay · PhonePe · Paytm)"], ["card", "Debit / Credit Card"], ["netbanking", "Net Banking"], ["cash", "Cash on arrival"]].map(([id, label]) => (
+ {[["upi", "UPI / Official QR (GPay · PhonePe · Paytm)"], ["card", "Debit / Credit Card"], ["netbanking", "Net Banking"], ["cash", "Cash on arrival (COD)"]].map(([id, label]) => (
  <button key={id} onClick={() => setMethod(id)} className={cn("w-full flex items-center gap-3 p-3 rounded-xl border text-sm font-semibold", method === id ? "bg-primary/10 border-primary/50" : "bg-card border-border")}>
  <span className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", method === id ? "border-primary" : "border-muted-foreground/40")}>
  {method === id && <span className="w-2 h-2 rounded-full bg-primary"></span>}
@@ -691,7 +705,7 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
  )}
 
  <AgriButton className="w-full" onClick={pay}>
- <Check size={16} /> I Have Paid / Complete Booking ({fmt(booking.total)})
+ <Check size={16} /> {method === "cash" ? `Confirm Cash / COD Booking (${fmt(booking.total)})` : `I Have Paid / Complete Booking (${fmt(booking.total)})`}
  </AgriButton>
  <p className="text-xs text-muted-foreground text-center mt-2">{t("securePay")}</p>
  </>
@@ -699,6 +713,27 @@ const PaymentModal = ({ booking, onClose, onSuccess, t }: {
  </>
  )}
  </AgriCard>
+
+ <ManualUpiPaymentDialog
+   open={showProofModal}
+   onOpenChange={setShowProofModal}
+   plan={{
+     id: booking.id,
+     name: `Tractor Rental (${booking.tractorName || 'Equipment'})`,
+     price: booking.total,
+     currency: 'INR',
+     interval: 'one-time',
+     description: `Booking ID: ${booking.id}`,
+     is_active: true,
+     features: [],
+   }}
+   userId=""
+   onSubmitted={() => {
+     setShowProofModal(false);
+     setStage("done");
+     onSuccess();
+   }}
+ />
  </div>
  );
 };

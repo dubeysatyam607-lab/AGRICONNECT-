@@ -369,6 +369,10 @@ export interface MarketplaceBooking {
   operator_amount: number;
   security_deposit: number;
   total_amount: number;
+  payment_status?: 'PAYMENT_PENDING' | 'PAYMENT_PROOF_PENDING' | 'PAYMENT_PROOF_SUBMITTED' | 'PAYMENT_UNDER_REVIEW' | 'PAYMENT_VERIFIED' | 'PAYMENT_REJECTED' | 'PAYMENT_FAILED' | 'COD_SELECTED';
+  payment_method?: string;
+  utr?: string;
+  proof_storage_path?: string;
   customer_message?: string;
   counter_offer_amount?: number;
   counter_offer_notes?: string;

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { marketplaceService } from '@/features/marketplace/domain/marketplaceService';
 import {
  buildUpiUri,
  fetchPaymentConfig,
@@ -152,6 +153,20 @@ export function ManualUpiPaymentDialog({
  setFailMsg(up.error);
  return;
  }
+
+ const isBooking = plan.id.startsWith('book_') || plan.id.startsWith('b_') || plan.id.startsWith('tr_') || plan.id.startsWith('st_') || plan.id.startsWith('lr_') || plan.id.startsWith('tb_') || plan.name.toLowerCase().includes('booking') || plan.name.toLowerCase().includes('rental');
+
+ if (isBooking) {
+   await marketplaceService.submitPaymentProofForBooking({
+     bookingId: plan.id,
+     utr,
+     proofPath: up.path,
+     amount,
+     paymentDate: paymentDate ? new Date(paymentDate).toISOString() : undefined,
+     note: note || undefined,
+   });
+ }
+
  const sub = await submitManualPayment({
  planId: plan.id,
  amount,
@@ -160,7 +175,7 @@ export function ManualUpiPaymentDialog({
  paymentDate: paymentDate ? new Date(paymentDate).toISOString() : undefined,
  note: note || undefined,
  });
- if (!sub.ok) {
+ if (!sub.ok && !isBooking) {
  setFailMsg(sub.error);
  return;
  }

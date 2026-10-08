@@ -22,6 +22,7 @@ import {
 } from "@/lib/image-resolver";
 import { getDefaultGateway, isRazorpayConfigured } from "@/features/payments/domain/gateways";
 import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
+import { ManualUpiPaymentDialog } from "@/features/payments/presentation/components/ManualUpiPaymentDialog";
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co").replace(/\/$/, "");
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
@@ -294,35 +295,15 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
  const [stage, setStage] = useState<"pick" | "paying" | "done">("pick");
  const [method, setMethod] = useState(order.paymentMethod || "upi");
  const [payErr, setPayErr] = useState("");
+ const [showProofModal, setShowProofModal] = useState(false);
 
  const pay = async () => {
- if (method === "cash") {
- setStage("paying");
- setTimeout(() => setStage("done"), 1200);
- return;
- }
- setStage("paying");
- setPayErr("");
- try {
- const gw = getDefaultGateway();
- const result = await gw.charge({
- amount: order.total,
- method: method as "upi" | "card" | "netbanking" | "wallet",
- currency: "INR",
- orderId: order.id,
- description: `AgriConnect Order #${order.id.slice(0, 8).toUpperCase()}`,
- customer: { name: order.userName, phone: order.phone },
- });
- if (result.success) {
- setStage("done");
- } else {
- setStage("pick");
- setPayErr(result.failureReason || t("payFailed"));
- }
- } catch {
- setStage("pick");
- setPayErr(t("payFailed"));
- }
+  if (method === "cash") {
+    setStage("paying");
+    setTimeout(() => setStage("done"), 1200);
+    return;
+  }
+  setShowProofModal(true);
  };
 
  return (
@@ -331,8 +312,8 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
  {stage === "done" ? (
  <div className="text-center py-4">
  <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3"><CircleCheck size={34} /></div>
- <h3 className="font-semibold text-foreground text-lg">{t("paySuccess")}</h3>
- <p className="text-sm text-muted-foreground mt-1">{fmt(order.total)} {t("paidVia")} {method.toUpperCase()}</p>
+ <h3 className="font-semibold text-foreground text-lg">{method === "cash" ? "Order Confirmed (COD)" : "Payment Proof Submitted!"}</h3>
+ <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mt-1">{method === "cash" ? "Cash on Delivery" : "Payment: Under Review"}</p>
  <div className="mt-4 space-y-2">
  <AgriButton className="w-full" onClick={() => { onPaid(); }}><PackageSearch size={15} /> {t("trackOrder")}</AgriButton>
  <AgriButton variant="outline" className="w-full" onClick={onClose}>{t("done")}</AgriButton>
@@ -374,6 +355,27 @@ const PaymentModal = ({ order, onClose, onPaid, t }: {
  </>
  )}
  </AgriCard>
+
+ <ManualUpiPaymentDialog
+   open={showProofModal}
+   onOpenChange={setShowProofModal}
+   plan={{
+     id: `store_${order.id}`,
+     name: `AgriStore Order #${order.id.slice(0, 6)}`,
+     price: order.total,
+     currency: 'INR',
+     interval: 'one-time',
+     description: `Order ID: ${order.id}`,
+     is_active: true,
+     features: [],
+   }}
+   userId=""
+   onSubmitted={() => {
+     setShowProofModal(false);
+     setStage("done");
+     onPaid();
+   }}
+ />
  </div>
  );
 };

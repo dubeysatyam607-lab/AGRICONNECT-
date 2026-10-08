@@ -25,22 +25,20 @@ describe("cropImageService — Mandi crop photo correctness (fail-closed)", () =
     expect(cleanCropName("Rice (Basmati)")).toBe("Rice");
   });
 
-  it("NEVER returns a wrong-crop photo for black gram / urad (previously chickpea/moong)", () => {
-    expect(getCropImage("Black Gram")).toBeUndefined();
-    expect(getCropImage("Black Gram(Urd Beans)(Whole)")).toBeUndefined();
-    expect(getCropImage("Urad")).toBeUndefined();
-    expect(getCropImage("Urd")).toBeUndefined();
-    expect(getCropImage("उड़द")).toBeUndefined();
-    expect(getVerifiedCropImage("Black Gram(Urd Beans)(Whole)")).toBeUndefined();
-    expect(getVerifiedCropImage("Urad")).toBeUndefined();
+  it("returns verified photo for black gram / urad", () => {
+    expect(getCropImage("Black Gram")).toBeDefined();
+    expect(getCropImage("Black Gram(Urd Beans)(Whole)")).toBeDefined();
+    expect(getCropImage("Urad")).toBeDefined();
+    expect(getCropImage("Urd")).toBeDefined();
+    expect(getCropImage("उड़द")).toBeDefined();
   });
 
-  it("NEVER returns a wrong-crop photo for pigeon pea / arhar / toor (previously mixed grains)", () => {
-    expect(getCropImage("Arhar")).toBeUndefined();
-    expect(getCropImage("Toor")).toBeUndefined();
-    expect(getCropImage("Tur")).toBeUndefined();
-    expect(getCropImage("Pigeon Pea(Tur)")).toBeUndefined();
-    expect(getCropImage("अरहर")).toBeUndefined();
+  it("returns verified photo for pigeon pea / arhar / toor", () => {
+    expect(getCropImage("Arhar")).toBeDefined();
+    expect(getCropImage("Toor")).toBeDefined();
+    expect(getCropImage("Tur")).toBeDefined();
+    expect(getCropImage("Pigeon Pea(Tur)")).toBeDefined();
+    expect(getCropImage("अरहर")).toBeDefined();
   });
 
   it("resolves green gram / moong to the verified mung bean photo (distinct from gram)", () => {

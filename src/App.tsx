@@ -37,6 +37,9 @@ const Features = lazy(() => import("./pages/Features"));
 const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
 const Blog = lazy(() => import("./pages/Blog"));
 const FutureFarming = lazy(() => import("./pages/FutureFarming"));
+const AiInAgricultureIndia2026 = lazy(() => import("./pages/blogs/AiInAgricultureIndia2026"));
+const SmartFarmingIndia2026 = lazy(() => import("./pages/blogs/SmartFarmingIndia2026"));
+const AgricultureTechnologyTrendsIndia2026 = lazy(() => import("./pages/blogs/AgricultureTechnologyTrendsIndia2026"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 
 // Admin Console (code-split — only reachable by role-gated /admin route)
@@ -356,6 +359,9 @@ const App = () => (
                   <Route path="/knowledge-hub" element={<SafeLazy><MarketingLayout><KnowledgeHub /></MarketingLayout></SafeLazy>} />
                   <Route path="/blogs" element={<SafeLazy><MarketingLayout><Blog /></MarketingLayout></SafeLazy>} />
                   <Route path="/blogs/future-of-farming" element={<SafeLazy><MarketingLayout><FutureFarming /></MarketingLayout></SafeLazy>} />
+                  <Route path="/blogs/ai-in-agriculture-india-2026" element={<SafeLazy><MarketingLayout><AiInAgricultureIndia2026 /></MarketingLayout></SafeLazy>} />
+                  <Route path="/blogs/smart-farming-india-2026" element={<SafeLazy><MarketingLayout><SmartFarmingIndia2026 /></MarketingLayout></SafeLazy>} />
+                  <Route path="/blogs/agriculture-technology-trends-india-2026" element={<SafeLazy><MarketingLayout><AgricultureTechnologyTrendsIndia2026 /></MarketingLayout></SafeLazy>} />
                   <Route path="/help-center" element={<SafeLazy><MarketingLayout><HelpCenter /></MarketingLayout></SafeLazy>} />
 
                   {/* ── Local SEO Landing Pages ─────────────── */}

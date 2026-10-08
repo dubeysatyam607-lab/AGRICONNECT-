@@ -110,7 +110,8 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
     setLoading(true);
     setUnauthorizedError(false);
     try {
-      const userId = user?.id || 'guest-farmer-01';
+      const authUser = (await supabase.auth.getUser())?.data?.user;
+      const userId = authUser?.id || user?.id || 'guest-farmer-01';
       const items: UnifiedBookingItem[] = [];
 
       // 1. Fetch Marketplace & Machinery Rentals
@@ -129,6 +130,15 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
         if (b.listing_type === 'labour' || b.listing_type === 'labor') cat = 'labor';
         else if (b.listing_type === 'service' || b.listing_type === 'services') cat = 'service';
         else if (b.listing_type === 'cattle') cat = 'cattle';
+
+        let pStatus: UnifiedBookingItem['paymentStatus'] = 'PENDING';
+        if (b.payment_status === 'PAYMENT_PROOF_SUBMITTED' || b.payment_status === 'PAYMENT_UNDER_REVIEW') {
+          pStatus = 'VERIFYING';
+        } else if (b.payment_status === 'PAYMENT_VERIFIED' || b.status === 'CONFIRMED' || b.status === 'ACTIVE' || b.status === 'COMPLETED') {
+          pStatus = 'PAID';
+        } else if (b.payment_status === 'PAYMENT_FAILED' || b.payment_status === 'PAYMENT_REJECTED') {
+          pStatus = 'FAILED';
+        }
 
         items.push({
           id: b.id,
@@ -153,10 +163,7 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
           endDate: b.end_at ? new Date(b.end_at).toLocaleDateString('en-IN') : undefined,
           startTime: b.start_time,
           amount: b.total_amount || 0,
-          paymentStatus:
-            b.status === 'CONFIRMED' || b.status === 'ACTIVE' || b.status === 'COMPLETED'
-              ? 'PAID'
-              : 'PENDING',
+          paymentStatus: pStatus,
           bookingStatus: b.status,
           rawStatusLabel: b.status,
           createdAt: b.created_at,
@@ -794,8 +801,7 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
           onToast={onToast}
           onSubmitted={() => {
             setPaymentDialogOpen(false);
-            marketplaceService.updateBookingStatus(bookingToPay.id, 'CONFIRMED', user?.id || 'cust-01');
-            onToast?.('Payment submitted! Your booking status is updated to CONFIRMED.');
+            onToast?.('Payment proof submitted successfully! Verification status: Payment Under Review.');
             loadAllBookings();
           }}
         />

@@ -588,6 +588,8 @@ class MarketplaceService {
       owner_name: listing.owner.name,
       owner_phone: listing.owner.phone,
       status: 'PENDING',
+      payment_status: input.payment_method === 'cod' ? 'COD_SELECTED' : 'PAYMENT_PENDING',
+      payment_method: input.payment_method || 'upi',
       start_at: startAtISO,
       end_at: endAtISO,
       start_time: input.start_time,
@@ -661,19 +663,22 @@ class MarketplaceService {
     role: 'customer' | 'owner' | 'all' = 'all'
   ): Promise<MarketplaceBooking[]> {
     try {
+      const authUser = (await supabase.auth.getUser())?.data?.user;
+      const targetUserId = authUser?.id || userId;
+
       let query = supabase.from('bookings').select('*');
       if (role === 'customer') {
-        query = query.eq('customer_id', userId);
+        query = query.eq('customer_id', targetUserId);
       } else if (role === 'owner') {
-        query = query.eq('owner_id', userId);
+        query = query.eq('owner_id', targetUserId);
       } else {
-        query = query.or(`customer_id.eq.${userId},owner_id.eq.${userId}`);
+        query = query.or(`customer_id.eq.${targetUserId},owner_id.eq.${targetUserId}`);
       }
 
       query = query.order('created_at', { ascending: false });
       const { data, error } = await query;
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data.map((row: any) => this.mapDatabaseRowToBooking(row));
       }
     } catch (e) {
@@ -685,6 +690,92 @@ class MarketplaceService {
       if (role === 'owner') return b.owner_id === userId;
       return b.customer_id === userId || b.owner_id === userId;
     });
+  }
+
+  /**
+   * Submits payment proof (UTR + screenshot path) for a booking in real DB.
+   */
+  async submitPaymentProofForBooking(input: {
+    bookingId: string;
+    utr: string;
+    proofPath: string;
+    amount: number;
+    paymentDate?: string;
+    note?: string;
+  }): Promise<MarketplaceBooking> {
+    const authUser = (await supabase.auth.getUser())?.data?.user;
+    const userId = authUser?.id || 'customer';
+    const nowIso = new Date().toISOString();
+    const paymentStatus = 'PAYMENT_PROOF_SUBMITTED';
+
+    try {
+      const { data: updated } = await supabase
+        .from('bookings')
+        .update({
+          payment_status: paymentStatus,
+          utr: input.utr,
+          proof_storage_path: input.proofPath,
+          updated_at: nowIso,
+        })
+        .eq('id', input.bookingId)
+        .select()
+        .maybeSingle();
+
+      await supabase.from('booking_events').insert({
+        booking_id: input.bookingId,
+        event_type: 'PAYMENT_PROOF_SUBMITTED',
+        performed_by: userId,
+        notes: `Payment proof submitted. UTR: ${input.utr}, Amount: ₹${input.amount}`,
+      });
+
+      if (updated) {
+        return this.mapDatabaseRowToBooking(updated);
+      }
+    } catch (e) {
+      console.warn('[MarketplaceService] submitPaymentProof DB update warning:', e);
+    }
+
+    const local = this.inMemoryBookings.find((b) => b.id === input.bookingId);
+    if (local) {
+      local.payment_status = paymentStatus;
+      local.utr = input.utr;
+      local.proof_storage_path = input.proofPath;
+      local.updated_at = nowIso;
+      return local;
+    }
+
+    return {
+      id: input.bookingId,
+      listing_id: 'l1',
+      listing_title: 'Booking',
+      listing_type: 'machinery',
+      customer_id: userId,
+      customer_name: 'Customer',
+      customer_phone: '',
+      owner_id: 'owner',
+      owner_name: 'Owner',
+      owner_phone: '',
+      status: 'PENDING',
+      payment_status: paymentStatus,
+      utr: input.utr,
+      proof_storage_path: input.proofPath,
+      start_at: nowIso,
+      end_at: nowIso,
+      duration: 1,
+      duration_unit: 'day',
+      pricing_unit: 'per_day',
+      quantity: 1,
+      farm_location: 'Farm',
+      delivery_required: false,
+      operator_required: false,
+      rental_amount: input.amount,
+      delivery_amount: 0,
+      operator_amount: 0,
+      security_deposit: 0,
+      total_amount: input.amount,
+      created_at: nowIso,
+      updated_at: nowIso,
+    };
   }
 
   /**
@@ -1179,6 +1270,10 @@ class MarketplaceService {
       operator_amount: row.operator_amount || 0,
       security_deposit: row.security_deposit || 0,
       total_amount: row.total_amount || 0,
+      payment_status: row.payment_status || (['CONFIRMED', 'ACTIVE', 'COMPLETED'].includes(row.status) ? 'PAYMENT_VERIFIED' : 'PAYMENT_PENDING'),
+      payment_method: row.payment_method || 'upi',
+      utr: row.utr || null,
+      proof_storage_path: row.proof_storage_path || null,
       customer_message: row.customer_message,
       counter_offer_amount: row.counter_offer_amount,
       counter_offer_notes: row.counter_offer_notes,

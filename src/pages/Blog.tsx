@@ -7,6 +7,30 @@ import { ArrowRight, BookOpen } from 'lucide-react';
 
 const ARTICLES = [
   {
+    title: 'AI in Agriculture in India: 7 Ways AI Is Changing Farming in 2026',
+    category: 'AI Agriculture',
+    readTime: '6 min read',
+    date: '2026-10-01',
+    excerpt: 'Discover how AI is changing agriculture in India in 2026—from crop monitoring and weather intelligence to AI farm advisory, crop scanning and smarter farming decisions.',
+    to: '/blogs/ai-in-agriculture-india-2026',
+  },
+  {
+    title: 'Smart Farming in India 2026: 8 Technologies Changing Agriculture',
+    category: 'Smart Farming',
+    readTime: '7 min read',
+    date: '2026-10-02',
+    excerpt: 'Smart farming is changing Indian agriculture through AI, IoT, crop scanning, weather intelligence, digital marketplaces and connected farm technology.',
+    to: '/blogs/smart-farming-india-2026',
+  },
+  {
+    title: '10 Agriculture Technology Trends in India to Watch in 2026',
+    category: 'AgriTech Trends',
+    readTime: '8 min read',
+    date: '2026-10-03',
+    excerpt: 'Explore 10 agriculture technology trends shaping Indian farming in 2026, including AI, IoT, crop scanning, smart weather, digital marketplaces and farm data.',
+    to: '/blogs/agriculture-technology-trends-india-2026',
+  },
+  {
     title: 'What Is AgriConnect? Inside India\'s Complete Digital Agriculture Ecosystem',
     category: 'About AgriConnect',
     readTime: '5 min read',

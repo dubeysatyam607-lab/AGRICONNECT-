@@ -254,6 +254,53 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Payment Proof & Verification Details */}
+          <div className="p-3.5 rounded-xl border border-border bg-card space-y-2">
+            <div className="font-extrabold text-foreground flex items-center justify-between border-b border-border pb-1.5 text-xs">
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-emerald-600" />
+                Payment Verification & Proof Status
+              </span>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                booking.payment_status === 'PAYMENT_VERIFIED' || booking.status === 'CONFIRMED'
+                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                  : booking.payment_status === 'PAYMENT_PROOF_SUBMITTED' || booking.payment_status === 'PAYMENT_UNDER_REVIEW'
+                  ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                  : booking.payment_status === 'COD_SELECTED'
+                  ? 'bg-sky-500/20 text-sky-800 dark:text-sky-300'
+                  : 'bg-slate-500/15 text-slate-700 dark:text-slate-300'
+              }`}>
+                {booking.payment_status === 'PAYMENT_PROOF_SUBMITTED' || booking.payment_status === 'PAYMENT_UNDER_REVIEW'
+                  ? 'Payment Under Review'
+                  : booking.payment_status === 'PAYMENT_VERIFIED' || booking.status === 'CONFIRMED'
+                  ? 'Payment Verified'
+                  : booking.payment_status === 'COD_SELECTED'
+                  ? 'Cash on Delivery (COD)'
+                  : 'Payment Pending'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-muted-foreground pt-1 text-xs">
+              <div>
+                <span className="block text-[10px] uppercase font-bold text-muted-foreground">Locked Payment Amount</span>
+                <span className="font-extrabold text-foreground text-sm">₹{booking.total_amount.toLocaleString('en-IN')}</span>
+              </div>
+              <div>
+                <span className="block text-[10px] uppercase font-bold text-muted-foreground">UTR / Transaction Reference</span>
+                <span className="font-mono font-bold text-foreground">{booking.utr || 'Not Submitted'}</span>
+              </div>
+            </div>
+
+            {booking.proof_storage_path && (
+              <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
+                <span className="font-semibold text-muted-foreground">Payment Screenshot Proof:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  Uploaded & Saved in Secure Storage
+                </span>
+              </div>
+            )}
+          </div>
+
           {/* Counter Offer Box if Present */}
           {booking.status === 'COUNTER_OFFERED' && (
             <div className="p-3.5 rounded-xl border border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/30 space-y-2">
