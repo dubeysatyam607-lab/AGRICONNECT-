@@ -272,6 +272,67 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
         }
       } catch (e) {
         console.warn('[MyBookings] Transport bookings fetch warning:', e);
+      // 5. Fetch Tractor Bookings Table
+      try {
+        const { data: tractorData } = await supabase
+          .from('tractor_bookings')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (tractorData && tractorData.length > 0) {
+          tractorData.forEach((tb: any) => {
+            // Check if this item is already mapped from marketplace_bookings to avoid duplicates
+            if (items.some((existing) => existing.id === tb.id)) return;
+
+            let pStatus: UnifiedBookingItem['paymentStatus'] = 'PENDING';
+            if (tb.status === 'confirmed' || tb.status === 'active' || tb.status === 'completed') {
+              pStatus = 'PAID';
+            } else if (tb.status === 'cancelled') {
+              pStatus = 'FAILED';
+            }
+
+            const rawBooking: MarketplaceBooking = {
+              id: tb.id,
+              listing_id: tb.tractor_id,
+              listing_title: tb.tractor_name || 'Tractor Hire',
+              listing_type: 'machinery',
+              customer_id: tb.user_id || userId,
+              customer_name: tb.user_name || 'Farmer',
+              owner_id: tb.owner_id || '',
+              owner_name: tb.owner_name || 'Equipment Owner',
+              status: tb.status === 'confirmed' ? 'CONFIRMED' : tb.status === 'cancelled' ? 'CANCELLED' : 'ACTIVE',
+              payment_status: pStatus === 'PAID' ? 'PAYMENT_VERIFIED' : 'PAYMENT_PENDING',
+              payment_method: tb.payment_method || 'upi',
+              start_at: tb.scheduled_for || tb.created_at,
+              duration: tb.hours || tb.acres || 1,
+              pricing_unit: tb.hours ? 'hour' : 'acre',
+              farm_location: tb.address || 'Local Farm',
+              rental_amount: tb.base_fare || tb.total || 0,
+              total_amount: tb.total || 0,
+              created_at: tb.created_at,
+            };
+
+            items.push({
+              id: tb.id,
+              source: 'tractor',
+              category: 'machinery',
+              serviceTypeLabel: 'Tractor & Machinery Rental',
+              title: tb.tractor_name || 'Machinery Hire',
+              providerName: tb.owner_name || 'Verified Owner',
+              customerName: tb.user_name || 'Farmer',
+              location: tb.address || 'Local Farm',
+              startDate: tb.scheduled_for ? new Date(tb.scheduled_for).toLocaleDateString('en-IN') : new Date(tb.created_at).toLocaleDateString('en-IN'),
+              amount: tb.total || 0,
+              paymentStatus: pStatus,
+              bookingStatus: tb.status === 'confirmed' ? 'CONFIRMED' : tb.status === 'cancelled' ? 'CANCELLED' : 'ACTIVE',
+              rawStatusLabel: (tb.status || 'CONFIRMED').toUpperCase(),
+              createdAt: tb.created_at,
+              rawBooking,
+            });
+          });
+        }
+      } catch (e) {
+        console.warn('[MyBookings] tractor_bookings fetch warning:', e);
       }
 
       // Sort newest first

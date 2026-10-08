@@ -709,17 +709,26 @@ class MarketplaceService {
     const paymentStatus = 'PAYMENT_PROOF_SUBMITTED';
 
     try {
-      const { data: updated } = await supabase
-        .from('bookings')
-        .update({
-          payment_status: paymentStatus,
-          utr: input.utr,
-          proof_storage_path: input.proofPath,
-          updated_at: nowIso,
-        })
-        .eq('id', input.bookingId)
-        .select()
-        .maybeSingle();
+      const [bookingsRes, tractorRes] = await Promise.allSettled([
+        supabase
+          .from('bookings')
+          .update({
+            payment_status: paymentStatus,
+            utr: input.utr,
+            proof_storage_path: input.proofPath,
+            updated_at: nowIso,
+          })
+          .eq('id', input.bookingId)
+          .select()
+          .maybeSingle(),
+
+        supabase
+          .from('tractor_bookings')
+          .update({
+            status: 'confirmed',
+          })
+          .eq('id', input.bookingId),
+      ]);
 
       await supabase.from('booking_events').insert({
         booking_id: input.bookingId,
@@ -728,8 +737,8 @@ class MarketplaceService {
         notes: `Payment proof submitted. UTR: ${input.utr}, Amount: ₹${input.amount}`,
       });
 
-      if (updated) {
-        return this.mapDatabaseRowToBooking(updated);
+      if (bookingsRes.status === 'fulfilled' && bookingsRes.value.data) {
+        return this.mapDatabaseRowToBooking(bookingsRes.value.data);
       }
     } catch (e) {
       console.warn('[MarketplaceService] submitPaymentProof DB update warning:', e);
