@@ -108,37 +108,10 @@ export function SafeImage({
  list.push(realFallback);
  }
 
- // 4. Guaranteed Local Verified Static Assets
- const categoryLocalMap: Record<string, string> = {
- crop: "/images/crops/default.svg",
- mandi: "/images/mandi/default.svg",
- tractor: "/images/tractor/default.svg",
- machinery: "/images/tractor/default.svg",
- equipment: "/images/tractor/default.svg",
- harvester: "/images/tractor/default.svg",
- cattle: "/images/cattle/default.svg",
- cow: "/images/cattle/default.svg",
- buffalo: "/images/cattle/default.svg",
- product: "/images/agristore/default.svg",
- farm: "/images/farm/default.svg",
- };
- const localCategoryAsset = categoryLocalMap[resolveType] || "/images/mandi-default.svg";
- if (!list.includes(localCategoryAsset)) {
- list.push(localCategoryAsset);
- }
- if (!list.includes("/images/mandi-default.svg")) {
- list.push("/images/mandi-default.svg");
- }
-
- // 5. Exact-category SVG illustration fallback (Inline Data URI)
- const svgFallback = getExactCategoryFallbackSvg(resolveType as any, effectiveName, category);
- if (svgFallback && !list.includes(svgFallback)) {
- list.push(svgFallback);
- }
-
- // 6. Guaranteed neutral agricultural SVG (Inline Data URI)
- if (!list.includes(OFFLINE_AGRI_SVG)) {
- list.push(OFFLINE_AGRI_SVG);
+ // 4. Guaranteed Master Real High-Resolution Agriculture Photography Fallback
+ const masterPhotoFallback = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940";
+ if (!list.includes(masterPhotoFallback)) {
+ list.push(masterPhotoFallback);
  }
 
  setCandidates(list);

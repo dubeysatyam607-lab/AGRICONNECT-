@@ -471,14 +471,6 @@ export function getCropImage(cropName?: string): string | undefined {
   const raw = cropName.toLowerCase().replace(/\([^)]*\)/g, " ").replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
   if (!raw) return undefined;
 
-  // Unverified/ambiguous crops that must return undefined rather than a wrong photo (fail-closed)
-  if (
-    raw === "black gram" || raw.includes("black gram") || raw === "urad" || raw === "urd" || raw === "उड़द" ||
-    raw === "arhar" || raw === "tur" || raw === "toor" || raw === "pigeon pea" || raw === "अरहर"
-  ) {
-    return undefined;
-  }
-
   // 1. Exact term match in CROP_IMAGE_MAP
   if (CROP_IMAGE_MAP[raw]) return CROP_IMAGE_MAP[raw];
 
