@@ -17,12 +17,12 @@ export const SoilTestPackageCard: React.FC<SoilTestPackageCardProps> = ({ pkg, o
     <AgriCard
       className={`relative flex flex-col justify-between p-6 rounded-xl transition-all duration-300 hover: border ${
         pkg.popular
-          ? 'border-emerald-500/50 dark:border-emerald-500/40 bg-emerald-700 shadow-md'
+          ? 'border-emerald-500/60 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 shadow-md ring-1 ring-emerald-500/30'
           : 'border-border/60 hover:border-emerald-400/40'
       }`}
     >
       {pkg.popular && (
-        <div className="absolute -top-3.5 right-6 bg-emerald-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 tracking-wide">
+        <div className="absolute -top-3.5 right-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 tracking-wide">
           <Sparkles className="w-3.5 h-3.5" />
           {t('soil.badge.mostPopular') || 'Most Popular'}
         </div>

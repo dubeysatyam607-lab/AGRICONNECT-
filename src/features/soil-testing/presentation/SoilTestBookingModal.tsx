@@ -647,7 +647,7 @@ export const SoilTestBookingModal: React.FC<SoilTestBookingModalProps> = ({
               <div className="pt-1">
                 <OfficialUpiQrCard
                   amount={pricing.totalAmount}
-                  note={`Soil Test Booking (${soilTestType.toUpperCase()})`}
+                  note={`Soil Test Booking (${testType.toUpperCase()})`}
                 />
               </div>
             )}
