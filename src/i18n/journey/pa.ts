@@ -1289,6 +1289,7 @@ export const pa: JourneyDict = {
   "home.weatherTitle": "ਅੱਜ ਦਾ ਮੌਸਮ",
   "home.checkLocation": "ਆਪਣਾ ਟਿਕਾਣਾ ਜਾਂਚੋ",
   "home.farmTitle": "ਮੇਰੀ ਫ਼ਸਲ",
+  "home.farmTitleSub": "ਫ਼ਸਲ ਦੀ ਸਥਿਤੀ ਅਤੇ ਖੇਤ ਯੋਜਨਾ",
   "home.farmStatusGood": "ਵਧੀਆ ਹਾਲਤ",
   "home.farmStatusAttention": "ਧਿਆਨ ਦਿਓ",
   "home.areaUnit": "ਏਕੜ",

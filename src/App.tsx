@@ -69,8 +69,8 @@ const BOTTOM_OFFSET = 80; // clears the bottom nav bar
 const POS_KEY = "agri_whatsapp_pos";
 
 const defaultPos = () => ({
-  x: typeof window === "undefined" ? 0 : window.innerWidth - BTN_SIZE - 16,
-  y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - BOTTOM_OFFSET,
+  x: 16,
+  y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - (typeof window !== "undefined" && window.innerWidth < 1024 ? 84 : 28),
 });
 
 const FloatingWhatsApp = () => {

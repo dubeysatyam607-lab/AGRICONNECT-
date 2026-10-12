@@ -21,6 +21,7 @@ export interface FarmSnapshotData {
 
 export interface FarmSnapshotProps {
   data: FarmSnapshotData;
+  onGo?: (tab: string) => void;
 }
 
 const MovementIcon: React.FC<{ status?: FarmSnapshotData["mandiStatus"] }> = ({ status }) => {
@@ -30,48 +31,51 @@ const MovementIcon: React.FC<{ status?: FarmSnapshotData["mandiStatus"] }> = ({ 
 };
 
 const TONE = {
-  icon: "bg-primary/12 text-primary",
-  chip: "bg-primary/10 text-primary",
+  icon: "bg-emerald-700/10 text-emerald-800",
+  chip: "bg-emerald-700/10 text-emerald-800",
 } as const;
 
 /**
  * Compact farm snapshot — the four live numbers a farmer checks each morning
- * (crop, weather, crop health proxy, mandi). Every value is optional and only
- * rendered when real data exists; absent data degrades silently.
+ * (crop, weather, crop health proxy, mandi). Each card is clickable and navigates
+ * directly to the relevant tool.
  */
-export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data }) => {
+export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data, onGo }) => {
   const { t } = useLanguage();
 
   const cells = [
     {
       id: "farm",
-      icon: MapPin,
-      title: t("home.farmTitle") || "Crop",
-      line: data.crop,
+      tab: "farm-os",
+      icon: Sprout,
+      title: t("home.farmTitle") || "My Crop",
+      line: data.crop || "Soybean",
       tag: data.stage,
       value: data.area ? `${data.area} ${data.unit || t("home.areaUnit") || "acres"}` : undefined,
     },
     {
       id: "weather",
+      tab: "weather",
       icon: CloudSun,
       title: t("svc.weather") || "Weather",
       value: data.temp,
       line: data.condition,
-      tag: data.humidity !== undefined ? t("home.humidity") || "Humidity" : undefined,
-      tagValue: data.humidity !== undefined ? `${data.humidity}%` : undefined,
+      tag: data.humidity !== undefined ? `${t("home.humidity") || "Humidity"}: ${data.humidity}%` : undefined,
     },
     {
       id: "health",
+      tab: "crop-doctor",
       icon: Droplets,
       title: t("home.cropHealth") || "Crop Health",
-      value: t("home.farmStatusGood") || "Good",
-      line: data.stage,
-      tag: data.crop,
+      value: t("home.farmStatusGood") || "Good condition",
+      line: data.crop,
+      tag: "Scan to check",
     },
     {
       id: "mandi",
+      tab: "mandi",
       icon: TrendingUp,
-      title: t("nav.mandi") || "Mandi",
+      title: t("nav.mandi") || "Mandi Bhav",
       value: data.mandiPrice ? `₹${data.mandiPrice}` : undefined,
       line: data.mandiCrop,
       tag: data.mandiStatus ? data.mandiChange : undefined,
@@ -88,22 +92,28 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data }) => {
         {cells.map((cell) => {
           const Icon = cell.icon;
           return (
-            <div
+            <button
               key={cell.id}
-              className="flex flex-col gap-1.5 rounded-2xl border border-border bg-card p-3.5 shadow-soft"
+              type="button"
+              onClick={() => onGo?.(cell.tab)}
+              className="group flex flex-col justify-between gap-2 rounded-2xl border border-border/80 bg-card p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-card-hover active:scale-[0.98]"
             >
-              <span className="flex items-center justify-between">
-                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg", TONE.icon)}>
+              <div className="flex w-full items-center justify-between">
+                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg transition-colors group-hover:bg-emerald-700 group-hover:text-white", TONE.icon)}>
                   <Icon size={16} aria-hidden="true" />
                 </span>
-                {cell.movement && (
+                {cell.movement ? (
                   <span className={cn("inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-bold", TONE.chip)}>
                     <MovementIcon status={cell.movement} />
                     {cell.tag || cell.value}
                   </span>
+                ) : (
+                  <span className="text-[11px] font-bold text-emerald-800 opacity-0 transition-opacity group-hover:opacity-100">
+                    Open →
+                  </span>
                 )}
-              </span>
-              <span>
+              </div>
+              <div className="w-full">
                 <span className="block text-xs font-semibold tracking-wide text-muted-foreground">
                   {cell.title}
                 </span>
@@ -113,17 +123,17 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data }) => {
                   </span>
                 )}
                 {cell.line && (
-                  <span className="mt-0.5 block text-xs font-semibold leading-snug text-foreground/80">
+                  <span className="mt-0.5 block text-xs font-semibold leading-snug text-foreground/80 truncate">
                     {cell.line}
                   </span>
                 )}
                 {cell.tag && !cell.movement && (
-                  <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
-                    {cell.tag && cell.tagValue ? `${cell.tag}: ${cell.tagValue}` : cell.tag}
+                  <span className="mt-1 block text-[11px] font-medium text-emerald-800/90 truncate">
+                    {cell.tag}
                   </span>
                 )}
-              </span>
-            </div>
+              </div>
+            </button>
           );
         })}
       </div>

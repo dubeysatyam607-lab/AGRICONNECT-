@@ -23,12 +23,17 @@ export function resolveKey(
   params?: Record<string, string | number>,
 ): string {
   if (!key) return '';
+  if (key === 'home.farmTitleSub') {
+    return language === 'hi'
+      ? 'फसल प्रबंधन और डिजिटल योजना'
+      : 'Crop status & seasonal field plan';
+  }
   const out =
     journey[language]?.[key] ||
     translations[language]?.[key] ||
     journey.en?.[key] ||
     translations.en?.[key] ||
-    key;
+    (key.includes('.') ? cleanKeyFallback(key) : key);
   return params ? interpolate(out, params) : out;
 }
 

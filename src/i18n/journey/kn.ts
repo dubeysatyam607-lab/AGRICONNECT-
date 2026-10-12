@@ -1289,6 +1289,7 @@ export const kn: JourneyDict = {
   "home.weatherTitle": "ಇಂದಿನ ಹವಾಮಾನ",
   "home.checkLocation": "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪರಿಶೀಲಿಸಿ",
   "home.farmTitle": "ನನ್ನ ಬೆಳೆ",
+  "home.farmTitleSub": "ಬೆಳೆ ಸ್ಥಿತಿ ಮತ್ತು ಕ್ಷೇತ್ರ ಯೋಜನೆ",
   "home.farmStatusGood": "ಉತ್ತಮ ಸ್ಥಿತಿ",
   "home.farmStatusAttention": "ಗಮನ ಬೇಕು",
   "home.areaUnit": "ಎಕರೆ",

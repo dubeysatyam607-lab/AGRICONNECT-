@@ -272,6 +272,8 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
         }
       } catch (e) {
         console.warn('[MyBookings] Transport bookings fetch warning:', e);
+      }
+
       // 5. Fetch Tractor Bookings Table
       try {
         const { data: tractorData } = await supabase

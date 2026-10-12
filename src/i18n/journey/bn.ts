@@ -1289,6 +1289,7 @@ export const bn: JourneyDict = {
   "home.weatherTitle": "আজকের আবহাওয়া",
   "home.checkLocation": "আপনার অবস্থান পরীক্ষা করুন",
   "home.farmTitle": "আমার ফসল",
+  "home.farmTitleSub": "ফসলের অবস্থা ও ক্ষেত্র পরিকল্পনা",
   "home.farmStatusGood": "ভালো অবস্থা",
   "home.farmStatusAttention": "মনোযোগ দরকার",
   "home.areaUnit": "একর",

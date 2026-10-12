@@ -337,86 +337,15 @@ export const DynamicSmartFarmHero: React.FC<DynamicSmartFarmHeroProps> = ({
       {/* ── 3. WEATHER & PARTICLE CANVAS OVERLAY ──────────────────────────── */}
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full z-10" />
 
-      {/* ── 4. SMART CROP SCANNING BEAM (SUBTLE AGRI-TECH ACCENT) ───────────── */}
-      {!isReducedMotion && (
-        <div className="animate-crop-scan-beam pointer-events-none absolute inset-x-0 z-15 h-24 bg-gradient-to-b from-transparent via-[#5E9F58]/20 to-transparent">
-          <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-[#5E9F58] to-transparent shadow-[0_0_12px_#5E9F58]" />
-        </div>
-      )}
-
-      {/* ── 5. TOP STATUS HUD CHIP ─────────────────────────────────────────── */}
-      <div className="absolute left-3.5 top-3.5 z-30 flex items-center gap-2 rounded-xl border border-white/20 bg-[#285943]/85 px-3 py-1.5 shadow-md backdrop-blur-md">
-        <span className="relative flex h-2.5 w-2.5">
-          <span className={`absolute h-full w-full rounded-full bg-[#5E9F58] opacity-75 ${!isReducedMotion ? "animate-ping" : ""}`} />
-          <span className="relative h-2.5 w-2.5 rounded-full bg-[#5E9F58]" />
+      {/* ── 4. CLEAN TOP STATUS BADGE ─────────────────────────────────── */}
+      <div className="absolute left-3.5 top-3.5 z-30 flex items-center gap-2 rounded-xl border border-white/20 bg-[#0F5132]/85 px-3 py-1.5 shadow-md backdrop-blur-md">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute h-full w-full rounded-full bg-[#00C26E] opacity-75 animate-ping" />
+          <span className="relative h-2 w-2 rounded-full bg-[#00C26E]" />
         </span>
-        <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-white">
-          <Cpu size={13} className="text-[#5E9F58]" />
+        <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+          <Sprout size={13} className="text-[#00C26E]" />
           <span className="tracking-wide">{cropInfo.name}</span>
-          <span className="hidden sm:inline-block rounded-md bg-[#5E9F58]/25 px-1.5 py-0.5 text-[9.5px] font-extrabold uppercase text-[#8EAF82]">
-            {timeOfDay} &bull; {weatherState.replace("_", " ").toUpperCase()}
-          </span>
-        </div>
-      </div>
-
-      {/* ── 6. FLOATING FIELD TELEMETRY NODES ───────────────────────────────── */}
-      {/* Node 1 — Soil Moisture & NPK (Bottom Left) */}
-      <div
-        className="absolute bottom-[22%] left-[10%] z-25 transition-transform duration-500"
-        style={{ transform: `translate3d(${parallaxX * 0.4}px, ${parallaxY * 0.4}px, 0)` }}
-      >
-        <div className="relative flex items-center gap-2">
-          <div className="relative flex h-5 w-5 items-center justify-center">
-            <span className={`absolute h-full w-full rounded-full bg-[#5E9F58] opacity-75 ${!isReducedMotion ? "animate-ping" : ""}`} />
-            <span className="h-2 w-2 rounded-full bg-[#5E9F58] shadow-[0_0_8px_#5E9F58]" />
-          </div>
-          <div className="hidden sm:block h-px w-5 bg-gradient-to-r from-[#5E9F58] to-white/40" />
-          <div className="rounded-xl border border-white/20 bg-[#285943]/85 px-3 py-1.5 shadow-lg backdrop-blur-md">
-            <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#8EAF82]">
-              <Droplets size={12} className="text-[#5E9F58]" />
-              <span>Soil Moisture &bull; {cropInfo.moisture}</span>
-            </div>
-            <p className="text-[9.5px] font-semibold text-white/80">{cropInfo.npk}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Node 2 — Crop Stage (Mid Field Right) */}
-      <div
-        className="absolute bottom-[42%] right-[14%] z-25 transition-transform duration-500"
-        style={{ transform: `translate3d(${parallaxX * 0.3}px, ${parallaxY * 0.3}px, 0)` }}
-      >
-        <div className="relative flex items-center gap-2">
-          <div className="rounded-xl border border-white/20 bg-[#285943]/85 px-3 py-1.5 shadow-lg backdrop-blur-md">
-            <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-amber-300">
-              <Sprout size={12} className="text-amber-400" />
-              <span>{cropInfo.stage}</span>
-            </div>
-            <p className="text-[9.5px] font-semibold text-white/80">Growth Index &bull; Optimal</p>
-          </div>
-          <div className="hidden sm:block h-px w-5 bg-gradient-to-r from-white/40 to-[#5E9F58]" />
-          <div className="relative flex h-5 w-5 items-center justify-center">
-            <span className={`absolute h-full w-full rounded-full bg-amber-400 opacity-75 ${!isReducedMotion ? "animate-ping" : ""}`} />
-            <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_#FBBF24]" />
-          </div>
-        </div>
-      </div>
-
-      {/* ── 7. BOTTOM TELEMETRY SUMMARY STRIP ──────────────────────────────── */}
-      <div className="absolute bottom-3.5 left-3.5 z-30 hidden md:flex items-center gap-3 rounded-xl border border-white/15 bg-black/45 px-3 py-1.5 text-[11px] font-semibold text-white/90 shadow-md backdrop-blur-md">
-        <div className="flex items-center gap-1 text-[#8EAF82]">
-          <Activity size={13} />
-          <span>Live Field Telemetry</span>
-        </div>
-        <span className="text-white/30">&bull;</span>
-        <div className="flex items-center gap-1 text-amber-300">
-          <Thermometer size={13} />
-          <span>Ambient Weather Active</span>
-        </div>
-        <span className="text-white/30">&bull;</span>
-        <div className="flex items-center gap-1 text-[#8EAF82]">
-          <ShieldCheck size={13} />
-          <span>Zero Disease Risk</span>
         </div>
       </div>
     </div>

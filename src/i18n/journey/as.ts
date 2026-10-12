@@ -1288,6 +1288,7 @@ export const as: JourneyDict = {
   "home.weatherTitle": "আজিৰ বতৰ",
   "home.checkLocation": "আপোনাৰ অৱস্থান পৰীক্ষা কৰক",
   "home.farmTitle": "মোৰ শস্য",
+  "home.farmTitleSub": "শস্যৰ অৱস্থা আৰু পথাৰ পৰিকল্পনা",
   "home.farmStatusGood": "ভাল অৱস্থা",
   "home.farmStatusAttention": "মনোযোগ লাগে",
   "home.areaUnit": "একৰ",

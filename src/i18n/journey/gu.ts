@@ -1289,6 +1289,7 @@ export const gu: JourneyDict = {
   "home.weatherTitle": "આજનું હવામાન",
   "home.checkLocation": "તમારું સ્થાન તપાસો",
   "home.farmTitle": "મારો પાક",
+  "home.farmTitleSub": "પાકની સ્થિતિ અને ખેતી આયોજન",
   "home.farmStatusGood": "સારી સ્થિતિ",
   "home.farmStatusAttention": "ધ્યાન આપો",
   "home.areaUnit": "એકર",

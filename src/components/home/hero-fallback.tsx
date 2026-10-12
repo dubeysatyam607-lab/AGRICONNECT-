@@ -21,22 +21,10 @@ export const HeroFallback: React.FC<HeroFallbackProps> = () => {
       {/* Soft natural ambient lighting vignettes */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0F5132]/30 via-transparent to-[#F7D774]/10 mix-blend-overlay" />
 
-      {/* Top Floating Field Status Badge */}
+      {/* Top Field Status Badge */}
       <div className="absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-lg border border-emerald-900/15 bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
         <span className="h-2 w-2 rounded-full bg-[#00C26E]" />
-        <span className="text-[11px] font-extrabold text-[#0F5132] tracking-wide">Soybean Field</span>
-      </div>
-
-      {/* Moisture Badge */}
-      <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-lg border border-emerald-900/15 bg-white/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
-        <Droplets size={12} className="text-[#00C26E]" />
-        <span className="text-[10.5px] font-bold text-[#0F5132]">Soil Moisture &bull; 48%</span>
-      </div>
-
-      {/* Stage Badge */}
-      <div className="absolute bottom-3 right-3 z-20 hidden sm:flex items-center gap-1.5 rounded-lg border border-amber-900/15 bg-amber-50/90 px-2.5 py-1 shadow-sm backdrop-blur-md">
-        <Sprout size={12} className="text-amber-700" />
-        <span className="text-[10.5px] font-bold text-amber-900">Flowering Stage</span>
+        <span className="text-[11px] font-extrabold text-[#0F5132] tracking-wide">AgriConnect Farm Field</span>
       </div>
     </div>
   );

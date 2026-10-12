@@ -1289,6 +1289,7 @@ export const en: JourneyDict = {
   "home.weatherTitle": "Today's weather",
   "home.checkLocation": "Check your location",
   "home.farmTitle": "My crop",
+  "home.farmTitleSub": "Crop status & field plan",
   "home.farmStatusGood": "Good condition",
   "home.farmStatusAttention": "Needs attention",
   "home.areaUnit": "acres",

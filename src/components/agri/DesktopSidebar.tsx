@@ -92,8 +92,8 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
         <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white/80 px-5 backdrop-blur-md">
           <Logo size={28} />
           <div className="leading-tight">
-            <span className="block text-[15.5px] font-bold tracking-tight text-[#285943]">AgriConnect</span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#5E9F58]">Kisan Ka Apna</span>
+            <span className="block text-[15.5px] font-extrabold tracking-tight text-[#0F5132]">AgriConnect</span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#00C26E]">Kisan Ka Apna</span>
           </div>
         </div>
 
@@ -116,8 +116,8 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
           {GROUPS.map((group) => (
             <div key={group.titleKey} className="pt-2">
               <div className="mb-2 flex items-center gap-1.5 px-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#5E9F58]" />
-                <p className="text-xs font-bold uppercase tracking-wider text-[#26332B]/60">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#00C26E]" />
+                <p className="text-xs font-bold uppercase tracking-wider text-[#0F5132]/70">
                   {tr(group.titleKey, group.title)}
                 </p>
               </div>
@@ -176,15 +176,15 @@ const SidebarLink: React.FC<{
       className={cn(
         "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13.5px] transition-all duration-200",
         active
-          ? "bg-[#5E9F58]/12 text-[#285943] font-bold"
-          : "font-medium text-[#26332B]/75 hover:bg-[#285943]/6 hover:text-[#285943]"
+          ? "bg-[#0F5132]/10 text-[#0F5132] font-bold"
+          : "font-medium text-foreground/75 hover:bg-[#0F5132]/5 hover:text-[#0F5132]"
       )}
     >
       {/* Active Indicator Bar */}
       <span
         className={cn(
           "absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full transition-all duration-200",
-          active ? "bg-[#5E9F58] opacity-100" : "opacity-0 group-hover:bg-[#285943]/20 group-hover:opacity-100"
+          active ? "bg-[#00C26E] opacity-100" : "opacity-0 group-hover:bg-[#0F5132]/20 group-hover:opacity-100"
         )}
         aria-hidden="true"
       />
@@ -193,7 +193,7 @@ const SidebarLink: React.FC<{
         strokeWidth={active ? 2.2 : 1.8}
         className={cn(
           "shrink-0 transition-transform duration-200 group-hover:scale-105",
-          active ? "text-[#285943]" : "text-[#66736B] group-hover:text-[#285943]"
+          active ? "text-[#0F5132]" : "text-muted-foreground group-hover:text-[#0F5132]"
         )}
         aria-hidden="true"
       />

@@ -156,7 +156,7 @@ export const CoreFeatures: React.FC<CoreFeaturesProps> = ({ onGo }) => {
                   {t(f.labelKey)}
                 </span>
                 <span className="mt-1 line-clamp-2 block text-[12.5px] leading-relaxed text-muted-foreground">
-                  {t(f.subKey)}
+                  {t(f.subKey) && t(f.subKey) !== f.subKey ? t(f.subKey) : (f.id === "farm-os" ? "Crop status & field plan" : "")}
                 </span>
               </span>
             </button>

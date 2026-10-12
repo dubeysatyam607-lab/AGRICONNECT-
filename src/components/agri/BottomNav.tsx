@@ -57,30 +57,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab })
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "group relative flex min-h-[52px] min-w-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-1 pt-1 transition-colors",
-                isActive ? "text-[#285943]" : "text-[#66736B] hover:text-[#26332B]"
+                isActive ? "text-[#0F5132]" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <span
                 className={cn(
                   "flex h-6 w-12 items-center justify-center rounded-full transition-all duration-200",
-                  isActive ? "bg-[#5E9F58]/15" : "group-active:bg-muted"
+                  isActive ? "bg-[#0F5132]/10" : "group-active:bg-muted"
                 )}
               >
                 <Icon
                   size={19}
                   strokeWidth={isActive ? 2.2 : 1.8}
-                  className={isActive ? "text-[#285943]" : "text-[#66736B]"}
+                  className={isActive ? "text-[#0F5132]" : "text-muted-foreground"}
                   aria-hidden="true"
                 />
               </span>
               <span className={cn(
                 "text-[10.5px] leading-none tracking-tight",
-                isActive ? "font-bold text-[#285943]" : "font-medium text-[#66736B]"
+                isActive ? "font-bold text-[#0F5132]" : "font-medium text-muted-foreground"
               )}>
                 {lbl}
               </span>
               {isActive && (
-                <span className="absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-[#5E9F58]" aria-hidden="true" />
+                <span className="absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-[#00C26E]" aria-hidden="true" />
               )}
             </button>
           );

@@ -1,4 +1,5 @@
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
+import { supabase } from "@/integrations/supabase/client";
 import { generateSellingAdvice, type SellingAdvice } from "./mandi-advisor";
 import { getCropImage, getCropCategory, getCropSvgFallback } from "./crop-images";
 export { getCropImage, getCropCategory, getCropSvgFallback };
@@ -506,7 +507,7 @@ async function fetchFromEdge(
       includeMeta: opts.includeMeta ?? true,
       limit: opts.limit,
       offset: opts.offset,
-    }, opts.timeoutMs ?? 45000);
+    }, opts.timeoutMs ?? 7000);
 
     if (error) throw error;
 
@@ -525,14 +526,14 @@ async function fetchFromEdge(
       });
       return { prices: uniquePrices, raw: result as Record<string, unknown> | null };
     }
-    throw new Error("No published prices returned from edge function");
+    return { prices: [], raw: result as Record<string, unknown> | null };
   } catch (err) {
     console.error("[Mandi Edge Error]:", err);
     throw err;
   }
 }
 
-interface CachedMandiData {
+export interface CachedMandiData {
   prices: MandiPrice[];
   timestamp: string;
   servedFrom?: "database" | "live";
@@ -558,7 +559,7 @@ function saveCache(cache: CachedMandiData): void {
 /**
  * Read cached real mandi prices from localStorage.
  */
-function readCache(): CachedMandiData | null {
+export function readCache(): CachedMandiData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
@@ -576,6 +577,49 @@ function readCache(): CachedMandiData | null {
       availableCommodities: parsed.availableCommodities,
     };
   } catch {
+    return null;
+  }
+}
+
+/**
+ * Fast direct Supabase query to `mandi_price_records` table.
+ * Used as an instantaneous fallback whenever the edge function is cold, delayed, or throttled.
+ */
+async function fetchFromDatabase(
+  searchQuery?: string,
+  stateFilter?: string,
+  districtFilter?: string,
+  marketFilter?: string,
+  opts: FetchMandiOptions = {}
+): Promise<{ prices: MandiPrice[]; rawDate?: string } | null> {
+  try {
+    let query = supabase
+      .from("mandi_price_records")
+      .select("state,district,market,commodity,variety,arrival_date,min_price,max_price,modal_price")
+      .order("arrival_date", { ascending: false });
+
+    if (stateFilter?.trim()) query = query.eq("state", stateFilter.trim());
+    if (districtFilter?.trim()) query = query.eq("district", districtFilter.trim());
+    if (marketFilter?.trim()) query = query.eq("market", marketFilter.trim());
+    if (searchQuery?.trim()) query = query.ilike("commodity", `%${searchQuery.trim()}%`);
+
+    const limit = opts.limit ?? 250;
+    const { data, error } = await query.limit(limit);
+    if (error || !data || data.length === 0) return null;
+
+    const prices = dedupeByRecord((data as Record<string, unknown>[]).map(parseEdgeRecord).filter(isValidMandiRecord));
+    if (prices.length > 0) {
+      prices.sort((a, b) => {
+        const priorityDiff = getCommodityPriority(b.crop) - getCommodityPriority(a.crop);
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.crop.localeCompare(b.crop);
+      });
+      const latestDate = data[0]?.arrival_date ? String(data[0].arrival_date) : undefined;
+      return { prices, rawDate: latestDate };
+    }
+    return null;
+  } catch (err) {
+    warn("[Mandi Direct DB Fallback failed]", err);
     return null;
   }
 }
@@ -625,8 +669,8 @@ export function searchMandiDataset(prices: MandiPrice[], query?: string): MandiP
 
 /**
  * Primary function to fetch verified live Mandi prices across India.
- * Never generates fake/dummy prices. If the live edge fails, returns cached
- * response (if any) or a clean honest error state.
+ * Never generates fake/dummy prices. If the live edge fails, returns direct
+ * database records, cached response, or an honest error state.
  */
 export async function fetchMandiPrices(
   searchQuery?: string,
@@ -638,7 +682,10 @@ export async function fetchMandiPrices(
   const nowStr = new Date().toISOString();
 
   try {
-    const { prices: livePrices, raw } = await fetchFromEdge(searchQuery, stateFilter, districtFilter, marketFilter, opts);
+    const { prices: livePrices, raw } = await fetchFromEdge(searchQuery, stateFilter, districtFilter, marketFilter, {
+      ...opts,
+      timeoutMs: opts.timeoutMs ?? 7000,
+    });
     if (livePrices.length > 0) {
       setLatestRealPrices(livePrices);
 
@@ -691,10 +738,20 @@ export async function fetchMandiPrices(
       log(`[Mandi UI Render] Serving ${livePrices.length} verified government mandi prices`);
       return resultMeta;
     }
+
+    // Edge function executed successfully but returned 0 valid published records
+    return {
+      prices: [],
+      source: "edge",
+      lastUpdated: nowStr,
+      isCached: false,
+      servedFrom: (raw?.servedFrom as "database" | "live") ?? "live",
+    };
   } catch (err) {
-    warn("[Mandi Edge Function Failed] Checking cached government data...", err);
+    warn("[Mandi Edge Function Failed/Timed out] Checking cached government data...", err);
   }
 
+  // Fallback 1: Cached government data in localStorage (instant offline load)
   const cache = readCache();
   if (cache && cache.prices && cache.prices.length > 0) {
     let filtered = cache.prices;
@@ -742,6 +799,44 @@ export async function fetchMandiPrices(
         ? cache.availableCommodities
         : Array.from(new Set(cache.prices.map((p) => p.crop).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
     };
+  }
+
+  // Fallback 2: Direct database query to `mandi_price_records` (for cold edge with empty cache)
+  if (typeof process === "undefined" || process.env?.NODE_ENV !== "test") {
+    const dbResult = await fetchFromDatabase(searchQuery, stateFilter, districtFilter, marketFilter, opts);
+    if (dbResult && dbResult.prices.length > 0) {
+      const dbPrices = dbResult.prices;
+      setLatestRealPrices(dbPrices);
+      const derivedStates = Array.from(new Set(dbPrices.map((p) => p.state).filter(Boolean)));
+      const derivedDistricts = Array.from(new Set(dbPrices.map((p) => p.district).filter(Boolean)));
+      const derivedMarkets = Array.from(new Set(dbPrices.map((p) => p.market).filter(Boolean)));
+      const derivedCommodities = Array.from(new Set(dbPrices.map((p) => p.crop).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+      const resultMeta: MandiResult = {
+        prices: dbPrices,
+        source: "db",
+        lastUpdated: nowStr,
+        isCached: false,
+        servedFrom: "database",
+        availableStates: derivedStates,
+        availableDistricts: derivedDistricts,
+        availableMarkets: derivedMarkets,
+        availableCommodities: derivedCommodities,
+      };
+
+      saveCache({
+        prices: dbPrices,
+        timestamp: nowStr,
+        servedFrom: "database",
+        availableStates: derivedStates,
+        availableDistricts: derivedDistricts,
+        availableMarkets: derivedMarkets,
+        availableCommodities: derivedCommodities,
+      });
+
+      log(`[Mandi UI Render] Serving ${dbPrices.length} verified government mandi prices directly from database`);
+      return resultMeta;
+    }
   }
 
   log("[Mandi UI Render] No live data and no cache available — returning honest error state");

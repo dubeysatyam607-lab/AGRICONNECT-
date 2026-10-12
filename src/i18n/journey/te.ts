@@ -1289,6 +1289,7 @@ export const te: JourneyDict = {
   "home.weatherTitle": "నేటి వాతావరణం",
   "home.checkLocation": "మీ స్థానాన్ని తనిఖీ చేయండి",
   "home.farmTitle": "నా పంట",
+  "home.farmTitleSub": "పంట స్థితి మరియు ప్రణాళిక",
   "home.farmStatusGood": "మంచి పరిస్థితి",
   "home.farmStatusAttention": "శ్రద్ధ అవసరం",
   "home.areaUnit": "ఎకరాలు",

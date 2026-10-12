@@ -1289,6 +1289,7 @@ export const hi: JourneyDict = {
   "home.weatherTitle": "आज का मौसम",
   "home.checkLocation": "अपना स्थान जांचें",
   "home.farmTitle": "मेरी फसल",
+  "home.farmTitleSub": "फसल स्थिति और कार्य योजना",
   "home.farmStatusGood": "अच्छी स्थिति",
   "home.farmStatusAttention": "ध्यान दें",
   "home.areaUnit": "एकड़",

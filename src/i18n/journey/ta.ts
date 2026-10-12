@@ -1289,6 +1289,7 @@ export const ta: JourneyDict = {
   "home.weatherTitle": "இன்றைய வானிலை",
   "home.checkLocation": "உங்கள் இருப்பிடத்தைச் சரிபார்க்கவும்",
   "home.farmTitle": "என் பயிர்",
+  "home.farmTitleSub": "பயிர் நிலை மற்றும் திட்டமிடல்",
   "home.farmStatusGood": "நல்ல நிலை",
   "home.farmStatusAttention": "கவனம் தேவை",
   "home.areaUnit": "ஏக்கர்",

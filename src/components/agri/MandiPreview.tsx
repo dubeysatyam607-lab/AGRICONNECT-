@@ -61,7 +61,7 @@ export const MandiPreview: React.FC<MandiPreviewProps> = ({ items, loading, erro
           <span>APMC Mandi</span>
         </p>
 
-        {loading ? (
+        {loading && visible.length === 0 ? (
           /* Lightweight Skeleton Loader (Part 15) */
           <div className="no-scrollbar -mx-1 mt-4 flex gap-3 overflow-x-auto px-1 pb-1">
             {[1, 2, 3, 4].map((n) => (

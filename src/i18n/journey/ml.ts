@@ -1289,6 +1289,7 @@ export const ml: JourneyDict = {
   "home.weatherTitle": "ഇന്നത്തെ കാലാവസ്ഥ",
   "home.checkLocation": "നിങ്ങളുടെ സ്ഥാനം പരിശോധിക്കുക",
   "home.farmTitle": "എന്റെ വിള",
+  "home.farmTitleSub": "വിള നിലയും ഫീൽഡ് പ്ലാനും",
   "home.farmStatusGood": "നല്ല അവസ്ഥ",
   "home.farmStatusAttention": "ശ്രദ്ധ വേണം",
   "home.areaUnit": "ഏക്കർ",

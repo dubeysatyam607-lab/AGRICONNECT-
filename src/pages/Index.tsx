@@ -599,10 +599,10 @@ const getTabFromPath = (path: string) => {
             <button
               onClick={() => setActiveTab("ai-chat")}
               aria-label="Ask Kisan Saathi"
-              className="pointer-events-auto group flex min-h-[44px] items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground transition-colors hover:bg-primary/90"
+              className="pointer-events-auto group flex min-h-[44px] items-center gap-2 rounded-full bg-[#0F5132] px-4 py-2.5 text-white shadow-lg transition-all hover:bg-[#064E3B] hover:shadow-xl active:scale-95"
             >
-              <Leaf size={18} aria-hidden="true" />
-              <span className="hidden type-small font-semibold sm:inline">Kisan Saathi</span>
+              <Leaf size={18} className="text-[#00C26E]" aria-hidden="true" />
+              <span className="type-small font-bold">Kisan Saathi</span>
             </button>
           )}
           <div className="pointer-events-auto">
