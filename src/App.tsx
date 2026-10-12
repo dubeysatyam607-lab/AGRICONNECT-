@@ -231,6 +231,8 @@ const FloatingWhatsApp = () => {
         aria-label="Contact Agricultural Helpdesk on WhatsApp (drag to move, tap to chat)"
         onClick={onClick}
         onPointerDown={onPointerDown}
+        onDragStart={(e) => e.preventDefault()}
+        draggable={false}
         className="fixed z-50 bg-[#25D366] text-white p-3.5 rounded-full  hover:scale-105 active:scale-95 transition-transform flex items-center justify-center border-2 border-white/20 cursor-grab active:cursor-grabbing select-none touch-none"
         style={{ left: pos.x, top: pos.y, width: BTN_SIZE, height: BTN_SIZE }}
       >
