@@ -241,7 +241,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   );
 
   return (
-    <div className="min-h-screen bg-[#F7F5ED] pb-36">
+    <div className="min-h-screen bg-[#F7F5ED] dark:bg-background pb-36">
       {/* App header */}
       <header className="sticky top-0 z-40 border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -464,7 +464,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             </section>
           </div>
 
-          <div className="flex flex-col gap-7">
+          <div className="flex flex-col gap-7 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1 lg:-mr-1">
             {/* Advisor Brief */}
             <div className="reveal">
               <SectionErrorBoundary label="Advisor">
