@@ -79,8 +79,6 @@ export default async function handler(req, res) {
   const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || /^https:\/\/agriconnect-navy-six-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin));
   if (isAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", "*");
   }
   
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
