@@ -177,7 +177,7 @@ const SidebarLink: React.FC<{
         "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13.5px] transition-all duration-200",
         active
           ? "bg-[#0F5132]/10 text-[#0F5132] font-bold"
-          : "font-medium text-foreground/75 hover:bg-[#0F5132]/5 hover:text-[#0F5132]"
+          : "font-medium text-[#26332B]/75 hover:bg-[#0F5132]/5 hover:text-[#0F5132]"
       )}
     >
       {/* Active Indicator Bar */}
@@ -193,7 +193,7 @@ const SidebarLink: React.FC<{
         strokeWidth={active ? 2.2 : 1.8}
         className={cn(
           "shrink-0 transition-transform duration-200 group-hover:scale-105",
-          active ? "text-[#0F5132]" : "text-muted-foreground group-hover:text-[#0F5132]"
+          active ? "text-[#0F5132]" : "text-[#66736B] group-hover:text-[#0F5132]"
         )}
         aria-hidden="true"
       />
