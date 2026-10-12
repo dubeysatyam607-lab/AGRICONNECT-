@@ -199,8 +199,16 @@ const RazorpayGateway: PaymentGateway = {
           prefill: { name: req.customer?.name, email: req.customer?.email, contact: req.customer?.phone },
           notes: { orderId: req.orderId ?? '' },
           theme: { color: '#16a34a' },
-          handler: (res) =>
-            settle({ success: true, gatewayRef: res.razorpay_payment_id }),
+          handler: (res) => {
+            // Never report success without the SDK-issued signature. The
+            // merchant backend must independently verify it before any
+            // booking is confirmed — a bare payment_id is not proof.
+            if (!res.razorpay_payment_id || !res.razorpay_signature) {
+              settle({ success: false, failureReason: 'Payment verification incomplete' });
+              return;
+            }
+            settle({ success: true, gatewayRef: res.razorpay_payment_id });
+          },
           modal: {
             ondismiss: () => settle({ success: false, failureReason: 'Payment cancelled by user' }),
           },
