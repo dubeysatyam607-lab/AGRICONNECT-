@@ -179,7 +179,36 @@ function buildCommandFailureAlert(device, command, commandId, error, nowIso) {
   };
 }
 
+// ── CORS (allowlist only; never wildcard) ───────────────────────────────
+const ALLOWED_CORS_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:8000",
+  "https://agriconnect-navy-six.vercel.app",
+];
+
+function corsAllowed(origin) {
+  if (!origin) return false;
+  if (ALLOWED_CORS_ORIGINS.includes(origin)) return true;
+  return /^https:\/\/agriconnect-navy-six-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin);
+}
+
+function setCorsHeaders(req, res, methods) {
+  const origin = req.headers.origin;
+  if (corsAllowed(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", methods);
+  if (req.headers["access-control-request-headers"]) {
+    res.setHeader("Access-Control-Allow-Headers", req.headers["access-control-request-headers"]);
+  }
+  res.setHeader("Access-Control-Max-Age", "86400");
+}
+
 module.exports = {
+  ALLOWED_CORS_ORIGINS,
+  corsAllowed,
+  setCorsHeaders,
   COMMANDS,
   FENCE_STATES,
   OFFLINE_TIMEOUT_SEC,

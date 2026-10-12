@@ -18,7 +18,14 @@ const API_KEY =
 const API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  const allowed =
+    origin &&
+    (["http://localhost:3000", "http://localhost:5173", "http://localhost:8000", "https://agriconnect-navy-six.vercel.app"].includes(origin) ||
+      /^https:\/\/agriconnect-navy-six-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin));
+  if (allowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 

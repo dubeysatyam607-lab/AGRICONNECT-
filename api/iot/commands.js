@@ -9,12 +9,10 @@
  * delivered without this authentication.
  */
 
-import { resolveSupabaseConfig, tokenIsValid, COMMAND_POLL_INTERVAL_SEC } from "./_lib/iot-common.cjs";
+import { resolveSupabaseConfig, tokenIsValid, setCorsHeaders, COMMAND_POLL_INTERVAL_SEC } from "./_lib/iot-common.cjs";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-device-token, x-device-secret");
+  setCorsHeaders(req, res, "GET, OPTIONS");
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
