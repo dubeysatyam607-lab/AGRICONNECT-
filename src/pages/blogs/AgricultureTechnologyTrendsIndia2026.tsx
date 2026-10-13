@@ -4,7 +4,7 @@ import { SeoHead } from '@/components/seo/SeoHead';
 import { ogImage } from '@/lib/seo-config';
 import { articleSchema, breadcrumbSchema } from '@/lib/structured-data';
 import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
-import { ArrowRight, TrendingUp, CheckCircle2, Sprout, Layers } from 'lucide-react';
+import { ArrowRight, TrendingUp, CheckCircle2, Sprout, Layers, Lightbulb, Timer, Smartphone } from 'lucide-react';
 
 const AgricultureTechnologyTrendsIndia2026: React.FC = () => {
   const pagePath = '/blogs/agriculture-technology-trends-india-2026';
@@ -228,19 +228,19 @@ const AgricultureTechnologyTrendsIndia2026: React.FC = () => {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4 text-center">
               <div className="bg-card p-4 border rounded-xl shadow-sm">
-                <span className="text-2xl">💡</span>
+                <div className="flex justify-center"><Lightbulb className="w-7 h-7 text-amber-500" /></div>
                 <p className="font-bold text-sm mt-1">Better Information</p>
               </div>
               <div className="bg-card p-4 border rounded-xl shadow-sm">
-                <span className="text-2xl">⏱️</span>
+                <div className="flex justify-center"><Timer className="w-7 h-7 text-blue-500" /></div>
                 <p className="font-bold text-sm mt-1">Better Timing</p>
               </div>
               <div className="bg-card p-4 border rounded-xl shadow-sm">
-                <span className="text-2xl">📲</span>
+                <div className="flex justify-center"><Smartphone className="w-7 h-7 text-emerald-500" /></div>
                 <p className="font-bold text-sm mt-1">Easier Access</p>
               </div>
               <div className="bg-card p-4 border rounded-xl shadow-sm">
-                <span className="text-2xl">📈</span>
+                <div className="flex justify-center"><TrendingUp className="w-7 h-7 text-purple-500" /></div>
                 <p className="font-bold text-sm mt-1">Better Decisions</p>
               </div>
             </div>

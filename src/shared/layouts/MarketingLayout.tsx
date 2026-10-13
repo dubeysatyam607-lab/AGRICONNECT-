@@ -28,7 +28,7 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path.split('#')[0]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen min-h-[100dvh] w-full flex flex-col bg-background overflow-x-hidden">
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-background border-b border-border/60">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
@@ -103,10 +103,12 @@ const MarketingLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       </header>
 
       {/* ── Main ───────────────────────────────────────────── */}
-      <main id="main-content" className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1 min-w-0">{children}</main>
 
       {/* ── Footer ─────────────────────────────────────────── */}
-      <AgriConnectFooter />
+      <div className="shrink-0">
+        <AgriConnectFooter />
+      </div>
     </div>
   );
 };

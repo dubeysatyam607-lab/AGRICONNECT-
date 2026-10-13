@@ -66,11 +66,11 @@ const queryClient = new QueryClient({
 const BTN_SIZE = 60;
 const BTN_MARGIN = 8;
 const BOTTOM_OFFSET = 80; // clears the bottom nav bar
-const POS_KEY = "agri_whatsapp_pos";
+const POS_KEY = "agri_whatsapp_pos_v3";
 
 const defaultPos = () => ({
-  x: 16,
-  y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - (typeof window !== "undefined" && window.innerWidth < 1024 ? 84 : 28),
+  x: typeof window === "undefined" ? 0 : window.innerWidth - BTN_SIZE - (typeof window !== "undefined" && window.innerWidth < 1024 ? 16 : 24),
+  y: typeof window === "undefined" ? 0 : window.innerHeight - BTN_SIZE - (typeof window !== "undefined" && window.innerWidth < 1024 ? 84 : 24),
 });
 
 const FloatingWhatsApp = () => {
@@ -81,6 +81,10 @@ const FloatingWhatsApp = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
+          // If on desktop (>= 1024px) and overlapping left sidebar (< 280px), reset to bottom-right
+          if (window.innerWidth >= 1024 && parsed.x < 280) {
+            return defaultPos();
+          }
           return { x: parsed.x, y: parsed.y };
         }
       }

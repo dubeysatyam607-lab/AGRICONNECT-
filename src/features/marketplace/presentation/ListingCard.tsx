@@ -12,6 +12,12 @@ import {
   Clock,
   ShieldCheck,
   ImageIcon,
+  Beef,
+  Zap,
+  User,
+  Truck,
+  Droplets,
+  Star,
 } from 'lucide-react';
 import {
   MarketplaceListing,
@@ -54,7 +60,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       case 'machinery':
         return <Tractor className="w-3.5 h-3.5 text-emerald-600" />;
       case 'cattle':
-        return <span className="text-xs">🐄</span>;
+        return <Beef className="w-3.5 h-3.5 text-amber-600" />;
       case 'labour':
         return <Users className="w-3.5 h-3.5 text-sky-600" />;
       case 'service':
@@ -152,18 +158,18 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             {listing.machinery_details && (
               <>
                 {listing.machinery_details.horsepower && (
-                  <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-md text-[10px] font-bold border border-emerald-500/20">
-                    ⚡ {listing.machinery_details.horsepower} HP
+                  <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-md text-[10px] font-bold border border-emerald-500/20 flex items-center gap-1">
+                    <Zap className="w-3 h-3" /> {listing.machinery_details.horsepower} HP
                   </span>
                 )}
                 {listing.machinery_details.operator_included && (
-                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 rounded-md text-[10px] font-bold border border-blue-500/20">
-                    👨‍🌾 Operator Inc.
+                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 rounded-md text-[10px] font-bold border border-blue-500/20 flex items-center gap-1">
+                    <User className="w-3 h-3" /> Operator Inc.
                   </span>
                 )}
                 {listing.machinery_details.delivery_available && (
-                  <span className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 rounded-md text-[10px] font-bold border border-purple-500/20">
-                    🚚 Delivery Avail.
+                  <span className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 rounded-md text-[10px] font-bold border border-purple-500/20 flex items-center gap-1">
+                    <Truck className="w-3 h-3" /> Delivery Avail.
                   </span>
                 )}
               </>
@@ -172,13 +178,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             {listing.cattle_details && (
               <>
                 {listing.cattle_details.breed && (
-                  <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-md text-[10px] font-bold border border-amber-500/20">
-                    🐄 Breed: {listing.cattle_details.breed}
+                  <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 rounded-md text-[10px] font-bold border border-amber-500/20 flex items-center gap-1">
+                    <Beef className="w-3 h-3" /> Breed: {listing.cattle_details.breed}
                   </span>
                 )}
                 {listing.cattle_details.milk_production_daily_litres && (
-                  <span className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 rounded-md text-[10px] font-bold border border-sky-500/20">
-                    🥛 {listing.cattle_details.milk_production_daily_litres} L/Day
+                  <span className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 rounded-md text-[10px] font-bold border border-sky-500/20 flex items-center gap-1">
+                    <Droplets className="w-3 h-3" /> {listing.cattle_details.milk_production_daily_litres} L/Day
                   </span>
                 )}
               </>
@@ -187,13 +193,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             {listing.labour_details && (
               <>
                 {listing.labour_details.team_size && (
-                  <span className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 rounded-md text-[10px] font-bold border border-sky-500/20">
-                    👥 Team of {listing.labour_details.team_size}
+                  <span className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 rounded-md text-[10px] font-bold border border-sky-500/20 flex items-center gap-1">
+                    <Users className="w-3 h-3" /> Team of {listing.labour_details.team_size}
                   </span>
                 )}
                 {listing.labour_details.experience_years && (
-                  <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-md text-[10px] font-bold border border-emerald-500/20">
-                    ⭐ {listing.labour_details.experience_years} yrs Exp.
+                  <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded-md text-[10px] font-bold border border-emerald-500/20 flex items-center gap-1">
+                    <Star className="w-3 h-3" /> {listing.labour_details.experience_years} yrs Exp.
                   </span>
                 )}
               </>

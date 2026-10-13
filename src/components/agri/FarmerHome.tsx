@@ -72,13 +72,13 @@ class SectionErrorBoundary extends Component<
     return (
       <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-marigold/25 bg-marigold/8 px-4 py-5 text-center">
         <Sprout className="h-6 w-6 text-amber-700" aria-hidden="true" strokeWidth={1.6} />
-        <p className="text-[13px] font-semibold text-foreground">
+        <p className="text-sm font-semibold text-foreground">
           {this.props.label} section wasn&apos;t available
         </p>
         <button
           type="button"
           onClick={this.reset}
-          className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-marigold/40 bg-white/60 px-4 py-1.5 text-[12.5px] font-bold text-amber-800"
+          className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-marigold/40 bg-white/60 px-4 py-1.5 text-xs font-bold text-amber-800"
         >
           <ChevronRight size={13} className="rotate-180" aria-hidden="true" />
           Retry section
@@ -226,12 +226,12 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   };
 
   const sectionHeader = (id: string, title: string, action?: { label: string; tab: string }) => (
-    <div className="mb-2 flex items-center justify-between gap-2 mt-7">
+    <div className="mb-2 flex items-center justify-between gap-2">
       <h2 id={id} className="type-h2">{title}</h2>
       {action && (
         <button
           onClick={() => go(action.tab)}
-          className="flex shrink-0 items-center gap-1 text-[13px] font-semibold text-primary"
+          className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary"
         >
           {action.label}
           <ArrowRight size={14} aria-hidden="true" />
@@ -241,15 +241,15 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   );
 
   return (
-    <div className="min-h-screen bg-[#F7F5ED] dark:bg-background pb-36">
+    <div className="w-full bg-[#F7F5ED] dark:bg-background pb-4 sm:pb-6">
       {/* App header */}
       <header className="sticky top-0 z-40 border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <Logo size={32} />
+            <Logo size={32} alt="" />
             <div className="leading-tight">
-              <p className="text-[16px] font-extrabold tracking-tight text-[#0F5132]">{t('agr207')}</p>
-              <p className="flex items-center gap-1 text-xs font-semibold text-emerald-800/80">
+              <p className="text-base font-extrabold tracking-tight text-[#0F5132]">{t('agr207')}</p>
+              <p className="flex items-center gap-1 text-xs font-semibold text-emerald-900">
                 <MapPin size={11} className="text-[#00C26E]" aria-hidden="true" />
                 {liveCity} · {dateStr.split(",")[0]}
               </p>
@@ -259,7 +259,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             {wl && (
               <button
                 onClick={() => setWeatherOpen(true)}
-                className="hidden min-h-[38px] items-center gap-2 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 text-[13px] font-bold text-[#0F5132] shadow-xs hover:border-[#0F5132]/30 sm:flex"
+                className="hidden min-h-[38px] items-center gap-2 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 text-sm font-bold text-[#0F5132] shadow-xs hover:border-[#0F5132]/30 sm:flex"
                 aria-label={t("home.openWeather")}
               >
                 <span className="h-2 w-2 rounded-full bg-[#00C26E] animate-live-pulse" aria-hidden="true" />
@@ -278,7 +278,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-7">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-7">
 
         <FirstDayBoard onGo={go} />
 
@@ -292,7 +292,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 <Sprout size={18} />
               </span>
               <span className="flex-1">
-                <span className="block text-[13px] font-bold text-foreground leading-snug">
+                <span className="block text-sm font-bold text-foreground leading-snug">
                   {t('home.prompt.completeProfile') || 'Complete your profile to get recommendations for your farm'}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted-foreground">
@@ -336,8 +336,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             <FarmSnapshot
               onGo={go}
               data={{
-                crop: advice.cropLabel,
-                stage: advice.cropLabel,
+                crop: advice.cropLabel.split(" · ")[0] ?? advice.cropLabel,
+                stage: advice.cropLabel.includes(" · ") ? advice.cropLabel.split(" · ")[1] : (farmProfile?.soilType || undefined),
                 area: farmProfile?.farmArea,
                 unit: landUnit,
                 soil: farmProfile?.soilType,
@@ -397,21 +397,23 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           </SectionErrorBoundary>
         </div>
 
-        {/* Advisory & Intelligence Row */}
-        <div className="mt-8 grid gap-7 lg:grid-cols-3 lg:items-start">
-          <div className="lg:col-span-2 space-y-7">
-            {/* Today's farm advice */}
-            <div className="reveal">
-              <SectionErrorBoundary label="Farm Advisory">
-                <AiInsightCard
-                  wl={wl}
-                  loading={weather.loading}
-                  cropLabel={advice.cropLabel}
-                  items={advice.items}
-                  onGo={go}
-                />
-              </SectionErrorBoundary>
-            </div>
+        {/* Today's Focus & Advisory — Full-width primary focal point */}
+        <div className="reveal">
+          <SectionErrorBoundary label="Farm Advisory">
+            <AiInsightCard
+              wl={wl}
+              loading={weather.loading}
+              cropLabel={advice.cropLabel}
+              items={advice.items}
+              onGo={go}
+            />
+          </SectionErrorBoundary>
+        </div>
+
+        {/* Advisory, Intelligence & Services Workspace */}
+        <div className="grid gap-7 lg:grid-cols-3 lg:items-start">
+          {/* ── Left-Side Content (Primary Feed, Machinery, News & Forms) ── */}
+          <div className="min-w-0 lg:col-span-2 space-y-6">
 
             {/* Farm Machinery Nearby */}
             <section className="reveal" aria-labelledby="tractors-heading">
@@ -424,13 +426,13 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 <button
                   type="button"
                   onClick={() => go("marketplace")}
-                  className="flex shrink-0 items-center gap-1 text-[13px] font-bold text-primary"
+                  className="flex shrink-0 items-center gap-1 text-sm font-bold text-primary"
                 >
                   {t("mkt.browse")}
                   <ArrowRight size={14} aria-hidden="true" />
                 </button>
               </div>
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {INITIAL_TRACTORS.slice(0, 4).map((tractor) => (
                   <button
                     key={tractor.id}
@@ -449,11 +451,11 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                       />
                     </div>
                     <div className="p-3">
-                      <p className="text-[13px] font-bold text-foreground">{tractor.name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin size={10} aria-hidden="true" /> {tractor.distance} · {tractor.owner}
+                      <p className="text-sm font-bold text-foreground line-clamp-1">{tractor.name}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground flex items-center gap-1 truncate">
+                        <MapPin size={10} className="shrink-0" aria-hidden="true" /> {tractor.distance} · {tractor.owner}
                       </p>
-                      <p className="mt-1.5 text-[14px] font-semibold text-foreground flex items-center gap-0.5">
+                      <p className="mt-1.5 text-sm font-semibold text-foreground flex items-center gap-0.5">
                         <IndianRupee size={12} aria-hidden="true" />{tractor.ratePerHour}
                         <span className="text-xs font-normal text-muted-foreground">{t("home.perHr")}</span>
                       </p>
@@ -462,9 +464,26 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 ))}
               </div>
             </section>
+
+            {/* Krishi News */}
+            <section aria-labelledby="news-heading" className="reveal">
+              {sectionHeader("news-heading", t("home.latestNews"), { label: t("home.more"), tab: "news" })}
+              <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-soft">
+                {NEWS.map((n) => (
+                  <button key={n.titleKey} onClick={() => go("news")} className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors">
+                    <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{t(n.titleKey)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{t(n.sourceKey)} · {t(n.timeKey)}</p>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Role Dashboard & Asset Registration Forms */}
+            {renderRoleDashboard()}
           </div>
 
-          <div className="flex flex-col gap-7 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1 lg:-mr-1">
+          {/* ── Right-Side Panel (Independently Scrollable on Desktop) ── */}
+          <div className="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-1.5 overscroll-contain scrollbar-thin">
             {/* Advisor Brief */}
             <div className="reveal">
               <SectionErrorBoundary label="Advisor">
@@ -473,8 +492,8 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             </div>
 
             {/* Government schemes & subsidies alerts */}
-            <section aria-labelledby="govt-heading" className="reveal">
-              <p className="section-eyebrow">{t("home.govtAlert")}</p>
+            <section role="region" aria-labelledby="govt-heading" className="reveal">
+              <p id="govt-heading" className="section-eyebrow">{t("home.govtAlert")}</p>
               <p className="type-small text-muted-foreground mt-1.5">{t("home.govtSub")}</p>
               <div className="mt-2.5 divide-y divide-border rounded-2xl border border-border bg-card shadow-soft">
                 {[
@@ -483,51 +502,34 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
                 ].map((item) => (
                   <button key={item.title} type="button" onClick={() => go(item.tab)} className="flex w-full items-start gap-3 px-4 py-3.5 text-left hover:bg-muted/50 transition-colors">
                     <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-emerald-600 animate-live-pulse" aria-hidden="true" />
-                    <span className="flex-1">
-                      <span className="block text-[13px] font-semibold text-foreground leading-snug">{item.title}</span>
-                      <span className="block text-[12px] text-muted-foreground mt-0.5">{item.meta}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-semibold text-foreground leading-snug">{item.title}</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{item.meta}</span>
                     </span>
-                    <ChevronRight size={15} className="mt-0.5 text-muted-foreground" aria-hidden="true" />
+                    <ChevronRight size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* More services */}
+            <section aria-labelledby="more-heading" className="reveal">
+              {sectionHeader("more-heading", t("home.moreServices"), { label: t("home.viewAll"), tab: "services" })}
+              <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-soft">
+                {SECONDARY_SERVICES.map((s) => (
+                  <button key={s.id} onClick={() => go(s.id)} className="flex min-h-[46px] w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-muted/50 transition-colors">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                      <s.icon size={15} aria-hidden="true" />
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-foreground truncate">{t(s.labelKey)}</span>
+                    <ChevronRight size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                   </button>
                 ))}
               </div>
             </section>
           </div>
         </div>
-
-        <div className="mt-8 grid gap-7 lg:grid-cols-2">
-          {/* News */}
-          <section aria-labelledby="news-heading">
-            {sectionHeader("news-heading", t("home.latestNews"), { label: t("home.more"), tab: "news" })}
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-soft">
-              {NEWS.map((n) => (
-                <button key={n.titleKey} onClick={() => go("news")} className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors">
-                  <p className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2">{t(n.titleKey)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{t(n.sourceKey)} · {t(n.timeKey)}</p>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* More services */}
-          <section aria-labelledby="more-heading">
-            {sectionHeader("more-heading", t("home.moreServices"), { label: t("home.viewAll"), tab: "services" })}
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-soft">
-              {SECONDARY_SERVICES.map((s) => (
-                <button key={s.id} onClick={() => go(s.id)} className="flex min-h-[46px] w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-muted/50 transition-colors">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                    <s.icon size={15} aria-hidden="true" />
-                  </span>
-                  <span className="flex-1 text-[13px] font-medium text-foreground">{t(s.labelKey)}</span>
-                  <ChevronRight size={15} className="text-muted-foreground" aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        {renderRoleDashboard()}
-      </main>
+      </div>
 
       {wl && (
         <WeatherDashboardModal

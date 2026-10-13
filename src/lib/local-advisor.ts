@@ -491,7 +491,7 @@ export const FOUR_PART_DISEASES: Record<string, FourPartSolution> = {
 const formatFourPartResponse = (sol: FourPartSolution, hi: boolean, cropName?: string): string => {
  const cropHeader = cropName ? ` [${cropName.charAt(0).toUpperCase() + cropName.slice(1)}]` : "";
  if (hi) {
- return `🩺 **${sol.title}**${cropHeader}
+ return `**${sol.title}**${cropHeader}
 
 1. **क्या हो सकता है (What may be happening)**:
 ${sol.whatHappening.hi}
@@ -506,7 +506,7 @@ ${sol.whatNextStep.hi}
 ${sol.warning.hi}`;
  }
 
- return `🩺 **${sol.title}**${cropHeader}
+ return `**${sol.title}**${cropHeader}
 
 1. **What may be happening**:
 ${sol.whatHappening.en}
@@ -886,7 +886,7 @@ const isGreetingIntent = (q: string) => {
 
 const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null) => string> = {
  mr: (q, crop) => {
- return `🩺 **सोयाबीन पिवळे पडणे व कीड नियंत्रण (Soybean Advisory)** [Soybean / सोयाबीन]
+ return `**सोयाबीन पिवळे पडणे व कीड नियंत्रण (Soybean Advisory)** [Soybean / सोयाबीन]
 
 1. **काय असू शकते (What may be happening)**:
 सोयाबीन पिकावर पाने पिवळी पडणे हे नत्र (Nitrogen), लोह (Iron) किंवा झिंकच्या कमतरतेमुळे अथवा खोडमाशी / रसशोषक कीटकांच्या प्रादुर्भावामुळे असू शकते.
@@ -901,7 +901,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 अतिरिक्त रासायनिक खते टाळा. कोणत्याही फवारणीपूर्वी स्थानिक कृषी विज्ञान केंद्राचा (KVK) सल्ला नक्की घ्या.`;
  },
  pa: (q, crop) => {
- return `🩺 **ਕਣਕ ਦੀ ਪੀਲੀ ਕੁੰਗੀ (Yellow Rust Management)** [Wheat / ਕਣਕ]
+ return `**ਕਣਕ ਦੀ ਪੀਲੀ ਕੁੰਗੀ (Yellow Rust Management)** [Wheat / ਕਣਕ]
 
 1. **ਕੀ ਹੋ ਸਕਦਾ ਹੈ (What may be happening)**:
 ਪੀਲੀ ਕੁੰਗੀ (Yellow Rust / Stripe Rust) ਉੱਲੀ ਕਾਰਨ ਕਣਕ ਦੇ ਪੱਤਿਆਂ 'ਤੇ ਪੀਲੀਆਂ ਧਾਰੀਆਂ ਅਤੇ ਪਾਊਡਰ ਬਣ ਜਾਂਦਾ ਹੈ ਜਿਸ ਨਾਲ ਦਾਣਾ ਬਰੀਕ ਰਹਿ ਜਾਂਦਾ ਹੈ।
@@ -916,7 +916,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 ਯੂਰੀਆ ਦੀ ਵੱਧ ਵਰਤੋਂ ਨਾ ਕਰੋ। ਖੇਤੀ ਮਾਹਿਰਾਂ ਅਤੇ KVK ਦੀ ਸਲਾਹ ਅਨੁਸਾਰ ਹੀ ਦਵਾਈ ਦਾ ਛਿੜਕਾਅ ਕਰੋ।`;
  },
  gu: (q, crop) => {
- return `🩺 **કપાસમાં સફેદ માખી અને જીવાત નિયંત્રણ (Cotton Whitefly & Pest Advisory)** [Cotton / કપાસ]
+ return `**કપાસમાં સફેદ માખી અને જીવાત નિયંત્રણ (Cotton Whitefly & Pest Advisory)** [Cotton / કપાસ]
 
 1. **શું થઈ શકે (What may be happening)**:
 સફેદ માખી અને રસ ચૂસક જીવાત કપાસના પાનમાંથી રસ ચૂસીને પાકને નબળો પાડે છે અને પાન વળવાનો વાયરસ (Leaf Curl) ફેલાવે છે.
@@ -931,7 +931,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 કીટનાશક છાંટતા પહેલા સ્થાનિક કૃષિ વિજ્ઞાન કેન્દ્ર (KVK) અથવા ખેતી અધિકારીની સલાહ લો.`;
  },
  bn: (q, crop) => {
- return `🩺 **ধানের ব্লাস্ট ও রোগ প্রতিকার (Paddy Blast & Disease Advisory)** [Rice / ধান]
+ return `**ধানের ব্লাস্ট ও রোগ প্রতিকার (Paddy Blast & Disease Advisory)** [Rice / ধান]
 
 1. **কী হতে পারে (What may be happening)**:
 ধানের ব্লাস্ট ও পাতাপোড়া ছত্রাকজনিত মারাত্মক রোগ। এর ফলে পাতার ওপর নৌকার আকৃতির বাদামী দাগ ও ডগা পুড়ে শুকিয়ে যায়।
@@ -946,7 +946,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 কীটনাশক প্রয়োগের সময় সুরক্ষামূলক ব্যবস্থা নিন এবং স্থানীয় কৃষি বিজ্ঞান কেন্দ্রের (KVK) পরামর্শ গ্রহণ করুন।`;
  },
  ta: (q, crop) => {
- return `🩺 **நெல் பயிர் உரம் மற்றும் பூச்சி மேலாண்மை (Paddy Nutrient & Pest Advisory)** [Rice / நெல் பயிர்]
+ return `**நெல் பயிர் உரம் மற்றும் பூச்சி மேலாண்மை (Paddy Nutrient & Pest Advisory)** [Rice / நெல் பயிர்]
 
 1. **என்ன நடக்கலாம் (What may be happening)**:
 நெல் பயிரில் தண்டு துளைப்பான், இலை சுருட்டுப் புழு அல்லது சத்து குறைபாட்டினால் பயிர் வளர்ச்சி குறையலாம்.
@@ -961,7 +961,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 மருந்து தெளிக்கும் முன் உள்ளூர் வேளாண்மை அறிவியல் நிலையத்தின் (KVK) அதிகாரிகளை அணுகி சரியான அளவை உறுதிப்படுத்தவும்.`;
  },
  te: (q, crop) => {
- return `🩺 **మిరప తోటలో నల్లి మరియు తామర పురుగుల నివారణ (Chilli Pest Advisory)** [Chilli / మిరప]
+ return `**మిరప తోటలో నల్లి మరియు తామర పురుగుల నివారణ (Chilli Pest Advisory)** [Chilli / మిరప]
 
 1. **ఏమి జరగవచ్చు (What may be happening)**:
 మిరప పంటలో తామర పురుగులు మరియు నల్లి ఆకుల రసం పీల్చడం వల్ల ఆకులు పైకి లేదా కిందికి ముడుచుకుపోతాయి (బొబ్బర రోగం).
@@ -976,7 +976,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 మందులు పిచికారీ చేసేటప్పుడు సరైన మోతాదు కొరకు స్థానిక కేవీకే (KVK) వ్యవసాయ నిపుణులను సంప్రదించండి.`;
  },
  kn: (q, crop) => {
- return `🩺 **ಟೊಮೆಟೊ ಬೆಳೆ ರೋಗ ಮತ್ತು ಕೀಟ ನಿರ್ವಹಣೆ (Tomato Pest & Disease Advisory)** [Tomato / ಟೊಮೆಟೊ]
+ return `**ಟೊಮೆಟೊ ಬೆಳೆ ರೋಗ ಮತ್ತು ಕೀಟ ನಿರ್ವಹಣೆ (Tomato Pest & Disease Advisory)** [Tomato / ಟೊಮೆಟೊ]
 
 1. **ಏನಾಗಬಹುದು (What may be happening)**:
 ಟೊಮೆಟೊ ಬೆಳೆಯಲ್ಲಿ ರಸ ಹೀರುವ ಕೀಟಗಳು, ಎಲೆ ಮುದುರು ರೋಗ ಅಥವಾ ಬ್ಲೈಟ್ ಶಿಲೀಂಧ್ರ ರೋಗದಿಂದ ಎಲೆಗಳು ಒಣಗಬಹುದು.
@@ -991,7 +991,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 ಯಾವುದೇ ರಾಸಾಯನಿಕ ಸಿಂಪರಣೆಗೆ ಮುನ್ನ ನಿಮ್ಮ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರದ (KVK) ಸಲಹೆ ಪಡೆದುಕೊಳ್ಳಿ.`;
  },
  ml: (q, crop) => {
- return `🩺 **വാഴ കൃഷി വളപ്രയോഗവും കീട നിയന്ത്രണവും (Banana Advisory)** [Banana / വാഴ കൃഷി]
+ return `**വാഴ കൃഷി വളപ്രയോഗവും കീട നിയന്ത്രണവും (Banana Advisory)** [Banana / വാഴ കൃഷി]
 
 1. **എന്താണ് സംഭവിക്കുന്നത് (What may be happening)**:
 വാഴ കൃഷിയിൽ തടതുരപ്പൻ പുഴു അല്ലെങ്കിൽ സിഗാടോക്ക ഇലപ്പുള്ളി രോഗം മൂലം ഇലകൾ ഉണങ്ങുകയും വളർച്ച കുറയുകയും ചെയ്യാം.
@@ -1006,7 +1006,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 വെള്ളക്കെട്ട് ഒഴിവാക്കുക. രാസകീടനാശിനികൾ ഉപയോഗിക്കുന്നതിന് മുൻപ് കൃഷിഭവനുമായി (KVK) ബന്ധപ്പെടുക.`;
  },
  or: (q, crop) => {
- return `🩺 **ଧାନ ଫସଲ ସାର ପ୍ରୟୋଗ ଓ କୀଟ ନିୟନ୍ତ୍ରଣ (Paddy Advisory)** [Rice / ଧାନ ଫସଲ]
+ return `**ଧାନ ଫସଲ ସାର ପ୍ରୟୋଗ ଓ କୀଟ ନିୟନ୍ତ୍ରଣ (Paddy Advisory)** [Rice / ଧାନ ଫସଲ]
 
 1. **କଣ ହୋଇପାରେ (What may be happening)**:
 ଧାନ ଫସଲରେ କାଣ୍ଡବିନ୍ଧା ପୋକ, ପତ୍ରମୋଡା ପୋକ କିମ୍ବା ନାଇଟ୍ରୋଜେନ ଓ ଜିଙ୍କର ଅଭାବ।
@@ -1021,7 +1021,7 @@ const REGIONAL_CUSTOM_RESPONSES: Record<string, (q: string, crop: string | null)
 କୌଣସି ରାସାୟନିକ ଔଷଧ ସ୍ପ୍ରେ କରିବା ପୂର୍ବରୁ ସ୍ଥାନୀୟ କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ର (KVK) ର ପରାମର୍ଶ ନିଅନ୍ତୁ।`;
  },
  as: (q, crop) => {
- return `🩺 **ধান খেতিত সাৰ প্ৰয়োগ আৰু ৰোগ নিয়ন্ত্ৰণ (Paddy Advisory)** [Rice / ধান খেতি]
+ return `**ধান খেতিত সাৰ প্ৰয়োগ আৰু ৰোগ নিয়ন্ত্ৰণ (Paddy Advisory)** [Rice / ধান খেতি]
 
 1. **কি হ'ব পাৰে (What may be happening)**:
 ধান খেতিত ব্লাস্ট, পাতপোৰা ৰোগ বা সাৰৰ অভাৱত শস্যৰ বৃদ্ধি বাধাগ্ৰସ୍ত হ'ব পাৰে।

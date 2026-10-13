@@ -31,7 +31,7 @@
 
     /* Muted text (#66736B) & muted surfaces */
     --muted: 48 18% 91%;
-    --muted-foreground: 143 6% 43%;
+    --muted-foreground: 143 6% 40%;
 
     /* Active soft crop-green state (#EAF3E9) */
     --accent: 115 28% 93%;
@@ -73,8 +73,8 @@
     --feature-mandi: 160 63% 36%;
     --feature-tractor: 24 94% 50%;
     --feature-store: 240 75% 55%;
-    --feature-doctor: 142 71% 37%;
-    --feature-loans: 45 92% 50%;
+    --feature-doctor: 142 71% 28%;
+    --feature-loans: 45 92% 35%;
     --feature-community: 10 84% 58%;
     --feature-news: 350 78% 44%;
     --feature-analytics: 188 86% 46%;
@@ -137,12 +137,19 @@
     @apply border-border;
   }
 
-  html, body {
-    @apply min-h-screen w-full;
+  html {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
     font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Gujarati', 'Noto Sans Gurmukhi', 'Noto Sans Tamil', 'Noto Sans Telugu', 'Noto Sans Kannada', 'Noto Sans Malayalam', 'Noto Sans Bengali', 'Noto Sans Oriya', ui-sans-serif, sans-serif;
     letter-spacing: -0.01em;
     -webkit-tap-highlight-color: transparent;
@@ -159,6 +166,25 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Sleek, accessible custom scrollbar for independently scrollable panels */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.25);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.45);
   }
 
   /* Safe area for mobile devices */
@@ -266,22 +292,88 @@
     color: transparent;
   }
 
-  /* Color-coded feature pill chip */
-  .feature-chip {
-    @apply inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-semibold;
+  /* ============================================================
+   * AgriConnect Stable Application Layout Architecture
+   * Full-height 100dvh sticky sidebar, independent scrolling, and flexible main
+   * ============================================================ */
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    position: relative;
+    overflow-x: clip;
   }
 
-  /* Typography scale */
-  .type-display { @apply text-[32px] leading-[1.15] font-bold tracking-[-0.02em] text-foreground; }
+  .app-sidebar {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar-navigation {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-main {
+    flex: 1 1 0%;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Color-coded feature pill chip — standardized to text-xs and rounded-full */
+  .feature-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  /* Unified Typography Scale (<= 8 standard steps) */
+  .type-display { @apply text-3xl sm:text-4xl leading-[1.15] font-bold tracking-[-0.02em] text-foreground; }
   .type-h1 { @apply text-2xl leading-snug font-semibold tracking-[-0.01em] text-foreground; }
   .type-h2 { @apply text-xl leading-snug font-semibold text-foreground; }
   .type-h3 { @apply text-base leading-snug font-semibold text-foreground; }
-  .type-body { @apply text-[15px] leading-relaxed font-normal text-foreground; }
-  .type-small { @apply text-[13px] leading-snug font-normal text-foreground; }
+  .type-body { @apply text-base leading-relaxed font-normal text-foreground; }
+  .type-small { @apply text-sm leading-snug font-normal text-foreground; }
   .type-label { @apply text-xs font-medium uppercase tracking-[0.03em] text-muted-foreground; }
   .type-meta { @apply text-xs font-normal text-muted-foreground; }
   .type-num { @apply font-semibold tabular-nums; }
   .touch-target { @apply min-h-[44px] min-w-[44px]; }
+
+  /* Unified Button Scale System (Standard 5 core styles) */
+  .btn-base {
+    @apply inline-flex items-center justify-center font-bold transition-all duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn-base rounded-xl bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98];
+  }
+  .btn-secondary {
+    @apply btn-base rounded-xl border border-border bg-card text-foreground shadow-soft hover:bg-muted hover:border-primary/40 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn-base rounded-lg text-primary hover:bg-primary/10 active:scale-[0.98];
+  }
+  .btn-pill {
+    @apply btn-base rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground/80 hover:border-primary/40 hover:text-primary active:scale-[0.97];
+  }
+  .btn-card {
+    @apply rounded-xl border border-border/80 bg-card p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover active:scale-[0.98];
+  }
 
   /* ============================================================
    * Agriculture page bands
@@ -298,7 +390,8 @@
   }
 
   .band-mandi {
-    background: linear-gradient(135deg, hsl(44 95% 95%) 0%, hsl(38 92% 90%) 60%, hsl(34 90% 86%) 100%);
+    background-color: hsl(44 95% 95%);
+    background-image: linear-gradient(135deg, hsl(44 95% 95%) 0%, hsl(38 92% 90%) 60%, hsl(34 90% 86%) 100%);
   }
 
   .band-cream {
@@ -339,12 +432,10 @@
     );
   }
 
-  /* Section eyebrow — small uppercase kicker with a marigold rule */
+  /* Section eyebrow — clean kicker with a marigold rule */
   .section-eyebrow {
-    @apply inline-flex items-center gap-2 type-label;
+    @apply inline-flex items-center gap-2 text-xs font-bold normal-case tracking-normal;
     color: hsl(var(--primary));
-    font-weight: 700;
-    letter-spacing: 0.06em;
   }
   .section-eyebrow::before {
     content: "";

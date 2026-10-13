@@ -290,6 +290,7 @@ export const DynamicSmartFarmHero: React.FC<DynamicSmartFarmHeroProps> = ({
 
   return (
     <div
+      role="img"
       className="relative flex h-full min-h-[280px] sm:min-h-[320px] lg:min-h-[370px] max-h-[400px] w-full flex-col overflow-hidden bg-emerald-950 rounded-[24px]"
       aria-label="Photorealistic Indian Agriculture Smart Farm Environment"
     >
@@ -306,6 +307,10 @@ export const DynamicSmartFarmHero: React.FC<DynamicSmartFarmHeroProps> = ({
           src={heroImageSrc}
           alt={cropInfo.name}
           onLoad={() => setImgLoaded(true)}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = "/images/smart-farm-hero.jpg";
+            setImgLoaded(true);
+          }}
           className={`h-full w-full object-cover object-center transition-opacity duration-700 ${
             imgLoaded ? "opacity-100" : "opacity-85"
           }`}

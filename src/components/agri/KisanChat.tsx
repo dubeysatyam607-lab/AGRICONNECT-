@@ -882,7 +882,7 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
           }
 
           const lines: string[] = [];
-          if (r.possible_issue) lines.push(`🩺 **${String(r.possible_issue)}**`);
+          if (r.possible_issue) lines.push(`**${String(r.possible_issue)}**`);
           if (r.health_status) lines.push(`• **Health**: ${r.health_status}`);
           if (r.confidence != null) lines.push(`• **Confidence**: ${r.confidence}%`);
           if (Array.isArray(r.symptoms) && r.symptoms.length) lines.push(`• **Symptoms**: ${r.symptoms.join(", ")}`);

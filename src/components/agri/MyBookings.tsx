@@ -260,7 +260,7 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
               providerName: 'AgriConnect Transport Fleet',
               customerName: tb.name || 'Farmer',
               customerPhone: tb.phone,
-              location: `${tb.pickup_location} ➔ ${tb.destination}`,
+              location: `${tb.pickup_location} → ${tb.destination}`,
               startDate: tb.date ? new Date(tb.date).toLocaleDateString('en-IN') : undefined,
               amount: (tb.weight || 10) * 120,
               paymentStatus: 'PENDING',

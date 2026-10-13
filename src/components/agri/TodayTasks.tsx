@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, PartyPopper } from "lucide-react";
+import { CalendarDays, PartyPopper, Check, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate } from "@/i18n/journey";
@@ -170,29 +170,42 @@ const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop }) => {
  style={{ width: `${pct}%` }}
  />
  </div>
- <span className="text-[12px] font-semibold text-muted-foreground tabular-nums">{pct}%</span>
+ <span className="text-xs font-semibold text-muted-foreground tabular-nums">{pct}%</span>
  </div>
 
- <div className="divide-y divide-border">
+ <div className="space-y-2">
  {tasks.map((task, idx) => (
- <button key={task.id} onClick={() => toggleTask(idx)} aria-pressed={task.done} aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })} className="flex w-full items-center gap-3 py-3 text-left rounded-xl px-2 -mx-2 transition-all duration-200 hover:bg-muted/40 active:scale-[0.99]">
+ <button
+   key={task.id}
+   type="button"
+   onClick={() => toggleTask(idx)}
+   role="checkbox"
+   aria-checked={task.done}
+   aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })}
+   className="group flex w-full items-center gap-3 rounded-xl border border-border/70 bg-card p-3 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-muted/30 active:scale-[0.99]"
+ >
  <span className={cn(
- "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
- task.done ? "border-emerald-700 bg-emerald-700 text-white " : "border-border bg-background",
+   "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+   task.done ? "border-emerald-700 bg-emerald-700 text-white" : "border-border bg-background group-hover:border-emerald-700/50",
  )}>
- {task.done && <span className="text-xs"></span>}
+ {task.done && <Check size={13} className="stroke-[3]" aria-hidden="true" />}
  </span>
- <span className={cn("flex-1 text-[14px] font-medium transition-colors", task.done ? "text-muted-foreground line-through" : "text-foreground")}>
+ <span className={cn("flex-1 text-sm font-medium transition-colors", task.done ? "text-muted-foreground line-through" : "text-foreground")}>
  {task.label}
  </span>
- {!task.done && <span className="rounded-full bg-feature-doctor/10 text-feature-doctor px-2 py-0.5 text-xs font-semibold">{t("tasks.todo")}</span>}
+ <span className={cn(
+   "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors",
+   task.done ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300" : "bg-muted text-muted-foreground",
+ )}>
+   {task.done ? t("tasks.completed") : t("tasks.todo")}
+ </span>
  </button>
  ))}
  </div>
 
  {allDone && (
- <div className="flex items-center justify-center gap-1.5 rounded-xl bg-feature-doctor/10 px-3 py-2.5 text-[13px] font-bold text-feature-doctor">
- <PartyPopper size={15} /> {t("tasks.greatJob")}
+ <div className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600/10 px-3 py-2.5 text-sm font-bold text-emerald-800 dark:text-emerald-300">
+ <PartyPopper size={16} aria-hidden="true" /> {t("tasks.greatJob")}
  </div>
  )}
  </div>

@@ -29,16 +29,25 @@ import("./lib/check-edge-functions").then(({ checkEdgeFunctions }) => {
 });
 
 // Version marker for build verification
+const CURRENT_BUILD_VERSION = '2026.10.12-v4';
 if (typeof window !== 'undefined') {
-  (window as unknown as { __AGRICONNECT_BUILD_VERSION__: string }).__AGRICONNECT_BUILD_VERSION__ = 'd86fc96';
-  console.log('[AgriConnect Build Version]:', 'd86fc96');
+  (window as unknown as { __AGRICONNECT_BUILD_VERSION__: string }).__AGRICONNECT_BUILD_VERSION__ = CURRENT_BUILD_VERSION;
+  console.log('[AgriConnect Build Version]:', CURRENT_BUILD_VERSION);
 }
 
 // 2. Register Service Worker for offline support in production only
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  // Reload immediately when the service worker updates and takes control
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
+        // Force check for fresh build on every page visit
+        registration.update().catch(() => {});
+
         if (registration.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
@@ -48,7 +57,6 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 installingWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
               }
             };
           }

@@ -54,7 +54,7 @@ export const ResponsiveLayout: React.FC<IResponsiveLayoutProps> = ({
       <div className={`flex-1 flex mx-auto w-full ${maxWidthClassName} px-4 sm:px-6 lg:px-8 py-6 gap-6`}>
         {/* Tablet/Desktop Sidebar */}
         {sidebar && breakpoint !== 'mobile' && (
-          <aside className="w-64 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-y-auto hidden sm:block border-r border-slate-200 dark:border-slate-800 pr-4">
+          <aside className="w-64 flex-shrink-0 sticky top-24 h-[calc(100vh-6rem)] h-[calc(100dvh-6rem)] overflow-y-auto overflow-x-hidden scrollbar-thin overscroll-contain hidden sm:block border-r border-slate-200 dark:border-slate-800 pr-4">
             {sidebar}
           </aside>
         )}

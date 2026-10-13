@@ -101,13 +101,14 @@ export const CoreFeatures: React.FC<CoreFeaturesProps> = ({ onGo }) => {
           <p id="core-features-heading" className="section-eyebrow">
             {t("home.coreFeatures")}
           </p>
-          <h2 className="mt-1 font-display text-[22px] font-extrabold tracking-tight text-foreground sm:text-[26px]">
+          <h2 className="mt-1 font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
             {t("home.everythingAFarmerNeeds")}
           </h2>
         </div>
         <button
+          type="button"
           onClick={() => onGo("services")}
-          className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-[12px] font-bold text-foreground/80 transition-all hover:border-primary/40 hover:text-primary active:scale-[0.97]"
+          className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-bold text-foreground/80 transition-all hover:border-primary/40 hover:text-primary active:scale-[0.97]"
         >
           {t("home.viewAll")}
           <ArrowRight size={13} aria-hidden="true" />
@@ -120,6 +121,7 @@ export const CoreFeatures: React.FC<CoreFeaturesProps> = ({ onGo }) => {
           return (
             <button
               key={f.id}
+              type="button"
               onClick={() => onGo(f.id)}
               className={cn(
                 "group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover active:scale-[0.98]"
@@ -141,7 +143,7 @@ export const CoreFeatures: React.FC<CoreFeaturesProps> = ({ onGo }) => {
                 >
                   <Icon size={20} aria-hidden="true" />
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-primary/80">
+                <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary">
                   {t("home.open")}
                   <ArrowRight
                     size={12}
@@ -152,10 +154,10 @@ export const CoreFeatures: React.FC<CoreFeaturesProps> = ({ onGo }) => {
               </span>
 
               <span className="relative mt-3 block">
-                <span className="block text-[15px] font-extrabold leading-snug tracking-tight text-foreground">
+                <span className="block text-base font-extrabold leading-snug tracking-tight text-foreground">
                   {t(f.labelKey)}
                 </span>
-                <span className="mt-1 line-clamp-2 block text-[12.5px] leading-relaxed text-muted-foreground">
+                <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
                   {t(f.subKey) && t(f.subKey) !== f.subKey ? t(f.subKey) : (f.id === "farm-os" ? "Crop status & field plan" : "")}
                 </span>
               </span>

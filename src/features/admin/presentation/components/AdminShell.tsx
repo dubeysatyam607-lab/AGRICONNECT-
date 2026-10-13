@@ -57,7 +57,7 @@ function NavItems({
   onNavigate: (key: string) => void;
 }) {
   return (
-    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+    <nav className="sidebar-navigation flex-1 min-h-0 space-y-5 overflow-y-auto overflow-x-hidden px-3 py-4 scrollbar-thin overscroll-contain">
       {ADMIN_MODULE_GROUPS.map((group) => (
         <div key={group}>
           <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">

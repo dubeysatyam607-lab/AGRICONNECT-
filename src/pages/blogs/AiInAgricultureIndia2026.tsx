@@ -4,7 +4,7 @@ import { SeoHead } from '@/components/seo/SeoHead';
 import { ogImage } from '@/lib/seo-config';
 import { articleSchema, breadcrumbSchema } from '@/lib/structured-data';
 import MarketingBreadcrumb from '@/shared/layouts/MarketingBreadcrumb';
-import { ArrowRight, Sparkles, CheckCircle2, Sprout } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle2, Sprout, BarChart2, Tractor, Users, ScrollText, FlaskConical, Truck } from 'lucide-react';
 
 const AiInAgricultureIndia2026: React.FC = () => {
   const pagePath = '/blogs/ai-in-agriculture-india-2026';
@@ -223,12 +223,12 @@ const AiInAgricultureIndia2026: React.FC = () => {
               A farmer often needs far more than just crop advisory. During a single season, a farmer requires:
             </p>
             <ul className="grid sm:grid-cols-2 gap-2 my-4 text-sm font-medium">
-              <li className="bg-card p-3 border rounded-lg">📊 Real-time <Link to="/mandi-prices/rajasthan" className="text-emerald-700 dark:text-emerald-400 underline">Mandi Prices</Link></li>
-              <li className="bg-card p-3 border rounded-lg">🚜 Renting <Link to="/machinery" className="text-emerald-700 dark:text-emerald-400 underline">Tractors & Machinery</Link></li>
-              <li className="bg-card p-3 border rounded-lg">👨‍🌾 Agricultural Labour</li>
-              <li className="bg-card p-3 border rounded-lg">📜 <Link to="/schemes/rajasthan" className="text-emerald-700 dark:text-emerald-400 underline">Government Schemes & Subsidies</Link></li>
-              <li className="bg-card p-3 border rounded-lg">🧪 Soil Testing Services</li>
-              <li className="bg-card p-3 border rounded-lg">🚛 Agri Transport & Cold Storage</li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><BarChart2 className="w-4 h-4 text-emerald-600 shrink-0" /> Real-time <Link to="/mandi-prices/rajasthan" className="text-emerald-700 dark:text-emerald-400 underline">Mandi Prices</Link></li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><Tractor className="w-4 h-4 text-emerald-600 shrink-0" /> Renting <Link to="/machinery" className="text-emerald-700 dark:text-emerald-400 underline">Tractors &amp; Machinery</Link></li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><Users className="w-4 h-4 text-emerald-600 shrink-0" /> Agricultural Labour</li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><ScrollText className="w-4 h-4 text-emerald-600 shrink-0" /> <Link to="/schemes/rajasthan" className="text-emerald-700 dark:text-emerald-400 underline">Government Schemes &amp; Subsidies</Link></li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><FlaskConical className="w-4 h-4 text-emerald-600 shrink-0" /> Soil Testing Services</li>
+              <li className="bg-card p-3 border rounded-lg flex items-center gap-2"><Truck className="w-4 h-4 text-emerald-600 shrink-0" /> Agri Transport &amp; Cold Storage</li>
             </ul>
             <p>
               Historically, these agricultural services were fragmented across separate platforms, physically distant offices, and informal channels. Ecosystems like AgriConnect bring all these agricultural workflows into one digital environment so farmers can manage their entire farming journey effortlessly.

@@ -168,7 +168,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
     (wl ? interpretWeather(wl.live.condition, wl.daily?.[0]?.rainProbability, wl.live.temp) : undefined);
 
   return (
-    <section aria-labelledby="weather-heading" className="mt-7">
+    <section role="region" aria-labelledby="weather-heading" className="mt-7">
       <div className="relative overflow-hidden rounded-2xl border border-[#0F5132]/20 text-white shadow-card">
         {/* Subtle authentic farm backdrop with high-contrast dark green overlay */}
         <div className="absolute inset-0 select-none overflow-hidden" aria-hidden="true">
@@ -190,17 +190,17 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
                 <MapPin size={16} className="text-[#00C26E]" aria-hidden="true" />
               </span>
               <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white truncate">
+                <h3 id="weather-heading" className="text-sm sm:text-base font-bold text-white truncate">
                   {wl?.location?.name || wl?.location?.district || loadingCityText || 'Farm Location'}
                 </h3>
-                <p className="text-[11px] font-medium text-white/75 truncate">
+                <p className="text-xs font-medium text-white/90 truncate">
                   {theme.themeLabel} · Hyperlocal Agricultural Weather
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
                 <span className="h-2 w-2 rounded-full bg-[#00C26E] animate-live-pulse" aria-hidden="true" />
                 Live
               </span>
@@ -244,19 +244,19 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
                   <div className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/10 p-2.5 sm:p-3 text-center">
                     <CloudRain size={18} className="text-sky-300 mb-1" aria-hidden="true" />
                     <span className="text-sm sm:text-base font-extrabold text-white">{wl.daily?.[0]?.rainProbability ?? 0}%</span>
-                    <span className="text-[10.5px] font-medium text-white/70">Rain</span>
+                    <span className="text-xs font-medium text-white/70">Rain</span>
                   </div>
 
                   <div className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/10 p-2.5 sm:p-3 text-center">
                     <Droplets size={18} className="text-emerald-300 mb-1" aria-hidden="true" />
                     <span className="text-sm sm:text-base font-extrabold text-white">{wl.live.humidity}%</span>
-                    <span className="text-[10.5px] font-medium text-white/70">Humidity</span>
+                    <span className="text-xs font-medium text-white/70">Humidity</span>
                   </div>
 
                   <div className="flex flex-col items-center justify-center rounded-xl border border-white/15 bg-white/10 p-2.5 sm:p-3 text-center">
                     <Wind size={18} className="text-amber-300 mb-1" aria-hidden="true" />
-                    <span className="text-sm sm:text-base font-extrabold text-white">{wl.live.windSpeed} <span className="text-[10px] font-normal">km/h</span></span>
-                    <span className="text-[10.5px] font-medium text-white/70">Wind</span>
+                    <span className="text-sm sm:text-base font-extrabold text-white">{wl.live.windSpeed} <span className="text-xs font-normal">km/h</span></span>
+                    <span className="text-xs font-medium text-white/70">Wind</span>
                   </div>
                 </div>
               </div>
@@ -270,7 +270,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
 
               {/* Footer CTA */}
               <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
-                <span className="text-[11px] font-medium text-white/70">
+                <span className="text-xs font-medium text-white/70">
                   Updated live for your field
                 </span>
                 <button
@@ -289,24 +289,32 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               <p className="text-xs font-semibold text-white/90">{t("home.fetchingWeather") || "Fetching live weather..."}</p>
             </div>
           ) : (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/10 p-3.5">
-              <p className="text-xs font-medium text-white">
-                {t("home.weatherUnavailable") || "Live weather unavailable. Please check location."}
-              </p>
-              <div className="flex gap-2">
+            <div className="mt-5 flex flex-col items-center justify-center text-center gap-3 rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-sm">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-emerald-300">
+                <Cloud size={24} aria-hidden="true" />
+              </span>
+              <div className="max-w-md">
+                <p className="text-sm font-bold text-white">
+                  {t("home.weatherUnavailable") || "Live weather unavailable. Please check location."}
+                </p>
+                <p className="mt-1 text-xs text-white/75">
+                  Verify your device location or tap retry to re-connect to the nearest agricultural weather station.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2.5 mt-1">
                 <button
                   type="button"
                   onClick={onRefresh}
-                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#0F5132]"
+                  className="rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#0F5132] shadow-sm transition-all hover:bg-emerald-50 active:scale-95"
                 >
-                  {t("wth.retry") || "Retry"}
+                  {t("wth.retry") || "Retry Weather"}
                 </button>
                 <button
                   type="button"
                   onClick={onOpenLocation}
-                  className="rounded-lg border border-white/30 bg-transparent px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                  className="rounded-xl border border-white/30 bg-white/15 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-white/25 active:scale-95"
                 >
-                  {t("home.checkLocation") || "Set Location"}
+                  {t("home.checkLocation") || "Check your location"}
                 </button>
               </div>
             </div>

@@ -57,14 +57,14 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
       aria-labelledby="farm-hero-greeting"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative mt-3 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card sm:p-7 md:p-8"
+      className="relative mt-3 overflow-hidden rounded-2xl border border-[#0F5132]/15 bg-gradient-to-br from-[#EBF5ED] via-[#F5FAF4] to-[#FAF8F2] p-5 shadow-soft sm:p-7 md:p-8"
     >
       <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
         {/* ── LEFT COLUMN ── */}
         <div className="flex flex-col justify-center">
           {/* Contextual Date & Status Chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#0F5132]/15 bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#0F5132] shadow-xs">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-800/15 bg-white px-3 py-1 text-xs font-semibold text-emerald-800 shadow-xs">
               <span className="h-2 w-2 rounded-full bg-[#00C26E] animate-live-pulse" aria-hidden="true" />
               {dateStr}
             </span>
@@ -84,11 +84,14 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
             )}
           </div>
 
-          {/* Balanced Greeting & User Name (Fixes Issue 13 & 18) */}
-          <div className="mt-3">
-            <p id="farm-hero-greeting" className="text-lg font-bold text-[#0F5132]">
-              {greeting.trim()}, <span className="text-xl font-extrabold text-[#0F5132]">{firstName}</span>
+          {/* Balanced Greeting & Large Serif Farmer Name */}
+          <div className="mt-3.5">
+            <p className="text-xs font-semibold text-emerald-800/90">
+              {greeting.trim()}
             </p>
+            <h2 id="farm-hero-greeting" className="mt-1 font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0F5132]">
+              {firstName}
+            </h2>
           </div>
 
           {/* Farm Context Chips */}
@@ -99,7 +102,7 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
             </div>
 
             {farmTag && (
-              <div className="inline-flex items-center gap-1.5 rounded-xl border border-[#0F5132]/15 bg-white/90 px-3 py-1.5 text-xs font-bold text-[#0F5132] shadow-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-[#0F5132]/15 bg-white px-3 py-1.5 text-xs font-bold text-[#0F5132] shadow-xs">
                 <Layers size={14} className="text-[#00C26E]" aria-hidden="true" />
                 <span>{farmTag}</span>
               </div>
@@ -108,9 +111,9 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
 
           {/* Dynamic AI Advisory Brief */}
           {adviceLine && (
-            <div className="mt-4 rounded-xl border-l-4 border-[#00C26E] border-y border-r border-emerald-900/10 bg-white/90 p-4 shadow-xs">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F5132]">
-                <Sprout size={14} className="text-[#00C26E]" aria-hidden="true" />
+            <div className="mt-4 rounded-xl border-l-4 border-emerald-600 border-y border-r border-emerald-900/10 bg-white p-4 shadow-xs">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#0F5132]">
+                <Sprout size={14} className="text-emerald-700" aria-hidden="true" />
                 <span>{t("home.planToday") || "Today's Field Intelligence"}</span>
               </div>
               <p className="mt-1.5 text-sm font-semibold leading-relaxed text-[#111827]">
@@ -124,7 +127,7 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
             <button
               onClick={onAsk}
               type="button"
-              className="group inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#0F5132] px-5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#064E3B] active:scale-[0.98]"
+              className="btn-primary min-h-[44px] px-5 text-sm gap-2"
             >
               <Mic size={16} aria-hidden="true" />
               <span>{t("home.kisanSaathiAsk") || "Ask Kisan Saathi"}</span>
@@ -133,7 +136,7 @@ export const FarmHero: React.FC<FarmHeroProps> = ({
             <button
               onClick={onOpenFarm}
               type="button"
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#0F5132]/25 bg-white/80 px-4 text-sm font-bold text-[#0F5132] transition-all hover:bg-white active:scale-[0.98]"
+              className="btn-secondary min-h-[44px] px-4 text-sm gap-2 border-emerald-900/25 bg-white text-[#0F5132] hover:bg-emerald-50"
             >
               <span>{t("home.planToday") || "Plan today's field work"}</span>
               <ArrowRight size={15} aria-hidden="true" />

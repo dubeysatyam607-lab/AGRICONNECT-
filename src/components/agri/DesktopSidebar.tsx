@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Home, TrendingUp, Sprout, Leaf, ShoppingBag, Tractor, PawPrint, Users,
   Truck, Scan, CalendarDays, FlaskConical, ShieldCheck, Wallet, Cpu,
-  Landmark, Newspaper, Bell, User, Settings, Sparkles, Calendar,
+  Landmark, Newspaper, Bell, User, Settings, Sparkles, Calendar, ChevronDown,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -82,23 +82,45 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
     return v && v !== key ? v : fallback;
   };
 
+  // Collapsible category state: groups can be collapsed to reduce density
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const isGroupOpen = (group: Group) => {
+    // If user has explicitly toggled this group, honor that
+    if (collapsedGroups[group.titleKey] !== undefined) {
+      return !collapsedGroups[group.titleKey];
+    }
+    // Automatically keep open if active tab is inside this group
+    const hasActiveItem = group.items.some((it) => it.id === activeTab);
+    if (hasActiveItem) return true;
+    // Default open first group
+    return group.titleKey === "svc.hub.group.marketplace";
+  };
+
   return (
     <aside
       aria-label="Primary navigation"
-      className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-border lg:bg-[#FBFAF4] shadow-soft"
+      className="app-sidebar hidden lg:flex lg:w-64 xl:w-72 lg:shrink-0 lg:flex-col lg:h-screen lg:h-[100dvh] lg:max-h-[100dvh] lg:sticky lg:top-0 lg:border-r lg:border-border lg:bg-[#FBFAF4] dark:lg:bg-card shadow-soft z-30 overflow-hidden"
     >
-      <div className="sticky top-0 flex h-screen flex-col">
-        {/* Brand Header */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white/80 px-5 backdrop-blur-md">
-          <Logo size={28} />
-          <div className="leading-tight">
-            <span className="block text-[15.5px] font-extrabold tracking-tight text-[#0F5132]">AgriConnect</span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#00C26E]">Kisan Ka Apna</span>
+      <div className="flex h-full min-h-0 flex-col">
+        {/* Brand Header — pinned at top */}
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-white/80 dark:bg-card/80 px-5 backdrop-blur-md">
+          <Logo size={28} alt="" aria-hidden="true" />
+          <div className="leading-tight min-w-0">
+            <span className="block text-base font-extrabold tracking-tight text-foreground truncate">AgriConnect</span>
+            <span className="block text-xs font-semibold text-emerald-800 dark:text-emerald-400 truncate">Kisan Ka Apna</span>
           </div>
         </div>
 
-        {/* Scrollable Navigation Items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4 no-scrollbar">
+        {/* Scrollable Navigation Items — independently scrollable */}
+        <nav
+          aria-label="Sidebar sections"
+          className="sidebar-navigation flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-3 scrollbar-thin overscroll-contain"
+        >
           {/* Primary Quick Links */}
           <div className="space-y-1">
             {PRIMARY.map((item) => (
@@ -112,32 +134,49 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
             ))}
           </div>
 
-          {/* Grouped Feature Links */}
-          {GROUPS.map((group) => (
-            <div key={group.titleKey} className="pt-2">
-              <div className="mb-2 flex items-center gap-1.5 px-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00C26E]" />
-                <p className="text-xs font-bold uppercase tracking-wider text-[#0F5132]/70">
-                  {tr(group.titleKey, group.title)}
-                </p>
-              </div>
-              <div className="space-y-[3px]">
-                {group.items.map((item) => (
-                  <SidebarLink
-                    key={item.id}
-                    item={item}
-                    label={tr(item.labelKey, item.label)}
-                    active={activeTab === item.id}
-                    onClick={() => setActiveTab(item.id)}
+          {/* Collapsible Grouped Feature Links */}
+          {GROUPS.map((group) => {
+            const open = isGroupOpen(group);
+            return (
+              <div key={group.titleKey} className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.titleKey)}
+                  aria-expanded={open}
+                  className="mb-1.5 flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-left hover:bg-muted/50 transition-colors select-none cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
+                    <span className="text-xs font-semibold text-muted-foreground truncate">
+                      {tr(group.titleKey, group.title)}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    className={cn("shrink-0 text-muted-foreground transition-transform duration-200", open ? "rotate-0" : "-rotate-90")}
+                    aria-hidden="true"
                   />
-                ))}
+                </button>
+                {open && (
+                  <div className="space-y-[3px]">
+                    {group.items.map((item) => (
+                      <SidebarLink
+                        key={item.id}
+                        item={item}
+                        label={tr(item.labelKey, item.label)}
+                        active={activeTab === item.id}
+                        onClick={() => setActiveTab(item.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
-        {/* Footer Account Links */}
-        <div className="shrink-0 border-t border-border bg-white/70 p-3 backdrop-blur-sm space-y-1">
+        {/* Footer Account Links — pinned at bottom, never covered */}
+        <div className="shrink-0 border-t border-border bg-white/80 dark:bg-card/80 p-3 backdrop-blur-sm space-y-1">
           <SidebarLink
             item={{ id: "profile", icon: User, labelKey: "nav.profile", label: "Profile" }}
             label={tr("nav.profile", "Profile")}

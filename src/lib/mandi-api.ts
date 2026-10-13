@@ -424,8 +424,13 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
   const market = String(record.market ?? "").trim();
   const district = String(record.district ?? market ?? "").trim() || "Not specified";
   const state = String(record.state ?? "").trim();
-  const variety = String(record.variety ?? "").trim();
-  const arrivalDate = String(record.arrivalDate ?? record.arrival_date ?? "").trim();
+  let arrivalDate = String(record.arrivalDate ?? record.arrival_date ?? "").trim();
+  if (arrivalDate && arrivalDate !== "Not available") {
+    const parsed = new Date(arrivalDate);
+    if (!isNaN(parsed.getTime()) && parsed > new Date()) {
+      arrivalDate = new Date().toISOString().slice(0, 10);
+    }
+  }
 
   // Part 12: Only calculate price change when true previous-day comparison data exists
   let status: "up" | "down" | "stable" = "stable";

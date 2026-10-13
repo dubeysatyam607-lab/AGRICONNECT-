@@ -595,14 +595,14 @@ const getTabFromPath = (path: string) => {
               {queueCount} Offline Updates
             </div>
           )}
-          {activeTab !== "ai-chat" && (
+          {activeTab !== "home" && activeTab !== "ai-chat" && (
             <button
               onClick={() => setActiveTab("ai-chat")}
               aria-label="Ask Kisan Saathi"
               className="pointer-events-auto group flex min-h-[44px] items-center gap-2 rounded-full bg-[#0F5132] px-4 py-2.5 text-white shadow-lg transition-all hover:bg-[#064E3B] hover:shadow-xl active:scale-95"
             >
               <Leaf size={18} className="text-[#00C26E]" aria-hidden="true" />
-              <span className="type-small font-bold">Kisan Saathi</span>
+              <span className="type-small font-bold text-white">Kisan Saathi</span>
             </button>
           )}
           <div className="pointer-events-auto">
@@ -612,12 +612,12 @@ const getTabFromPath = (path: string) => {
       )}
       
       {/* Full-width responsive container */}
-      <div className={isFullScreen ? "" : "lg:flex lg:items-start"}>
+      <div className={isFullScreen ? "w-full min-h-screen min-h-[100dvh]" : "app-layout w-full min-h-screen min-h-[100dvh] lg:flex lg:items-start"}>
         {!isFullScreen && (
           <DesktopSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         )}
-        <div className={isFullScreen ? "" : "min-w-0 flex-1"}>
-          <main id="main-content" className={isFullScreen ? "w-full h-screen" : "w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-28 sm:pb-32 lg:pb-12"}>
+        <div className={isFullScreen ? "w-full h-full" : "app-main min-w-0 flex-1 flex flex-col min-h-screen min-h-[100dvh]"}>
+          <main id="main-content" className={isFullScreen ? "w-full h-screen h-[100dvh]" : "w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 lg:pb-6 flex-1 min-w-0"}>
 
             <h1 className="sr-only">AgriConnect Dashboard</h1>
             <Suspense fallback={
@@ -635,9 +635,11 @@ const getTabFromPath = (path: string) => {
           </main>
 
           {!isFullScreen && (
-            <Suspense fallback={null}>
-              <AgriConnectFooter />
-            </Suspense>
+            <div className="pb-16 lg:pb-0 shrink-0">
+              <Suspense fallback={null}>
+                <AgriConnectFooter />
+              </Suspense>
+            </div>
           )}
         </div>
       </div>

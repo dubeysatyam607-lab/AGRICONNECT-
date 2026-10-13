@@ -1,6 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { Sprout, CloudSun, Droplets, TrendingUp, MapPin, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { Sprout, CloudSun, Droplets, TrendingUp, MapPin, ArrowUpRight, ArrowDownRight, Minus, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data, onGo }) => {
       icon: Sprout,
       title: t("home.farmTitle") || "My Crop",
       line: data.crop || "Soybean",
-      tag: data.stage,
+      tag: data.stage && data.stage !== data.crop ? data.stage : undefined,
       value: data.area ? `${data.area} ${data.unit || t("home.areaUnit") || "acres"}` : undefined,
     },
     {
@@ -96,20 +96,25 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data, onGo }) => {
               key={cell.id}
               type="button"
               onClick={() => onGo?.(cell.tab)}
-              className="group flex flex-col justify-between gap-2 rounded-2xl border border-border/80 bg-card p-3.5 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-card-hover active:scale-[0.98]"
+              className="group flex flex-col justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover active:scale-[0.98]"
             >
-              <div className="flex w-full items-center justify-between">
-                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg transition-colors group-hover:bg-emerald-700 group-hover:text-white", TONE.icon)}>
-                  <Icon size={16} aria-hidden="true" />
+              <div className="flex w-full items-start justify-between gap-2">
+                <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-105", TONE.icon)}>
+                  <Icon size={18} aria-hidden="true" />
                 </span>
                 {cell.movement ? (
-                  <span className={cn("inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-bold", TONE.chip)}>
+                  <span className={cn("inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold", TONE.chip)}>
                     <MovementIcon status={cell.movement} />
                     {cell.tag || cell.value}
                   </span>
                 ) : (
-                  <span className="text-[11px] font-bold text-emerald-800 opacity-0 transition-opacity group-hover:opacity-100">
-                    Open →
+                  <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary">
+                    {t("home.open") || "Open"}
+                    <ArrowRight
+                      size={12}
+                      className="transition-transform duration-200 group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
                   </span>
                 )}
               </div>
@@ -127,8 +132,8 @@ export const FarmSnapshot: React.FC<FarmSnapshotProps> = ({ data, onGo }) => {
                     {cell.line}
                   </span>
                 )}
-                {cell.tag && !cell.movement && (
-                  <span className="mt-1 block text-[11px] font-medium text-emerald-800/90 truncate">
+                {cell.tag && !cell.movement && cell.tag !== cell.line && (
+                  <span className="mt-1 block text-xs font-medium text-emerald-800/90 truncate">
                     {cell.tag}
                   </span>
                 )}
