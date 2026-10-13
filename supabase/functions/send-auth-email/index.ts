@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Supabase Auth Hook: send_email
@@ -31,31 +30,62 @@ const SEND_EMAIL_HOOK_SECRETS = Deno.env.get("SEND_EMAIL_HOOK_SECRETS");
 const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "AgriConnect <hello.agriconnect@gmail.com>";
 const APP_URL = Deno.env.get("APP_URL") || "https://agriconnect-navy-six.vercel.app";
 
+// ── Standard Webhooks signature verification (native, no external deps) ──────
+function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
 /**
- * Verify the Supabase Send Email hook request.
+ * Verify the Supabase Send Email hook request using the Standard Webhooks spec.
  *
- * Supabase HTTP hooks follow the Standard Webhooks spec: the payload is signed
- * and delivered in the `webhook-id` / `webhook-timestamp` / `webhook-signature`
- * headers. Supabase does NOT send an `Authorization` header for send_email hooks
- * (supabase/auth#2499), so verifying that header can never succeed once a secret
- * is configured — and Auth then reports "Hook requires authorization token".
- * Internal pg_net calls from our own Postgres hook are trusted.
+ * Supabase signs the payload and sends `webhook-id` / `webhook-timestamp` /
+ * `webhook-signature` headers. It does NOT send an `Authorization` header for
+ * send_email hooks (supabase/auth#2499), so a bearer-token check always fails
+ * once a secret is configured — and Auth then reports "Hook requires
+ * authorization token". Internal pg_net calls from our Postgres hook are trusted.
  */
-function verifyHookSecret(req: Request, rawBody: string): boolean {
+async function verifyHookSecret(req: Request, rawBody: string): Promise<boolean> {
   // No secret configured → nothing to verify (development / secret-less setup)
   if (!SEND_EMAIL_HOOK_SECRETS) return true;
   // Trusted internal call from the Postgres handle_send_email function via pg_net
   if (req.headers.get("x-internal-source") === "pg_net") return true;
 
+  const id = req.headers.get("webhook-id") || "";
+  const timestamp = req.headers.get("webhook-timestamp") || "";
+  const signatureHeader = req.headers.get("webhook-signature") || "";
+  if (!id || !timestamp || !signatureHeader) return false;
+
   try {
-    // Env value is "v1,whsec_<base64>"; the library wants the base64 part only.
-    const hookSecret = SEND_EMAIL_HOOK_SECRETS
+    // Env value is "v1,whsec_<base64>"; the HMAC key is the decoded base64 part.
+    const secretPart = SEND_EMAIL_HOOK_SECRETS
       .split(",")
       .find((part) => part.startsWith("whsec_")) || SEND_EMAIL_HOOK_SECRETS;
-    const base64Secret = hookSecret.replace("v1,whsec_", "").replace("whsec_", "");
-    const wh = new Webhook(base64Secret);
-    wh.verify(rawBody, Object.fromEntries(req.headers));
-    return true;
+    const keyBytes = base64ToBytes(secretPart.replace("v1,whsec_", "").replace("whsec_", ""));
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyBytes,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const mac = new Uint8Array(
+      await crypto.subtle.sign(
+        "HMAC",
+        key,
+        new TextEncoder().encode(`${id}.${timestamp}.${rawBody}`),
+      ),
+    );
+    const expected = `v1,${bytesToBase64(mac)}`;
+    return signatureHeader.split(" ").some((sig) => sig === expected);
   } catch (err: any) {
     console.error("[send-auth-email] webhook signature verification failed:", err?.message || err);
     return false;
@@ -243,7 +273,7 @@ const handler = async (req: Request): Promise<Response> => {
   const payload = await req.text();
 
   // Verify the webhook signature to prevent unauthorized email sending
-  if (!verifyHookSecret(req, payload)) {
+  if (!(await verifyHookSecret(req, payload))) {
     console.error("[send-auth-email] Invalid webhook signature");
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
