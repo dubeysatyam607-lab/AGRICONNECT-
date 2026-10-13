@@ -97,23 +97,41 @@ async function sendEmail(message: EmailMessage): Promise<void> {
  return response;
  }
 
- try {
- await readUntilLine(); // greeting
- await send(`EHLO ${hostname}`);
- const authResp = await send(`AUTH LOGIN`);
- if (!authResp.startsWith("334")) throw new Error(`AUTH LOGIN failed: ${authResp}`);
- const userResp = await send(btoa(username));
- if (!userResp.startsWith("334")) throw new Error(`AUTH user failed: ${userResp}`);
- const passResp = await send(btoa(password));
- if (!passResp.startsWith("235")) throw new Error(`AUTH password failed: ${passResp}`);
- await send(`MAIL FROM:<${username}>`);
- await send(`RCPT TO:<${message.to}>`);
- await send(`DATA`);
- await send(`From: ${EMAIL_FROM}\r\nTo: ${message.to}\r\nSubject: ${message.subject}\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n${message.html}\r\n.`);
- await send(`QUIT`);
- } finally {
- conn.close();
- }
+  function expect(resp: string, ok: RegExp, stage: string): void {
+    if (!ok.test(resp)) {
+      throw new Error(`SMTP ${stage} rejected: ${resp.split("\r\n")[0]}`);
+    }
+  }
+
+  // RFC 5321: SMTP needs CRLF line endings, and any body line beginning with a
+  // dot must be escaped (".."). The HTML templates use plain "\n", so normalise.
+  const body = message.html.replace(/\r?\n/g, "\r\n").replace(/\r\n\./g, "\r\n..");
+  const headers = [
+    `From: ${EMAIL_FROM}`,
+    `To: ${message.to}`,
+    `Reply-To: ${EMAIL_FROM}`,
+    `Subject: ${message.subject}`,
+    `Date: ${new Date().toUTCString()}`,
+    `Message-ID: <${crypto.randomUUID()}@agriconnect.app>`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: 8bit",
+  ].join("\r\n");
+
+  try {
+    expect(await readUntilLine(), /^220/, "greeting"); // 220 greeting
+    expect(await send(`EHLO ${hostname}`), /^250/, "EHLO");
+    expect(await send(`AUTH LOGIN`), /^334/, "AUTH LOGIN");
+    expect(await send(btoa(username)), /^334/, "AUTH user");
+    expect(await send(btoa(password)), /^235/, "AUTH password");
+    expect(await send(`MAIL FROM:<${username}>`), /^250/, "MAIL FROM");
+    expect(await send(`RCPT TO:<${message.to}>`), /^25[0-9]/, "RCPT TO");
+    expect(await send(`DATA`), /^354/, "DATA");
+    expect(await send(`${headers}\r\n\r\n${body}\r\n.`), /^250/, "message body");
+    await send(`QUIT`);
+  } finally {
+    conn.close();
+  }
 }
 
 // ── Branded HTML shell ───────────────────────────────────────────────────────
