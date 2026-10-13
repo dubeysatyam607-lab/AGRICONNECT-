@@ -69,10 +69,26 @@ verify_jwt = false
 [functions.agri-data]
 verify_jwt = true
 
-[auth.email.templates.confirm_signup]
-subject = "🔐 Your AgriConnect verification code"
-content_path = "./supabase/templates/confirm_signup.html"
+[auth.email.template.confirmation]
+subject = "🌾 Confirm your AgriConnect account"
+content_path = "./supabase/templates/confirmation.html"
 
-[auth.email.templates.magic_link]
-subject = "🔐 Your AgriConnect verification code"
+[auth.email.template.invite]
+subject = "🌱 You're invited to AgriConnect"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.magic_link]
+subject = "🔐 Your AgriConnect sign-in code"
 content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.recovery]
+subject = "🔑 Reset your AgriConnect password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "✉️ Confirm your new AgriConnect email"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.reauthentication]
+subject = "🔐 Your AgriConnect verification code"
+content_path = "./supabase/templates/reauthentication.html"

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <title>Confirm your AgriConnect account</title>
+  <style>
+    :root { color-scheme: light dark; }
+    @keyframes agRise { from { opacity:0; transform:translateY(16px);} to { opacity:1; transform:translateY(0);} }
+    @keyframes agFloat { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-7px);} }
+    @keyframes agPulse { 0%,100% { box-shadow:0 0 0 0 rgba(0,194,110,.45);} 50% { box-shadow:0 0 0 14px rgba(0,194,110,0);} }
+    @keyframes agShine { 0% { transform:translateX(-130%) skewX(-18deg);} 100% { transform:translateX(260%) skewX(-18deg);} }
+    .ag-rise { animation: agRise .65s cubic-bezier(.22,1,.36,1) both; }
+    .ag-rise-1 { animation-delay:.08s; }
+    .ag-rise-2 { animation-delay:.16s; }
+    .ag-rise-3 { animation-delay:.24s; }
+    .ag-float { animation: agFloat 3.4s ease-in-out infinite; }
+    .ag-otp { animation: agPulse 2.4s ease-out infinite; }
+    .ag-shine { animation: agShine 2.8s ease-in-out infinite; }
+    @media (max-width:600px) {
+      .ag-wrap { padding:14px 10px !important; }
+      .ag-pad { padding:24px 20px !important; }
+      .ag-h1 { font-size:22px !important; }
+      .ag-otp { font-size:30px !important; letter-spacing:6px !important; }
+      .ag-btn { display:block !important; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .ag-body { background-color:#0B1712 !important; }
+      .ag-card { background-color:#11201A !important; }
+      .ag-text { color:#E7F0EA !important; }
+      .ag-h1 { color:#F2FBF6 !important; }
+      .ag-muted { color:#9DB3A7 !important; }
+      .ag-otp { background-color:#0D2318 !important; color:#7DE6B4 !important; border-color:#00C26E !important; }
+      .ag-box { background-color:#0D1F17 !important; border-color:#1E3A2C !important; }
+      .ag-divider { border-color:#1E3A2C !important; }
+    }
+  </style>
+</head>
+<body class="ag-body" style="margin:0;padding:0;background-color:#EEF3EE;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;color:#EEF3EE;">Confirm your email to activate your AgriConnect account — code inside.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EEF3EE;">
+    <tr>
+      <td align="center" class="ag-wrap" style="padding:28px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="ag-card" style="width:600px;max-width:600px;background-color:#FFFFFF;border-radius:22px;overflow:hidden;box-shadow:0 18px 40px -18px rgba(15,81,50,.35);">
+          <tr>
+            <td style="background-color:#0F5132;background-image:linear-gradient(135deg,#0F5132 0%,#128A4F 55%,#00C26E 100%);padding:24px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                    <span class="ag-float" style="display:inline-block;width:38px;height:38px;line-height:38px;text-align:center;border-radius:11px;background-color:#EAFBF3;font-size:20px;vertical-align:middle;">&#127793;</span>
+                    <span style="display:inline-block;margin-left:12px;vertical-align:middle;">
+                      <span style="display:block;color:#FFFFFF;font-size:17px;font-weight:800;letter-spacing:.2px;">AgriConnect</span>
+                      <span style="display:block;color:#CFF3E2;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Kisan Ka Apna</span>
+                    </span>
+                  </td>
+                  <td align="right" style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                    <span style="display:inline-block;padding:6px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:.6px;">WELCOME</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="ag-pad" style="padding:34px 34px 10px;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+              {{ if .Data }}{{ with .Data.full_name }}<p class="ag-rise ag-muted" style="margin:0 0 6px;color:#5B6B61;font-size:13px;font-weight:600;">Hi {{ . }} &#128075;</p>{{ end }}{{ end }}
+              <h1 class="ag-h1 ag-rise ag-rise-1" style="margin:4px 0 12px;color:#16241C;font-size:26px;line-height:1.28;font-weight:800;">Welcome to AgriConnect &#127806;</h1>
+              <p class="ag-text ag-rise ag-rise-1" style="margin:0 0 22px;color:#3C4B43;font-size:15px;line-height:1.65;">You're one step away. Enter the code below on the verification screen, or tap the button to confirm your email instantly.</p>
+              <div class="ag-otp ag-rise ag-rise-2" style="margin:0 0 8px;padding:16px 10px;text-align:center;background-color:#EAF7F0;border:2px dashed #00C26E;border-radius:16px;color:#0F5132;font-size:34px;font-weight:800;letter-spacing:8px;">{{ .Token }}</div>
+              <p class="ag-muted ag-rise ag-rise-2" style="margin:0 0 20px;color:#7A8B80;font-size:12.5px;text-align:center;">This 6-digit code expires in <strong>5 minutes</strong>.</p>
+              <div class="ag-rise ag-rise-3" style="text-align:center;margin:6px 0 8px;">
+                <a href="{{ .ConfirmationURL }}" class="ag-btn" style="display:inline-block;position:relative;overflow:hidden;background-color:#0F5132;background-image:linear-gradient(135deg,#0F5132,#00C26E);color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:700;padding:14px 34px;border-radius:999px;">
+                  <span class="ag-shine" style="position:absolute;top:0;left:0;width:44%;height:100%;background-image:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));"></span>Confirm my account &rarr;
+                </a>
+              </div>
+              <div class="ag-box ag-rise ag-rise-3" style="margin:16px 0 0;padding:12px 14px;background-color:#F6FAF7;border:1px solid #E3EDE7;border-radius:12px;">
+                <p class="ag-muted" style="margin:0;color:#7A8B80;font-size:11.5px;line-height:1.6;">Button not working? Copy and paste this link into your browser:<br /><a href="{{ .ConfirmationURL }}" class="ag-text" style="color:#0F5132;font-size:11.5px;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="ag-pad" style="padding:0 34px 30px;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+              <hr class="ag-divider" style="border:none;border-top:1px solid #E6EDE8;margin:22px 0 16px;" />
+              <p class="ag-muted" style="margin:0;color:#7A8B80;font-size:12px;line-height:1.6;">You received this email because this address was used to create an AgriConnect account. If it wasn't you, you can safely ignore it &mdash; no action is needed.</p>
+              <p class="ag-muted" style="margin:10px 0 0;color:#7A8B80;font-size:12px;">&copy; AgriConnect &middot; Kisan Ka Apna &middot; Need help? <a href="mailto:support@agriconnect.app" style="color:#0F5132;font-weight:600;">support@agriconnect.app</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
