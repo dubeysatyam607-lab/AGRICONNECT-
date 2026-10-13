@@ -49,8 +49,13 @@ verify_jwt = true
 [functions.agri-news]
 verify_jwt = true
 
+# send-auth-email is wired as a Supabase Auth "Send Email" hook. Supabase Auth
+# calls it server-to-server with the hook secret as the Authorization bearer
+# (NOT a user JWT), so the platform-level JWT check MUST be off — otherwise the
+# function never runs and every OTP email fails. The function verifies the hook
+# secret itself (verifyHookSecret). Deploy with: --no-verify-jwt
 [functions.send-auth-email]
-verify_jwt = true
+verify_jwt = false
 
 [functions.contact-seller]
 verify_jwt = true
