@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Supabase Auth Hook: send_email
@@ -31,20 +32,34 @@ const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "AgriConnect <hello.agriconnect
 const APP_URL = Deno.env.get("APP_URL") || "https://agriconnect-navy-six.vercel.app";
 
 /**
- * Verify the webhook secret to prevent unauthorized email sending.
- * Supabase Auth sends the hook secret as a Bearer token in the Authorization header.
- * Internal pg_net calls from the Postgres function use a special header.
+ * Verify the Supabase Send Email hook request.
+ *
+ * Supabase HTTP hooks follow the Standard Webhooks spec: the payload is signed
+ * and delivered in the `webhook-id` / `webhook-timestamp` / `webhook-signature`
+ * headers. Supabase does NOT send an `Authorization` header for send_email hooks
+ * (supabase/auth#2499), so verifying that header can never succeed once a secret
+ * is configured — and Auth then reports "Hook requires authorization token".
+ * Internal pg_net calls from our own Postgres hook are trusted.
  */
-function verifyHookSecret(req: Request): boolean {
- // If no secret is configured, skip verification (development mode)
- if (!SEND_EMAIL_HOOK_SECRETS) return true;
- // Allow internal calls from the Postgres handle_send_email function via pg_net
- if (req.headers.get("x-internal-source") === "pg_net") return true;
- const authHeader = req.headers.get("authorization") || "";
- const token = authHeader.replace(/^Bearer\s+/i, "").trim();
- // The secret can be a comma-separated list (for rotation)
- const validSecrets = SEND_EMAIL_HOOK_SECRETS.split(",").map(s => s.trim());
- return validSecrets.includes(token);
+function verifyHookSecret(req: Request, rawBody: string): boolean {
+  // No secret configured → nothing to verify (development / secret-less setup)
+  if (!SEND_EMAIL_HOOK_SECRETS) return true;
+  // Trusted internal call from the Postgres handle_send_email function via pg_net
+  if (req.headers.get("x-internal-source") === "pg_net") return true;
+
+  try {
+    // Env value is "v1,whsec_<base64>"; the library wants the base64 part only.
+    const hookSecret = SEND_EMAIL_HOOK_SECRETS
+      .split(",")
+      .find((part) => part.startsWith("whsec_")) || SEND_EMAIL_HOOK_SECRETS;
+    const base64Secret = hookSecret.replace("v1,whsec_", "").replace("whsec_", "");
+    const wh = new Webhook(base64Secret);
+    wh.verify(rawBody, Object.fromEntries(req.headers));
+    return true;
+  } catch (err: any) {
+    console.error("[send-auth-email] webhook signature verification failed:", err?.message || err);
+    return false;
+  }
 }
 
 interface EmailMessage {
@@ -224,20 +239,22 @@ const handler = async (req: Request): Promise<Response> => {
  return new Response(null, { status: 204 });
  }
 
- // Verify webhook secret to prevent unauthorized email sending
- if (!verifyHookSecret(req)) {
- console.error("[send-auth-email] Invalid webhook secret");
- return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
- }
+  // Read the raw body first — signature verification needs the exact bytes.
+  const payload = await req.text();
 
- try {
- if (EMAIL_PROVIDER === "resend" && !Deno.env.get("RESEND_API_KEY")) {
- console.error("[send-auth-email] RESEND_API_KEY is not configured");
- return new Response(JSON.stringify({ error: "Email service is not configured." }), { status: 500 });
- }
- // Parse the payload from Supabase Auth
- const payload = await req.text();
- let hookPayload: any;
+  // Verify the webhook signature to prevent unauthorized email sending
+  if (!verifyHookSecret(req, payload)) {
+    console.error("[send-auth-email] Invalid webhook signature");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+
+  try {
+    if (EMAIL_PROVIDER === "resend" && !Deno.env.get("RESEND_API_KEY")) {
+      console.error("[send-auth-email] RESEND_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: "Email service is not configured." }), { status: 500 });
+    }
+    // Parse the payload from Supabase Auth
+    let hookPayload: any;
  try {
  hookPayload = JSON.parse(payload);
  } catch {
