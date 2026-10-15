@@ -122,6 +122,22 @@ export function SafeImage({
     setCandidateIndex(0);
     setLoading(true);
     setHasError(false);
+
+    // Listen for reconnection event to retry primary image without manual reload
+    const handleRetry = () => {
+      setCandidateIndex(0);
+      setLoading(true);
+      setHasError(false);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("agri_images_retry", handleRetry);
+      window.addEventListener("online", handleRetry);
+      return () => {
+        window.removeEventListener("agri_images_retry", handleRetry);
+        window.removeEventListener("online", handleRetry);
+      };
+    }
   }, [src, resolveType, effectiveName, category]);
 
   const currentSrc = candidates[candidateIndex] || getExactCategoryFallbackSvg(resolveType as any, effectiveName, category) || OFFLINE_AGRI_SVG;

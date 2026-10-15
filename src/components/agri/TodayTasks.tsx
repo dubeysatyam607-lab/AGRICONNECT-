@@ -9,7 +9,31 @@ import { buildFarmerTasks, buildTasksForCropName, type IGeneratedTask } from "./
 interface TodayTasksProps {
  triggerHaptic: () => void;
  farmCrop?: string;
+ onNavigate?: (tab: string) => void;
 }
+
+const getTaskAction = (id: string, label: string): { tab: string; label: string } => {
+  const s = (id + " " + label).toLowerCase();
+  if (s.includes("irrigate") || s.includes("irrigation") || s.includes("water") || s.includes("पानी") || s.includes("सिंचाई")) {
+    return { tab: "weather", label: "Irrigation" };
+  }
+  if (s.includes("mandi") || s.includes("price") || s.includes("rate") || s.includes("भाव") || s.includes("मंडी")) {
+    return { tab: "mandi", label: "Mandi" };
+  }
+  if (s.includes("fertiliz") || s.includes("urea") || s.includes("nutrient") || s.includes("खाद") || s.includes("यूरिया")) {
+    return { tab: "store", label: "Store" };
+  }
+  if (s.includes("harvest") || s.includes("tractor") || s.includes("machin") || s.includes("कटाई") || s.includes("ट्रैक्टर")) {
+    return { tab: "tractors", label: "Equipment" };
+  }
+  if (s.includes("kisan") || s.includes("scheme") || s.includes("subsidy") || s.includes("योजना")) {
+    return { tab: "schemes", label: "Schemes" };
+  }
+  if (s.includes("scan") || s.includes("pest") || s.includes("disease") || s.includes("doctor") || s.includes("कीट") || s.includes("रोग")) {
+    return { tab: "crop-doctor", label: "Crop Scan" };
+  }
+  return { tab: "farm-os", label: "Farm OS" };
+};
 
 const LEGACY_TASKS: { id: string; labelKey: string; done: boolean }[] = [
  { id: "legacy-soybean-irrigation", labelKey: "tasks.legacy0", done: false },
@@ -44,7 +68,7 @@ const loadDoneMap = (): Record<string, boolean> => {
  * personalized from their crops & crop stage; guests get the generic list.
  * Completion state is stored per task-id so it survives regeneration.
  */
-const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop }) => {
+const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop, onNavigate }) => {
  const { t, language } = useLanguage();
  const [celebrate, setCelebrate] = useState(false);
  const prevAllDone = useRef(false);
@@ -173,35 +197,59 @@ const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop }) => {
  <span className="text-xs font-semibold text-muted-foreground tabular-nums">{pct}%</span>
  </div>
 
- <div className="space-y-2">
- {tasks.map((task, idx) => (
- <button
-   key={task.id}
-   type="button"
-   onClick={() => toggleTask(idx)}
-   role="checkbox"
-   aria-checked={task.done}
-   aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })}
-   className="group flex w-full items-center gap-3 rounded-xl border border-border/70 bg-card p-3 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-muted/30 active:scale-[0.99]"
- >
- <span className={cn(
-   "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-   task.done ? "border-emerald-700 bg-emerald-700 text-white" : "border-border bg-background group-hover:border-emerald-700/50",
- )}>
- {task.done && <Check size={13} className="stroke-[3]" aria-hidden="true" />}
- </span>
- <span className={cn("flex-1 text-sm font-medium transition-colors", task.done ? "text-muted-foreground line-through" : "text-foreground")}>
- {task.label}
- </span>
- <span className={cn(
-   "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors",
-   task.done ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300" : "bg-muted text-muted-foreground",
- )}>
-   {task.done ? t("tasks.completed") : t("tasks.todo")}
- </span>
- </button>
- ))}
- </div>
+  <div className="space-y-2">
+  {tasks.map((task, idx) => {
+    const action = getTaskAction(task.id, task.label);
+    return (
+      <button
+        key={task.id}
+        type="button"
+        onClick={() => toggleTask(idx)}
+        role="checkbox"
+        aria-checked={task.done}
+        aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })}
+        className="group flex w-full items-center gap-3 rounded-xl border border-border/70 bg-card p-3 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-muted/30 active:scale-[0.99]"
+      >
+        <span className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+          task.done ? "border-emerald-700 bg-emerald-700 text-white" : "border-border bg-background group-hover:border-emerald-700/50",
+        )}>
+          {task.done && <Check size={13} className="stroke-[3]" aria-hidden="true" />}
+        </span>
+        <span className={cn("flex-1 text-sm font-medium transition-colors", task.done ? "text-muted-foreground line-through" : "text-foreground")}>
+          {task.label}
+        </span>
+        {onNavigate && action && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(action.tab);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onNavigate(action.tab);
+              }
+            }}
+            className="shrink-0 flex items-center gap-1 rounded-lg border border-primary/25 bg-primary/10 hover:bg-primary hover:text-white px-2 py-0.5 text-[11px] font-semibold text-primary transition-colors cursor-pointer"
+            title={`Open ${action.label}`}
+          >
+            {action.label}
+            <ChevronRight size={11} aria-hidden="true" />
+          </span>
+        )}
+        <span className={cn(
+          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors",
+          task.done ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300" : "bg-muted text-muted-foreground",
+        )}>
+          {task.done ? t("tasks.completed") : t("tasks.todo")}
+        </span>
+      </button>
+    );
+  })}
+  </div>
 
  {allDone && (
  <div className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600/10 px-3 py-2.5 text-sm font-bold text-emerald-800 dark:text-emerald-300">

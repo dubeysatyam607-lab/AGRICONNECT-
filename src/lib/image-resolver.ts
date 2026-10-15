@@ -37,6 +37,14 @@ export function invalidateImageUrl(urlOrKey: string): void {
   }
 }
 
+// When network connectivity is restored, clear failed URLs so images automatically retry & recover
+if (typeof window !== "undefined") {
+  window.addEventListener("online", () => {
+    FAILED_URLS.clear();
+    window.dispatchEvent(new CustomEvent("agri_images_retry"));
+  });
+}
+
 /**
  * High-quality, verified agricultural product images for Indian Agri Store items.
  * Every product is mapped to a real photograph of the exact commodity/equipment

@@ -39,9 +39,9 @@ class MarketplaceService {
     try {
       const { secureUrl } = await uploadToCloudinary(stamped, `marketplace-images/${userId}`);
       return secureUrl;
-    } catch (e) {
-      console.warn('[MarketplaceService] Cloudinary upload error:', e);
-      return URL.createObjectURL(file);
+    } catch (e: any) {
+      console.error('[MarketplaceService] Cloudinary upload failed:', e);
+      throw new Error(e?.message || 'Failed to upload listing image. Please check your internet connection and try again.');
     }
   }
 

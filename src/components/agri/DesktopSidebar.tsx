@@ -75,6 +75,20 @@ const GROUPS: Group[] = [
   },
 ];
 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+
+export interface MobileSidebarProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
 export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setActiveTab }) => {
   const { t } = useLanguage();
   const tr = (key: string, fallback: string) => {
@@ -94,17 +108,14 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ activeTab, setAc
     if (collapsedGroups[group.titleKey] !== undefined) {
       return !collapsedGroups[group.titleKey];
     }
-    // Automatically keep open if active tab is inside this group
-    const hasActiveItem = group.items.some((it) => it.id === activeTab);
-    if (hasActiveItem) return true;
-    // Default open first group
-    return group.titleKey === "svc.hub.group.marketplace";
+    // Default open all groups so full sidebar height and items are visible
+    return true;
   };
 
   return (
     <aside
       aria-label="Primary navigation"
-      className="app-sidebar hidden lg:flex lg:w-64 xl:w-72 lg:shrink-0 lg:flex-col lg:h-screen lg:h-[100dvh] lg:max-h-[100dvh] lg:sticky lg:top-0 lg:border-r lg:border-border lg:bg-[#FBFAF4] dark:lg:bg-card shadow-soft z-30 overflow-hidden"
+      className="app-sidebar hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:top-0 lg:w-64 xl:w-72 lg:shrink-0 lg:flex-col lg:h-screen lg:h-[100dvh] lg:border-r lg:border-border lg:bg-[#FBFAF4] dark:lg:bg-card shadow-soft z-30"
     >
       <div className="flex h-full min-h-0 flex-col">
         {/* Brand Header — pinned at top */}
@@ -238,6 +249,125 @@ const SidebarLink: React.FC<{
       />
       <span className="truncate">{label}</span>
     </button>
+  );
+};
+
+export const MobileSidebarSheet: React.FC<MobileSidebarProps> = ({
+  open,
+  onOpenChange,
+  activeTab,
+  setActiveTab,
+}) => {
+  const { t } = useLanguage();
+  const tr = (key: string, fallback: string) => {
+    const v = t(key);
+    return v && v !== key ? v : fallback;
+  };
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+  const isGroupOpen = (group: Group) => {
+    if (collapsedGroups[group.titleKey] !== undefined) {
+      return !collapsedGroups[group.titleKey];
+    }
+    return true;
+  };
+
+  const handleSelect = (id: string) => {
+    setActiveTab(id);
+    onOpenChange(false);
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="left" className="p-0 w-80 max-w-[85vw] flex flex-col h-full bg-[#FBFAF4] dark:bg-card border-r border-border">
+        <SheetHeader className="h-16 shrink-0 flex flex-row items-center gap-3 border-b border-border bg-white/80 dark:bg-card/80 px-5 backdrop-blur-md text-left">
+          <Logo size={28} alt="" aria-hidden="true" />
+          <div className="leading-tight min-w-0">
+            <SheetTitle className="text-base font-extrabold tracking-tight text-foreground truncate m-0">AgriConnect</SheetTitle>
+            <span className="block text-xs font-semibold text-emerald-800 dark:text-emerald-400 truncate">Kisan Ka Apna</span>
+          </div>
+        </SheetHeader>
+
+        <nav
+          aria-label="Mobile sidebar sections"
+          className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 scrollbar-thin overscroll-contain"
+        >
+          <div className="space-y-1">
+            {PRIMARY.map((item) => (
+              <SidebarLink
+                key={item.id}
+                item={item}
+                label={tr(item.labelKey, item.label)}
+                active={activeTab === item.id || (item.id === "ai-chat" && (activeTab === "ai" || activeTab === "kisan-ai"))}
+                onClick={() => handleSelect(item.id)}
+              />
+            ))}
+          </div>
+
+          {GROUPS.map((group) => {
+            const grpOpen = isGroupOpen(group);
+            return (
+              <div key={group.titleKey} className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.titleKey)}
+                  aria-expanded={grpOpen}
+                  className="mb-1.5 flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-left hover:bg-muted/50 transition-colors select-none cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
+                    <span className="text-xs font-semibold text-muted-foreground truncate">
+                      {tr(group.titleKey, group.title)}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    className={cn("shrink-0 text-muted-foreground transition-transform duration-200", grpOpen ? "rotate-0" : "-rotate-90")}
+                    aria-hidden="true"
+                  />
+                </button>
+                {grpOpen && (
+                  <div className="space-y-[3px]">
+                    {group.items.map((item) => (
+                      <SidebarLink
+                        key={item.id}
+                        item={item}
+                        label={tr(item.labelKey, item.label)}
+                        active={activeTab === item.id}
+                        onClick={() => handleSelect(item.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="shrink-0 border-t border-border bg-white/80 dark:bg-card/80 p-3 backdrop-blur-sm space-y-1">
+          <SidebarLink
+            item={{ id: "profile", icon: User, labelKey: "nav.profile", label: "Profile" }}
+            label={tr("nav.profile", "Profile")}
+            active={activeTab === "profile"}
+            onClick={() => handleSelect("profile")}
+          />
+          <SidebarLink
+            item={{ id: "settings", icon: Settings, labelKey: "", label: "Settings" }}
+            label="Settings"
+            active={activeTab === "settings"}
+            onClick={() => handleSelect("settings")}
+          />
+          <SidebarLink
+            item={{ id: "notifications", icon: Bell, labelKey: "", label: "Notifications" }}
+            label="Notifications"
+            active={activeTab === "notifications"}
+            onClick={() => handleSelect("notifications")}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

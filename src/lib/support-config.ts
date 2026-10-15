@@ -4,3 +4,8 @@
 export const SUPPORT_WHATSAPP_NUMBER = "917067820256";
 
 export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}`;
+
+export const SUPPORT_EMAIL = "hello.agriconnect@gmail.com";
+export const SENDER_EMAIL = "hello.agriconnect@gmail.com";
+export const SENDER_NAME = "AgriConnect";
+

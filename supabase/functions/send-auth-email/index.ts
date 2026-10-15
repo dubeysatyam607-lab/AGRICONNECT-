@@ -102,10 +102,10 @@ interface EmailMessage {
 async function sendEmail(message: EmailMessage): Promise<void> {
  const hostname = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
  const port = Number(Deno.env.get("EMAIL_PORT") || 465);
- const username = Deno.env.get("EMAIL_USER");
+ const username = Deno.env.get("EMAIL_USER") || "hello.agriconnect@gmail.com";
  const password = Deno.env.get("EMAIL_PASS");
- if (!username || !password) {
- throw new Error("EMAIL_USER / EMAIL_PASS not configured");
+ if (!password) {
+ throw new Error("EMAIL_PASS not configured");
  }
 
  // Deno-native SMTP via TLS socket
@@ -392,11 +392,16 @@ const handler = async (req: Request): Promise<Response> => {
 
  console.log("[send-auth-email] sent:", emailActionType, "to", to);
  return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
- } catch (error: any) {
- console.error("[send-auth-email] error:", error?.message || error);
- // Return 200 even on failure so Supabase Auth doesn't show error in email body
- return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
- }
+  } catch (error: any) {
+    const message = error?.message || String(error);
+    console.error("[send-auth-email] error:", message);
+    // Fail loudly (non-2xx) so Supabase Auth surfaces the real problem instead
+    // of silently reporting success when no email was actually sent.
+    return new Response(
+      JSON.stringify({ error: "email_send_failed", message }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
 };
 
 serve(handler);

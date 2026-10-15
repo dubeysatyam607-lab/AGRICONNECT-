@@ -277,44 +277,57 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess }) => {
 // Transport Booking Form Component
 interface BookingFormProps {
   onSuccess?: () => void;
+  initialVehicle?: { id: number; name?: string; type: string; rate: number | string; capacity?: string } | null;
 }
 
-export const TransportBookingForm: React.FC<BookingFormProps> = ({ onSuccess }) => {
+export const TransportBookingForm: React.FC<BookingFormProps> = ({ onSuccess, initialVehicle }) => {
   const { toast } = useToast();
   const { language } = useLanguage();
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
     mode: "onChange",
   });
 
   const onSubmit = async (data: BookingFormData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
+      const refId = `TRP-${Date.now().toString(36).toUpperCase()}`;
+      const rateNum = initialVehicle ? (typeof initialVehicle.rate === 'number' ? initialVehicle.rate : parseFloat(String(initialVehicle.rate).replace(/[^\d.]/g, '')) || 800) : 800;
+      const weightNum = Number(data.weight) || 10;
+      const estimatedFare = Math.round(rateNum + (weightNum * 25));
+      const vehicleLabel = initialVehicle ? (initialVehicle.name || initialVehicle.type) : 'Standard Fleet Truck';
+      const destinationText = `${data.destination} [Ref: ${refId}] [Fare: ₹${estimatedFare}] [Status: CONFIRMED] [Vehicle: ${vehicleLabel}]`;
+
       const { error } = await supabase.from('transport_bookings').insert([{
         name: data.name ?? '',
         phone: data.phone ?? '',
         pickup_location: data.pickupLocation ?? '',
-        destination: data.destination ?? '',
-        crop_type: data.cropType ?? '',
-        weight: data.weight ?? null,
-        date: data.date ?? null,
+        destination: destinationText,
+        crop_type: data.cropType ?? 'Harvest',
+        weight: String(data.weight ?? '10'),
+        date: data.date ?? new Date().toISOString().split('T')[0],
       }]);
       if (error) throw error;
       toast({
         title: language === 'hi' ? "बुकिंग सफल!" : "Booking Successful!",
         description: language === 'hi' 
-          ? "आपकी परिवहन बुकिंग की पुष्टि हो गई है" 
-          : "Your transport booking has been confirmed",
+          ? `आपकी परिवहन बुकिंग (${refId}) दर्ज हो गई है। अनुमानित किराया: ₹${estimatedFare}` 
+          : `Transport booking (${refId}) confirmed. Estimated fare: ₹${estimatedFare}. Viewable in My Bookings.`,
       });
       reset();
       onSuccess?.();
     } catch (err: any) {
-      toast({ title: "Error", description: err?.message || "Something went wrong", variant: "destructive" });
+      toast({ title: "Booking Error", description: err?.message || "Failed to save booking. Please try again.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
     }
   };
 

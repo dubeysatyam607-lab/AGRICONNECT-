@@ -395,39 +395,45 @@ export const EquipmentAssetForm = ({ onSuccess }: { onSuccess?: () => void }) =>
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
     const payload = {
+      id: `t-${Date.now()}`,
       name: String(fd.get("name") || ""),
       category: String(fd.get("category") || "Tractor"),
-      brand: String(fd.get("brand") || ""),
+      brand: String(fd.get("brand") || "Mahindra"),
       hp: Number(fd.get("hp")) || 45,
       rate_hour: Number(fd.get("rateHour")) || 800,
       rate_acre: Number(fd.get("rateAcre")) || 1200,
       rate_day: Number(fd.get("rateDay")) || 7000,
-      location: String(fd.get("location") || "Jaipur, Rajasthan"),
+      deposit: 2000,
       city: String(fd.get("city") || "Jaipur"),
       state: String(fd.get("state") || "Rajasthan"),
       status: "available",
-      owner_id: user?.id || null,
+      owner_id: user?.id || `owner-${Date.now()}`,
+      owner_name: user?.user_metadata?.full_name || user?.user_metadata?.name || "Local Machinery Owner",
+      owner_phone: user?.phone || user?.user_metadata?.phone || "+919811000111",
+      owner_avatar: imageUrl || "",
+      features: [imageUrl ? `photo:${imageUrl}` : "", "Hydraulic", "Power Steering"].filter(Boolean),
+      implements: ["Rotavator", "Cultivator"],
       description: String(fd.get("description") || ""),
-      image: imageUrl || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     try {
-      const { error } = await supabase.from("equipment_listings").insert([payload]);
+      const { error } = await supabase.from("tractor_listings").insert([payload]);
       if (error) {
-        // Fallback to local confirmation if table doesn't have RLS permissions yet
-        console.warn("equipment_listings write:", error);
+        throw error;
       }
       toast({
-        title: "Equipment Listed Successfully!",
-        description: "Your machinery is now live for farmers to book.",
+        title: "Machinery Listed Successfully!",
+        description: "Your listing has been saved to the database and is now live in the marketplace.",
       });
       setSubmitted(true);
       if (onSuccess) onSuccess();
     } catch (err: any) {
       toast({
-        title: "Success",
-        description: "Machinery submitted for verification and listing.",
+        title: "Failed to List Machinery",
+        description: err?.message || "Could not save listing to database. Please check all fields and retry.",
+        variant: "destructive",
       });
-      setSubmitted(true);
     }
   };
 

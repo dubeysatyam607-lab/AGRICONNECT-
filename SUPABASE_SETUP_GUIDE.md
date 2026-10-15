@@ -21,9 +21,9 @@ Go to: **Supabase Dashboard → Project Settings → Edge Functions → Environm
 | `EMAIL_PROVIDER` | `gmail` or `resend` | Default: gmail |
 | `EMAIL_HOST` | `smtp.gmail.com` | Gmail SMTP |
 | `EMAIL_PORT` | `465` | SSL port |
-| `EMAIL_USER` | `your_email@gmail.com` | Your Gmail address |
-| `EMAIL_PASS` | `your_16_char_app_password` | **Gmail App Password** (not login password!) |
-| `EMAIL_FROM` | `AgriConnect <your_email@gmail.com>` | Display name |
+| `EMAIL_USER` | `hello.agriconnect@gmail.com` | AgriConnect Gmail address |
+| `EMAIL_PASS` | `your_16_char_app_password` | **Gmail App Password** for hello.agriconnect@gmail.com (not login password!) |
+| `EMAIL_FROM` | `AgriConnect <hello.agriconnect@gmail.com>` | Central sender display name & address |
 
 **OR use Resend (requires verified domain):**
 | Variable | Value | Source |
@@ -220,7 +220,7 @@ VAPID_PUBLIC_KEY=your_vapid_public_key
 VITE_RAZORPAY_KEY_ID=rzp_test_xxx
 VITE_PAYMENT_BACKEND_URL=http://localhost:5000/api
 RESEND_API_KEY=re_your_key
-EMAIL_FROM=AgriConnect <hello@yourdomain.com>
+EMAIL_FROM=AgriConnect <hello.agriconnect@gmail.com>
 GEMINI_API_KEY=your_gemini_key
 OPENAI_API_KEY=sk-your_openai_key
 ELEVEN_LABS_API_KEY=sk_your_elevenlabs_key
@@ -240,11 +240,11 @@ NODE_ENV=production
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,https://agriconnect.in
 JWT_SECRET=your_long_random_secret
 EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
+EMAIL_PORT=465
+EMAIL_USER=hello.agriconnect@gmail.com
 EMAIL_PASS=your_gmail_app_password
 RESEND_API_KEY=re_your_key
-EMAIL_FROM=AgriConnect <hello@yourdomain.com>
+EMAIL_FROM=AgriConnect <hello.agriconnect@gmail.com>
 GEMINI_API_KEY=your_gemini_key
 OPENAI_API_KEY=sk-your_openai_key
 ELEVENLABS_API_KEY=your_elevenlabs_key

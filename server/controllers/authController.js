@@ -63,31 +63,36 @@ const otpMatches = (expected, provided) => {
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
 };
 
+// Central email sender configuration
+const SENDER_NAME = process.env.EMAIL_SENDER_NAME || 'AgriConnect';
+const SENDER_EMAIL = process.env.EMAIL_USER || 'hello.agriconnect@gmail.com';
+const SENDER_FROM = process.env.EMAIL_FROM || `"${SENDER_NAME}" <${SENDER_EMAIL}>`;
+
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
+  port: parseInt(process.env.EMAIL_PORT, 10) || 465,
+  secure: (process.env.EMAIL_PORT || '465') == '465', // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER,
+    user: process.env.EMAIL_USER || 'hello.agriconnect@gmail.com',
     pass: process.env.EMAIL_PASS,
   },
 });
 
 // Send OTP Email
 const sendOTPEmail = async (email, otp) => {
-  if (!process.env.EMAIL_USER) {
+  if (!process.env.EMAIL_USER && !process.env.EMAIL_PASS) {
     // Never log OTPs — even in dev, they can land in CI logs or shared shells.
-    console.log(`[Mock Email] OTP email to ${email} skipped (EMAIL_USER not configured)`);
+    console.log(`[Mock Email] OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not configured)`);
     return; // Skip actual sending if no credentials
   }
 
   const mailOptions = {
-    from: `"Agri-Connect" <${process.env.EMAIL_USER}>`,
+    from: SENDER_FROM,
     to: email,
-    subject: 'Your Agri-Connect Verification OTP',
-    text: `Your OTP for Agri-Connect registration is: ${otp}. It will expire in 5 minutes.`,
-    html: `<h3>Welcome to Agri-Connect!</h3>
+    subject: 'Your AgriConnect Verification OTP',
+    text: `Your OTP for AgriConnect registration is: ${otp}. It will expire in 5 minutes.`,
+    html: `<h3>Welcome to AgriConnect!</h3>
            <p>Your OTP for registration is: <strong>${otp}</strong></p>
            <p>It will expire in 5 minutes.</p>`
   };
@@ -385,16 +390,16 @@ const forgotPassword = async (req, res) => {
 
 // Send Password Reset Email
 const sendPasswordResetEmail = async (email, otp) => {
-  if (!process.env.EMAIL_USER) {
-    console.log(`[Mock Email] Password reset OTP email to ${email} skipped (EMAIL_USER not configured)`);
+  if (!process.env.EMAIL_USER && !process.env.EMAIL_PASS) {
+    console.log(`[Mock Email] Password reset OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not configured)`);
     return;
   }
 
   const mailOptions = {
-    from: `"Agri-Connect" <${process.env.EMAIL_USER}>`,
+    from: SENDER_FROM,
     to: email,
-    subject: 'Your Agri-Connect Password Reset OTP',
-    text: `Your OTP for Agri-Connect password reset is: ${otp}. It will expire in 10 minutes.`,
+    subject: 'Your AgriConnect Password Reset OTP',
+    text: `Your OTP for AgriConnect password reset is: ${otp}. It will expire in 10 minutes.`,
     html: `<h3>Password Reset Request</h3>
            <p>Your OTP for password reset is: <strong>${otp}</strong></p>
            <p>It will expire in 10 minutes.</p>
@@ -477,7 +482,7 @@ const enableMfa = async (req, res) => {
     user.mfaEnabled = true;
     await user.save();
 
-    const otpauth = authenticator.keyuri(user.email, 'Agri-Connect', secret);
+    const otpauth = authenticator.keyuri(user.email, 'AgriConnect', secret);
     QRCode.toDataURL(otpauth, (err, dataUrl) => {
       if (err) {
         console.error(err);

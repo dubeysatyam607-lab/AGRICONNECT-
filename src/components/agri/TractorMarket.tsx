@@ -4,7 +4,7 @@ import {
  Star, MapPin, Search, SlidersHorizontal, Phone, MessageCircle, Navigation,
  X, ChevronRight, Heart, ShieldCheck, BadgeCheck, CreditCard,
  Smartphone, Wallet, Check, ArrowLeft, Fuel, Truck, Gauge, Timer,
- CalendarDays, IndianRupee, Zap, History, Store, WifiOff, type LucideIcon,
+ CalendarDays, IndianRupee, Zap, History, Store, WifiOff, Trash2, Edit2, type LucideIcon,
 } from "lucide-react";
 import { AgriCard } from "@/components/ui/agri-card";
 import { AgriButton } from "@/components/ui/agri-button";
@@ -19,6 +19,7 @@ import { MACHINERY_FILTER_CATEGORIES, MACHINERY_CATEGORY_LABELS, findMachineryGr
 import { PlusCircle } from "lucide-react";
 import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 import { ManualUpiPaymentDialog } from "@/features/payments/presentation/components/ManualUpiPaymentDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/tractor-hire`;
@@ -71,6 +72,7 @@ interface TractorSummary {
  deposit: number; rating: number; reviews: number; status: string;
  nextAvailable: string; city: string; state: string; color: string;
  popular: boolean; verified: boolean; distance: string | null; distanceKm: number | null;
+ image?: string | null;
 }
 interface Owner { id: string; name: string; nameHi: string; phone: string; rating: number; jobs: number; verified: boolean; joined: string; response: string; avatar: string; village: string; city: string; state: string; lat: number; lng: number; }
 interface TractorDetail extends TractorSummary {
@@ -96,22 +98,28 @@ interface Tracking {
 
 import { supabase } from "@/integrations/supabase/client";
 
-const mapDbToTractor = (db: any): TractorDetail => ({
- id: db.id, name: db.name, category: db.category, brand: db.brand, hp: db.hp, implements: db.implements || [],
- owner: {
- id: db.owner_id, name: db.owner_name, nameHi: db.owner_name_hi || "", phone: db.owner_phone,
- rating: db.owner_rating || 0, jobs: db.owner_jobs || 0, verified: db.owner_verified || false,
- joined: db.owner_joined || "", response: db.owner_response || "", avatar: db.owner_avatar || "",
- village: db.owner_village || "", city: db.owner_city || "", state: db.owner_state || "",
- lat: db.owner_lat || 0, lng: db.owner_lng || 0,
- },
- rateHour: db.rate_hour, rateAcre: db.rate_acre, rateDay: db.rate_day, deposit: db.deposit,
- rating: db.rating || 0, reviews: db.reviews || 0, status: db.status as any, nextAvailable: db.next_available,
- city: db.city, state: db.state, color: db.color, popular: db.popular || false, verified: true,
- distance: null, distanceKm: null,
- year: db.year, engine: db.engine || "", lifting: db.lifting || "", fuel: db.fuel || "",
- cabin: db.cabin || false, features: db.features || [], description: db.description || ""
-});
+const mapDbToTractor = (db: any): TractorDetail => {
+ const photoFeature = (db.features || []).find((f: string) => typeof f === "string" && (f.startsWith("photo:") || f.startsWith("image:") || f.startsWith("http")));
+ const listingImage = photoFeature ? photoFeature.replace(/^(photo:|image:)/, "") : (db.owner_avatar && typeof db.owner_avatar === "string" && db.owner_avatar.startsWith("http") ? db.owner_avatar : null);
+
+ return {
+  id: db.id, name: db.name, category: db.category, brand: db.brand, hp: db.hp, implements: db.implements || [],
+  image: listingImage || null,
+  owner: {
+  id: db.owner_id, name: db.owner_name, nameHi: db.owner_name_hi || "", phone: db.owner_phone,
+  rating: db.owner_rating || 0, jobs: db.owner_jobs || 0, verified: db.owner_verified || false,
+  joined: db.owner_joined || "", response: db.owner_response || "", avatar: db.owner_avatar || "",
+  village: db.owner_village || "", city: db.owner_city || "", state: db.owner_state || "",
+  lat: db.owner_lat || 0, lng: db.owner_lng || 0,
+  },
+  rateHour: db.rate_hour, rateAcre: db.rate_acre, rateDay: db.rate_day, deposit: db.deposit,
+  rating: db.rating || 0, reviews: db.reviews || 0, status: db.status as any, nextAvailable: db.next_available,
+  city: db.city, state: db.state, color: db.color, popular: db.popular || false, verified: true,
+  distance: null, distanceKm: null,
+  year: db.year, engine: db.engine || "", lifting: db.lifting || "", fuel: db.fuel || "",
+  cabin: db.cabin || false, features: db.features || [], description: db.description || ""
+ };
+};
 
 function Stars({ rating, size = 13 }: { rating: number; size?: number }) {
  return (
@@ -145,8 +153,8 @@ function CategoryIcon({ category, size = 18 }: { category: string; size?: number
  return <Icon size={size} />;
 }
 
-const MachinePhoto: React.FC<{ name: string; category: string; color: string; className?: string }> = ({ name, category, color, className }) => {
- const imgSrc = getMachineImage(name, category);
+const MachinePhoto: React.FC<{ name: string; category: string; color: string; image?: string | null; className?: string }> = ({ name, category, color, image, className }) => {
+ const imgSrc = image || getMachineImage(name, category);
 
  return (
  <div className={cn("relative h-28 bg-muted overflow-hidden", className)}>
@@ -156,7 +164,7 @@ const MachinePhoto: React.FC<{ name: string; category: string; color: string; cl
  entityName={name}
  category={category}
  alt={`${name} ${category} agricultural machinery`}
- className="w-full h-full"
+ className="w-full h-full object-cover"
  cover={true}
  />
  </div>
@@ -772,10 +780,49 @@ const TractorMarket: React.FC = () => {
  const [history, setHistory] = useState<Booking[]>([]);
  const [showListEquipment, setShowListEquipment] = useState(false);
  const [toast, setToast] = useState("");
+ const { user } = useAuth();
+ const [editModal, setEditModal] = useState(false);
+ const [editRateHour, setEditRateHour] = useState(0);
+ const [editRateAcre, setEditRateAcre] = useState(0);
+ const [editStatus, setEditStatus] = useState("available");
+ const [editDesc, setEditDesc] = useState("");
 
  const showToast = (m: string) => {
  setToast(m);
  setTimeout(() => setToast(""), 2600);
+ };
+
+ const handleDeleteListing = async (tractorId: string) => {
+  if (!window.confirm("Are you sure you want to delete this machinery listing from the marketplace?")) return;
+  try {
+   const { error } = await supabase.from("tractor_listings").delete().eq("id", tractorId);
+   if (error) throw error;
+   setAll(prev => prev.filter(t => t.id !== tractorId));
+   setSelected(null);
+   showToast("Machinery listing removed successfully");
+  } catch (err: any) {
+   showToast(err.message || "Failed to remove listing");
+  }
+ };
+
+ const handleSaveEdit = async () => {
+  if (!selected) return;
+  try {
+   const { error } = await supabase.from("tractor_listings").update({
+    rate_hour: editRateHour,
+    rate_acre: editRateAcre,
+    status: editStatus,
+    description: editDesc,
+    updated_at: new Date().toISOString()
+   }).eq("id", selected.id);
+   if (error) throw error;
+   setAll(prev => prev.map(t => t.id === selected.id ? { ...t, rateHour: editRateHour, rateAcre: editRateAcre, status: editStatus as any } : t));
+   setSelected(prev => prev ? { ...prev, rateHour: editRateHour, rateAcre: editRateAcre, status: editStatus as any, description: editDesc } : null);
+   setEditModal(false);
+   showToast("Machinery listing updated successfully");
+  } catch (err: any) {
+   showToast(err.message || "Failed to update listing");
+  }
  };
 
  const loadHistory = async () => {
@@ -967,7 +1014,7 @@ const TractorMarket: React.FC = () => {
  return (
  <AgriCard key={tractor.id} className="p-0 overflow-hidden group">
  <div className="relative">
- <MachinePhoto name={tractor.name} category={tractor.category} color={tractor.color} />
+ <MachinePhoto name={tractor.name} category={tractor.category} color={tractor.color} image={tractor.image} />
  <button
  onClick={() => { const nf = toggleFav(tractor.id); setFavs(prev => nf ? [...prev, tractor.id] : prev.filter(x => x !== tractor.id)); }}
  className={cn("absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-all ", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}
@@ -1239,7 +1286,7 @@ const TractorMarket: React.FC = () => {
  <div className="fixed inset-x-0 bottom-0 z-[65] mx-auto w-full max-w-lg bg-card rounded-t-3xl max-h-[88vh] flex flex-col">
  <div className="p-3.5 pb-0 overflow-y-auto flex-1">
  <div className="relative">
- <MachinePhoto name={selected.name} category={selected.category} color={selected.color} className="h-36 rounded-xl mb-3" />
+ <MachinePhoto name={selected.name} category={selected.category} color={selected.color} image={selected.image} className="h-36 rounded-xl mb-3" />
  <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={15} /></button>
  <span className="absolute top-2.5 left-2.5 z-10"><StatusPill status={selected.status} nextAvailable={selected.nextAvailable} t={t} /></span>
  </div>
@@ -1328,14 +1375,78 @@ const TractorMarket: React.FC = () => {
  </div>
  </div>
  <div className="p-3.5 border-t border-border flex gap-2 sticky bottom-0 bg-card rounded-b-3xl">
- <AgriButton variant="outline" className="flex-1" onClick={() => setChat({ name: selected.owner.name, nameHi: selected.owner.nameHi, phone: selected.owner.phone, tractor: selected.name })}>
- <MessageCircle size={15} /> {t("chat")}
- </AgriButton>
- <AgriButton className="flex-[1.6]" disabled={selected.status !== "available"} onClick={() => setBookingModal(true)}>
- <Tractor size={15} /> {selected.status === "available" ? t("rentNow") : selected.nextAvailable}
- </AgriButton>
+ {user?.id && (user.id === selected.owner.id || (user as any).role === "admin") ? (
+  <>
+   <AgriButton variant="outline" className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleDeleteListing(selected.id)}>
+    <Trash2 size={15} /> Delete
+   </AgriButton>
+   <AgriButton variant="outline" className="flex-1" onClick={() => {
+    setEditRateHour(selected.rateHour);
+    setEditRateAcre(selected.rateAcre);
+    setEditStatus(selected.status);
+    setEditDesc(selected.description);
+    setEditModal(true);
+   }}>
+    <Edit2 size={15} /> Edit
+   </AgriButton>
+   <AgriButton className="flex-[1.4]" disabled={selected.status !== "available"} onClick={() => setBookingModal(true)}>
+    <Tractor size={15} /> {selected.status === "available" ? t("rentNow") : selected.nextAvailable}
+   </AgriButton>
+  </>
+ ) : (
+  <>
+   <AgriButton variant="outline" className="flex-1" onClick={() => setChat({ name: selected.owner.name, nameHi: selected.owner.nameHi, phone: selected.owner.phone, tractor: selected.name })}>
+    <MessageCircle size={15} /> {t("chat")}
+   </AgriButton>
+   <AgriButton className="flex-[1.6]" disabled={selected.status !== "available"} onClick={() => setBookingModal(true)}>
+    <Tractor size={15} /> {selected.status === "available" ? t("rentNow") : selected.nextAvailable}
+   </AgriButton>
+  </>
+ )}
  </div>
  </div>
+ )}
+
+ {editModal && selected && (
+  <Dialog open={editModal} onOpenChange={setEditModal}>
+   <DialogContent className="max-w-md bg-card">
+    <DialogHeader>
+     <DialogTitle>Edit Machinery Listing</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4 py-2">
+     <div>
+      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Machine Name</label>
+      <input disabled value={selected.name} className="w-full bg-muted border border-input rounded-lg p-2 text-sm opacity-80" />
+     </div>
+     <div className="grid grid-cols-2 gap-3">
+      <div>
+       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Rate (₹/Hour)</label>
+       <input type="number" value={editRateHour} onChange={(e) => setEditRateHour(Number(e.target.value))} className="w-full bg-background border border-input rounded-lg p-2 text-sm" />
+      </div>
+      <div>
+       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Rate (₹/Acre)</label>
+       <input type="number" value={editRateAcre} onChange={(e) => setEditRateAcre(Number(e.target.value))} className="w-full bg-background border border-input rounded-lg p-2 text-sm" />
+      </div>
+     </div>
+     <div>
+      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Availability Status</label>
+      <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-background border border-input rounded-lg p-2 text-sm">
+       <option value="available">Available (उपलब्ध)</option>
+       <option value="busy">Busy (व्यस्त)</option>
+       <option value="maintenance">Maintenance</option>
+      </select>
+     </div>
+     <div>
+      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Description</label>
+      <textarea rows={3} value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="w-full bg-background border border-input rounded-lg p-2 text-sm" />
+     </div>
+     <div className="flex gap-2 justify-end pt-2">
+      <AgriButton variant="outline" onClick={() => setEditModal(false)}>Cancel</AgriButton>
+      <AgriButton onClick={handleSaveEdit}>Save Changes</AgriButton>
+     </div>
+    </div>
+   </DialogContent>
+  </Dialog>
  )}
 
  {bookingModal && selected && (

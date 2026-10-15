@@ -294,24 +294,37 @@
 
   /* ============================================================
    * AgriConnect Stable Application Layout Architecture
-   * Full-height 100dvh sticky sidebar, independent scrolling, and flexible main
+   * Full-height 100dvh persistent fixed sidebar on desktop,
+   * independent scrolling, and perfectly offset main content
    * ============================================================ */
+  :root {
+    --sidebar-width: 16rem; /* 256px (lg:w-64) */
+  }
+
+  @media (min-width: 1280px) {
+    :root {
+      --sidebar-width: 18rem; /* 288px (xl:w-72) */
+    }
+  }
+
   .app-layout {
     display: flex;
     min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
     position: relative;
-    overflow-x: clip;
   }
 
   .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
     height: 100vh;
     height: 100dvh;
     max-height: 100vh;
     max-height: 100dvh;
-    position: sticky;
-    top: 0;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -336,6 +349,13 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
+  }
+
+  @media (min-width: 1024px) {
+    .app-main {
+      margin-left: var(--sidebar-width);
+      width: calc(100% - var(--sidebar-width));
+    }
   }
 
   /* Color-coded feature pill chip — standardized to text-xs and rounded-full */

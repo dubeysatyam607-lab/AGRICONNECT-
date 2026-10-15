@@ -17,9 +17,7 @@ export const useImageUpload = (folder: string = "cattle-images") => {
   const { user } = useAuth();
 
   const uploadImage = async (file: File): Promise<string> => {
-    if (!user) {
-      throw new Error("Must be logged in to upload images");
-    }
+    const userFolder = user?.id || 'anon';
 
     if (!file.type.startsWith("image/")) {
       throw new Error("Please select an image file");
@@ -42,7 +40,7 @@ export const useImageUpload = (folder: string = "cattle-images") => {
       const fileName = `${Date.now()}.${fileExt}`;
       // Rename the file before upload so Cloudinary's public_id is deterministic
       const stamped = new File([file], fileName, { type: file.type });
-      const { secureUrl } = await uploadToCloudinary(stamped, `${folder}/${user.id}`);
+      const { secureUrl } = await uploadToCloudinary(stamped, `${folder}/${userFolder}`);
       return secureUrl;
     } finally {
       setUploading(false);

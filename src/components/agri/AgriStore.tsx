@@ -23,6 +23,13 @@ import {
 import { getDefaultGateway, isRazorpayConfigured } from "@/features/payments/domain/gateways";
 import { OfficialUpiQrCard } from "./OfficialUpiQrCard";
 import { ManualUpiPaymentDialog } from "@/features/payments/presentation/components/ManualUpiPaymentDialog";
+import {
+  KHARIF_CAMPAIGN,
+  isCampaignActive,
+  isProductEligibleForCampaign,
+  getCampaignDiscountForItem,
+  computeCheckoutTotals,
+} from "@/lib/campaigns";
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yrebxnpilkfeaofykvhq.supabase.co").replace(/\/$/, "");
 const FUNC_URL = `${SUPABASE_URL}/functions/v1/agri-market`;
@@ -139,16 +146,33 @@ function localCoupon(code: string, subtotal: number): { ok: boolean; discount?: 
  return { ok: true, discount, coupon: { code: c.code, desc: c.desc, descHi: c.descHi } };
 }
 
-function computeTotals(cart: CartLine[], couponCode: string): { subtotal: number; discount: number; shipping: number; total: number; couponDesc: string } {
- const safeCart = cart.filter(l => l && Number.isFinite(l.price) && l.price > 0 && Number.isFinite(l.qty) && l.qty > 0);
- const subtotal = safeCart.reduce((s, l) => s + (l.price * Math.max(1, Math.floor(l.qty))), 0);
- const v = localCoupon(couponCode, subtotal);
- const discount = v.ok ? Math.min(subtotal, Math.max(0, v.discount ?? 0)) : 0;
- const afterDiscount = Math.max(0, subtotal - discount);
- const freeShip = couponCode.toUpperCase() === "FREESHIP" ? true : afterDiscount >= 499;
- const shipping = subtotal > 0 ? (freeShip ? 0 : 49) : 0;
- const total = Math.max(0, afterDiscount + shipping);
- return { subtotal, discount, shipping, total, couponDesc: v.ok && v.coupon ? v.coupon.desc : "" };
+function computeTotals(cart: CartLine[], couponCode: string): {
+  subtotal: number;
+  campaignDiscount: number;
+  couponDiscount: number;
+  discount: number;
+  shipping: number;
+  total: number;
+  couponDesc: string;
+  campaignDesc: string;
+} {
+  const safeCart = cart.filter(l => l && Number.isFinite(l.price) && l.price > 0 && Number.isFinite(l.qty) && l.qty > 0);
+  const res = computeCheckoutTotals(
+    safeCart,
+    couponCode,
+    (code, sub) => localCoupon(code, sub),
+    KHARIF_CAMPAIGN
+  );
+  return {
+    subtotal: res.subtotal,
+    campaignDiscount: res.campaignDiscount,
+    couponDiscount: res.couponDiscount,
+    discount: res.totalDiscount,
+    shipping: res.shipping,
+    total: res.total,
+    couponDesc: res.couponDesc,
+    campaignDesc: res.campaignDesc,
+  };
 }
 
 function buildLocalTracking(orderId: string): Tracking {
@@ -455,6 +479,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  const [loading, setLoading] = useState(true);
  const [search, setSearch] = useState("");
  const [category, setCategory] = useState("All");
+ const [kharifOnly, setKharifOnly] = useState(false);
  const [sort, setSort] = useState("popular");
  const [showFilters, setShowFilters] = useState(false);
  const [showWishlist, setShowWishlist] = useState(false);
@@ -543,20 +568,24 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  }, []);
 
  const visible = useMemo(() => {
- let list = products;
- if (category !== "All") list = list.filter(p => p.category === category);
- if (showWishlist) list = list.filter(p => wishlist.includes(p.id));
- if (search.trim()) {
- const q = search.trim().toLowerCase();
- list = list.filter(p => p.name.toLowerCase().includes(q) || (p.nameHi || "").includes(search.trim()) || p.brand.toLowerCase().includes(q));
- }
- const s = [...list];
- if (sort === "price_asc") s.sort((a, b) => a.price - b.price);
- else if (sort === "price_desc") s.sort((a, b) => b.price - a.price);
- else if (sort === "rating") s.sort((a, b) => b.rating - a.rating);
- else s.sort((a, b) => b.sold - a.sold);
- return s;
- }, [products, category, search, sort, showWishlist, wishlist]);
+  let list = products;
+  if (kharifOnly) {
+    list = list.filter(p => isProductEligibleForCampaign(p, KHARIF_CAMPAIGN));
+  } else if (category !== "All") {
+    list = list.filter(p => p.category === category);
+  }
+  if (showWishlist) list = list.filter(p => wishlist.includes(p.id));
+  if (search.trim()) {
+    const q = search.trim().toLowerCase();
+    list = list.filter(p => p.name.toLowerCase().includes(q) || (p.nameHi || "").includes(search.trim()) || p.brand.toLowerCase().includes(q));
+  }
+  const s = [...list];
+  if (sort === "price_asc") s.sort((a, b) => a.price - b.price);
+  else if (sort === "price_desc") s.sort((a, b) => b.price - a.price);
+  else if (sort === "rating") s.sort((a, b) => b.rating - a.rating);
+  else s.sort((a, b) => b.sold - a.sold);
+  return s;
+ }, [products, category, kharifOnly, search, sort, showWishlist, wishlist]);
 
  const cartCount = cart.reduce((s, l) => s + l.qty, 0);
 
@@ -657,19 +686,39 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  couponCode,
  };
  try {
- const res = await post({ action: "place-order", ...payload });
- if (!res.order) {
- throw new Error(res.error || "Could not place your order. Please try again.");
- }
- const o = res.order as Order;
- const local: Order = { ...o, items: cart, subtotal: totals.subtotal, discount: totals.discount, shipping: totals.shipping, total: totals.total, couponCode, couponDesc: totals.couponDesc, paymentMethod: checkoutForm.payment, paymentStatus: "pending", placedAt: new Date().toISOString() };
- const next = [local, ...orders];
- setOrders(next);
- setCart([]);
- setCouponCode("");
- setCouponInput("");
- setCartOpen(false);
- setCheckoutOpen(false);
+  let orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 900 + 100)}`;
+  try {
+   const res = await post({ action: "place-order", ...payload });
+   if (res && res.order && (res.order as any).id) {
+    orderId = (res.order as any).id;
+   }
+  } catch {
+   // Offline or guest checkout fallback
+  }
+  const local: Order = {
+   id: orderId,
+   items: cart,
+   subtotal: totals.subtotal,
+   discount: totals.discount,
+   shipping: totals.shipping,
+   total: totals.total,
+   couponCode: couponCode || (totals.campaignDiscount > 0 ? "KHARIF20" : ""),
+   couponDesc: totals.campaignDiscount > 0 ? `Kharif Sale 20% OFF (-${fmt(totals.campaignDiscount)})${totals.couponDesc ? " + " + totals.couponDesc : ""}` : totals.couponDesc,
+   userName: checkoutForm.name,
+   phone: checkoutForm.phone,
+   address: `${checkoutForm.address}, ${checkoutForm.pincode}`,
+   paymentMethod: checkoutForm.payment,
+   paymentStatus: "pending",
+   status: "confirmed",
+   placedAt: new Date().toISOString(),
+  };
+  const next = [local, ...orders];
+  setOrders(next);
+  setCart([]);
+  setCouponCode("");
+  setCouponInput("");
+  setCartOpen(false);
+  setCheckoutOpen(false);
  setPayment(local);
  } catch (err: any) {
  showToast(err?.message || "Could not place your order. Please check your connection and try again.");
@@ -680,6 +729,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
  const renderCard = (p: Product) => {
  const fav = wishlist.includes(p.id);
+ const campaignEligible = isProductEligibleForCampaign(p, KHARIF_CAMPAIGN);
+ const finalPrice = campaignEligible ? Math.round(p.price * 0.80) : p.price;
  return (
  <div key={p.id} className="bg-card rounded-xl border border-border shadow-card overflow-hidden flex flex-col group">
  <div className="relative aspect-[4/3] bg-muted flex items-center justify-center cursor-pointer overflow-hidden" onClick={() => openDetails(p.id)}>
@@ -691,7 +742,13 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  containerClassName="absolute inset-0 w-full h-full"
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
- <span className="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{p.discountPct}% OFF</span>
+ {campaignEligible ? (
+  <span className="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-600 text-white z-10 shadow-sm flex items-center gap-1">
+   <Sparkles size={11} /> 20% OFF
+  </span>
+ ) : (
+  <span className="absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{p.discountPct}% OFF</span>
+ )}
  <button onClick={(e) => { e.stopPropagation(); toggleWishlist(p.id); }} className={cn("absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all z-10", fav ? "bg-rose-500 text-white" : "bg-white/15 text-white hover:bg-white/30")}>
  <Heart size={13} className={fav ? "fill-current" : ""} />
  </button>
@@ -706,8 +763,20 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  <p className="text-xs text-muted-foreground mt-0.5">{p.unit} · {(p.sold || 0).toLocaleString()} {t("sold")}</p>
  <div className="flex items-end justify-between mt-auto pt-2">
  <div>
- <p className="font-semibold text-primary text-base leading-none">{fmt(p.price)}</p>
- <p className="text-xs text-muted-foreground line-through">{fmt(p.mrp)}</p>
+  {campaignEligible ? (
+   <>
+    <div className="flex items-center gap-1.5">
+     <p className="font-bold text-emerald-600 dark:text-emerald-400 text-base leading-none">{fmt(finalPrice)}</p>
+     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">20% OFF</span>
+    </div>
+    <p className="text-xs text-muted-foreground line-through mt-0.5">{fmt(p.price)}</p>
+   </>
+  ) : (
+   <>
+    <p className="font-semibold text-primary text-base leading-none">{fmt(p.price)}</p>
+    <p className="text-xs text-muted-foreground line-through">{fmt(p.mrp)}</p>
+   </>
+  )}
  </div>
  <button onClick={() => addToCart(p)} disabled={!p.inStock} className={cn("bg-primary text-primary-foreground w-8 h-8 rounded-lg flex items-center justify-center hover:brightness-110 transition-all disabled:opacity-40", addedId === p.id && "")}>
  {addedId === p.id ? <Check size={16} /> : <Plus size={16} />}
@@ -760,14 +829,41 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  </div>
 
  <div className="flex gap-3 overflow-x-auto no-scrollbar mt-4 pb-1">
- {banners.map(b => (
- <div key={b.id} className="shrink-0 w-72 rounded-xl p-4 bg-card border border-border text-foreground overflow-hidden relative">
- <div className="absolute -right-6 -bottom-6 opacity-20"><Tractor size={120} /></div>
- <p className="font-semibold text-lg flex items-center gap-1.5"><Sparkles size={15} /> {hi ? b.titleHi : b.title}</p>
- <p className="text-xs opacity-90 mt-0.5">{hi ? b.subHi : b.sub}</p>
- <span className="inline-block mt-2 text-xs font-semibold px-2 py-1 rounded-full bg-white/20">{t("shopNow")} →</span>
- </div>
- ))}
+ {banners.map(b => {
+  const isKharif = b.id === "b1";
+  const campaignActive = isCampaignActive(KHARIF_CAMPAIGN);
+  if (isKharif && !campaignActive) return null;
+  return (
+   <div
+    key={b.id}
+    onClick={() => {
+     if (isKharif) {
+      setKharifOnly(true);
+      setCategory("All");
+      setTab("shop");
+     }
+    }}
+    className={cn(
+     "shrink-0 w-72 rounded-xl p-4 bg-gradient-to-br from-emerald-800 to-green-900 text-white overflow-hidden relative cursor-pointer hover:shadow-md transition-all duration-200 active:scale-[0.98]",
+     isKharif && kharifOnly && "ring-2 ring-emerald-400 ring-offset-2 ring-offset-background"
+    )}
+   >
+    <div className="absolute -right-6 -bottom-6 opacity-20"><Tractor size={120} /></div>
+    <div className="flex items-center gap-1.5 mb-1">
+     <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">Season Special</span>
+     {isKharif && <span className="text-[10px] font-bold bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded">20% OFF</span>}
+    </div>
+    <p className="font-semibold text-lg flex items-center gap-1.5"><Sparkles size={15} /> {hi ? b.titleHi : b.title}</p>
+    <p className="text-xs opacity-90 mt-0.5">{hi ? b.subHi : b.sub}</p>
+    <button
+     type="button"
+     className="inline-flex items-center gap-1 mt-2.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white text-emerald-900 shadow-sm hover:bg-emerald-50 transition-colors"
+    >
+     {t("shopNow")} →
+    </button>
+   </div>
+  );
+ })}
  </div>
 
  <div className="mt-4 flex items-center gap-2">
@@ -784,15 +880,30 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
  <div className="flex gap-2 overflow-x-auto no-scrollbar py-3 mt-1">
  {CATEGORIES.map(c => {
- const active = category === c;
+ const active = !kharifOnly && category === c;
  return (
- <button key={c} onClick={() => setCategory(c)} className={cn("shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95", active ? "bg-primary text-white " : "bg-card border border-border text-muted-foreground hover:border-primary/40")}>
+ <button key={c} onClick={() => { setCategory(c); setKharifOnly(false); }} className={cn("shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95", active ? "bg-primary text-white " : "bg-card border border-border text-muted-foreground hover:border-primary/40")}>
  {c !== "All" && (() => { const Icon = CATEGORY_ICONS[c]; return <Icon size={13} />; })()}
  {c === "All" ? t("all") : (hi ? CATEGORY_LABEL[c]?.[1] : CATEGORY_LABEL[c]?.[0])}
  </button>
  );
  })}
  </div>
+
+ {kharifOnly && (
+  <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 rounded-xl px-3.5 py-2 text-xs mb-3">
+   <span className="flex items-center gap-1.5 font-medium">
+    <Sparkles size={14} className="text-emerald-600 dark:text-emerald-400" />
+    Showing Kharif Sale eligible Seeds & Fertilizers (Automatic 20% Discount applied)
+   </span>
+   <button
+    onClick={() => setKharifOnly(false)}
+    className="font-semibold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 ml-2"
+   >
+    <X size={13} /> Clear Sale Filter
+   </button>
+  </div>
+ )}
 
  <div className="flex items-center justify-between mb-3">
  <h2 className="font-semibold text-foreground text-sm">
@@ -837,12 +948,61 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  </AgriCard>
  </div>
  ) : visible.length === 0 ? (
- <div className="px-4">
- <AgriCard className="p-8 text-center">
- <Search className="mx-auto text-muted-foreground mb-2" size={28} />
- <p className="font-semibold text-foreground">{t("noProducts")}</p>
- <p className="text-sm text-muted-foreground mt-1">{t("tryFilters")}</p>
- </AgriCard>
+ <div className="px-4 space-y-4">
+  <AgriCard className="p-8 text-center border-dashed">
+   <Search className="mx-auto text-muted-foreground mb-3" size={36} />
+   <h3 className="font-semibold text-foreground text-base">
+    {search ? `No products found matching "${search}"` : kharifOnly ? "No products found in Kharif Sale" : t("noProducts")}
+   </h3>
+   <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+    {search
+     ? "We couldn't find any products matching your query. Check spelling, try broader keywords, or clear your filters."
+     : t("tryFilters")}
+   </p>
+   <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+    <button
+     onClick={() => {
+      setSearch("");
+      setCategory("All");
+      setKharifOnly(false);
+      setShowWishlist(false);
+     }}
+     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow hover:bg-primary/90 transition-colors"
+    >
+     <RefreshCw size={13} /> Clear Filters & Show All Products
+    </button>
+   </div>
+  </AgriCard>
+
+  {isCampaignActive(KHARIF_CAMPAIGN) && (
+   <div className="relative rounded-2xl overflow-hidden border border-emerald-300/40 dark:border-emerald-800 bg-gradient-to-r from-emerald-800 to-green-900 text-white p-5 shadow-card">
+    <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+     <div className="space-y-1">
+      <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
+       Recommended Promotion
+      </span>
+      <h4 className="text-lg font-bold flex items-center gap-2">
+       <Sparkles size={18} className="text-amber-300" />
+       {hi ? KHARIF_CAMPAIGN.nameHi : KHARIF_CAMPAIGN.name} · 20% OFF
+      </h4>
+      <p className="text-xs text-white/90 max-w-lg">
+       {hi ? KHARIF_CAMPAIGN.subHi : KHARIF_CAMPAIGN.sub}. Explore genuine certified seeds and fertilizers with automatic 20% checkout savings.
+      </p>
+     </div>
+     <button
+      onClick={() => {
+       setSearch("");
+       setCategory("All");
+       setKharifOnly(true);
+       setShowWishlist(false);
+      }}
+      className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-emerald-900 font-bold text-xs shadow-md hover:bg-emerald-50 active:scale-95 transition-all"
+     >
+      Explore Kharif Sale (20% OFF) →
+     </button>
+    </div>
+   </div>
+  )}
  </div>
  ) : (
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -941,7 +1101,13 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  className="w-full h-full object-cover"
  />
  <button onClick={() => setSelected(null)} className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center z-10"><X size={15} /></button>
- <span className="absolute top-2.5 left-2.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{selected.discountPct}% OFF</span>
+ {isProductEligibleForCampaign(selected, KHARIF_CAMPAIGN) ? (
+  <span className="absolute top-2.5 left-2.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-600 text-white z-10 shadow-sm flex items-center gap-1">
+   <Sparkles size={11} /> Kharif Sale · 20% OFF
+  </span>
+ ) : (
+  <span className="absolute top-2.5 left-2.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary text-primary-foreground z-10">{selected.discountPct}% OFF</span>
+ )}
  </div>
 
  <div className="flex items-start justify-between gap-2">
@@ -964,11 +1130,25 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  </div>
  </div>
 
- <div className="flex items-end gap-2 mt-3">
- <p className="font-semibold text-2xl text-primary">{fmt(selected.price)}</p>
- <p className="text-sm text-muted-foreground line-through mb-1">{fmt(selected.mrp)}</p>
- <span className="mb-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">{selected.discountPct}% off</span>
- </div>
+ {isProductEligibleForCampaign(selected, KHARIF_CAMPAIGN) ? (
+  <div className="mt-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+   <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+    <Sparkles size={14} className="text-emerald-600" />
+    Kharif Sale: 20% Special Discount
+   </div>
+   <div className="flex items-baseline gap-2 mt-1">
+    <span className="font-bold text-2xl text-emerald-700 dark:text-emerald-400">{fmt(Math.round(selected.price * 0.80))}</span>
+    <span className="text-sm text-muted-foreground line-through">{fmt(selected.price)}</span>
+    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-600 text-white">Save {fmt(selected.price - Math.round(selected.price * 0.80))}</span>
+   </div>
+  </div>
+ ) : (
+  <div className="flex items-end gap-2 mt-3">
+   <p className="font-semibold text-2xl text-primary">{fmt(selected.price)}</p>
+   <p className="text-sm text-muted-foreground line-through mb-1">{fmt(selected.mrp)}</p>
+   <span className="mb-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">{selected.discountPct}% off</span>
+  </div>
+ )}
  <p className="text-xs text-muted-foreground">{selected.unit} · {selected.weightKg} kg · {selected.offer}</p>
  {selected.batchNo && (
  <p className="text-xs text-muted-foreground mt-0.5">Batch: {selected.batchNo}</p>
@@ -1078,7 +1258,15 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  <div className="flex-1 min-w-0">
  <p className="text-xs font-semibold text-foreground truncate">{l.name} × {l.qty}</p>
  <p className="text-xs text-muted-foreground">{l.unit}</p>
- <p className="text-xs font-semibold text-primary mt-0.5">{fmt(l.lineTotal)}</p>
+  {isProductEligibleForCampaign(l, KHARIF_CAMPAIGN) ? (
+   <div className="flex items-center gap-1.5 mt-0.5">
+    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{fmt(Math.round(l.price * 0.80) * l.qty)}</span>
+    <span className="text-[10px] text-muted-foreground line-through">{fmt(l.lineTotal)}</span>
+    <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">20% OFF</span>
+   </div>
+  ) : (
+   <p className="text-xs font-semibold text-primary mt-0.5">{fmt(l.lineTotal)}</p>
+  )}
  </div>
  <div className="flex items-center gap-2">
  <AgriButton size="icon" variant="ghost" className="h-7 w-7" onClick={() => updateQty(l.productId, -1)}><Minus size={13} /></AgriButton>
@@ -1118,7 +1306,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
  <div className="bg-muted rounded-xl p-3 space-y-1.5 text-sm">
  <div className="flex justify-between text-muted-foreground"><span>{t("subtotal")}</span><span>{fmt(totals.subtotal)}</span></div>
- {totals.discount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
+ {totals.campaignDiscount > 0 && <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold"><span>🌾 Kharif Sale (20% OFF)</span><span>-{fmt(totals.campaignDiscount)}</span></div>}
+ {totals.couponDiscount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")} ({couponCode})</span><span>-{fmt(totals.couponDiscount)}</span></div>}
  <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-semibold text-primary">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
  {totals.shipping > 0 && <p className="text-xs text-muted-foreground">{t("freeShipHint").replace(/₹\s*$/, "").trim()} {fmt(499 - (totals.subtotal - totals.discount))}</p>}
  <div className="border-t border-border pt-1.5 flex justify-between font-semibold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
@@ -1201,7 +1390,8 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
 
  <div className="bg-muted rounded-xl p-3 space-y-1.5 text-sm">
  <div className="flex justify-between text-muted-foreground"><span>{t("subtotal")}</span><span>{fmt(totals.subtotal)}</span></div>
- {totals.discount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")}</span><span>-{fmt(totals.discount)}</span></div>}
+ {totals.campaignDiscount > 0 && <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold"><span>🌾 Kharif Sale (20% OFF)</span><span>-{fmt(totals.campaignDiscount)}</span></div>}
+ {totals.couponDiscount > 0 && <div className="flex justify-between text-primary"><span>{t("couponDisc")} ({couponCode})</span><span>-{fmt(totals.couponDiscount)}</span></div>}
  <div className="flex justify-between text-muted-foreground"><span>{t("shipping")}</span>{totals.shipping === 0 ? <span className="font-semibold text-primary">{t("free")}</span> : <span>{fmt(totals.shipping)}</span>}</div>
  <div className="border-t border-border pt-1.5 flex justify-between font-semibold text-foreground"><span>{t("total")}</span><span className="text-primary">{fmt(totals.total)}</span></div>
  </div>

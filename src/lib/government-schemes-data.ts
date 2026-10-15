@@ -877,8 +877,7 @@ export interface DailySubsidyNotice {
 }
 
 export function getDailySchemeUpdatedDate(): string {
-  const d = new Date();
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return "06 Aug 2026";
 }
 
 export function getDailyVerifiedSubsidies(): DailySubsidyNotice[] {

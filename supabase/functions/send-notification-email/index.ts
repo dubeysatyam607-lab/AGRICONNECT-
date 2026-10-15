@@ -4,7 +4,84 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { checkRateLimit, getRateLimitHeaders } from "../_shared/rate-limiter.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "AgriConnect <hello.agriconnect@gmail.com>";
+const EMAIL_PROVIDER = (Deno.env.get("EMAIL_PROVIDER") || "gmail").toLowerCase();
+
+async function sendSmtpEmail({ to, subject, html }: { to: string; subject: string; html: string }): Promise<void> {
+  const hostname = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
+  const port = Number(Deno.env.get("EMAIL_PORT") || 465);
+  const username = Deno.env.get("EMAIL_USER") || "hello.agriconnect@gmail.com";
+  const password = Deno.env.get("EMAIL_PASS");
+  if (!password) {
+    throw new Error("EMAIL_PASS not configured");
+  }
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const conn = await Deno.connectTls({ hostname, port });
+  let buffer = "";
+
+  async function readUntilLine(): Promise<string> {
+    while (true) {
+      const idx = buffer.indexOf("\r\n");
+      if (idx !== -1) {
+        const line = buffer.substring(0, idx);
+        buffer = buffer.substring(idx + 2);
+        return line;
+      }
+      const chunk = new Uint8Array(4096);
+      const n = await conn.read(chunk);
+      if (n === null) throw new Error("Connection closed");
+      buffer += decoder.decode(chunk.subarray(0, n));
+    }
+  }
+
+  async function send(cmd: string): Promise<string> {
+    await conn.write(encoder.encode(cmd + "\r\n"));
+    let response = "";
+    let line = await readUntilLine();
+    response = line;
+    while (line.length >= 4 && line[3] === "-") {
+      line = await readUntilLine();
+      response += "\r\n" + line;
+    }
+    return response;
+  }
+
+  function expect(resp: string, ok: RegExp, stage: string): void {
+    if (!ok.test(resp)) {
+      throw new Error(`SMTP ${stage} rejected: ${resp.split("\r\n")[0]}`);
+    }
+  }
+
+  const body = html.replace(/\r?\n/g, "\r\n").replace(/\r\n\./g, "\r\n..");
+  const headers = [
+    `From: ${EMAIL_FROM}`,
+    `To: ${to}`,
+    `Reply-To: ${EMAIL_FROM}`,
+    `Subject: ${subject}`,
+    `Date: ${new Date().toUTCString()}`,
+    `Message-ID: <${crypto.randomUUID()}@agriconnect.app>`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: 8bit",
+  ].join("\r\n");
+
+  try {
+    expect(await readUntilLine(), /^220/, "greeting");
+    expect(await send(`EHLO ${hostname}`), /^250/, "EHLO");
+    expect(await send(`AUTH LOGIN`), /^334/, "AUTH LOGIN");
+    expect(await send(btoa(username)), /^334/, "AUTH user");
+    expect(await send(btoa(password)), /^235/, "AUTH password");
+    expect(await send(`MAIL FROM:<${username}>`), /^250/, "MAIL FROM");
+    expect(await send(`RCPT TO:<${to}>`), /^25[0-9]/, "RCPT TO");
+    expect(await send(`DATA`), /^354/, "DATA");
+    expect(await send(`${headers}\r\n\r\n${body}\r\n.`), /^250/, "message body");
+    await send(`QUIT`);
+  } finally {
+    conn.close();
+  }
+}
 
 function esc(s: string): string {
  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -188,12 +265,21 @@ const handler = async (req: Request): Promise<Response> => {
  `;
  }
 
- const emailResponse = await resend.emails.send({
- from: Deno.env.get("EMAIL_FROM") || "AgriConnect <hello.agriconnect@gmail.com>",
- to: [recipient],
- subject,
- html,
- });
+  if (EMAIL_PROVIDER === "resend" && Deno.env.get("RESEND_API_KEY")) {
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: [recipient],
+      subject,
+      html,
+    });
+  } else {
+    await sendSmtpEmail({
+      to: recipient,
+      subject,
+      html,
+    });
+  }
 
  console.log("Email sent successfully");
 

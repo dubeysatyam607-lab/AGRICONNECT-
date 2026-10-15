@@ -13,6 +13,7 @@ interface State {
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
   reloading: boolean;
+  autoRetried: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ interface State {
 export class ChunkErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null, reloading: false };
+    this.state = { hasError: false, error: null, errorInfo: null, reloading: false, autoRetried: false };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -34,6 +35,18 @@ export class ChunkErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     crashLoggingService.logCrash(error, `ChunkErrorBoundary:${this.props.label ?? "feature"}`);
+    const isChunkError =
+      error?.message?.includes("Failed to fetch dynamically imported module") ||
+      error?.message?.includes("Importing a module script failed");
+
+    if (isChunkError && !this.state.autoRetried) {
+      // Auto-retry once transparently with a short delay
+      setTimeout(() => {
+        this.setState({ autoRetried: true, hasError: false, error: null, errorInfo: null });
+      }, 350);
+      return;
+    }
+
     this.setState({ error, errorInfo });
     console.error("[ChunkErrorBoundary caught error]:", error, errorInfo);
   }
@@ -41,7 +54,7 @@ export class ChunkErrorBoundary extends Component<Props, State> {
   private retry = () => {
     const isChunkError = this.state.error?.message?.includes("Failed to fetch dynamically imported module") ||
       this.state.error?.message?.includes("Importing a module script failed");
-    this.setState({ hasError: false, error: null, errorInfo: null, reloading: false });
+    this.setState({ hasError: false, error: null, errorInfo: null, reloading: false, autoRetried: false });
     if (typeof window !== "undefined") {
       if (isChunkError && 'caches' in window) {
         caches.keys().then((keys) => {

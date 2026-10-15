@@ -17,13 +17,15 @@ const API_PATTERNS = [
 
 // Image patterns to cache aggressively
 const IMAGE_PATTERNS = [
-  /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+  /\.(?:png|jpg|jpeg|svg|gif|webp)(?:\?.*)?$/i,
   /images\.unsplash\.com/,
+  /images\.pexels\.com/,
+  /res\.cloudinary\.com/,
+  /pexels-photo/i,
 ];
 
-// Upper bound on dynamic cache entries so stale hashed assets from past
-// deploys never grow the cache without limit.
-const MAX_DYNAMIC_ENTRIES = 80;
+// Upper bound on dynamic cache entries so offline assets remain available
+const MAX_DYNAMIC_ENTRIES = 300;
 
 // Install event - precache the app shell + all hashed build assets
 self.addEventListener('install', (event) => {

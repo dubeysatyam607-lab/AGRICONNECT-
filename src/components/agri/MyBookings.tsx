@@ -250,22 +250,45 @@ export const MyBookings: React.FC<MyBookingsProps> = ({
           .order('created_at', { ascending: false });
 
         if (transData && transData.length > 0) {
+          const userPhone = (user?.phone || user?.user_metadata?.phone || '').replace(/\D/g, '').slice(-10);
+          const userName = (user?.user_metadata?.full_name || user?.user_metadata?.name || '').toLowerCase().trim();
+          const isAdminOrProvider = activeRole === 'Transport Owner' || (user as any)?.role === 'admin';
+
           transData.forEach((tb: any) => {
+            const bookingPhone = (tb.phone || '').replace(/\D/g, '').slice(-10);
+            const bookingName = (tb.name || '').toLowerCase().trim();
+            const isOwner = !user?.id || (userPhone && bookingPhone && userPhone === bookingPhone) || (userName && bookingName && userName === bookingName);
+
+            if (!isOwner && !isAdminOrProvider) return;
+
+            const matchRef = (tb.destination || '').match(/\[Ref:\s*([^\]]+)\]/);
+            const refId = matchRef ? matchRef[1] : `TRP-${String(tb.id).slice(0, 8).toUpperCase()}`;
+
+            const matchFare = (tb.destination || '').match(/\[Fare:\s*₹?(\d+)\]/);
+            const fareAmount = matchFare ? Number(matchFare[1]) : (Number(tb.weight) || 10) * 120;
+
+            const matchStatus = (tb.destination || '').match(/\[Status:\s*([^\]]+)\]/);
+            const rawStatusStr = matchStatus ? matchStatus[1].toUpperCase() : 'CONFIRMED';
+            const bookingStatus = (rawStatusStr === 'DELIVERED' || rawStatusStr === 'COMPLETED' ? 'COMPLETED' : 'CONFIRMED') as BookingStatus;
+
+            const cleanDest = (tb.destination || '').replace(/\s*\[[^\]]+\]/g, '').trim();
+
             items.push({
               id: `tb_${tb.id}`,
               source: 'transport',
               category: 'service',
-              serviceTypeLabel: 'Farm Transport Booking',
-              title: `Transport (${tb.crop_type || 'Harvest'}) — ${tb.weight || 10} Qtl`,
+              serviceTypeLabel: 'Farm Transport Order',
+              title: `Transport (${tb.crop_type || 'Produce'}) [${refId}]`,
               providerName: 'AgriConnect Transport Fleet',
               customerName: tb.name || 'Farmer',
               customerPhone: tb.phone,
-              location: `${tb.pickup_location} → ${tb.destination}`,
+              location: `${tb.pickup_location} → ${cleanDest || 'Local Mandi'}`,
               startDate: tb.date ? new Date(tb.date).toLocaleDateString('en-IN') : undefined,
-              amount: (tb.weight || 10) * 120,
-              paymentStatus: 'PENDING',
-              bookingStatus: 'CONFIRMED',
-              rawStatusLabel: 'CONFIRMED',
+              amount: fareAmount,
+              paymentStatus: 'PAID',
+              bookingStatus,
+              rawStatusLabel: rawStatusStr,
+              notes: `Reference ID: ${refId} | Quantity: ${tb.weight || 10} Quintals`,
               createdAt: tb.created_at || new Date().toISOString(),
             });
           });

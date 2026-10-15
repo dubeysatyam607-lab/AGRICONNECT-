@@ -10,15 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface TransportVehicle {
   id: number;
+  name?: string;
   type: string;
   capacity: string;
-  rate: string;
+  rate: number | string;
   location: string;
   status: 'Available' | 'Busy';
-  image: string;
+  image?: string;
 }
-
-
 
 interface TransportProps {
   onToast: (message: string) => void;
@@ -26,14 +25,14 @@ interface TransportProps {
 
 const Transport: React.FC<TransportProps> = ({ onToast }) => {
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<TransportVehicle | null>(null);
   const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
 
   useEffect(() => {
     const fetchVehicles = async () => {
-      const { data, error } = await supabase.from('transport_vehicles').select('*').returns<TransportVehicle[]>();
+      const { data, error } = await supabase.from('transport_vehicles').select('*');
       if (data && !error && data.length > 0) {
-        setVehicles(data);
-
+        setVehicles(data as unknown as TransportVehicle[]);
       }
     };
     fetchVehicles();
@@ -41,11 +40,12 @@ const Transport: React.FC<TransportProps> = ({ onToast }) => {
 
   const handleBookVehicle = (vehicle: TransportVehicle) => {
     if (vehicle.status !== "Available") {
-      onToast("Vehicle not available");
+      onToast("Vehicle currently unavailable or busy");
       return;
     }
-    onToast(`Booking ${vehicle.type}...`);
-    window.open('https://kisanrath.gov.in/', '_blank', 'noopener,noreferrer');
+    setSelectedVehicle(vehicle);
+    setShowBookingForm(true);
+    onToast(`Selected ${vehicle.name || vehicle.type}. Complete booking form below.`);
   };
 
   const handleViewPortal = () => {
@@ -65,7 +65,10 @@ const Transport: React.FC<TransportProps> = ({ onToast }) => {
 
       {/* Book Transport Button */}
       <AgriButton
-        onClick={() => setShowBookingForm(!showBookingForm)}
+        onClick={() => {
+          setShowBookingForm(!showBookingForm);
+          if (showBookingForm) setSelectedVehicle(null);
+        }}
         className="w-full mb-4"
         variant={showBookingForm ? "outline" : "primary"}
       >
@@ -78,9 +81,16 @@ const Transport: React.FC<TransportProps> = ({ onToast }) => {
         <AgriCard className="mb-4 border-2 border-primary/30">
           <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
             <ClipboardList className="text-primary" size={18} />
-            Book Transport to Mandi
+            {selectedVehicle ? `Book Transport: ${selectedVehicle.name || selectedVehicle.type}` : "Book Transport to Mandi"}
           </h3>
-          <TransportBookingForm onSuccess={() => setShowBookingForm(false)} />
+          <TransportBookingForm
+            initialVehicle={selectedVehicle}
+            onSuccess={() => {
+              setShowBookingForm(false);
+              setSelectedVehicle(null);
+              onToast("Transport order saved to database! Check My Bookings.");
+            }}
+          />
         </AgriCard>
       )}
 

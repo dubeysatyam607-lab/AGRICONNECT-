@@ -241,6 +241,7 @@ export class ProfileRemoteDataSource {
           id: effectiveUserId,
           full_name: personal.fullName || '',
           phone: personal.mobileNumber || '',
+          avatar_url: profile.profilePictureUrl || null,
           state: location.state || null,
           district: location.district || null,
           village: location.villageOrTehsil || null,
@@ -261,6 +262,7 @@ export class ProfileRemoteDataSource {
           data: {
             full_name: personal.fullName || '',
             phone: personal.mobileNumber || '',
+            avatar_url: profile.profilePictureUrl || '',
             village: location.villageOrTehsil || '',
             district: location.district || '',
             state: location.state || '',

@@ -424,6 +424,7 @@ function parseEdgeRecord(record: Record<string, unknown>): MandiPrice {
   const market = String(record.market ?? "").trim();
   const district = String(record.district ?? market ?? "").trim() || "Not specified";
   const state = String(record.state ?? "").trim();
+  const variety = String(record.variety ?? "").trim();
   let arrivalDate = String(record.arrivalDate ?? record.arrival_date ?? "").trim();
   if (arrivalDate && arrivalDate !== "Not available") {
     const parsed = new Date(arrivalDate);

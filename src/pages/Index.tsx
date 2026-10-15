@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "@/components/agri/BottomNav";
-import { DesktopSidebar } from "@/components/agri/DesktopSidebar";
-import { Leaf } from "lucide-react";
+import { DesktopSidebar, MobileSidebarSheet } from "@/components/agri/DesktopSidebar";
+import { Leaf, Menu, Home as HomeIcon } from "lucide-react";
 import { ChunkErrorBoundary } from "@/components/ui/ChunkErrorBoundary";
 import ToastNotification from "@/components/agri/ToastNotification";
 import { useToastNotification } from "@/hooks/use-toast-notification";
@@ -17,6 +17,7 @@ import { homepageStructuredData } from "@/lib/structured-data";
 
 import AgriConnectFooter from "@/components/ui/AgriConnectFooter";
 import FarmerHome from "@/components/agri/FarmerHome";
+import { lazyWithRetry } from "@/lib/lazy-retry";
 
 // Lazy load heavy components for performance (Code Splitting)
 const MandiPrices = lazy(() => import("@/components/agri/LiveMandi"));
@@ -30,7 +31,7 @@ const CattleMarket = lazy(() => import("@/components/agri/CattleMarket"));
 const AuthPage = lazy(() => import("@/components/agri/AuthPage"));
 const NotificationSettings = lazy(() => import("@/components/agri/NotificationSettings"));
 const Transport = lazy(() => import("@/components/agri/Transport"));
-const AgriNews = lazy(() => import("@/components/agri/AgriNews"));
+const AgriNews = lazyWithRetry(() => import("@/components/agri/AgriNews"));
 const SoilTest = lazy(() => import("@/components/agri/SoilTest"));
 const TractorList = lazy(() => import("@/components/agri/TractorMarket"));
 const ProfileSettings = lazy(() => import("@/components/agri/ProfileSettings"));
@@ -463,6 +464,8 @@ const getTabFromPath = (path: string) => {
     showToast(`Switched to ${userRole === "farmer" ? "Owner" : "Farmer"} mode`);
   };
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const renderContent = () => {
     switch (activeTab) {
       case "home":
@@ -470,6 +473,7 @@ const getTabFromPath = (path: string) => {
           <FarmerHome
             onNavigate={handleNavigate}
             onBookTractor={handleBookTractor}
+            onOpenMobileMenu={() => setMobileNavOpen(true)}
           />
         );
       case "tractors":
@@ -562,6 +566,7 @@ const getTabFromPath = (path: string) => {
           <FarmerHome
             onNavigate={handleNavigate}
             onBookTractor={handleBookTractor}
+            onOpenMobileMenu={() => setMobileNavOpen(true)}
           />
         );
     }
@@ -612,11 +617,48 @@ const getTabFromPath = (path: string) => {
       )}
       
       {/* Full-width responsive container */}
-      <div className={isFullScreen ? "w-full min-h-screen min-h-[100dvh]" : "app-layout w-full min-h-screen min-h-[100dvh] lg:flex lg:items-start"}>
+      <div className={isFullScreen ? "w-full min-h-screen min-h-[100dvh]" : "app-layout w-full min-h-screen min-h-[100dvh] lg:flex lg:items-stretch"}>
         {!isFullScreen && (
-          <DesktopSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <>
+            <DesktopSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+            <MobileSidebarSheet
+              open={mobileNavOpen}
+              onOpenChange={setMobileNavOpen}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+          </>
         )}
-        <div className={isFullScreen ? "w-full h-full" : "app-main min-w-0 flex-1 flex flex-col min-h-screen min-h-[100dvh]"}>
+        <div className={isFullScreen ? "w-full h-full" : "app-main min-w-0 flex-1 flex flex-col min-h-screen min-h-[100dvh] lg:ml-64 xl:ml-72"}>
+          {!isFullScreen && activeTab !== "home" && (
+            <div className="lg:hidden sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-white/95 px-4 backdrop-blur-md dark:bg-card/95">
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-2xs hover:bg-muted"
+                  aria-label="Open menu"
+                >
+                  <Menu size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("home")}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                >
+                  <HomeIcon size={14} />
+                  <span className="capitalize">{activeTab.replace("-", " ")}</span>
+                </button>
+              </div>
+              <button
+                onClick={() => setActiveTab("profile")}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0F5132] text-xs font-bold text-white shadow-2xs"
+                aria-label="Profile"
+              >
+                {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : "K"}
+              </button>
+            </div>
+          )}
           <main id="main-content" className={isFullScreen ? "w-full h-screen h-[100dvh]" : "w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8 lg:pb-6 flex-1 min-w-0"}>
 
             <h1 className="sr-only">AgriConnect Dashboard</h1>

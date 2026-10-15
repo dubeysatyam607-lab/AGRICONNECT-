@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState, Component, type React
 import {
   TrendingUp, Scan, ShoppingBag, Tractor, Truck, Newspaper, ChevronRight,
   IndianRupee, Landmark, MapPin, Cpu, Radio, Calendar,
-  ArrowRight, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart,
+  ArrowRight, FlaskConical, Warehouse, Sprout, CloudSun, MessageCircleHeart, Menu,
 } from "lucide-react";
 import AiInsightCard from "./AiInsightCard";
 import MandiPreview from "./MandiPreview";
@@ -16,6 +16,7 @@ import { NotificationBell } from "@/features/notifications/presentation/componen
 import { AdvisorBriefCard } from "@/features/ai-advisor/presentation/components/AdvisorBriefCard";
 import { INITIAL_TRACTORS } from "@/lib/mock-data";
 import { AgriImage } from "@/components/ui/agri-image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, localeFor } from "@/i18n/journey";
 import { useRole } from "@/contexts/RoleContext";
@@ -36,6 +37,7 @@ import { Logo } from "@/components/ui/Logo";
 interface FarmerHomeProps {
   onNavigate: (tab: string) => void;
   onBookTractor: (tractor: (typeof INITIAL_TRACTORS)[number]) => void;
+  onOpenMobileMenu?: () => void;
 }
 
 /**
@@ -113,7 +115,7 @@ const NEWS = [
   { titleKey: "home.news3.title", sourceKey: "home.news3.source", timeKey: "home.news3.time", tagKey: "home.news3.tag" },
 ];
 
-const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) => {
+const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor, onOpenMobileMenu }) => {
   const { t, language } = useLanguage();
   const { activeRole } = useRole();
   const auth = useOptionalAuth();
@@ -123,15 +125,33 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
   const advice = useMemo(() => deriveFarmAdvice(farmProfile, weather.data), [farmProfile, weather.data]);
 
   const [profileFullName, setProfileFullName] = useState<string | null>(null);
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (!user?.id) return;
+    const handleAvatarUpdate = (e: any) => {
+      if (e.detail?.avatarUrl) setProfileAvatarUrl(e.detail.avatarUrl);
+    };
+    window.addEventListener('agri_avatar_updated', handleAvatarUpdate);
+
+    const cachedAvatar = localStorage.getItem('agri_profile_avatar');
+    if (cachedAvatar) setProfileAvatarUrl(cachedAvatar);
+
+    if (!user?.id) return () => window.removeEventListener('agri_avatar_updated', handleAvatarUpdate);
     let cancelled = false;
-    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+    supabase.from('profiles').select('full_name, avatar_url').eq('id', user.id).maybeSingle()
       .then(({ data }) => {
-        if (!cancelled && data?.full_name) setProfileFullName(data.full_name);
+        if (!cancelled && data) {
+          if (data.full_name) setProfileFullName(data.full_name);
+          if (data.avatar_url) {
+            setProfileAvatarUrl(data.avatar_url);
+            localStorage.setItem('agri_profile_avatar', data.avatar_url);
+          }
+        }
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      window.removeEventListener('agri_avatar_updated', handleAvatarUpdate);
+    };
   }, [user?.id]);
 
   const rawEmailName = user?.email?.split('@')[0] || '';
@@ -246,6 +266,16 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
       <header className="sticky top-0 z-40 border-b border-[#0F5132]/12 bg-white/85 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
+            {onOpenMobileMenu && (
+              <button
+                type="button"
+                onClick={onOpenMobileMenu}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#0F5132]/20 bg-white/90 text-[#0F5132] shadow-xs hover:bg-[#0F5132]/5 lg:hidden"
+                aria-label="Open navigation menu"
+              >
+                <Menu size={20} />
+              </button>
+            )}
             <Logo size={32} alt="" />
             <div className="leading-tight">
               <p className="text-base font-extrabold tracking-tight text-[#0F5132]">{t('agr207')}</p>
@@ -269,10 +299,20 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
             <NotificationBell onNavigate={go} />
             <button
               onClick={() => go("profile")}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#0F5132]/20 bg-[#0F5132] text-sm font-black text-white shadow-sm ring-2 ring-[#00C26E]/30 transition-transform hover:scale-105"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#0F5132]/20 bg-[#0F5132] text-sm font-black text-white shadow-sm ring-2 ring-[#00C26E]/30 transition-transform hover:scale-105 overflow-hidden"
               aria-label={t("home.openProfile")}
             >
-              {firstName.charAt(0).toUpperCase()}
+              {profileAvatarUrl ? (
+                <SafeImage
+                  src={profileAvatarUrl}
+                  alt={userName}
+                  className="h-full w-full object-cover"
+                  resolveType="farmer"
+                  fallbackIcon={<span className="text-sm font-black text-white">{firstName.charAt(0).toUpperCase()}</span>}
+                />
+              ) : (
+                firstName.charAt(0).toUpperCase()
+              )}
             </button>
           </div>
         </div>
@@ -390,29 +430,9 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
           </SectionErrorBoundary>
         </div>
 
-        {/* Field Tasks Checklist */}
-        <div className="reveal">
-          <SectionErrorBoundary label="Tasks">
-            <TodayTasks triggerHaptic={triggerHaptic} farmCrop={advice.cropLabel.split(" · ")[0] ?? undefined} />
-          </SectionErrorBoundary>
-        </div>
-
-        {/* Today's Focus & Advisory — Full-width primary focal point */}
-        <div className="reveal">
-          <SectionErrorBoundary label="Farm Advisory">
-            <AiInsightCard
-              wl={wl}
-              loading={weather.loading}
-              cropLabel={advice.cropLabel}
-              items={advice.items}
-              onGo={go}
-            />
-          </SectionErrorBoundary>
-        </div>
-
         {/* Advisory, Intelligence & Services Workspace */}
         <div className="grid gap-7 lg:grid-cols-3 lg:items-start">
-          {/* ── Left-Side Content (Primary Feed, Machinery, News & Forms) ── */}
+          {/* ── Left-Side Content (Primary Feed, Machinery, News, Field Tasks & Advisory) ── */}
           <div className="min-w-0 lg:col-span-2 space-y-6">
 
             {/* Farm Machinery Nearby */}
@@ -478,12 +498,36 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor }) =>
               </div>
             </section>
 
+            {/* Field Tasks Checklist & Scheduled Activities — Personalized to Farmer Crop */}
+            <div className="reveal">
+              <SectionErrorBoundary label="Tasks">
+                <TodayTasks
+                  triggerHaptic={triggerHaptic}
+                  farmCrop={advice.cropLabel.split(" · ")[0] ?? undefined}
+                  onNavigate={go}
+                />
+              </SectionErrorBoundary>
+            </div>
+
+            {/* Today's Focus & Advisory — AI Agronomist recommendations */}
+            <div className="reveal">
+              <SectionErrorBoundary label="Farm Advisory">
+                <AiInsightCard
+                  wl={wl}
+                  loading={weather.loading}
+                  cropLabel={advice.cropLabel}
+                  items={advice.items}
+                  onGo={go}
+                />
+              </SectionErrorBoundary>
+            </div>
+
             {/* Role Dashboard & Asset Registration Forms */}
             {renderRoleDashboard()}
           </div>
 
-          {/* ── Right-Side Panel (Independently Scrollable on Desktop) ── */}
-          <div className="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-1.5 overscroll-contain scrollbar-thin">
+          {/* ── Right-Side Panel (Natural Sticky on Desktop, balanced height) ── */}
+          <div className="min-w-0 flex flex-col gap-6 lg:sticky lg:top-20">
             {/* Advisor Brief */}
             <div className="reveal">
               <SectionErrorBoundary label="Advisor">

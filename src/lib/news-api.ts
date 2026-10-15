@@ -9,6 +9,7 @@
  */
 
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
+import { supabase } from "@/integrations/supabase/client";
 
 const CACHE_KEY = "agri_live_news_cache_v4";
 export const NEWS_REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 5; // 5 hours
@@ -244,39 +245,73 @@ export async function fetchLiveAgriNews(forceRefresh = false): Promise<LiveAgriN
     // continue
   }
 
-  // Tier 1: Try Google News India Agriculture RSS Feed
-  let articles = await fetchGoogleNewsRss();
+  // Tier 1: Fetch from Supabase database verified news
+  const dbArticles = await fetchDatabaseAgriNews();
 
-  // Tier 2: Try Knowivate News API if Tier 1 returned no articles
-  if (articles.length === 0) {
-    articles = await fetchKnowivateNewsDirectly();
+  // Tier 2: Try Google News India Agriculture RSS Feed
+  const rssArticles = await fetchGoogleNewsRss();
+
+  // Tier 3: Try Knowivate News API if needed
+  let knowivateArticles: LiveAgriNewsArticle[] = [];
+  if (rssArticles.length === 0) {
+    knowivateArticles = await fetchKnowivateNewsDirectly();
   }
 
-  // Tier 3: Try Supabase Edge Function if Tier 1 & 2 returned no articles
-  if (articles.length === 0) {
-    try {
-      const { data, error } = await invokeEdgeWithTimeout<{ articles: LiveAgriNewsArticle[] }>(
-        "agri-news",
-        {},
-      );
-      if (!error && data?.articles?.length) {
-        articles = data.articles;
-      }
-    } catch (err) {
-      console.warn('[AgriNews Service] Edge function fetch skipped:', err);
+  // Tier 4: Combine, deduplicate by normalized title, and sort by publishedAt desc
+  const combined = [...rssArticles, ...knowivateArticles, ...dbArticles];
+  const seenTitles = new Set<string>();
+  const uniqueArticles: LiveAgriNewsArticle[] = [];
+
+  for (const article of combined) {
+    const norm = article.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 45);
+    if (!seenTitles.has(norm)) {
+      seenTitles.add(norm);
+      uniqueArticles.push(article);
     }
   }
 
+  uniqueArticles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
   // Save successful fetch to local storage cache
-  if (articles.length > 0) {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), articles }));
-    return articles;
+  if (uniqueArticles.length > 0) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), articles: uniqueArticles }));
+    return uniqueArticles;
   }
 
-  // Tier 4: Fallback to cached articles if available
+  // Tier 5: Fallback to cached articles if available
   if (cachedArticles && cachedArticles.length > 0) {
     return cachedArticles;
   }
 
   throw new Error("Unable to fetch latest agriculture news. Please check your network connection and try again.");
+}
+
+async function fetchDatabaseAgriNews(): Promise<LiveAgriNewsArticle[]> {
+  try {
+    const { data, error } = await supabase
+      .from("agri_news")
+      .select("*")
+      .eq("status", "active")
+      .order("published_at", { ascending: false })
+      .limit(20);
+
+    if (!error && data && data.length > 0) {
+      return data.map((r: any, idx: number) => ({
+        id: r.id || `db-news-${idx}`,
+        title: r.title,
+        description: r.summary || r.content || "",
+        source: r.source_name || "Official Agriculture Report",
+        author: r.source_name || "AgriConnect Desk",
+        publishedAt: r.published_at || new Date().toISOString(),
+        formattedTime: formatRelativeTime(r.published_at || new Date().toISOString()),
+        category: (r.category as any) || "Policy & MSP",
+        url: r.source_url || "https://agricoop.nic.in/",
+        imageUrl: r.image_url || CATEGORY_FALLBACK_IMAGES[(r.category as any) || "Policy & MSP"] || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800",
+        isAgricultureVerified: true,
+      }));
+    }
+  } catch (err) {
+    console.warn("[News API] DB fetch failed:", err);
+  }
+  return [];
 }

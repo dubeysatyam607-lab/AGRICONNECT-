@@ -33,7 +33,7 @@ export function resolveKey(
     translations[language]?.[key] ||
     journey.en?.[key] ||
     translations.en?.[key] ||
-    (key.includes('.') ? cleanKeyFallback(key) : key);
+    key;
   return params ? interpolate(out, params) : out;
 }
 

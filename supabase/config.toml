@@ -9,7 +9,7 @@ max_rows = 1000
 
 [db]
 port = 54322
-major_version = 15
+major_version = 17
 
 [studio]
 enabled = true
@@ -69,26 +69,45 @@ verify_jwt = false
 [functions.agri-data]
 verify_jwt = true
 
+[auth.email.smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 465
+user = "hello.agriconnect@gmail.com"
+pass = "env(EMAIL_PASS)"
+admin_email = "hello.agriconnect@gmail.com"
+sender_name = "AgriConnect"
+max_frequency = "10s"
+
 [auth.email.template.confirmation]
-subject = "🌾 Confirm your AgriConnect account"
+subject = "🔐 AgriConnect OTP Code: {{ .Token }}"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.invite]
-subject = "🌱 You're invited to AgriConnect"
+subject = "You've been invited"
 content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.magic_link]
-subject = "🔐 Your AgriConnect sign-in code"
+subject = "Your sign-in link"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.email.template.recovery]
-subject = "🔑 Reset your AgriConnect password"
+subject = "Reset your password"
 content_path = "./supabase/templates/recovery.html"
 
 [auth.email.template.email_change]
-subject = "✉️ Confirm your new AgriConnect email"
+subject = "Confirm your new email address"
 content_path = "./supabase/templates/email_change.html"
 
 [auth.email.template.reauthentication]
-subject = "🔐 Your AgriConnect verification code"
+subject = "{{ .Token }} is your verification code"
 content_path = "./supabase/templates/reauthentication.html"
+
+[auth.hook.send_email]
+enabled = true
+uri = "https://yrebxnpilkfeaofykvhq.supabase.co/functions/v1/send-auth-email"
+secrets = "v1,whsec_E2p/LYilGgh8Po3zmHykDnDQ2csaZQpj"
+
+[auth.hook.before_user_created]
+enabled = false
+uri = "https://yrebxnpilkfeaofykvhq.supabase.co/functions/v1/send-auth-email"
