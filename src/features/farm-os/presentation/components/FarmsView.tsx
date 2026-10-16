@@ -69,29 +69,31 @@ export const FarmsView: React.FC<Props> = ({ data, onToast }) => {
               <div
                 key={f.id}
                 className={cn(
-                  'rounded-xl border p-4 shadow-card transition-colors',
-                  isActive ? 'border-emerald-400 bg-emerald-700' : 'border-border bg-card',
+                  'rounded-2xl border p-5 shadow-card transition-all',
+                  isActive
+                    ? 'border-emerald-500/50 bg-gradient-to-br from-emerald-500/10 via-card to-card ring-1 ring-emerald-500/25 shadow-md'
+                    : 'border-border bg-card hover:border-emerald-500/30',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="truncate  text-[15px] font-semibold tracking-tight text-foreground">{f.name}</h4>
+                      <h4 className="truncate text-base font-extrabold tracking-tight text-foreground">{f.name}</h4>
                       {isActive && (
-                        <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-                          <CheckCircle2 size={10} /> {t('fos.farms.active')}
+                        <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                          <CheckCircle2 size={11} /> {t('fos.farms.active')}
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                      <MapPin size={11} /> {f.village}, {f.district}
+                    <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
+                      <MapPin size={12} className="text-emerald-600" /> {f.village}, {f.district}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
+                  <span className="shrink-0 rounded-full bg-muted border border-border px-2.5 py-1 text-xs font-bold text-foreground">
                     {f.areaAcres} {t('fos.unit.acres')}
                   </span>
                 </div>
-                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                <div className="mt-3 flex flex-wrap gap-1.5">
                   <Chip>{f.soilType}</Chip>
                   <Chip>{t(`fos.irrigation.${f.irrigation}`)}</Chip>
                   <Chip>{t(`fos.twin.ownership.${f.ownership}`)}</Chip>
@@ -103,7 +105,7 @@ export const FarmsView: React.FC<Props> = ({ data, onToast }) => {
                       actions.switchFarm(f.id);
                       onToast(t('fos.toast.switched').replace('{name}', f.name));
                     }}
-                    className="mt-3 w-full rounded-xl border border-emerald-300 bg-emerald-500/5 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300"
+                    className="mt-3.5 w-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-2.5 text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 dark:text-emerald-300"
                   >
                     {t('fos.farms.switch')}
                   </button>

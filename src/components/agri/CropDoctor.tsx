@@ -734,7 +734,7 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 min-h-screen flex flex-col space-y-6">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-5 pb-28 min-h-screen flex flex-col space-y-6">
       {/* Desktop Camera Modal */}
       {isDesktopCameraOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -826,40 +826,60 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
         className="hidden"
       />
 
-      <div className="mb-6 flex justify-between items-start gap-3">
-        <div>
-          <h2 className="type-h1 flex items-center gap-2">
-            <Scan className="text-primary" size={22} aria-hidden="true" /> {t('svc.cropDoctor') || 'Crop Doctor'}
-          </h2>
-          <p className="type-small text-muted-foreground mt-0.5">
-            {t('svc.cropDoctorSub') || 'Scan your crop for pests and diseases'}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={toggleHistory}
-            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${showHistory ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-            title="Scan history"
-            aria-label="Scan history"
-          >
-            <History size={20} />
-          </button>
-          <button
-            onClick={() => setAutoSpeak(!autoSpeak)}
-            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${autoSpeak ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-            title={autoSpeak ? "Auto voice enabled" : "Auto voice disabled"}
-            aria-label={autoSpeak ? "Disable auto voice" : "Enable auto voice"}
-          >
-            {autoSpeak ? <Volume2 size={20} /> : <VolumeX size={20} />}
-          </button>
+      {/* ── FLAGSHIP HERO HEADER ────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/20 via-card to-emerald-900/10 p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-md shrink-0">
+              <Scan size={24} />
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-background">
+                <Sparkles size={8} />
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+                  {t('svc.cropDoctor') || 'AI Crop Doctor'}
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                  Instant Leaf Scan
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                {t('svc.cropDoctorSub') || 'Identify diseases, pests & nutritional deficiencies with precision AI'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={toggleHistory}
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 border transition-all ${showHistory ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "border-border bg-card/80 text-muted-foreground hover:text-foreground hover:border-emerald-500/40"}`}
+              title="Scan history"
+              aria-label="Scan history"
+            >
+              <History size={14} />
+              <span>History</span>
+            </button>
+            <button
+              onClick={() => setAutoSpeak(!autoSpeak)}
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 border transition-all ${autoSpeak ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" : "border-border bg-card/80 text-muted-foreground hover:text-foreground"}`}
+              title={autoSpeak ? "Auto voice enabled" : "Auto voice disabled"}
+              aria-label={autoSpeak ? "Disable auto voice" : "Enable auto voice"}
+            >
+              {autoSpeak ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              <span>Voice</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* History drawer panel */}
       {showHistory && (
-        <div className="bg-card rounded-xl border border-border p-4 mb-6 max-h-72 overflow-y-auto">
+        <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 shadow-card max-h-72 overflow-y-auto">
           <div className="flex items-center justify-between mb-3 border-b border-border pb-2">
-            <h3 className="type-h3 flex items-center gap-2"><History size={16} aria-hidden="true" /> Scan history</h3>
+            <h3 className="text-sm font-extrabold flex items-center gap-2 text-foreground"><History size={16} aria-hidden="true" /> Recent Scan History</h3>
             <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground p-1" aria-label="Close history"><X size={16} /></button>
           </div>
           {!user ? (
@@ -871,12 +891,12 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
           ) : (
             <div className="space-y-2">
               {history.map((scan) => (
-                <div key={scan.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border">
+                <div key={scan.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border bg-muted/30">
                   <div className="min-w-0">
-                    <p className="type-small font-semibold text-foreground truncate">
+                    <p className="text-xs font-bold text-foreground truncate">
                       {scan.crop || "Crop"} {scan.possible_issue ? `— ${scan.possible_issue}` : ""}
                     </p>
-                    <p className="type-meta">
+                    <p className="text-[10px] text-muted-foreground">
                       {new Date(scan.created_at).toLocaleDateString()} · {(HEALTH_LABELS[scan.health_status ?? ""] ?? scan.health_status ?? "Scanned")}
                       {scan.confidence != null ? ` · ${scan.confidence}%` : ""}
                     </p>
@@ -899,34 +919,34 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
       )}
 
       {!result ? (
-        <div className="flex-1 flex flex-col bg-card rounded-xl border border-border p-5 mb-6">
+        <div className="flex-1 flex flex-col bg-card rounded-3xl border border-border/80 p-5 sm:p-7 shadow-card mb-6">
           {/* Header prompt */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-              <Camera size={20} aria-hidden="true" />
+          <div className="flex items-center gap-3.5 mb-4">
+            <div className="w-11 h-11 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-500/20 shrink-0">
+              <Camera size={22} aria-hidden="true" />
             </div>
             <div>
-              <p className="type-h3">Upload 1–4 photos of the affected crop</p>
-              <p className="type-small text-muted-foreground">Whole plant, affected leaf, stem or fruit, and a close-up</p>
+              <p className="text-sm sm:text-base font-extrabold text-foreground">Upload 1–4 photos of the affected crop</p>
+              <p className="text-xs text-muted-foreground">Whole plant, affected leaf, stem or fruit, and a close-up</p>
             </div>
           </div>
 
           {/* Photo Quality Guidance Helper */}
-          <div className="mb-4 bg-muted/40 p-3 rounded-xl border border-border">
-            <h4 className="type-h3 flex items-center gap-1.5 text-foreground text-xs sm:text-sm font-semibold mb-1.5">
-              <Camera size={15} className="text-primary" /> photo guidance:
+          <div className="mb-4 bg-muted/30 p-3.5 rounded-2xl border border-border/70">
+            <h4 className="flex items-center gap-1.5 text-foreground text-xs sm:text-sm font-bold mb-1.5">
+              <Camera size={14} className="text-emerald-600" /> Best Photo Guidelines:
             </h4>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-muted-foreground">
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Keep leaf full inside frame</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Take photo in daylight</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Close-up of affected leaf part</li>
-              <li className="flex items-center gap-1"><Check size={12} className="text-emerald-600 shrink-0" /> Ensure camera lens is clean</li>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-muted-foreground">
+              <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-600 shrink-0" /> Keep leaf full inside frame</li>
+              <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-600 shrink-0" /> Take photo in daylight</li>
+              <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-600 shrink-0" /> Close-up of affected leaf part</li>
+              <li className="flex items-center gap-1.5"><Check size={13} className="text-emerald-600 shrink-0" /> Ensure camera lens is clean</li>
             </ul>
           </div>
 
           {/* Quality warning banner */}
           {qualityWarning && (
-            <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2 font-medium">
+            <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2 font-medium">
               <AlertTriangle size={15} className="shrink-0 mt-0.5 text-amber-600" />
               <span>{qualityWarning}</span>
             </div>
@@ -938,14 +958,14 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {images.map((img) => (
-                    <div key={img.id} className="relative rounded-lg overflow-hidden border border-border h-32 bg-muted">
+                    <div key={img.id} className="relative rounded-2xl overflow-hidden border border-border h-32 bg-muted">
                       <SafeImage
                         src={img.previewUrl}
                         alt={img.role}
                         resolveType="crop"
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute top-2 left-2 bg-black/70 text-white text-xs font-semibold px-2 py-0.5 rounded">
+                      <span className="absolute top-2 left-2 bg-black/70 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
                         {img.role}
                       </span>
                       <button
@@ -960,10 +980,10 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                   {images.length < MAX_IMAGES && (
                     <button
                       onClick={() => galleryInputRef.current?.click()}
-                      className="h-32 border border-border rounded-lg flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-primary hover:text-primary transition-colors bg-muted/30"
+                      className="h-32 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-emerald-500 hover:text-emerald-600 transition-colors bg-muted/20"
                     >
                       <Plus size={20} />
-                      <span className="type-small font-semibold">Add photo ({images.length}/{MAX_IMAGES})</span>
+                      <span className="text-xs font-bold">Add photo ({images.length}/{MAX_IMAGES})</span>
                     </button>
                   )}
                 </div>
@@ -973,37 +993,41 @@ const CropDoctor: React.FC<CropDoctorProps> = ({ onAskKisan }) => {
                   <button
                     type="button"
                     onClick={handleRetake}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors flex items-center gap-1.5"
+                    className="px-3.5 py-2 text-xs font-bold rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all flex items-center gap-1.5 shadow-xs"
                   >
                     <RotateCw size={13} /> Retake Photo
                   </button>
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors flex items-center gap-1.5"
+                    className="px-3.5 py-2 text-xs font-bold rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all flex items-center gap-1.5 shadow-xs"
                   >
                     <Upload size={13} /> Choose Another
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   onClick={openCameraInput}
-                  className="h-36 rounded-xl border border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-foreground hover:border-primary hover:bg-primary/5 transition-colors"
+                  className="group h-36 rounded-2xl border-2 border-dashed border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/60 flex flex-col items-center justify-center gap-2 text-foreground transition-all duration-200 shadow-xs"
                 >
-                  <Camera size={28} className="text-primary" aria-hidden="true" />
-                  <span className="type-h3">Take a photo</span>
-                  <span className="type-meta">Use device camera</span>
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Camera size={24} />
+                  </div>
+                  <span className="text-sm font-extrabold text-foreground">Take Live Photo</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Use mobile camera or webcam</span>
                 </button>
 
                 <button
                   onClick={() => galleryInputRef.current?.click()}
-                  className="h-36 rounded-xl border border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-foreground hover:border-primary hover:bg-primary/5 transition-colors"
+                  className="group h-36 rounded-2xl border-2 border-dashed border-border bg-card hover:bg-muted/40 hover:border-emerald-500/50 flex flex-col items-center justify-center gap-2 text-foreground transition-all duration-200 shadow-xs"
                 >
-                  <Upload size={28} className="text-muted-foreground" aria-hidden="true" />
-                  <span className="type-h3">Choose from gallery</span>
-                  <span className="type-meta">JPG, PNG or WebP · up to {MAX_RAW_IMAGE_MB}MB</span>
+                  <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground group-hover:text-emerald-600 group-hover:bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Upload size={24} />
+                  </div>
+                  <span className="text-sm font-extrabold text-foreground">Choose from Gallery</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">JPG, PNG, WebP · Up to {MAX_RAW_IMAGE_MB}MB</span>
                 </button>
               </div>
             )}
