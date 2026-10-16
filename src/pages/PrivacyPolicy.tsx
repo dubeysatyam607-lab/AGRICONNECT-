@@ -47,7 +47,7 @@ const SECTIONS = [
   {
     title: '9. Contact Us',
     content:
-      'For privacy questions, email privacy@agriconnect.in or write to our head office. We respond within 30 days.',
+      'For privacy questions or data requests, email hello.agriconnect@gmail.com or contact our mobile helpline at +91 7067820256. AgriConnect is a 100% digital platform operating without physical walk-in offices. We respond within 30 days.',
   },
 ];
 

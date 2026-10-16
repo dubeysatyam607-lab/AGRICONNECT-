@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, MessageCircle, Mail, Building2, CircleCheck } from 'lucide-react';
+import { Phone, MessageCircle, Mail, Globe, CircleCheck } from 'lucide-react';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { canonical, ogImage, SITE_CONFIG } from '@/lib/seo-config';
 import { organizationSchema } from '@/lib/structured-data';
@@ -97,18 +97,50 @@ const Contact: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {[
-                { icon: <Phone className="h-4 w-4" />, title: t('legal.contact.helplineTitle'), lines: ['+91-7067820256', t('legal.contact.helplineHours')] },
-                { icon: <MessageCircle className="h-4 w-4" />, title: t('legal.contact.whatsappTitle'), lines: [t('legal.contact.whatsappLine')] },
-                { icon: <Mail className="h-4 w-4" />, title: t('legal.contact.emailTitle'), lines: ['hello.agriconnect@gmail.com', 'partnerships@agriconnect.in'] },
-                { icon: <Building2 className="h-4 w-4" />, title: t('legal.contact.officeTitle'), lines: [SITE_CONFIG.address.streetAddress, `${SITE_CONFIG.address.addressLocality}, ${SITE_CONFIG.address.addressRegion} ${SITE_CONFIG.address.postalCode}, India`] },
+                {
+                  icon: <Phone className="h-4 w-4" />,
+                  title: t('legal.contact.helplineTitle') || 'Direct Mobile Helpline',
+                  lines: ['+91 7067820256', t('legal.contact.helplineHours') || 'Available for calls & farmer support (Mon–Sat, 8 AM – 8 PM IST)'],
+                  href: 'tel:+917067820256',
+                },
+                {
+                  icon: <MessageCircle className="h-4 w-4" />,
+                  title: t('legal.contact.whatsappTitle') || 'WhatsApp Support',
+                  lines: ['+91 7067820256', 'Instant farmer support via WhatsApp chat.'],
+                  href: 'https://wa.me/917067820256',
+                },
+                {
+                  icon: <Mail className="h-4 w-4" />,
+                  title: t('legal.contact.emailTitle') || 'Official Email Address',
+                  lines: ['hello.agriconnect@gmail.com', 'Only official contact email address.'],
+                  href: 'mailto:hello.agriconnect@gmail.com',
+                },
+                {
+                  icon: <Globe className="h-4 w-4" />,
+                  title: '100% Digital Platform (No Physical Office)',
+                  lines: [
+                    'AgriConnect operates entirely digitally across all Indian states and districts.',
+                    'We do not maintain any physical walk-in office. All farmer assistance is handled directly online.',
+                  ],
+                },
               ].map((c) => (
-                <div key={c.title} className="rounded-xl border border-border bg-card p-5 shadow-card">
+                <div key={c.title} className="rounded-xl border border-border bg-card p-5 shadow-card hover:border-emerald-500/30 transition-all">
                   <h3 className="font-bold text-foreground flex items-center gap-2">
-                    <span aria-hidden="true" className="text-emerald-700">{c.icon}</span> {c.title}
+                    <span aria-hidden="true" className="text-emerald-700 dark:text-emerald-400">{c.icon}</span> {c.title}
                   </h3>
                   {c.lines.map((line) => (
                     <p key={line} className="text-muted-foreground text-sm mt-1">{line}</p>
                   ))}
+                  {c.href && (
+                    <a
+                      href={c.href}
+                      target={c.href.startsWith('http') ? '_blank' : undefined}
+                      rel={c.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      className="inline-flex items-center text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline mt-2"
+                    >
+                      Connect directly &rarr;
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

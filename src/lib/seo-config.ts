@@ -15,10 +15,6 @@ export const SITE_CONFIG = {
   phone: '+91-7067820256',
   foundingDate: '2026-01-01',
   address: {
-    streetAddress: 'Survey No. 42, Baner Road',
-    addressLocality: 'Pune',
-    addressRegion: 'Maharashtra',
-    postalCode: '411045',
     addressCountry: 'IN',
   },
   socialProfiles: [

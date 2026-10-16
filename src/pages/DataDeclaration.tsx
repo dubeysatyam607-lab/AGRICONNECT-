@@ -35,13 +35,13 @@ const DECLARATION_SECTIONS = [
     icon: Trash2,
     title: '5. Retention, Correction & Deletion Rights',
     content:
-      'You maintain full ownership and control over your agricultural data:\n• Edit at any time: Update your personal, farm, and crop information directly from Profile → Edit Profile.\n• Right to Erasure / Deletion: Request full account and data deletion at any time via Settings → Privacy or by emailing privacy@agriconnect.in. All personal identifiers will be permanently removed within 30 days.\n• Right to Withdraw Consent: Toggle optional analytics and cookies anytime via Cookie Settings.',
+      'You maintain full ownership and control over your agricultural data:\n• Edit at any time: Update your personal, farm, and crop information directly from Profile → Edit Profile.\n• Right to Erasure / Deletion: Request full account and data deletion at any time via Settings → Privacy or by emailing hello.agriconnect@gmail.com. All personal identifiers will be permanently removed within 30 days.\n• Right to Withdraw Consent: Toggle optional analytics and cookies anytime via Cookie Settings.',
   },
   {
     icon: Mail,
     title: '6. Grievance & Privacy Contact',
     content:
-      'If you have any questions, concerns, or requests regarding your personal data or privacy rights, please reach out to our dedicated Grievance Officer:\n• Email: privacy@agriconnect.in / support@agriconnect.in\n• Office: AgriConnect Technologies Pvt. Ltd., Maharashtra, India\n• Response Time: Within 48 business hours.',
+      'If you have any questions, concerns, or requests regarding your personal data or privacy rights, please reach out directly:\n• Email: hello.agriconnect@gmail.com (Only official contact address)\n• Mobile Helpline: +91 7067820256\n• Operations: 100% Digital Agricultural Platform (No Physical Office)\n• Response Time: Within 48 business hours.',
   },
 ];
 
