@@ -111,6 +111,27 @@
           "value": "nosniff"
         }
       ]
+    },
+    {
+      "source": "/(.*\\.(?:png|jpg|jpeg|svg|webp|ico|gif|mp3|mp4))",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS, HEAD"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, stale-while-revalidate=86400"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -171,7 +192,7 @@
       "destination": "/api/iot/command-ack.js"
     },
     {
-      "source": "/((?!api/|assets/|sw.js|favicon.ico|manifest.json|robots.txt|sitemap.xml).*)",
+      "source": "/((?!api/|assets/|images/|.*\\.(?:ico|png|jpg|jpeg|svg|webp|gif|json|xml|txt|js|css)$).*)",
       "destination": "/index.html"
     }
   ]

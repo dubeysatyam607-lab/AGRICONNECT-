@@ -218,7 +218,7 @@ function esc(s: string): string {
 }
 
 const INSTAGRAM_URL = "https://www.instagram.com/hello_agriconnect";
-const LOGO_FULL_URL = `${APP_URL}/agriconnect-logo-full.png`;
+const LOGO_FULL_URL = "https://res.cloudinary.com/twev85cy/image/upload/v1792137983/agriconnect-logo-full.png";
 
 function emailShell(title: string, inner: string): string {
   return `
