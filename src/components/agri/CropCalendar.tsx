@@ -181,7 +181,7 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
  alt={`${t(`crop.${season.id}`)} farming season`}
  className="w-full h-full object-cover"
  />
- <div className={`absolute inset-0 bg-emerald-700 ${season.color} pointer-events-none`} />
+ <div className={`absolute inset-0 bg-gradient-to-r from-emerald-950/85 via-emerald-950/60 to-transparent ${season.color} pointer-events-none`} />
  <div className="absolute inset-0 flex items-center px-5 pointer-events-none">
  <div>
  <div className="flex items-center gap-2 mb-1">
@@ -216,7 +216,7 @@ const CropCalendar: React.FC<CropCalendarProps> = ({ onToast }) => {
  className="w-full h-full object-cover"
  loading="lazy"
  />
- <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
+ <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
  {farmer.cropIdSet.has(c.id) && (
  <span className="absolute top-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground shadow-sm">
  {t('crop.yourCrop')}

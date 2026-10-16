@@ -565,7 +565,7 @@ const CommunityFeed: React.FC<CommunityFeedProps> = ({ onToast }) => {
                       </div>
                     }
                   />
-                  <div className="absolute inset-0 bg-emerald-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                   <span className="absolute left-2.5 top-2.5 feature-chip bg-white/15 text-white ">{group.category}</span>
                   <span className="absolute right-2.5 top-2.5 flex items-center gap-1 feature-chip bg-black/45 text-white ">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 " />

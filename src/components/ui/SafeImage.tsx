@@ -217,7 +217,7 @@ export function SafeImage({
       <img
         src={currentSrc}
         alt={alt || effectiveName || "AgriConnect verified image"}
-        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
         onError={handleImgError}
         onLoad={handleImgLoad}
         loading={nativeLoading}

@@ -243,7 +243,7 @@ const KrishiShorts: React.FC<KrishiShortsProps> = ({ onToast, onClose }) => {
  className="absolute inset-0 bg-cover bg-center"
  style={{ backgroundImage: `url(${currentVideo.thumbnail})` }}
  >
- <div className="absolute inset-0 bg-emerald-700" />
+ <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
  </div>
 
  {/* Channel Badge */}

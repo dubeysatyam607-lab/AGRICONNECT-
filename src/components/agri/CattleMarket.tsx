@@ -142,7 +142,7 @@ const CattleMarket: React.FC = () => {
  alt="Livestock market"
  className="w-full h-full object-cover"
  />
- <div className="absolute inset-0 bg-emerald-900" />
+ <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/60 to-transparent pointer-events-none" />
  <div className="absolute inset-0 flex items-center justify-between px-6">
  <div className="space-y-1">
  <h2 className="text-2xl font-semibold text-white flex items-center gap-2">

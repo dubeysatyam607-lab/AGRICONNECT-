@@ -265,7 +265,7 @@ const CropPanel: React.FC<{
           loading="lazy"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-emerald-700 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
         <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
           <div>
             <p className="text-white font-bold text-sm">{lang === "hi" ? crop.labelHi : crop.labelEn} </p>

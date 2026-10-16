@@ -261,13 +261,95 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
   amrood: "https://images.pexels.com/photos/8668726/pexels-photo-8668726.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "अमरूद": "https://images.pexels.com/photos/8668726/pexels-photo-8668726.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
-  coconut: "https://images.pexels.com/photos/3887927/pexels-photo-3887927.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  nariyal: "https://images.pexels.com/photos/3887927/pexels-photo-3887927.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "नारियल": "https://images.pexels.com/photos/3887927/pexels-photo-3887927.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  coconut: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  nariyal: "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "नारियल": "https://images.pexels.com/photos/2291599/pexels-photo-2291599.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   watermelon: "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   tarbooj: "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "तरबूज": "https://images.pexels.com/photos/25482631/pexels-photo-25482631.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  // Flowers & Commercial Aromatics
+  "tube flower": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "tubeflower": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "tuberose": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "rajnigandha": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "रजनीगंधा": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "jasmine": "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "chameli": "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "mogra": "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "चमेली": "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "मोगरा": "https://images.pexels.com/photos/4099354/pexels-photo-4099354.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "marigold": "https://images.pexels.com/photos/132474/pexels-photo-132474.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "genda": "https://images.pexels.com/photos/132474/pexels-photo-132474.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "गेंदा": "https://images.pexels.com/photos/132474/pexels-photo-132474.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "rose": "https://images.pexels.com/photos/56866/garden-rose-red-pink-56866.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "gulab": "https://images.pexels.com/photos/56866/garden-rose-red-pink-56866.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "गुलाब": "https://images.pexels.com/photos/56866/garden-rose-red-pink-56866.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "flower": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "flowers": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "फूल": "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  // Spices & Condiments
+  "black pepper": "https://images.pexels.com/photos/4110255/pexels-photo-4110255.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "blackpepper": "https://images.pexels.com/photos/4110255/pexels-photo-4110255.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "pepper": "https://images.pexels.com/photos/4110255/pexels-photo-4110255.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "kali mirch": "https://images.pexels.com/photos/4110255/pexels-photo-4110255.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "काली मिर्च": "https://images.pexels.com/photos/4110255/pexels-photo-4110255.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "cardamom": "https://images.pexels.com/photos/4198139/pexels-photo-4198139.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "elaichi": "https://images.pexels.com/photos/4198139/pexels-photo-4198139.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "इलायची": "https://images.pexels.com/photos/4198139/pexels-photo-4198139.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "clove": "https://images.pexels.com/photos/678414/pexels-photo-678414.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "laung": "https://images.pexels.com/photos/678414/pexels-photo-678414.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "लौंग": "https://images.pexels.com/photos/678414/pexels-photo-678414.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "cinnamon": "https://images.pexels.com/photos/4198566/pexels-photo-4198566.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "dalchini": "https://images.pexels.com/photos/4198566/pexels-photo-4198566.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "दालचीनी": "https://images.pexels.com/photos/4198566/pexels-photo-4198566.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "ginger": "https://images.pexels.com/photos/1337585/pexels-photo-1337585.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "adrak": "https://images.pexels.com/photos/1337585/pexels-photo-1337585.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "अदरक": "https://images.pexels.com/photos/1337585/pexels-photo-1337585.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "garlic": "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "lahsun": "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "lasun": "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "लहसुन": "https://images.pexels.com/photos/928251/pexels-photo-928251.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "chilli": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "chili": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "mirch": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "red chilli": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "green chilli": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "मिर्च": "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "coriander": "https://images.pexels.com/photos/4198019/pexels-photo-4198019.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "dhaniya": "https://images.pexels.com/photos/4198019/pexels-photo-4198019.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "धनिया": "https://images.pexels.com/photos/4198019/pexels-photo-4198019.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "cumin": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "jeera": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "जीरा": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "fennel": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "saunf": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "सौंफ": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "tea": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "chai": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "चाय": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "coffee": "https://images.pexels.com/photos/1695052/pexels-photo-1695052.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "कॉफी": "https://images.pexels.com/photos/1695052/pexels-photo-1695052.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+
+  "mushroom": "https://images.pexels.com/photos/1367243/pexels-photo-1367243.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  "मशरूम": "https://images.pexels.com/photos/1367243/pexels-photo-1367243.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   mandi: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   market: "https://images.pexels.com/photos/17160607/pexels-photo-17160607.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
@@ -279,8 +361,10 @@ export const CATEGORY_CROP_IMAGES: Record<string, string> = {
   oilseeds: "https://images.pexels.com/photos/18346906/pexels-photo-18346906.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   vegetables: "https://images.pexels.com/photos/37085352/pexels-photo-37085352.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   fruits: "https://images.pexels.com/photos/28939331/pexels-photo-28939331.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  spices: "https://images.pexels.com/photos/8217944/pexels-photo-8217944.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  spices: "https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  flowers: "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   commercial: "https://images.pexels.com/photos/5640079/pexels-photo-5640079.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
+  other: "https://images.pexels.com/photos/1086178/pexels-photo-1086178.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   default: "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 };
 
@@ -289,6 +373,30 @@ export function getCropCategory(cropName?: string): string {
   const name = cropName.toLowerCase().trim();
 
   if (
+    name.includes("tube flower") ||
+    name.includes("tubeflower") ||
+    name.includes("tuberose") ||
+    name.includes("jasmine") ||
+    name.includes("rajnigandha") ||
+    name.includes("chameli") ||
+    name.includes("mogra") ||
+    name.includes("marigold") ||
+    name.includes("genda") ||
+    name.includes("rose") ||
+    name.includes("gulab") ||
+    name.includes("flower") ||
+    name.includes("chrysanthemum") ||
+    name.includes("carnation") ||
+    name.includes("orchid")
+  ) {
+    return "Flowers";
+  }
+
+  if (
+    name.includes("black pepper") ||
+    name.includes("blackpepper") ||
+    name.includes("pepper") ||
+    name.includes("kali mirch") ||
     name.includes("cumin") ||
     name.includes("jeera") ||
     name.includes("turmeric") ||
@@ -301,12 +409,18 @@ export function getCropCategory(cropName?: string): string {
     name.includes("clove") ||
     name.includes("laung") ||
     name.includes("cinnamon") ||
+    name.includes("dalchini") ||
     name.includes("fennel") ||
     name.includes("saunf") ||
     name.includes("fenugreek") ||
     name.includes("methi") ||
     name.includes("isabgol") ||
-    name.includes("isabgul")
+    name.includes("isabgul") ||
+    name.includes("ginger") ||
+    name.includes("adrak") ||
+    name.includes("garlic") ||
+    name.includes("lahsun") ||
+    name.includes("lasun")
   ) {
     return "Spices";
   }
@@ -501,7 +615,10 @@ export function getCropImage(cropName?: string): string | undefined {
 }
 
 export function getCropBackupImage(cropName?: string): string {
-  return getCropImage(cropName);
+  const direct = getCropImage(cropName);
+  if (direct) return direct;
+  const cat = getCropCategory(cropName).toLowerCase();
+  return CATEGORY_CROP_IMAGES[cat] || CATEGORY_CROP_IMAGES.default;
 }
 
 export function getCropEmoji(cropName?: string): string {
@@ -537,3 +654,4 @@ export function getCropSvgFallback(cropName?: string): string {
 `)
   );
 }
+
