@@ -53,6 +53,57 @@ export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement
  * - Zero broken-image icons guaranteed across the entire application
  * - Layout shift protection (aspect-ratio & object-cover)
  */
+function buildCandidateList(
+  src: unknown,
+  resolveType: string,
+  effectiveName: string,
+  category?: string
+): string[] {
+  const list: string[] = [];
+
+  // 1. Direct valid URL (if provided)
+  if (isValidImageUrl(src)) {
+    list.push(String(src).trim());
+  } else if (typeof src === "object" && src !== null) {
+    const obj = src as Record<string, unknown>;
+    const extracted = obj.imageUrl || obj.image_url || obj.url || obj.src || obj.photo || obj.photo_url;
+    if (isValidImageUrl(extracted)) {
+      list.push(String(extracted).trim());
+    }
+  }
+
+  // 2. Master dictionary & imageService exact-entity photograph
+  const exactPhoto = getRelevantImage({
+    entityType: resolveType as any,
+    name: effectiveName,
+    category,
+    src,
+  });
+  if (exactPhoto && isValidImageUrl(exactPhoto) && !list.includes(exactPhoto)) {
+    list.push(exactPhoto);
+  }
+
+  // 3. Category real photography fallback
+  const realFallback = getRealFallbackImage(resolveType as any, effectiveName, category);
+  if (realFallback && isValidImageUrl(realFallback) && !list.includes(realFallback)) {
+    list.push(realFallback);
+  }
+
+  // 4. Guaranteed Master Real High-Resolution Agriculture Photography Fallback
+  const masterPhotoFallback = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940";
+  if (!list.includes(masterPhotoFallback)) {
+    list.push(masterPhotoFallback);
+  }
+
+  // 5. Guaranteed Data-URI SVG Fallback (100% offline & network failure proof)
+  const guaranteedSvg = getExactCategoryFallbackSvg(resolveType as any, effectiveName, category) || OFFLINE_AGRI_SVG;
+  if (!list.includes(guaranteedSvg)) {
+    list.push(guaranteedSvg);
+  }
+
+  return list;
+}
+
 export function SafeImage({
   src,
   alt,
@@ -68,56 +119,17 @@ export function SafeImage({
   onLoad,
   ...props
 }: SafeImageProps) {
-  const [candidates, setCandidates] = useState<string[]>([]);
+  const effectiveName = entityName || category || (typeof alt === "string" ? alt : "") || "";
+
+  const [candidates, setCandidates] = useState<string[]>(() =>
+    buildCandidateList(src, resolveType, effectiveName, category)
+  );
   const [candidateIndex, setCandidateIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  const effectiveName = entityName || category || (typeof alt === "string" ? alt : "") || "";
-
   useEffect(() => {
-    const list: string[] = [];
-
-    // 1. Direct valid URL (if provided)
-    if (isValidImageUrl(src)) {
-      list.push(String(src).trim());
-    } else if (typeof src === "object" && src !== null) {
-      const obj = src as Record<string, unknown>;
-      const extracted = obj.imageUrl || obj.image_url || obj.url || obj.src || obj.photo || obj.photo_url;
-      if (isValidImageUrl(extracted)) {
-        list.push(String(extracted).trim());
-      }
-    }
-
-    // 2. Master dictionary & imageService exact-entity photograph
-    const exactPhoto = getRelevantImage({
-      entityType: resolveType as any,
-      name: effectiveName,
-      category,
-      src,
-    });
-    if (exactPhoto && isValidImageUrl(exactPhoto) && !list.includes(exactPhoto)) {
-      list.push(exactPhoto);
-    }
-
-    // 3. Category real photography fallback
-    const realFallback = getRealFallbackImage(resolveType as any, effectiveName, category);
-    if (realFallback && isValidImageUrl(realFallback) && !list.includes(realFallback)) {
-      list.push(realFallback);
-    }
-
-    // 4. Guaranteed Master Real High-Resolution Agriculture Photography Fallback
-    const masterPhotoFallback = "https://images.pexels.com/photos/11688197/pexels-photo-11688197.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940";
-    if (!list.includes(masterPhotoFallback)) {
-      list.push(masterPhotoFallback);
-    }
-
-    // 5. Guaranteed Data-URI SVG Fallback (100% offline & network failure proof)
-    const guaranteedSvg = getExactCategoryFallbackSvg(resolveType as any, effectiveName, category) || OFFLINE_AGRI_SVG;
-    if (!list.includes(guaranteedSvg)) {
-      list.push(guaranteedSvg);
-    }
-
+    const list = buildCandidateList(src, resolveType, effectiveName, category);
     setCandidates(list);
     setCandidateIndex(0);
     setLoading(true);
@@ -165,13 +177,37 @@ export function SafeImage({
     if (onLoad) onLoad(e);
   };
 
-  if (hasError && fallbackIcon) {
+  if (hasError) {
+    if (fallbackIcon) {
+      return (
+        <div
+          className={cn("bg-muted/30 flex items-center justify-center overflow-hidden", containerClassName || className)}
+          aria-label={alt || effectiveName || "Agricultural Produce"}
+        >
+          {fallbackIcon}
+        </div>
+      );
+    }
+
+    const categoryEmoji = (() => {
+      const type = (resolveType || "").toLowerCase();
+      if (type.includes("crop") || type.includes("mandi")) return "🌾";
+      if (type.includes("cattle") || type.includes("cow") || type.includes("buffalo") || type.includes("goat")) return "🐄";
+      if (type.includes("tractor") || type.includes("machin") || type.includes("equip")) return "🚜";
+      if (type.includes("product") || type.includes("fertil") || type.includes("seed") || type.includes("pesticide")) return "🌱";
+      return "🌱";
+    })();
+
     return (
       <div
-        className={cn("bg-muted/30 flex items-center justify-center overflow-hidden", containerClassName || className)}
-        aria-label={alt || effectiveName || "Agricultural Produce"}
+        className={cn(
+          "w-full h-full min-h-[90px] flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950/30 via-emerald-900/20 to-slate-900/30 border border-emerald-500/20 rounded-lg p-2.5 text-center select-none",
+          containerClassName || className
+        )}
       >
-        {fallbackIcon}
+        <span className="text-2xl sm:text-3xl mb-1">{categoryEmoji}</span>
+        <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 line-clamp-1">{effectiveName || "AgriConnect"}</span>
+        <span className="text-[10px] text-muted-foreground">Kisan Verified</span>
       </div>
     );
   }
@@ -181,6 +217,7 @@ export function SafeImage({
       <img
         src={currentSrc}
         alt={alt || effectiveName || "AgriConnect verified image"}
+        referrerPolicy="no-referrer"
         onError={handleImgError}
         onLoad={handleImgLoad}
         loading={nativeLoading}

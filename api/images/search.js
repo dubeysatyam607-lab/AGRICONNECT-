@@ -10,7 +10,7 @@
  * - In-memory cache + HTTP CDN edge caching (24h).
  */
 
-const PEXELS_API_KEY = (process.env.PEXELS_API_KEY || "").trim();
+const PEXELS_API_KEY = (process.env.PEXELS_API_KEY || process.env.VITE_PEXELS_API_KEY || "mXrkYO63IBrFxZssu12QmnQNPVoxBdzyacNLcYAedDKh2Wu9n29npl34").trim();
 
 const memoryCache = new Map();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
