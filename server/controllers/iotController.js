@@ -12,6 +12,7 @@ const {
   capabilityForCommand,
   COMMAND_DEDUPE_MS,
   COMMAND_POLL_INTERVAL_SEC,
+  OFFLINE_TIMEOUT_SEC,
   resolveSupabaseConfig,
   hashToken,
   tokenIsValid,
@@ -395,5 +396,90 @@ exports.postCommandAck = async (req, res) => {
     return res.status(200).json({ success: true, commandId, acknowledged: true, state: status, ackedAt: nowIso });
   } catch (err) {
     return addServerError(res, "postCommandAck", err);
+  }
+};
+
+/**
+ * GET /api/iot/devices?farmId=...&userId=...&deviceUid=...
+ */
+exports.getDevices = async (req, res) => {
+  try {
+    const { supabaseUrl } = getSupabase();
+    const { farmId, userId, deviceUid } = req.query || {};
+
+    let queryUrl = `${supabaseUrl}/rest/v1/iot_devices?select=*&order=created_at.desc`;
+    if (deviceUid && typeof deviceUid === "string" && deviceUid.trim()) {
+      queryUrl += `&device_uid=eq.${encodeURIComponent(deviceUid.trim())}`;
+    }
+
+    const deviceRes = await fetch(queryUrl, { headers: headers() });
+    if (!deviceRes.ok) {
+      throw new Error(`Database query failed: ${deviceRes.statusText}`);
+    }
+
+    let devices = await deviceRes.json();
+    if (!Array.isArray(devices)) devices = [];
+
+    const nowMs = Date.now();
+
+    const enrichedDevices = await Promise.all(
+      devices.map(async (device) => {
+        let latestReading = null;
+        try {
+          const readingRes = await fetch(
+            `${supabaseUrl}/rest/v1/sensor_readings?device_id=eq.${encodeURIComponent(device.id)}&order=created_at.desc&limit=1`,
+            { headers: headers() }
+          );
+          if (readingRes.ok) {
+            const readings = await readingRes.json();
+            if (Array.isArray(readings) && readings.length > 0) {
+              latestReading = readings[0];
+            }
+          }
+        } catch (e) {
+          console.error(`[iotController.getDevices] Error fetching reading for ${device.id}:`, e);
+        }
+
+        let effectiveLastSeen = device.last_seen;
+        if (latestReading && latestReading.created_at) {
+          if (!effectiveLastSeen || new Date(latestReading.created_at) > new Date(effectiveLastSeen)) {
+            effectiveLastSeen = latestReading.created_at;
+          }
+        }
+
+        let status = "NOT_CONNECTED";
+        if (effectiveLastSeen) {
+          const diffSec = (nowMs - new Date(effectiveLastSeen).getTime()) / 1000;
+          if (!isNaN(diffSec) && diffSec >= 0 && diffSec <= OFFLINE_TIMEOUT_SEC) {
+            status = "ONLINE";
+          } else if (!isNaN(diffSec) && diffSec > OFFLINE_TIMEOUT_SEC) {
+            status = "OFFLINE";
+          }
+        }
+
+        if (userId && typeof userId === "string" && !device.user_id) {
+          fetch(`${supabaseUrl}/rest/v1/iot_devices?id=eq.${encodeURIComponent(device.id)}`, {
+            method: "PATCH",
+            headers: headers(),
+            body: JSON.stringify({ user_id: userId, updated_at: new Date().toISOString() }),
+          }).catch(() => {});
+          device.user_id = userId;
+        }
+
+        return {
+          ...device,
+          last_seen: effectiveLastSeen,
+          status,
+          latestReading,
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      devices: enrichedDevices,
+    });
+  } catch (err) {
+    return addServerError(res, "getDevices", err);
   }
 };

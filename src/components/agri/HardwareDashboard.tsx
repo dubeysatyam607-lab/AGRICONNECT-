@@ -113,6 +113,7 @@ const HardwareDashboard: React.FC = () => {
   const lastCommandIdRef = useRef<string | null>(null);
   const selectedDeviceRef = useRef<IotDevice | null>(null);
   selectedDeviceRef.current = selectedDevice;
+  const isFetchingRef = useRef<boolean>(false);
 
   // Live relative timestamps
   const [now, setNow] = useState<number>(Date.now());
@@ -143,13 +144,15 @@ const HardwareDashboard: React.FC = () => {
   const [simFence, setSimFence] = useState<FenceStatus>("NOT_CONNECTED");
   const [isSendingSim, setIsSendingSim] = useState<boolean>(false);
 
-  // Live ticker so "12 sec ago" refreshes without full refetches
+  // Live ticker so relative timestamps refresh
   useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 10000);
+    const interval = setInterval(() => setNow(Date.now()), 5000);
     return () => clearInterval(interval);
   }, []);
 
   const loadDashboardData = useCallback(async (): Promise<IotDevice | null> => {
+    if (isFetchingRef.current) return selectedDeviceRef.current;
+    isFetchingRef.current = true;
     setDashboardState((prev) => (prev === "INITIAL" ? "CONNECTING" : prev));
     try {
       const farmDevs = await fetchFarmDevices(farmId, userId);
@@ -165,7 +168,27 @@ const HardwareDashboard: React.FC = () => {
         return null;
       }
 
-      const activeDev = farmDevs[0];
+      // Smart device selection:
+      // 1. Keep currently selected device if it still exists in the farm's devices
+      // 2. Prioritize an ONLINE device
+      // 3. Prioritize device with the most recent last_seen timestamp
+      // 4. Fallback to the first registered device
+      const currentSelected = selectedDeviceRef.current;
+      let activeDev = farmDevs.find((d) => d.id === currentSelected?.id);
+      if (!activeDev) {
+        activeDev = farmDevs.find((d) => d.status === "ONLINE");
+      }
+      if (!activeDev) {
+        const sortedByLastSeen = [...farmDevs]
+          .filter((d) => d.last_seen)
+          .sort((a, b) => new Date(b.last_seen!).getTime() - new Date(a.last_seen!).getTime());
+        if (sortedByLastSeen.length > 0) {
+          activeDev = sortedByLastSeen[0];
+        }
+      }
+      if (!activeDev) {
+        activeDev = farmDevs[0];
+      }
 
       // Safely fetch telemetry sub-data using Promise.allSettled so partial errors don't fail the whole view
       const [readingRes, historyRes, alertsRes, commandsRes] = await Promise.allSettled([
@@ -233,6 +256,8 @@ const HardwareDashboard: React.FC = () => {
         return prev;
       });
       return null;
+    } finally {
+      isFetchingRef.current = false;
     }
   }, [farmId, userId]);
 
@@ -240,12 +265,18 @@ const HardwareDashboard: React.FC = () => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Auto-poll telemetry & device status every 12 seconds
+  // Auto-poll telemetry & device status every 5 seconds without overlapping requests
   useEffect(() => {
+    let active = true;
     const interval = setInterval(() => {
-      loadDashboardData();
-    }, 12000);
-    return () => clearInterval(interval);
+      if (active) {
+        loadDashboardData();
+      }
+    }, 5000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [loadDashboardData]);
 
   // Single realtime subscription, created once. Navigation Home → IoT → Home
@@ -550,74 +581,160 @@ const HardwareDashboard: React.FC = () => {
     }
   };
 
+  const getRainStatusInfo = (rainVal: number | null | undefined) => {
+    if (rainVal === null || rainVal === undefined) {
+      return { status: "Unavailable", label: "Sensor unplugged or not reporting", isRaining: false };
+    }
+    if (rainVal >= 3200) {
+      return { status: "Dry", label: "No rain detected", isRaining: false };
+    } else if (rainVal >= 2500) {
+      return { status: "Light Rain", label: "Moisture detected on sensor", isRaining: true };
+    } else if (rainVal >= 1600) {
+      return { status: "Raining", label: "Active precipitation", isRaining: true };
+    } else {
+      return { status: "Heavy Rain", label: "Heavy downpour detected", isRaining: true };
+    }
+  };
+
+  const confirmedBuzzerState = useMemo(() => {
+    const lastBuzzer = commands.find((c) => c.command === "BUZZER_ON" || c.command === "BUZZER_OFF");
+    if (!lastBuzzer) return { status: "IDLE", label: "OFF (Default hardware state)" };
+    if (lastBuzzer.state === "EXECUTED") {
+      return lastBuzzer.command === "BUZZER_ON"
+        ? { status: "ON", label: "Confirmed ON by ESP32" }
+        : { status: "OFF", label: "Confirmed OFF by ESP32" };
+    }
+    if (lastBuzzer.state === "QUEUED") {
+      return { status: "PENDING", label: "Awaiting hardware acknowledgment…" };
+    }
+    return { status: "FAILED", label: "Command execution failed" };
+  }, [commands]);
+
+  const confirmedPumpState = useMemo(() => {
+    const lastPump = commands.find((c) => c.command === "PUMP_ON" || c.command === "PUMP_OFF");
+    if (!lastPump) return { status: "IDLE", label: "OFF (Default hardware state)" };
+    if (lastPump.state === "EXECUTED") {
+      return lastPump.command === "PUMP_ON"
+        ? { status: "ON", label: "Confirmed RUNNING by ESP32 relay" }
+        : { status: "OFF", label: "Confirmed STOPPED by ESP32 relay" };
+    }
+    if (lastPump.state === "QUEUED") {
+      return { status: "PENDING", label: "Awaiting hardware acknowledgment…" };
+    }
+    return { status: "FAILED", label: "Command execution failed" };
+  }, [commands]);
+
   const readTimeLabel = (readingCreatedAt: string | null): React.ReactNode => {
     if (!latestReading) return null;
+    const ts = readingCreatedAt ?? latestReading.created_at;
+    const isLive = selectedDevice?.status === "ONLINE";
+    const date = ts ? new Date(ts) : null;
+    const localTimeStr = date && !isNaN(date.getTime())
+      ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+      : null;
+
     return (
-      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-        <Clock className="w-3 h-3" />
-        {selectedDevice?.status === "ONLINE" ? "Live \u00b7 Updated " : "Last seen "}
-        {formatRelativeTime(readingCreatedAt ?? latestReading.created_at, now)}
-      </p>
+      <div className="space-y-0.5 pt-1">
+        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+          <Clock className="w-3 h-3 text-muted-foreground" />
+          {isLive ? (
+            <span className="text-emerald-700 dark:text-emerald-400 font-medium">Live · Updated {formatRelativeTime(ts, now)}</span>
+          ) : (
+            <span className="text-amber-700 dark:text-amber-400 font-medium">Stale reading · {formatRelativeTime(ts, now)}</span>
+          )}
+          {localTimeStr && (
+            <span className="text-[10px] text-muted-foreground font-mono">({localTimeStr})</span>
+          )}
+        </p>
+      </div>
     );
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-28 pt-4 space-y-6">
+    <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 pb-28 pt-4 space-y-6">
       {IOT_MOCK_MODE_ENABLED && (
-        <div className="flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-300">
-          <Sliders className="w-4 h-4 shrink-0" />
+        <div className="flex items-center gap-2.5 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-300 shadow-sm">
+          <Sliders className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <span className="font-semibold">{IOT_MOCK_MODE_LABEL}</span>
           <span className="text-muted-foreground">{IOT_MOCK_MODE_HINT}</span>
         </div>
       )}
 
-      {/* ── HEADER ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-card">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Radio className="w-5 h-5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-            <h1 className="text-xl font-bold tracking-tight text-foreground">AgriConnect Farm Node</h1>
+      {/* ── HERO HEADER ───────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/20 via-card to-emerald-900/10 p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-md">
+                <Radio className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+                    AgriConnect Farm Node
+                  </h1>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                    IoT Field Station
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground flex items-center gap-2 font-medium mt-0.5">
+                  <span>{farmDisplayName}</span>
+                  <span className="text-emerald-500">•</span>
+                  <span className="font-mono bg-muted px-2 py-0.5 rounded-md border border-border text-[11px] text-foreground font-semibold">
+                    {selectedDevice ? selectedDevice.device_uid : "No Hardware Linked"}
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-            <span>{farmDisplayName}</span>
-            <span>{"\u2022"}</span>
-            <span className="font-mono">{selectedDevice ? selectedDevice.device_uid : "No Hardware Linked"}</span>
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {selectedDevice ? (
-            renderStatusDot(selectedDevice.status, selectedDevice.last_seen)
-          ) : (
-            <Badge className="bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-slate-400 mr-1.5" />
-              Not Connected
-            </Badge>
-          )}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {selectedDevice ? (
+              renderStatusDot(selectedDevice.status, selectedDevice.last_seen)
+            ) : (
+              <Badge className="bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30 font-semibold px-3 py-1.5 text-xs rounded-full">
+                <span className="w-2 h-2 rounded-full bg-slate-400 mr-2" />
+                Not Connected
+              </Badge>
+            )}
 
-          <Button variant="outline" size="sm" onClick={handleManualSync} disabled={isSyncing} className="rounded-full h-8 text-xs gap-1.5 border-border">
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
-            Sync
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="rounded-full h-9 px-4 text-xs gap-2 border-border shadow-sm hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-emerald-600" : ""}`} />
+              <span>Sync</span>
+            </Button>
 
-          <Button size="sm" onClick={() => setRegisterOpen(true)} className="rounded-full h-8 text-xs gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white">
-            <Plus className="w-3.5 h-3.5" />
-            Add ESP32 Node
-          </Button>
+            <Button
+              size="sm"
+              onClick={() => setRegisterOpen(true)}
+              className="rounded-full h-9 px-4 text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 hover:shadow-lg transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add ESP32 Node</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* ── DEVICE SELECTOR ──────────────────────────────────────────────── */}
       {devices.length > 1 && (
-        <Card className="border-border rounded-2xl p-3">
-          <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Device</span>
-            <div className="relative flex-1 max-w-xs">
+        <Card className="border-border rounded-2xl p-3 shadow-sm bg-card/90">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+              <Cpu className="w-4 h-4" />
+            </div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Device:</span>
+            <div className="relative flex-1 max-w-sm">
               <select
                 value={selectedDevice?.device_uid || ""}
                 onChange={(e) => handleSelectDevice(e.target.value)}
-                className="w-full text-xs rounded-lg border border-input bg-background px-3 py-1.5 pr-8 appearance-none"
+                className="w-full text-xs font-medium rounded-xl border border-input bg-background px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               >
                 {devices.map((d) => (
                   <option key={d.id} value={d.device_uid}>
@@ -625,7 +742,7 @@ const HardwareDashboard: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
           </div>
         </Card>
@@ -633,265 +750,329 @@ const HardwareDashboard: React.FC = () => {
 
       {/* ── STATE BANNERS ────────────────────────────────────────────────── */}
       {dashboardState === "NO_DEVICE" && (
-        <Card className="border-dashed border-2 border-slate-300 dark:border-slate-700 bg-card rounded-2xl p-6 text-center space-y-3">
-          <img
-            src={getIoTImage({ name: "farm field sensor" })}
-            alt="Smart farm with monitoring sensors"
-            className="w-full h-36 sm:h-44 object-cover rounded-xl"
-            loading="lazy"
-          />
-          <Cpu className="w-10 h-10 text-slate-400 mx-auto" />
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-foreground">Sensor node not connected</h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Link your AgriConnect ESP32 field kit to read real farm telemetry. Only genuine sensor readings are ever displayed — synthetic or demo values are never generated here.
-            </p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent backdrop-blur-sm shadow-sm">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                <span>No Field Node Linked Yet</span>
+                <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Ready to Pair</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Connect your AgriConnect ESP32 kit to stream real soil moisture, ambient temperature, humidity, and rain telemetry.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <Button onClick={() => setRegisterOpen(true)} size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-full text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Link ESP32 Hardware
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <Button onClick={() => setRegisterOpen(true)} size="sm" className="rounded-full h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex-1 sm:flex-initial">
+              <Plus className="w-4 h-4 mr-1" />
+              Link Hardware
             </Button>
             {IOT_MOCK_MODE_ENABLED && (
-              <Button onClick={() => setTestModeOpen(true)} variant="outline" size="sm" className="rounded-full text-xs border-border">
-                <Sliders className="w-3.5 h-3.5 mr-1.5" />
-                Demo Test Bench
+              <Button onClick={() => setTestModeOpen(true)} variant="outline" size="sm" className="rounded-full h-9 px-4 text-xs font-semibold border-border flex-1 sm:flex-initial">
+                <Sliders className="w-3.5 h-3.5 mr-1" />
+                Demo Telemetry
               </Button>
             )}
           </div>
-        </Card>
+        </div>
       )}
 
       {dashboardState === "NOT_CONNECTED" && selectedDevice && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200 text-xs">
-          <Cpu className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 animate-pulse" />
+        <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200 text-xs shadow-sm">
+          <Cpu className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400 animate-pulse" />
           <div className="space-y-1">
-            <p className="font-semibold text-sm">Awaiting ESP32 Hardware Connection ({selectedDevice.device_uid})</p>
-            <p>
-              Your node <span className="font-mono font-bold">{selectedDevice.device_uid}</span> is registered. Flash the ESP32 using the Arduino IDE code below and connect it to Wi-Fi. As soon as it powers ON, live telemetry will stream here automatically.
+            <p className="font-bold text-sm">Awaiting ESP32 Hardware Connection ({selectedDevice.device_uid})</p>
+            <p className="leading-relaxed text-amber-800/90 dark:text-amber-300/90">
+              Your node <span className="font-mono font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">{selectedDevice.device_uid}</span> is registered. Flash the firmware onto your ESP32 and power it up with Wi-Fi. Live telemetry will stream automatically.
             </p>
           </div>
         </div>
       )}
 
       {dashboardState === "OFFLINE" && selectedDevice && (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-800 dark:text-red-200 text-xs">
-          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
-          <div className="space-y-0.5">
-            <p className="font-semibold text-sm">Device Offline</p>
-            <p>
-              Node <span className="font-mono">{selectedDevice.device_uid}</span> was last seen{" "}
-              <span className="font-semibold">{formatRelativeTime(selectedDevice.last_seen, now)}</span>. Showing the last real reading received from the hardware.
+        <div className="flex items-start gap-3.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-900 dark:text-rose-200 text-xs shadow-sm">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+          <div className="space-y-1">
+            <p className="font-bold text-sm">Device Offline</p>
+            <p className="leading-relaxed">
+              Node <span className="font-mono font-semibold">{selectedDevice.device_uid}</span> was last seen{" "}
+              <span className="font-bold">{formatRelativeTime(selectedDevice.last_seen, now)}</span>. Displaying the last confirmed telemetry reading.
             </p>
           </div>
         </div>
       )}
 
       {dashboardState === "ERROR" && (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-800 dark:text-red-200 text-xs">
-          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
-          <div>
-            <p className="font-semibold text-sm">Could not reach your sensors</p>
-            <p>Farm sensor connection lost. Pull down to try again, or come back in a moment.</p>
-            <Button variant="outline" size="sm" onClick={handleManualSync} className="mt-2 rounded-full text-xs border-border">
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              Try Again
-            </Button>
+        <div className="flex items-start justify-between gap-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-900 dark:text-rose-200 text-xs shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+            <div className="space-y-0.5">
+              <p className="font-bold text-sm">Could Not Reach Sensor Node</p>
+              <p className="text-rose-800/90 dark:text-rose-300/90">
+                Connection to your field node is currently interrupted. Tap below to retry handshake.
+              </p>
+            </div>
           </div>
+          <Button variant="outline" size="sm" onClick={handleManualSync} className="rounded-full text-xs border-rose-300 dark:border-rose-700 bg-background hover:bg-rose-50 shrink-0 h-8">
+            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+            Retry Sync
+          </Button>
         </div>
       )}
 
-      {/* ── SENSOR CARDS GRID ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Soil Moisture */}
-        <Card className="border-border shadow-card rounded-2xl">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Droplets className="w-4 h-4 text-sky-500" />
-                Soil Moisture
-              </span>
-              {selectedDevice && latestReading?.soil_moisture !== null && latestReading?.soil_moisture !== undefined ? (
-                <Badge className="bg-sky-500/15 text-sky-700 border-sky-500/20 text-[10px]">
-                  {selectedDevice.status === "ONLINE" ? "Active" : "Offline Record"}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-[10px] text-muted-foreground">Not Connected</Badge>
-              )}
+      {/* ── SENSOR CARDS GRID (ZERO OVERLAP TELEMETRY TILES) ───────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* 1. Soil Moisture */}
+        <Card className="group relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-card hover:shadow-xl hover:border-sky-500/40 transition-all duration-300">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-500/20 shadow-sm group-hover:scale-105 transition-transform">
+              <Droplets className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
             {selectedDevice && latestReading?.soil_moisture !== null && latestReading?.soil_moisture !== undefined ? (
-              <>
-                <div className="space-y-0.5">
-                  {latestReading.soil_moisture <= 100 ? (
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                        {Math.round(latestReading.soil_moisture)}
-                      </span>
-                      <span className="text-sm font-semibold text-muted-foreground">%</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span className="text-2xl font-extrabold text-foreground">{Math.round(latestReading.soil_moisture)}</span>
-                      <p className="text-[11px] text-muted-foreground font-medium">Raw sensor value (ADC)</p>
-                    </div>
-                  )}
+              <Badge className={selectedDevice.status === "ONLINE" ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30 text-[10px] px-2.5 py-0.5 font-semibold" : "bg-muted text-muted-foreground text-[10px]"}>
+                {selectedDevice.status === "ONLINE" ? "Live Stream" : "Cached"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60 bg-muted/40">
+                Standby
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Soil Moisture</p>
+            {selectedDevice && latestReading?.soil_moisture !== null && latestReading?.soil_moisture !== undefined ? (
+              <div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+                    {Math.round(latestReading.soil_moisture)}
+                  </span>
+                  <span className="text-base font-bold text-sky-600 dark:text-sky-400">
+                    {latestReading.soil_moisture <= 100 ? "%" : "ADC"}
+                  </span>
+                </div>
+                {/* Visual Progress Bar */}
+                <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="bg-sky-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(Math.max(latestReading.soil_moisture <= 100 ? latestReading.soil_moisture : (latestReading.soil_moisture / 4095) * 100, 5), 100)}%` }}
+                  />
                 </div>
                 {readTimeLabel(latestReading.created_at)}
-              </>
+              </div>
             ) : (
-              <div className="py-2 space-y-1">
-                <p className="text-sm font-semibold text-muted-foreground">Sensor node not connected</p>
-                <p className="text-[11px] text-muted-foreground">No telemetry available</p>
+              <div className="pt-1 space-y-1">
+                <span className="text-3xl font-bold text-muted-foreground/50">--</span>
+                <p className="text-[11px] text-muted-foreground">Awaiting hardware stream</p>
+                <div className="w-full bg-muted/40 h-1.5 rounded-full mt-2" />
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
 
-        {/* Temperature */}
-        <Card className="border-border shadow-card rounded-2xl">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Thermometer className="w-4 h-4 text-amber-500" />
-                Temperature
-              </span>
-              {selectedDevice && latestReading?.temperature !== null && latestReading?.temperature !== undefined ? (
-                <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/20 text-[10px]">
-                  {selectedDevice.status === "ONLINE" ? "Active" : "Offline Record"}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-[10px] text-muted-foreground">Not Connected</Badge>
-              )}
+        {/* 2. Temperature */}
+        <Card className="group relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-card hover:shadow-xl hover:border-amber-500/40 transition-all duration-300">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20 shadow-sm group-hover:scale-105 transition-transform">
+              <Thermometer className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
             {selectedDevice && latestReading?.temperature !== null && latestReading?.temperature !== undefined ? (
-              <>
+              <Badge className={selectedDevice.status === "ONLINE" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-2.5 py-0.5 font-semibold" : "bg-muted text-muted-foreground text-[10px]"}>
+                {selectedDevice.status === "ONLINE" ? "Live Stream" : "Cached"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60 bg-muted/40">
+                Standby
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Temperature</p>
+            {selectedDevice && latestReading?.temperature !== null && latestReading?.temperature !== undefined ? (
+              <div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-extrabold tracking-tight text-foreground">
+                  <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                     {latestReading.temperature.toFixed(1)}
                   </span>
-                  <span className="text-sm font-semibold text-muted-foreground">°C</span>
+                  <span className="text-base font-bold text-amber-600 dark:text-amber-400">°C</span>
+                </div>
+                {/* Visual Progress Bar */}
+                <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(Math.max((latestReading.temperature / 50) * 100, 5), 100)}%` }}
+                  />
                 </div>
                 {readTimeLabel(latestReading.created_at)}
-              </>
+              </div>
             ) : (
-              <div className="py-2 space-y-1">
-                <p className="text-sm font-semibold text-muted-foreground">Sensor node not connected</p>
-                <p className="text-[11px] text-muted-foreground">No telemetry available</p>
+              <div className="pt-1 space-y-1">
+                <span className="text-3xl font-bold text-muted-foreground/50">--</span>
+                <p className="text-[11px] text-muted-foreground">DHT sensor standby</p>
+                <div className="w-full bg-muted/40 h-1.5 rounded-full mt-2" />
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
 
-        {/* Humidity */}
-        <Card className="border-border shadow-card rounded-2xl">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Wind className="w-4 h-4 text-indigo-500" />
-                Humidity
-              </span>
-              {selectedDevice && latestReading?.humidity !== null && latestReading?.humidity !== undefined ? (
-                <Badge className="bg-indigo-500/15 text-indigo-700 border-indigo-500/20 text-[10px]">
-                  {selectedDevice.status === "ONLINE" ? "Active" : "Offline Record"}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-[10px] text-muted-foreground">Not Connected</Badge>
-              )}
+        {/* 3. Humidity */}
+        <Card className="group relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-card hover:shadow-xl hover:border-indigo-500/40 transition-all duration-300">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 shadow-sm group-hover:scale-105 transition-transform">
+              <Wind className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
             {selectedDevice && latestReading?.humidity !== null && latestReading?.humidity !== undefined ? (
-              <>
+              <Badge className={selectedDevice.status === "ONLINE" ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 text-[10px] px-2.5 py-0.5 font-semibold" : "bg-muted text-muted-foreground text-[10px]"}>
+                {selectedDevice.status === "ONLINE" ? "Live Stream" : "Cached"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60 bg-muted/40">
+                Standby
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Humidity</p>
+            {selectedDevice && latestReading?.humidity !== null && latestReading?.humidity !== undefined ? (
+              <div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-extrabold tracking-tight text-foreground">
+                  <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                     {Math.round(latestReading.humidity)}
                   </span>
-                  <span className="text-sm font-semibold text-muted-foreground">%</span>
+                  <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">%</span>
+                </div>
+                {/* Visual Progress Bar */}
+                <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(Math.max(latestReading.humidity, 5), 100)}%` }}
+                  />
                 </div>
                 {readTimeLabel(latestReading.created_at)}
-              </>
+              </div>
             ) : (
-              <div className="py-2 space-y-1">
-                <p className="text-sm font-semibold text-muted-foreground">Sensor node not connected</p>
-                <p className="text-[11px] text-muted-foreground">No telemetry available</p>
+              <div className="pt-1 space-y-1">
+                <span className="text-3xl font-bold text-muted-foreground/50">--</span>
+                <p className="text-[11px] text-muted-foreground">Relative humidity standby</p>
+                <div className="w-full bg-muted/40 h-1.5 rounded-full mt-2" />
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
 
-        {/* Rain Sensor */}
-        <Card className="border-border shadow-card rounded-2xl">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <CloudRain className="w-4 h-4 text-blue-500" />
-                Rain Sensor
-              </span>
-              {selectedDevice && latestReading?.rain_value !== null && latestReading?.rain_value !== undefined ? (
-                <Badge className="bg-blue-500/15 text-blue-700 border-blue-500/20 text-[10px]">
-                  {selectedDevice.status === "ONLINE" ? "Active" : "Offline Record"}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-[10px] text-muted-foreground">Not Connected</Badge>
-              )}
+        {/* 4. Rain Sensor */}
+        <Card className="group relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-card hover:shadow-xl hover:border-blue-500/40 transition-all duration-300">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shadow-sm group-hover:scale-105 transition-transform">
+              <CloudRain className="w-5 h-5" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
             {selectedDevice && latestReading?.rain_value !== null && latestReading?.rain_value !== undefined ? (
-              <>
-                <div className="space-y-0.5">
-                  <span className="text-2xl font-extrabold text-foreground">{latestReading.rain_value}</span>
-                  <p className="text-[11px] text-muted-foreground font-medium">Raw sensor value (ADC)</p>
+              <Badge className={selectedDevice.status === "ONLINE" ? (getRainStatusInfo(latestReading.rain_value).isRaining ? "bg-blue-600 text-white text-[10px] px-2.5 py-0.5 font-bold shadow-sm" : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] px-2.5 py-0.5 font-semibold") : "bg-muted text-muted-foreground text-[10px]"}>
+                {selectedDevice.status === "ONLINE" ? (getRainStatusInfo(latestReading.rain_value).isRaining ? "Precipitation" : "Dry Field") : "Cached"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60 bg-muted/40">
+                Standby
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Rain Sensor</p>
+            {selectedDevice && latestReading?.rain_value !== null && latestReading?.rain_value !== undefined ? (
+              <div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                    {getRainStatusInfo(latestReading.rain_value).status}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground font-medium mt-1">
+                  {getRainStatusInfo(latestReading.rain_value).label} (ADC: {latestReading.rain_value})
+                </p>
+                {/* Visual indicator bar */}
+                <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="bg-blue-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${getRainStatusInfo(latestReading.rain_value).isRaining ? 85 : 15}%` }}
+                  />
                 </div>
                 {readTimeLabel(latestReading.created_at)}
-              </>
+              </div>
             ) : (
-              <div className="py-2 space-y-1">
-                <p className="text-sm font-semibold text-muted-foreground">Sensor node not connected</p>
-                <p className="text-[11px] text-muted-foreground">No telemetry available</p>
+              <div className="pt-1 space-y-1">
+                <span className="text-3xl font-bold text-muted-foreground/50">--</span>
+                <p className="text-[11px] text-muted-foreground">Optical/resistive rain standby</p>
+                <div className="w-full bg-muted/40 h-1.5 rounded-full mt-2" />
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
       </div>
 
-      {/* ── HISTORY + INSIGHTS ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Button
-          variant="outline"
+      {/* ── MIDDLE ROW: HISTORY & AI FARM INSIGHTS ───────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <button
+          type="button"
           onClick={() => setHistoryOpen(true)}
           disabled={!selectedDevice || history.length === 0}
-          className="rounded-2xl border-border h-auto p-4 justify-start gap-3 text-left"
+          className="group text-left p-5 rounded-3xl border border-border bg-gradient-to-br from-card via-card to-emerald-500/5 shadow-card hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 flex items-center justify-between gap-4 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <History className="w-5 h-5 text-emerald-600 shrink-0" />
-          <div className="space-y-0.5">
-            <p className="text-sm font-bold text-foreground">Sensor History</p>
-            <p className="text-[11px] text-muted-foreground">
-              {history.length > 0 ? "Chart of the last 48 real readings from your node" : "No readings recorded yet"}
-            </p>
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
+              <History className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-foreground">Sensor History & Trends</p>
+                {history.length > 0 && (
+                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] px-2 py-0 border-emerald-500/30">
+                    {history.length} Points
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {history.length > 0 ? "Inspect real-time sensor graphs & data logs" : "No telemetry readings recorded yet"}
+              </p>
+            </div>
           </div>
-          <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground" />
-        </Button>
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+        </button>
 
-        <Card className="border-border rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
-            <p className="text-xs font-bold text-foreground uppercase tracking-wider">Farm Insights</p>
+        <Card className="rounded-3xl border border-border bg-gradient-to-br from-card via-card to-amber-500/5 p-5 shadow-card">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-500/20">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <p className="text-xs font-bold text-foreground uppercase tracking-wider">AI Farm Advisory</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-medium">Real-Time Insights</span>
           </div>
           {insights.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground">
-              {dashboardState === "NO_DEVICE" ? "Link a sensor node to get real-time farming advice based on your actual readings." : "Waiting for enough live data to give advice\u2026"}
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {dashboardState === "NO_DEVICE"
+                ? "Link your hardware node to receive real-time soil, irrigation, and pest advisory based on authentic crop readings."
+                : "Awaiting sufficient live sensor data to formulate crop advisory…"}
             </p>
           ) : (
             <ul className="space-y-2">
               {insights.map((ins, i) => (
-                <li key={i} className="flex items-start gap-2 text-[11px] text-foreground">
-                  {ins.icon === "wifi-off" ? <AlertTriangle className="w-3.5 h-3.5 mt-0.5 text-red-500 shrink-0" /> : ins.icon === "sunrise" ? <Thermometer className="w-3.5 h-3.5 mt-0.5 text-amber-500 shrink-0" /> : ins.icon === "cloudy" ? <Wind className="w-3.5 h-3.5 mt-0.5 text-indigo-500 shrink-0" /> : <Droplets className="w-3.5 h-3.5 mt-0.5 text-sky-500 shrink-0" />}
-                  <span>{ins.text}</span>
+                <li key={i} className="flex items-start gap-2.5 text-xs text-foreground bg-muted/30 p-2.5 rounded-xl border border-border/50">
+                  {ins.icon === "wifi-off" ? (
+                    <AlertTriangle className="w-4 h-4 mt-0.5 text-rose-500 shrink-0" />
+                  ) : ins.icon === "sunrise" ? (
+                    <Thermometer className="w-4 h-4 mt-0.5 text-amber-500 shrink-0" />
+                  ) : ins.icon === "cloudy" ? (
+                    <Wind className="w-4 h-4 mt-0.5 text-indigo-500 shrink-0" />
+                  ) : (
+                    <Droplets className="w-4 h-4 mt-0.5 text-sky-500 shrink-0" />
+                  )}
+                  <span className="leading-snug">{ins.text}</span>
                 </li>
               ))}
             </ul>
@@ -899,190 +1080,209 @@ const HardwareDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* ── SMART FENCE / BUZZER / PUMP — COMMAND CARD ────────────────────── */}
-      <Card className="border-border shadow-card rounded-2xl overflow-hidden">
-        <CardHeader className="bg-muted/40 pb-4 border-b border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center border border-emerald-500/20">
+      {/* ── PRECISION FIELD CONTROLS (HIGH-CONTRAST INTERACTIVE TILES) ──────── */}
+      <Card className="border border-border/80 shadow-xl rounded-3xl overflow-hidden bg-card">
+        <CardHeader className="bg-gradient-to-r from-muted/50 via-card to-muted/30 pb-4 border-b border-border/70 p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center border border-emerald-500/30 shadow-sm">
                 <Fence className="w-5 h-5" />
               </div>
               <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  Field Controls
-                  <Badge variant="outline" className="text-[10px] font-normal border-border">Commands on this page are confirmed by your hardware</Badge>
+                <CardTitle className="text-base sm:text-lg font-extrabold flex items-center gap-2.5">
+                  <span>Field Controls</span>
+                  <Badge variant="outline" className="text-[10px] font-semibold border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                    ESP32 Confirmed
+                  </Badge>
                 </CardTitle>
-                <CardDescription className="text-xs">
-                  Buzzer, Smart Fence and water pump — nothing is shown as done until the device confirms it.
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                  Laser perimeter, acoustic deterrent, and irrigation relays confirmed by hardware.
                 </CardDescription>
               </div>
             </div>
 
             <div>
               {currentFenceStatus !== "NOT_CONNECTED" ? (
-                <Badge className={currentFenceStatus === "INTRUSION" ? "bg-red-500 text-white font-bold" : "bg-emerald-500/15 text-emerald-700 border-emerald-500/30"}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
-                  {currentFenceStatus}
+                <Badge className={currentFenceStatus === "INTRUSION" ? "bg-red-600 text-white font-bold animate-pulse px-3 py-1 shadow-md" : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 px-3 py-1 font-semibold"}>
+                  <span className="w-2 h-2 rounded-full bg-current mr-2 animate-ping" />
+                  Fence: {currentFenceStatus}
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="text-xs font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5" />
-                  Hardware Not Connected
+                <Badge variant="secondary" className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border">
+                  <span className="w-2 h-2 rounded-full bg-slate-400 mr-2" />
+                  Hardware Offline
                 </Badge>
               )}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-5 space-y-5">
-          {/* Smart fence */}
-          <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
-                <Fence className="w-4.5 h-4.5" />
+        <CardContent className="p-5 sm:p-6 space-y-4">
+          {/* Control 1: Smart Fence */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-gradient-to-r from-card to-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-emerald-500/40 transition-all">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center border border-emerald-500/30 shadow-sm shrink-0">
+                <Fence className="w-5 h-5" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-bold text-foreground">Smart Fence</p>
-                <p className="text-[11px] text-muted-foreground">Laser beam + LDR perimeter security</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-foreground">Smart Laser Fence</p>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-semibold">
+                    LDR Perimeter
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Laser beam perimeter security to deter animal intrusion</p>
                 {renderCommandState("ARM_FENCE")}
                 {renderCommandState("DISARM_FENCE")}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
               <Button
                 size="sm"
-                variant="outline"
                 disabled={!selectedDevice?.capabilities.laserFence || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.ARM_FENCE?.phase === "sending" || commandStates.ARM_FENCE?.phase === "queued"}
                 onClick={() => issueCommand("ARM_FENCE")}
-                className="rounded-full text-xs border-border"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-80 disabled:cursor-not-allowed"
               >
-                <Fence className="w-3.5 h-3.5" />
-                Arm
+                <Fence className="w-3.5 h-3.5 mr-1.5" />
+                Arm Fence
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={!selectedDevice?.capabilities.laserFence || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.DISARM_FENCE?.phase === "sending" || commandStates.DISARM_FENCE?.phase === "queued"}
                 onClick={() => issueCommand("DISARM_FENCE")}
-                className="rounded-full text-xs border-border"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 border-border hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Disarm
               </Button>
             </div>
           </div>
 
-          {/* Buzzer */}
-          <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 flex items-center justify-center">
-                <Volume2 className="w-4.5 h-4.5" />
+          {/* Control 2: Buzzer Deterrent */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-gradient-to-r from-card to-amber-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-amber-500/40 transition-all">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-amber-500/30 shadow-sm shrink-0">
+                <Volume2 className="w-5 h-5" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-bold text-foreground">Buzzer Deterrent</p>
-                <p className="text-[11px] text-muted-foreground">Scare away stray animals</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-foreground">Acoustic Buzzer Deterrent</p>
+                  <Badge variant="outline" className={`text-[10px] ${confirmedBuzzerState.status === "ON" ? "bg-amber-500/20 text-amber-800 dark:text-amber-200 border-amber-500/40 font-bold" : "text-muted-foreground border-border bg-muted/40"}`}>
+                    {confirmedBuzzerState.label}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">High-frequency buzzer pulse to repel wild boars and stray cattle</p>
                 {renderCommandState("BUZZER_ON")}
                 {renderCommandState("BUZZER_OFF")}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
               <Button
                 size="sm"
                 disabled={!selectedDevice?.capabilities.buzzer || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.BUZZER_ON?.phase === "sending" || commandStates.BUZZER_ON?.phase === "queued"}
                 onClick={() => issueCommand("BUZZER_ON")}
-                className="rounded-full text-xs flex-1 sm:flex-initial gap-1.5"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 bg-amber-600 hover:bg-amber-700 text-white shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-80 disabled:cursor-not-allowed"
               >
-                <Volume2 className="w-3.5 h-3.5" />
-                {selectedDevice?.capabilities.buzzer ? "Buzzer On" : "Buzzer Unavailable"}
+                <Volume2 className="w-3.5 h-3.5 mr-1.5" />
+                Buzzer ON
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={!selectedDevice?.capabilities.buzzer || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.BUZZER_OFF?.phase === "sending" || commandStates.BUZZER_OFF?.phase === "queued"}
                 onClick={() => issueCommand("BUZZER_OFF")}
-                className="rounded-full text-xs flex-1 sm:flex-initial border-border"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 border-border hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Buzzer Off
+                Buzzer OFF
               </Button>
             </div>
           </div>
 
-          {/* Water pump */}
-          <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-700 dark:text-sky-300 flex items-center justify-center">
-                <Droplets className="w-4.5 h-4.5" />
+          {/* Control 3: Water Irrigation Pump */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-gradient-to-r from-card to-sky-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-sky-500/40 transition-all">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-sky-500/15 text-sky-700 dark:text-sky-300 flex items-center justify-center border border-sky-500/30 shadow-sm shrink-0">
+                <Droplets className="w-5 h-5" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-bold text-foreground">Water Pump</p>
-                <p className="text-[11px] text-muted-foreground">Relay-controlled irrigation</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-foreground">Irrigation Water Pump</p>
+                  <Badge variant="outline" className={`text-[10px] ${confirmedPumpState.status === "ON" ? "bg-sky-500/20 text-sky-800 dark:text-sky-200 border-sky-500/40 font-bold" : "text-muted-foreground border-border bg-muted/40"}`}>
+                    {confirmedPumpState.label}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Relay switch controlling field water pump and drip irrigation</p>
                 {renderCommandState("PUMP_ON")}
                 {renderCommandState("PUMP_OFF")}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
               <Button
                 size="sm"
                 disabled={!selectedDevice?.capabilities.pump || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.PUMP_ON?.phase === "sending" || commandStates.PUMP_ON?.phase === "queued"}
                 onClick={() => issueCommand("PUMP_ON")}
-                className="rounded-full text-xs flex-1 sm:flex-initial gap-1.5 bg-sky-700 hover:bg-sky-800 text-white"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 bg-sky-600 hover:bg-sky-700 text-white shadow-sm disabled:bg-muted disabled:text-muted-foreground disabled:border disabled:border-border disabled:opacity-80 disabled:cursor-not-allowed"
               >
-                <Droplets className="w-3.5 h-3.5" />
-                {selectedDevice?.capabilities.pump ? "Pump On" : "Pump Unavailable"}
+                <Droplets className="w-3.5 h-3.5 mr-1.5" />
+                Pump ON
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={!selectedDevice?.capabilities.pump || !selectedDevice || selectedDevice.status !== "ONLINE" || commandStates.PUMP_OFF?.phase === "sending" || commandStates.PUMP_OFF?.phase === "queued"}
                 onClick={() => issueCommand("PUMP_OFF")}
-                className="rounded-full text-xs flex-1 sm:flex-initial border-border"
+                className="rounded-full text-xs font-semibold flex-1 sm:flex-initial h-9 px-5 border-border hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Pump Off
+                Pump OFF
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-border bg-muted/20">
+          {/* Explanatory Footer Banner */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl border border-border/70 bg-muted/30">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="space-y-1 text-xs">
-                <p className="font-semibold text-foreground">How commands work</p>
-                <p className="text-muted-foreground max-w-xl">
-                  Your node checks for new commands every 15 seconds, executes them on the connected GPIOs, and sends back a confirmation. Until that confirmation arrives, the app shows "waiting for the device" — never a premature success.
+              <Info className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5 text-xs">
+                <p className="font-bold text-foreground">Hardware Command Execution</p>
+                <p className="text-muted-foreground max-w-xl leading-relaxed">
+                  Your node checks for commands every 15 seconds, executes them on the GPIO relays, and sends back hardware verification.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-              <Button variant="outline" size="sm" onClick={() => setFenceGuideOpen(true)} className="rounded-full text-xs border-border flex-1 sm:flex-initial">
+              <Button variant="outline" size="sm" onClick={() => setFenceGuideOpen(true)} className="rounded-full text-xs border-border flex-1 sm:flex-initial h-8 px-4">
                 Wiring Guide
               </Button>
-              <Button size="sm" onClick={() => setHistoryOpen(true)} disabled={commands.length === 0} variant="outline" className="rounded-full text-xs border-border flex-1 sm:flex-initial gap-1.5">
+              <Button size="sm" onClick={() => setHistoryOpen(true)} disabled={commands.length === 0} variant="outline" className="rounded-full text-xs border-border flex-1 sm:flex-initial gap-1.5 h-8 px-4">
                 <History className="w-3.5 h-3.5" />
                 Command Log
               </Button>
             </div>
           </div>
 
-          {/* Command log */}
+          {/* Recent Commands Feed */}
           {commands.length > 0 && (
-            <div className="space-y-1.5">
+            <div className="space-y-2 pt-2">
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCheck className="w-3.5 h-3.5" />
-                Recent Commands
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                Recent Hardware Commands
               </p>
-              {commands.slice(0, 4).map((c) => {
-                const lifecycle = describeCommandLifecycle(c.issued_at, c.state);
-                return (
-                  <div key={c.id} className="flex items-center justify-between gap-3 text-[11px] py-1.5 px-2 rounded-lg bg-muted/40">
-                    <span className="font-mono font-semibold text-foreground">{c.command}</span>
-                    <span className={`flex items-center gap-1.5 ${c.state === "FAILED" ? "text-red-600" : c.state === "EXECUTED" ? "text-emerald-700" : "text-amber-700"}`}>
-                      {commandStateIcon(lifecycle)}
-                      {lifecycle.label}
-                      <span className="text-muted-foreground">\u00b7 {formatRelativeTime(c.issued_at, now)}</span>
-                    </span>
-                  </div>
-                );
-              })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {commands.slice(0, 4).map((c) => {
+                  const lifecycle = describeCommandLifecycle(c.issued_at, c.state);
+                  return (
+                    <div key={c.id} className="flex items-center justify-between gap-3 text-xs py-2 px-3 rounded-xl bg-muted/40 border border-border/50">
+                      <span className="font-mono font-semibold text-foreground">{c.command}</span>
+                      <span className={`flex items-center gap-1.5 font-medium ${c.state === "FAILED" ? "text-rose-600" : c.state === "EXECUTED" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                        {commandStateIcon(lifecycle)}
+                        {lifecycle.label}
+                        <span className="text-muted-foreground text-[10px]">• {formatRelativeTime(c.issued_at, now)}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardContent>

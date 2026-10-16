@@ -226,6 +226,26 @@ export const describeCommandLifecycle = (issuedAt: string | null, state: IotComm
   return { phase: "idle", label: "Ready" };
 };
 
+export const PROD_IOT_API_BASE = "https://agriconnect-navy-six.vercel.app";
+
+export async function iotApiFetch(endpoint: string, options?: RequestInit): Promise<Response> {
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  try {
+    const res = await fetch(cleanEndpoint, options);
+    if (!res.ok && (res.status === 404 || res.status === 502 || res.status === 504)) {
+      if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+        return await fetch(`${PROD_IOT_API_BASE}${cleanEndpoint}`, options);
+      }
+    }
+    return res;
+  } catch (err) {
+    if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+      return await fetch(`${PROD_IOT_API_BASE}${cleanEndpoint}`, options);
+    }
+    throw err;
+  }
+}
+
 /** Fetch IoT devices owned by the authenticated user or unassigned nodes. */
 export const fetchFarmDevices = async (farmId?: string | null, userId?: string | null): Promise<IotDevice[]> => {
   try {
@@ -234,7 +254,7 @@ export const fetchFarmDevices = async (farmId?: string | null, userId?: string |
       const params = new URLSearchParams();
       if (farmId) params.append("farmId", farmId);
       if (userId) params.append("userId", userId);
-      const apiRes = await fetch(`/api/iot/devices?${params.toString()}`);
+      const apiRes = await iotApiFetch(`/api/iot/devices?${params.toString()}`);
       if (apiRes.ok) {
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.devices) && json.devices.length > 0) {
@@ -320,7 +340,7 @@ export const fetchLatestReading = async (deviceId: string): Promise<SensorReadin
 
     // Server API fallback if RLS prevents direct table select
     try {
-      const apiRes = await fetch("/api/iot/devices");
+      const apiRes = await iotApiFetch("/api/iot/devices");
       if (apiRes.ok) {
         const json = await apiRes.json();
         if (json.success && Array.isArray(json.devices)) {
@@ -437,7 +457,7 @@ export const registerIotDevice = async (params: {
 
     // Check via API endpoint first to bypass RLS restrictions
     try {
-      const checkRes = await fetch(`/api/iot/devices?deviceUid=${encodeURIComponent(uid)}&userId=${encodeURIComponent(params.userId)}&farmId=${encodeURIComponent(params.farmId)}`);
+      const checkRes = await iotApiFetch(`/api/iot/devices?deviceUid=${encodeURIComponent(uid)}&userId=${encodeURIComponent(params.userId)}&farmId=${encodeURIComponent(params.farmId)}`);
       if (checkRes.ok) {
         const checkJson = await checkRes.json();
         if (checkJson.success && Array.isArray(checkJson.devices) && checkJson.devices.length > 0) {
@@ -527,7 +547,7 @@ export const registerIotDevice = async (params: {
       const isConflict = typeof error.code === "string" && /^23/.test(error.code);
       if (isConflict) {
         // Fetch via API endpoint to return the claimed device
-        const checkRes = await fetch(`/api/iot/devices?deviceUid=${encodeURIComponent(uid)}&userId=${encodeURIComponent(params.userId)}&farmId=${encodeURIComponent(params.farmId)}`);
+        const checkRes = await iotApiFetch(`/api/iot/devices?deviceUid=${encodeURIComponent(uid)}&userId=${encodeURIComponent(params.userId)}&farmId=${encodeURIComponent(params.farmId)}`);
         if (checkRes.ok) {
           const checkJson = await checkRes.json();
           if (checkJson.success && Array.isArray(checkJson.devices) && checkJson.devices.length > 0) {
@@ -581,7 +601,7 @@ export const sendDeviceCommand = async (
   error?: string;
 }> => {
   try {
-    const response = await fetch("/api/iot/device-command", {
+    const response = await iotApiFetch("/api/iot/device-command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deviceUid, command }),
@@ -622,7 +642,7 @@ export const sendTestTelemetry = async (payload: {
   fenceStatus?: string;
 }): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await fetch("/api/iot/telemetry", {
+    const response = await iotApiFetch("/api/iot/telemetry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

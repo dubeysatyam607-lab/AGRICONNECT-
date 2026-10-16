@@ -91,8 +91,8 @@ export default async function handler(req, res) {
           }
         }
 
-        // 4. Auto-bind user_id if device is unassigned or binding requested
-        if (userId && typeof userId === "string" && (!device.user_id || device.user_id !== userId)) {
+        // 4. Auto-bind user_id only if device is unassigned
+        if (userId && typeof userId === "string" && !device.user_id) {
           fetch(`${supabaseUrl}/rest/v1/iot_devices?id=eq.${encodeURIComponent(device.id)}`, {
             method: "PATCH",
             headers: supabaseHeaders,

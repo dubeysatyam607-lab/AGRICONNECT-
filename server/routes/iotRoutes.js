@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const iotController = require('../controllers/iotController');
 
+// Device query endpoint (status & latest telemetry)
+router.get('/devices', iotController.getDevices);
+
 // Telemetry ingestion endpoint for ESP32 nodes
 router.post('/telemetry', iotController.postTelemetry);
 

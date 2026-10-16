@@ -184,12 +184,18 @@ const ALLOWED_CORS_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8000",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
   "https://agriconnect-navy-six.vercel.app",
 ];
 
 function corsAllowed(origin) {
   if (!origin) return false;
   if (ALLOWED_CORS_ORIGINS.includes(origin)) return true;
+  if (/^http:\/\/localhost:[0-9]+$/.test(origin)) return true;
+  if (/^http:\/\/127\.0\.0\.1:[0-9]+$/.test(origin)) return true;
   return /^https:\/\/agriconnect-navy-six-[a-zA-Z0-9-]+\.vercel\.app$/.test(origin);
 }
 
