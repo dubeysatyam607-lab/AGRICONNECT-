@@ -207,6 +207,7 @@ const TodayTasks: React.FC<TodayTasksProps> = ({ triggerHaptic, farmCrop, onNavi
         onClick={() => toggleTask(idx)}
         role="checkbox"
         aria-checked={task.done}
+        aria-pressed={task.done}
         aria-label={interpolate(t("tasks.ariaTask"), { label: task.label, status: task.done ? t("tasks.completed") : t("tasks.pending") })}
         className="group flex w-full items-center gap-3 rounded-xl border border-border/70 bg-card p-3 text-left shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-muted/30 active:scale-[0.99]"
       >

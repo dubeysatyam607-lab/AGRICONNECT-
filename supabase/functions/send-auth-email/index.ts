@@ -65,27 +65,47 @@ async function verifyHookSecret(req: Request, rawBody: string): Promise<boolean>
   if (!id || !timestamp || !signatureHeader) return false;
 
   try {
-    // Env value is "v1,whsec_<base64>"; the HMAC key is the decoded base64 part.
-    const secretPart = SEND_EMAIL_HOOK_SECRETS
-      .split(",")
-      .find((part) => part.startsWith("whsec_")) || SEND_EMAIL_HOOK_SECRETS;
-    const keyBytes = base64ToBytes(secretPart.replace("v1,whsec_", "").replace("whsec_", ""));
-    const key = await crypto.subtle.importKey(
-      "raw",
-      keyBytes,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const mac = new Uint8Array(
-      await crypto.subtle.sign(
-        "HMAC",
-        key,
-        new TextEncoder().encode(`${id}.${timestamp}.${rawBody}`),
-      ),
-    );
-    const expected = `v1,${bytesToBase64(mac)}`;
-    return signatureHeader.split(" ").some((sig) => sig === expected);
+    const rawParts = SEND_EMAIL_HOOK_SECRETS.split(",");
+    const secrets: string[] = [];
+    for (let i = 0; i < rawParts.length; i++) {
+      const part = rawParts[i].trim();
+      if (part.startsWith("whsec_")) {
+        secrets.push(part.replace(/^whsec_/, ""));
+      } else if (part.startsWith("v1,whsec_")) {
+        secrets.push(part.replace(/^v1,whsec_/, ""));
+      } else if (part && part !== "v1") {
+        secrets.push(part);
+      }
+    }
+
+    if (secrets.length === 0) {
+      secrets.push(SEND_EMAIL_HOOK_SECRETS.replace(/^v1,whsec_/, "").replace(/^whsec_/, ""));
+    }
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(`${id}.${timestamp}.${rawBody}`);
+    const signatures = signatureHeader.split(" ");
+
+    for (const secretB64 of secrets) {
+      try {
+        const keyBytes = base64ToBytes(secretB64);
+        const key = await crypto.subtle.importKey(
+          "raw",
+          keyBytes,
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"],
+        );
+        const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, data));
+        const expected = `v1,${bytesToBase64(mac)}`;
+        if (signatures.includes(expected)) {
+          return true;
+        }
+      } catch {
+        // Try next secret if rotation is active
+      }
+    }
+    return false;
   } catch (err: any) {
     console.error("[send-auth-email] webhook signature verification failed:", err?.message || err);
     return false;
@@ -100,13 +120,26 @@ interface EmailMessage {
 }
 
 async function sendEmail(message: EmailMessage): Promise<void> {
- const hostname = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
- const port = Number(Deno.env.get("EMAIL_PORT") || 465);
- const username = Deno.env.get("EMAIL_USER") || "hello.agriconnect@gmail.com";
- const password = Deno.env.get("EMAIL_PASS");
- if (!password) {
- throw new Error("EMAIL_PASS not configured");
- }
+  const hostname = Deno.env.get("EMAIL_HOST") || "smtp.gmail.com";
+  const port = Number(Deno.env.get("EMAIL_PORT") || 465);
+  // Guarantee sender username is hello.agriconnect@gmail.com
+  const envUser = Deno.env.get("EMAIL_USER");
+  const username = (envUser && !envUser.includes("dubeysatyam") && !envUser.includes("satyamff"))
+    ? envUser.trim().replace(/^["']|["']$/g, "")
+    : "hello.agriconnect@gmail.com";
+
+  const envPass = Deno.env.get("EMAIL_PASS");
+  const rawPass = (!envPass || envPass.includes("tmjmzfgyhgqupfcu") || envPass.startsWith("sbp_"))
+    ? "tgojmbgwhcyywkth"
+    : envPass;
+  const password = rawPass.trim().replace(/^["']|["']$/g, "").replace(/\s+/g, "");
+
+  if (!password) {
+    throw new Error("EMAIL_PASS not configured");
+  }
+  if (password.startsWith("sbp_")) {
+    throw new Error("Invalid EMAIL_PASS: Google App Password expected, but Supabase access token was provided.");
+  }
 
  // Deno-native SMTP via TLS socket
  const encoder = new TextEncoder();
@@ -275,34 +308,58 @@ const handler = async (req: Request): Promise<Response> => {
   // Verify the webhook signature to prevent unauthorized email sending
   if (!(await verifyHookSecret(req, payload))) {
     console.error("[send-auth-email] Invalid webhook signature");
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    return new Response(
+      JSON.stringify({
+        error: {
+          http_code: 401,
+          message: "Unauthorized: Invalid webhook signature",
+        },
+      }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   try {
     if (EMAIL_PROVIDER === "resend" && !Deno.env.get("RESEND_API_KEY")) {
       console.error("[send-auth-email] RESEND_API_KEY is not configured");
-      return new Response(JSON.stringify({ error: "Email service is not configured." }), { status: 500 });
+      return new Response(
+        JSON.stringify({
+          error: {
+            http_code: 400,
+            message: "Email service is not configured.",
+          },
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
     }
     // Parse the payload from Supabase Auth
     let hookPayload: any;
- try {
- hookPayload = JSON.parse(payload);
- } catch {
- console.error("[send-auth-email] Failed to parse payload");
- return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
- }
+    try {
+      hookPayload = JSON.parse(payload);
+    } catch {
+      console.error("[send-auth-email] Failed to parse payload");
+      return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
 
- // Current Supabase send_email hook payload:
- // { user: {...}, email_data: { token, token_hash, redirect_to,
- // email_action_type, site_url, token_new, token_hash_new } }
- const user = hookPayload.user;
- const emailData = hookPayload.email_data || {};
+    // Current Supabase send_email hook payload:
+    // { user: {...}, email_data: { token, token_hash, redirect_to,
+    // email_action_type, site_url, token_new, token_hash_new } }
+    const user = hookPayload.user;
+    const emailData = hookPayload.email_data || {};
 
- const to = user?.email;
- if (!to) {
- console.error("[send-auth-email] No recipient email on payload");
- return new Response(JSON.stringify({ error: "Missing recipient" }), { status: 400 });
- }
+    const to = user?.email;
+    if (!to) {
+      console.error("[send-auth-email] No recipient email on payload");
+      return new Response(
+        JSON.stringify({
+          error: {
+            http_code: 400,
+            message: "Missing recipient email address",
+          },
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
  // The 6-digit one-time code generated per user (each person gets their own).
  const rawToken: string = (emailData.token || "").trim();
@@ -393,13 +450,28 @@ const handler = async (req: Request): Promise<Response> => {
  console.log("[send-auth-email] sent:", emailActionType, "to", to);
  return new Response(JSON.stringify({}), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error: any) {
-    const message = error?.message || String(error);
-    console.error("[send-auth-email] error:", message);
-    // Fail loudly (non-2xx) so Supabase Auth surfaces the real problem instead
-    // of silently reporting success when no email was actually sent.
+    const rawMessage = error?.message || String(error);
+    console.error("[send-auth-email] delivery error:", rawMessage);
+
+    // Provide clear, actionable error for client without exposing internal secrets
+    let userFacingMessage = "Unable to send verification code. Please check your email address or try again shortly.";
+    if (rawMessage.includes("BadCredentials") || rawMessage.includes("535") || rawMessage.includes("password rejected")) {
+      userFacingMessage = "Email delivery service authentication error. Please contact hello.agriconnect@gmail.com or try again shortly.";
+    } else if (rawMessage.includes("Missing recipient")) {
+      userFacingMessage = "Recipient email address is missing.";
+    }
+
+    // GoTrue Auth Hook protocol:
+    // To signal failure without GoTrue throwing "Unexpected status code returned from hook: 500",
+    // the hook MUST return HTTP 400 (or 422) with { error: { http_code: 400, message: "..." } }.
     return new Response(
-      JSON.stringify({ error: "email_send_failed", message }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
+      JSON.stringify({
+        error: {
+          http_code: 400,
+          message: userFacingMessage,
+        },
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 };

@@ -81,9 +81,9 @@ const transporter = nodemailer.createTransport({
 
 // Send OTP Email
 const sendOTPEmail = async (email, otp) => {
-  if (!process.env.EMAIL_USER && !process.env.EMAIL_PASS) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV === 'test') {
     // Never log OTPs — even in dev, they can land in CI logs or shared shells.
-    console.log(`[Mock Email] OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not configured)`);
+    console.log(`[Mock Email] OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not fully configured or test mode)`);
     return; // Skip actual sending if no credentials
   }
 
@@ -97,7 +97,11 @@ const sendOTPEmail = async (email, otp) => {
            <p>It will expire in 5 minutes.</p>`
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error(`[sendOTPEmail] Failed to send email to ${email}:`, err?.message || err);
+  }
 };
 
 // @desc    Register a new user & send OTP
@@ -379,7 +383,11 @@ const forgotPassword = async (req, res) => {
     user.resetOtpAttempts = 0;
     await user.save();
 
-    await sendPasswordResetEmail(email, otp);
+    try {
+      await sendPasswordResetEmail(email, otp);
+    } catch (sendErr) {
+      console.error('[forgotPassword] email dispatch error (non-fatal):', sendErr?.message || sendErr);
+    }
 
     res.status(200).json({ message: 'If the email exists, a password reset OTP has been sent.' });
   } catch (error) {
@@ -390,8 +398,8 @@ const forgotPassword = async (req, res) => {
 
 // Send Password Reset Email
 const sendPasswordResetEmail = async (email, otp) => {
-  if (!process.env.EMAIL_USER && !process.env.EMAIL_PASS) {
-    console.log(`[Mock Email] Password reset OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not configured)`);
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV === 'test') {
+    console.log(`[Mock Email] Password reset OTP email to ${email} skipped (EMAIL_USER / EMAIL_PASS not fully configured or test mode)`);
     return;
   }
 

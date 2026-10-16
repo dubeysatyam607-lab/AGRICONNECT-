@@ -108,6 +108,14 @@ function persistOtpSentMap(map: Record<string, number>): void {
   }
 }
 
+function sanitizeAuthErrorMessage(message: string): string {
+  if (!message) return 'An unexpected error occurred. Please try again.';
+  if (/hook: 500/i.test(message) || /status code returned from hook/i.test(message)) {
+    return 'Unable to deliver verification code to your email. Please check your email address or try again shortly.';
+  }
+  return message;
+}
+
 /**
  * Clears all in-memory rate-limit/throttle state. Exposed for test isolation
  * so unit tests can exercise the datasource without leaking attempts across
@@ -373,7 +381,7 @@ export class AuthRemoteDataSource {
         },
       });
       if (error) {
-        throw new ServerException(error.message, error.status || 500, error);
+        throw new ServerException(sanitizeAuthErrorMessage(error.message), error.status || 500, error);
       }
     })();
     AuthRemoteDataSource.pendingOtpRequests[normalized] = requestPromise;
@@ -448,7 +456,7 @@ export class AuthRemoteDataSource {
     // but surface real failures so users are never told instructions were sent
     // when nothing was actually sent.
     if (error && !error.message.toLowerCase().includes('not found')) {
-      throw new ServerException(error.message, error.status || 500, error);
+      throw new ServerException(sanitizeAuthErrorMessage(error.message), error.status || 500, error);
     }
   }
 
