@@ -214,87 +214,274 @@ async function sendEmail(message: EmailMessage): Promise<void> {
 
 // ── Branded HTML shell ───────────────────────────────────────────────────────
 function esc(s: string): string {
- return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+const INSTAGRAM_URL = "https://www.instagram.com/hello_agriconnect";
+const LOGO_FULL_URL = `${APP_URL}/agriconnect-logo-full.png`;
 
 function emailShell(title: string, inner: string): string {
- return `
- <!DOCTYPE html>
- <html>
- <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
- <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#f5f5f5;margin:0;padding:20px;">
- <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,.1);">
- <div style="background:linear-gradient(135deg,#16a34a,#22c55e);padding:24px;text-align:center;">
- <h1 style="color:white;margin:0;font-size:22px;"> AgriConnect</h1>
- <p style="color:rgba(255,255,255,.9);margin:6px 0 0;font-size:13px;">${title}</p>
- </div>
- <div style="padding:28px;">${inner}</div>
- <div style="background:#f9fafb;padding:18px;text-align:center;border-top:1px solid #e5e7eb;">
- <p style="color:#9ca3af;font-size:12px;margin:0;">© ${new Date().getFullYear()} AgriConnect · Empowering Indian Farmers</p>
- <p style="color:#9ca3af;font-size:11px;margin:6px 0 0;">Didn't ask for this email? You can safely ignore it.</p>
- </div>
- </div>
- </body>
- </html>`;
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>${esc(title)}</title>
+<style>
+@keyframes agPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); transform: scale(1); }
+  50% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); transform: scale(1.01); }
+}
+@keyframes agShine {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%) skewX(-20deg); }
+}
+@keyframes agFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+.ag-pulse { animation: agPulse 2.4s ease-in-out infinite; }
+.ag-shine { animation: agShine 3s ease-in-out infinite; }
+.ag-float { animation: agFloat 3s ease-in-out infinite; }
+.ag-hover-card:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+@media (max-width: 600px) {
+  .ag-container { width: 100% !important; border-radius: 0 !important; }
+  .ag-pad { padding: 22px 16px !important; }
+  .ag-otp-num { font-size: 34px !important; letter-spacing: 10px !important; }
+  .ag-grid-cell { width: 50% !important; display: inline-block !important; }
+}
+@media (prefers-color-scheme: dark) {
+  body { background-color: #0b1410 !important; }
+  .ag-card-body { background-color: #121f19 !important; }
+  .ag-text-dark { color: #f1f5f9 !important; }
+  .ag-text-muted { color: #94a3b8 !important; }
+  .ag-box-bg { background-color: #0d281e !important; border-color: #059669 !important; }
+  .ag-service-card { background-color: #162620 !important; border-color: #1e3a2d !important; color: #f1f5f9 !important; }
+  .ag-footer-bg { background-color: #0d1713 !important; border-color: #1a2e24 !important; }
+}
+</style>
+</head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background-color:#edf5f0;margin:0;padding:24px 8px;-webkit-font-smoothing:antialiased;">
+<div class="ag-container" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 45px -10px rgba(5,150,105,0.22);border:1px solid #e2ece5;">
+
+  <!-- ── Header with Emerald Gradient & Real AgriConnect Logo ── -->
+  <div style="background:linear-gradient(135deg, #052e16 0%, #064e3b 40%, #059669 80%, #10b981 100%);padding:32px 24px 26px;text-align:center;position:relative;">
+    <a href="${APP_URL}" target="_blank" style="text-decoration:none;display:inline-block;">
+      <img src="${LOGO_FULL_URL}" alt="AgriConnect Logo" width="210" style="display:block;margin:0 auto;max-width:210px;height:auto;border:0;outline:none;" />
+    </a>
+    <div style="margin-top:12px;">
+      <span style="display:inline-block;padding:5px 16px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:999px;color:#dcfce7;font-size:11px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;backdrop-filter:blur(6px);">
+        🌱 Kisan Ka Digital Saathi
+      </span>
+    </div>
+  </div>
+
+  <!-- ── Main Card Body ── -->
+  <div class="ag-card-body ag-pad" style="padding:34px 30px;background:#ffffff;">
+    ${inner}
+
+    <!-- ── Quick AgriConnect Services Grid ── -->
+    <div style="margin:34px 0 10px;padding-top:24px;border-top:1px solid #e2e8f0;">
+      <p style="font-size:11px;font-weight:800;color:#64748b;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;text-align:center;">
+        ⚡ Explore AgriConnect Super App
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="6" border="0" style="font-size:12px;">
+        <tr>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/mandi" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">📈</div>
+              <strong style="color:#059669;display:block;font-size:12px;font-weight:700;">Mandi Bhav</strong>
+              <span style="color:#64748b;font-size:10px;">Live Crop Rates</span>
+            </a>
+          </td>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/weather" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">🌦️</div>
+              <strong style="color:#0284c7;display:block;font-size:12px;font-weight:700;">Farm Weather</strong>
+              <span style="color:#64748b;font-size:10px;">Crop Advisory</span>
+            </a>
+          </td>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/crop-doctor" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">🌱</div>
+              <strong style="color:#16a34a;display:block;font-size:12px;font-weight:700;">Crop Doctor</strong>
+              <span style="color:#64748b;font-size:10px;">AI Diagnosis</span>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/tractors" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">🚜</div>
+              <strong style="color:#d97706;display:block;font-size:12px;font-weight:700;">Tractor Hire</strong>
+              <span style="color:#64748b;font-size:10px;">Farm Machines</span>
+            </a>
+          </td>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/schemes" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">🏦</div>
+              <strong style="color:#7c3aed;display:block;font-size:12px;font-weight:700;">Govt Schemes</strong>
+              <span style="color:#64748b;font-size:10px;">Subsidies & Loans</span>
+            </a>
+          </td>
+          <td width="33%" align="center" class="ag-service-card" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 6px;">
+            <a href="${APP_URL}/store" target="_blank" style="text-decoration:none;color:#0f172a;display:block;">
+              <div style="font-size:22px;margin-bottom:4px;">🛍️</div>
+              <strong style="color:#dc2626;display:block;font-size:12px;font-weight:700;">Agri Store</strong>
+              <span style="color:#64748b;font-size:10px;">Direct From Mandi</span>
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Footer with Instagram & Website Links ── -->
+  <div class="ag-footer-bg" style="background:#f8fafc;padding:26px 20px 24px;text-align:center;border-top:1px solid #e2e8f0;">
+    <!-- Instagram Follow Button -->
+    <div style="margin-bottom:16px;">
+      <a href="${INSTAGRAM_URL}" target="_blank" style="display:inline-block;background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);color:#ffffff;text-decoration:none;font-weight:800;font-size:13px;padding:11px 24px;border-radius:999px;box-shadow:0 6px 18px -3px rgba(220,39,67,0.4);">
+        📸 Follow @hello_agriconnect on Instagram &rarr;
+      </a>
+    </div>
+
+    <!-- Website Button -->
+    <div style="margin-bottom:18px;">
+      <a href="${APP_URL}" target="_blank" style="display:inline-block;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;text-decoration:none;font-weight:700;font-size:12.5px;padding:8px 20px;border-radius:999px;">
+        🌐 Visit AgriConnect Website &bull; ${APP_URL.replace(/^https?:\/\//, '')}
+      </a>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <p style="color:#64748b;font-size:12px;margin:0 0 14px;line-height:1.8;">
+      <a href="${APP_URL}" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">Home</a> &bull;
+      <a href="${APP_URL}/about" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">About Us</a> &bull;
+      <a href="${APP_URL}/features" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">Features</a> &bull;
+      <a href="${APP_URL}/contact" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">Contact Support</a> &bull;
+      <a href="${APP_URL}/privacy-policy" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">Privacy</a> &bull;
+      <a href="${APP_URL}/terms" target="_blank" style="color:#475569;text-decoration:none;font-weight:600;">Terms</a>
+    </p>
+
+    <!-- Support & Copyright -->
+    <p style="color:#94a3b8;font-size:11px;margin:0;line-height:1.6;">
+      Need help? Reach out at <a href="mailto:hello.agriconnect@gmail.com" style="color:#059669;font-weight:600;">hello.agriconnect@gmail.com</a><br/>
+      &copy; ${new Date().getFullYear()} AgriConnect. All rights reserved. Empowering Indian Farmers.
+    </p>
+  </div>
+</div>
+</body>
+</html>`;
 }
 
-function otpEmail(code: string, minutes = 5): string {
- return emailShell(
- "Your verification code",
- `
- <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">Hi there,</h2>
- <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 20px;">
- Your AgriConnect verification code is: <strong>${code}</strong>
- </p>
- <div style="background:#f0fdf4;border:2px dashed #16a34a;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;">
- <p style="font-size:36px;font-weight:800;letter-spacing:8px;color:#15803d;margin:0;">${code}</p>
- </div>
- <ul style="color:#4b5563;font-size:13px;line-height:1.6;margin:0 0 20px;padding-left:20px;">
- <li>This verification code is valid for exactly <strong>${minutes} minutes</strong>.</li>
- <li>It is single-use and can only be verified once.</li>
- <li><strong>Do not share this code with anyone.</strong> AgriConnect employees or systems will never ask you for this code.</li>
- </ul>
- `,
- );
+function otpEmail(code: string, minutes = 10): string {
+  return emailShell(
+    "Your AgriConnect Verification Code",
+    `
+    <div style="text-align:center;margin-bottom:20px;">
+      <span class="ag-float" style="display:inline-block;font-size:40px;line-height:1;">🔐</span>
+      <h2 class="ag-text-dark" style="margin:10px 0 6px;font-size:24px;font-weight:800;color:#0f172a;">Your Verification Code</h2>
+      <p class="ag-text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0;">
+        Use the 6-digit one-time code below to securely verify your AgriConnect account:
+      </p>
+    </div>
+
+    <!-- ── Animated Glowing OTP Box ── -->
+    <div class="ag-pulse ag-box-bg" style="background:#ecfdf5;border:2px solid #10b981;border-radius:20px;padding:26px 14px;text-align:center;margin:22px 0;">
+      <div style="font-size:11px;font-weight:800;color:#047857;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">
+        ONE-TIME VERIFICATION CODE
+      </div>
+      <div class="ag-otp-num" style="font-size:42px;font-weight:900;letter-spacing:14px;color:#065f46;font-family:ui-monospace,Menlo,Monaco,'Courier New',monospace;padding-left:14px;">
+        ${code}
+      </div>
+      <div style="margin-top:14px;display:inline-block;padding:5px 16px;background:#d1fae5;border-radius:999px;font-size:12px;font-weight:700;color:#065f46;">
+        ⏱️ Valid for ${minutes} minutes &bull; Single-use
+      </div>
+    </div>
+
+    <!-- ── Action CTA Button with Shimmer Animation ── -->
+    <div style="text-align:center;margin:26px 0 20px;">
+      <a href="${APP_URL}" target="_blank" style="display:inline-block;position:relative;overflow:hidden;background:linear-gradient(135deg,#059669,#10b981);color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:15px 38px;border-radius:999px;box-shadow:0 8px 24px -4px rgba(16,185,129,0.5);letter-spacing:0.3px;">
+        <span class="ag-shine" style="position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.45),rgba(255,255,255,0));pointer-events:none;"></span>
+        Open AgriConnect App &rarr;
+      </a>
+    </div>
+
+    <!-- ── Security Tips Box ── -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-top:20px;">
+      <strong style="color:#0f172a;font-size:13px;display:block;margin-bottom:6px;">🛡️ Security Tips:</strong>
+      <ul style="color:#64748b;font-size:12px;line-height:1.7;margin:0;padding-left:18px;">
+        <li>This verification code expires in <strong>${minutes} minutes</strong>.</li>
+        <li>It can only be used once for this session.</li>
+        <li><strong>Never share this OTP with anyone</strong>, including AgriConnect staff.</li>
+      </ul>
+    </div>
+    `,
+  );
 }
 
 function welcomeEmail(name: string): string {
- return emailShell(
- "Welcome to AgriConnect",
- `
- <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">${name ? `Welcome, ${esc(name)}!` : "Welcome!"}</h2>
- <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 16px;">
- Your account is ready. We're glad you joined AgriConnect — your daily companion
- for farming. Here's what's waiting for you:
- </p>
- <ul style="color:#4b5563;font-size:14px;line-height:1.8;margin:0 0 20px;padding-left:20px;">
- <li> Live mandi bhav (market prices) for your crops</li>
- <li>️ Crop-aware weather forecasts</li>
- <li> AI Crop Doctor for plant disease diagnosis</li>
- <li> Government schemes & subsidies you can claim</li>
- <li> Tractor & equipment hire in your village</li>
- </ul>
- <a href="${APP_URL}" style="display:inline-block;background:#16a34a;color:white;padding:12px 22px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;">Open AgriConnect</a>
- <p style="color:#9ca3af;font-size:12px;margin:20px 0 0;">Happy farming! </p>
- `,
- );
+  return emailShell(
+    "Welcome to AgriConnect",
+    `
+    <div style="text-align:center;margin-bottom:22px;">
+      <span class="ag-float" style="display:inline-block;font-size:42px;line-height:1;">🎉</span>
+      <h2 class="ag-text-dark" style="margin:10px 0 6px;font-size:24px;font-weight:800;color:#0f172a;">${name ? `Welcome to AgriConnect, ${esc(name)}!` : "Welcome to AgriConnect!"}</h2>
+      <p class="ag-text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0;">
+        Your digital farming journey begins now. AgriConnect connects you with real-time market insights, AI disease diagnosis, and village-level equipment rental.
+      </p>
+    </div>
+
+    <!-- ── Hero Features Showcase ── -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:18px;padding:22px 20px;margin:20px 0;">
+      <strong style="color:#166534;font-size:14px;display:block;margin-bottom:12px;">🌾 What's waiting for you:</strong>
+      <ul style="color:#374151;font-size:13.5px;line-height:1.9;margin:0;padding-left:20px;">
+        <li>📈 <strong>Live Mandi Bhav:</strong> Real-time APMC market rates across 2,400+ mandis</li>
+        <li>🌦️ <strong>Farm Weather:</strong> Hyperlocal forecasts tailored to your sown crops</li>
+        <li>🌱 <strong>AI Crop Doctor:</strong> Upload crop photos for instant disease detection</li>
+        <li>🚜 <strong>Tractor & Tool Hire:</strong> Verified machinery on hourly rent nearby</li>
+        <li>🏦 <strong>Govt Schemes:</strong> Direct subsidy applications & PM-Kisan trackers</li>
+      </ul>
+    </div>
+
+    <div style="text-align:center;margin:28px 0 16px;">
+      <a href="${APP_URL}" target="_blank" style="display:inline-block;position:relative;overflow:hidden;background:linear-gradient(135deg,#059669,#10b981);color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:15px 38px;border-radius:999px;box-shadow:0 8px 24px -4px rgba(16,185,129,0.5);">
+        <span class="ag-shine" style="position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.45),rgba(255,255,255,0));pointer-events:none;"></span>
+        Get Started Now &rarr;
+      </a>
+    </div>
+    `,
+  );
 }
 
 function linkEmail(header: string, actionText: string, url: string): string {
- return emailShell(
- header,
- `
- <h2 style="margin:0 0 8px;font-size:18px;color:#111827;">${header}</h2>
- <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 20px;">
- Tap the button below to continue. This link is valid for a short time.
- </p>
- <a href="${url}" style="display:inline-block;background:#16a34a;color:white;padding:12px 22px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;">${actionText}</a>
- <p style="color:#9ca3af;font-size:12px;margin:20px 0 0;">
- If the button doesn't work, copy and paste this link into your browser:<br/>
- <a href="${url}" style="color:#16a34a;word-break:break-all;">${url}</a>
- </p>
- `,
- );
+  return emailShell(
+    header,
+    `
+    <div style="text-align:center;margin-bottom:20px;">
+      <span class="ag-float" style="display:inline-block;font-size:38px;line-height:1;">🔗</span>
+      <h2 class="ag-text-dark" style="margin:10px 0 6px;font-size:24px;font-weight:800;color:#0f172a;">${esc(header)}</h2>
+      <p class="ag-text-muted" style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 20px;">
+        Tap the button below to continue. This secure link is valid for a short time.
+      </p>
+    </div>
+
+    <div style="text-align:center;margin:26px 0 22px;">
+      <a href="${url}" target="_blank" style="display:inline-block;position:relative;overflow:hidden;background:linear-gradient(135deg,#059669,#10b981);color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:15px 38px;border-radius:999px;box-shadow:0 8px 24px -4px rgba(16,185,129,0.5);">
+        <span class="ag-shine" style="position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.45),rgba(255,255,255,0));pointer-events:none;"></span>
+        ${esc(actionText)} &rarr;
+      </a>
+    </div>
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-top:20px;">
+      <p style="color:#64748b;font-size:11.5px;margin:0;line-height:1.6;">
+        If the button doesn't work, copy and paste this link into your browser:<br/>
+        <a href="${url}" target="_blank" style="color:#059669;word-break:break-all;font-size:11.5px;">${url}</a>
+      </p>
+    </div>
+    `,
+  );
 }
 
 const handler = async (req: Request): Promise<Response> => {

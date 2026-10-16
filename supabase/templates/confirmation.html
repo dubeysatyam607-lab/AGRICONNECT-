@@ -46,18 +46,17 @@
       <td align="center" class="ag-wrap" style="padding:28px 12px;">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="ag-card" style="width:600px;max-width:600px;background-color:#FFFFFF;border-radius:22px;overflow:hidden;box-shadow:0 18px 40px -18px rgba(15,81,50,.35);">
           <tr>
-            <td style="background-color:#0F5132;background-image:linear-gradient(135deg,#0F5132 0%,#128A4F 55%,#00C26E 100%);padding:24px 28px;">
+            <td style="background-color:#0F5132;background-image:linear-gradient(135deg,#052E16 0%,#0F5132 45%,#00C26E 100%);padding:26px 28px;text-align:center;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="left" style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                    <span class="ag-float" style="display:inline-block;width:38px;height:38px;line-height:38px;text-align:center;border-radius:11px;background-color:#EAFBF3;font-size:20px;vertical-align:middle;">&#127793;</span>
-                    <span style="display:inline-block;margin-left:12px;vertical-align:middle;">
-                      <span style="display:block;color:#FFFFFF;font-size:17px;font-weight:800;letter-spacing:.2px;">AgriConnect</span>
-                      <span style="display:block;color:#CFF3E2;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Kisan Ka Apna</span>
-                    </span>
+                    <a href="https://agriconnect-navy-six.vercel.app" target="_blank" style="text-decoration:none;display:inline-block;">
+                      <img src="https://agriconnect-navy-six.vercel.app/agriconnect-logo-full.png" alt="AgriConnect" width="180" style="display:block;max-width:180px;height:auto;border:0;" />
+                    </a>
+                    <span style="display:block;color:#CFF3E2;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;margin-top:6px;">🌱 Kisan Ka Digital Saathi</span>
                   </td>
                   <td align="right" style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                    <span style="display:inline-block;padding:6px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);color:#FFFFFF;font-size:11px;font-weight:700;letter-spacing:.6px;">WELCOME</span>
+                    <a href="https://www.instagram.com/hello_agriconnect" target="_blank" style="display:inline-block;padding:6px 14px;border-radius:999px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#FFFFFF;font-size:11px;font-weight:700;text-decoration:none;">📸 Follow on Insta</a>
                   </td>
                 </tr>
               </table>
@@ -68,8 +67,8 @@
               {{ if .Data }}{{ with .Data.full_name }}<p class="ag-rise ag-muted" style="margin:0 0 6px;color:#5B6B61;font-size:13px;font-weight:600;">Hi {{ . }} &#128075;</p>{{ end }}{{ end }}
               <h1 class="ag-h1 ag-rise ag-rise-1" style="margin:4px 0 12px;color:#16241C;font-size:26px;line-height:1.28;font-weight:800;">Welcome to AgriConnect &#127806;</h1>
               <p class="ag-text ag-rise ag-rise-1" style="margin:0 0 22px;color:#3C4B43;font-size:15px;line-height:1.65;">You're one step away. Enter the code below on the verification screen, or tap the button to confirm your email instantly.</p>
-              <div class="ag-otp ag-rise ag-rise-2" style="margin:0 0 8px;padding:16px 10px;text-align:center;background-color:#EAF7F0;border:2px dashed #00C26E;border-radius:16px;color:#0F5132;font-size:34px;font-weight:800;letter-spacing:8px;">{{ .Token }}</div>
-              <p class="ag-muted ag-rise ag-rise-2" style="margin:0 0 20px;color:#7A8B80;font-size:12.5px;text-align:center;">This 6-digit code expires in <strong>5 minutes</strong>.</p>
+              <div class="ag-otp ag-rise ag-rise-2" style="margin:0 0 8px;padding:18px 10px;text-align:center;background-color:#EAF7F0;border:2px dashed #00C26E;border-radius:18px;color:#0F5132;font-size:36px;font-weight:900;letter-spacing:10px;">{{ .Token }}</div>
+              <p class="ag-muted ag-rise ag-rise-2" style="margin:0 0 20px;color:#7A8B80;font-size:12.5px;text-align:center;">This 6-digit code expires in <strong>10 minutes</strong> &bull; Single-use security code.</p>
               <div class="ag-rise ag-rise-3" style="text-align:center;margin:6px 0 8px;">
                 <a href="{{ .ConfirmationURL }}" class="ag-btn" style="display:inline-block;position:relative;overflow:hidden;background-color:#0F5132;background-image:linear-gradient(135deg,#0F5132,#00C26E);color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:700;padding:14px 34px;border-radius:999px;">
                   <span class="ag-shine" style="position:absolute;top:0;left:0;width:44%;height:100%;background-image:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));"></span>Confirm my account &rarr;
@@ -83,8 +82,13 @@
           <tr>
             <td class="ag-pad" style="padding:0 34px 30px;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
               <hr class="ag-divider" style="border:none;border-top:1px solid #E6EDE8;margin:22px 0 16px;" />
-              <p class="ag-muted" style="margin:0;color:#7A8B80;font-size:12px;line-height:1.6;">You received this email because this address was used to create an AgriConnect account. If it wasn't you, you can safely ignore it &mdash; no action is needed.</p>
-              <p class="ag-muted" style="margin:10px 0 0;color:#7A8B80;font-size:12px;">&copy; AgriConnect &middot; Kisan Ka Apna &middot; Need help? <a href="mailto:hello.agriconnect@gmail.com" style="color:#0F5132;font-weight:600;">hello.agriconnect@gmail.com</a></p>
+              <div style="text-align:center;margin-bottom:14px;">
+                <a href="https://www.instagram.com/hello_agriconnect" target="_blank" style="display:inline-block;padding:8px 18px;border-radius:999px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#FFFFFF;font-size:12px;font-weight:700;text-decoration:none;">📸 Follow @hello_agriconnect on Instagram</a>
+                <span style="display:inline-block;margin:0 6px;color:#CBD5E1;">&bull;</span>
+                <a href="https://agriconnect-navy-six.vercel.app" target="_blank" style="display:inline-block;padding:8px 18px;border-radius:999px;background:#EAF7F0;border:1px solid #00C26E;color:#0F5132;font-size:12px;font-weight:700;text-decoration:none;">🌐 Visit Website</a>
+              </div>
+              <p class="ag-muted" style="margin:0;color:#7A8B80;font-size:12px;line-height:1.6;text-align:center;">You received this email because this address was used to create an AgriConnect account. If it wasn't you, you can safely ignore it &mdash; no action is needed.</p>
+              <p class="ag-muted" style="margin:10px 0 0;color:#7A8B80;font-size:12px;text-align:center;">&copy; AgriConnect &middot; Kisan Ka Apna &middot; Need help? <a href="mailto:hello.agriconnect@gmail.com" style="color:#0F5132;font-weight:600;">hello.agriconnect@gmail.com</a></p>
             </td>
           </tr>
         </table>
