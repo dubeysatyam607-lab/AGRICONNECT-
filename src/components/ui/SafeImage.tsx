@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   getRealFallbackImage,
   getExactCategoryFallbackSvg,
@@ -127,6 +127,7 @@ export function SafeImage({
   const [candidateIndex, setCandidateIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const list = buildCandidateList(src, resolveType, effectiveName, category);
@@ -153,6 +154,21 @@ export function SafeImage({
   }, [src, resolveType, effectiveName, category]);
 
   const currentSrc = candidates[candidateIndex] || getExactCategoryFallbackSvg(resolveType as any, effectiveName, category) || OFFLINE_AGRI_SVG;
+
+  // Immediately resolve loading state if image is a data URI or already cached by browser
+  useEffect(() => {
+    if (!currentSrc) return;
+    if (currentSrc.startsWith("data:")) {
+      setLoading(false);
+      setHasError(false);
+      return;
+    }
+
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setLoading(false);
+      setHasError(false);
+    }
+  }, [currentSrc]);
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     // Invalidate the failed candidate URL from cache
@@ -215,9 +231,9 @@ export function SafeImage({
   return (
     <div className={cn("relative overflow-hidden bg-muted/20", containerClassName || className)}>
       <img
+        ref={imgRef}
         src={currentSrc}
         alt={alt || effectiveName || "AgriConnect verified image"}
-        crossOrigin="anonymous"
         onError={handleImgError}
         onLoad={handleImgLoad}
         loading={nativeLoading}

@@ -59,11 +59,16 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
-  // Handle API requests - network first, cache fallback
+  // Let all cross-origin requests (e.g. external image CDNs like Pexels, Unsplash, Cloudinary)
+  // bypass the service worker directly to native browser networking.
+  // This prevents service worker synthetic 404s, CORS failures, and opaque response caching issues.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Handle local API requests - network first, cache fallback
   if (API_PATTERNS.some((pattern) => pattern.test(request.url))) {
-    // NEVER cache authenticated requests: the cache is keyed by URL only, so a
-    // family member on a shared device could receive another user's private
-    // data (offline / failure fallback). Bypass caching entirely.
+    // NEVER cache authenticated requests
     if (request.headers.get('Authorization')) {
       event.respondWith(fetch(request).catch(() => new Response(
         JSON.stringify({ error: 'Offline', cached: false }),
@@ -75,19 +80,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle images - cache first, network fallback
-  if (IMAGE_PATTERNS.some((pattern) => pattern.test(request.url))) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
   // Handle navigation requests - network first, cache success, offline fallback
   if (request.mode === 'navigate') {
     event.respondWith(navigationFirst(request));
     return;
   }
 
-  // Default: stale-while-revalidate for everything else
+  // Handle local images - cache first, network fallback
+  if (IMAGE_PATTERNS.some((pattern) => pattern.test(request.url))) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+
+  // Default: stale-while-revalidate for everything else on the same origin
   event.respondWith(staleWhileRevalidate(request));
 });
 

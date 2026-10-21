@@ -339,7 +339,6 @@ export const CROP_IMAGE_MAP: Record<string, string> = {
 
   "fennel": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "saunf": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
-  "सौंफ": "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
 
   "tea": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
   "chai": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=627&w=940",
