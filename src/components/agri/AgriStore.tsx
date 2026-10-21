@@ -469,14 +469,18 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  const t = (k: string) => (STRINGS as Record<string, [string, string]>)[k]?.[hi ? 1 : 0] ?? k;
 
  const [tab, setTab] = useState<"shop" | "orders">("shop");
- const [products, setProducts] = useState<Product[]>([]);
+ const [products, setProducts] = useState<Product[]>(() => {
+   const cached = read<Product[]>("agri_cached_products_v2", []);
+   if (cached && cached.length > 0) return cached;
+   return DEFAULT_STORE_PRODUCTS.map((r: any) => storeProductToUI(r));
+ });
  const [loadError, setLoadError] = useState<string | null>(null);
  const [banners, setBanners] = useState<Array<{ id: string; title: string; titleHi: string; sub: string; subHi: string; color: string }>>([
  { id: "b1", title: "Kharif Sale", titleHi: "खरीफ सेल", sub: "Upto 20% off on seeds & fertilizers", subHi: "बीज और खाद पर 20% तक छूट", color: "#16a34a" },
  ]);
  const [coupons, setCoupons] = useState(LOCAL_COUPONS);
- const [stats, setStats] = useState({ total: 0, offers: 0, brands: 0, avgRating: 0 });
- const [loading, setLoading] = useState(true);
+ const [stats, setStats] = useState({ total: 12, offers: 4, brands: 12, avgRating: 4.8 });
+ const [loading, setLoading] = useState<boolean>(() => products.length === 0);
  const [search, setSearch] = useState("");
  const [category, setCategory] = useState("All");
  const [kharifOnly, setKharifOnly] = useState(false);
@@ -533,6 +537,7 @@ const AgriStore: React.FC<AgriStoreProps> = ({ onToast }) => {
  }
 
  setProducts(merged);
+ write("agri_cached_products_v2", merged);
  setBanners([
  { id: "b1", title: "Kharif Sale", titleHi: "खरीफ सेल", sub: "Upto 20% off on seeds & fertilizers", subHi: "बीज और खाद पर 20% तक छूट", color: "#16a34a" },
  ]);

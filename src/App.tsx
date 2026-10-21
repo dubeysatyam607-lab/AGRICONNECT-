@@ -12,15 +12,18 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProvider } from "@/contexts/RoleContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RequireAdmin } from "@/core/auth/RequireAdmin";
-import MarketingLayout from "./shared/layouts/MarketingLayout";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/support-config";
-import { LoginPage, RegisterPage, OtpPage, ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/AuthWrappers";
-import { AuthCallback } from "@/pages/auth/AuthCallback";
-
 import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
 import Index from "./pages/Index";
 
-// Code-split heavy page bundles
+// Code-split heavy page bundles & auth wrappers
+const LoginPage = lazy(() => import("@/pages/auth/AuthWrappers").then((m) => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import("@/pages/auth/AuthWrappers").then((m) => ({ default: m.RegisterPage })));
+const OtpPage = lazy(() => import("@/pages/auth/AuthWrappers").then((m) => ({ default: m.OtpPage })));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/AuthWrappers").then((m) => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/AuthWrappers").then((m) => ({ default: m.ResetPasswordPage })));
+const AuthCallback = lazy(() => import("@/pages/auth/AuthCallback").then((m) => ({ default: m.AuthCallback })));
+const MarketingLayout = lazy(() => import("./shared/layouts/MarketingLayout"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 
@@ -45,8 +48,6 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 // Admin Console (code-split — only reachable by role-gated /admin route)
 const AdminDashboard = lazy(() => import("@/features/admin/presentation/AdminDashboard"));
 
-
-
 // Enterprise Architecture Foundations
 import { ThemeManagerProvider } from "@/core/theme/ThemeManager";
 import { SnackbarContainer } from "@/core/services/SnackbarService";
@@ -56,9 +57,10 @@ import { OfflineBanner } from "@/shared/states/OfflineState";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 1,
       staleTime: 1000 * 60 * 5, // 5 minutes cache
-      refetchOnWindowFocus: true,
+      refetchOnWindowFocus: false, // Prevents sudden refetch storms on app/tab resume
+      refetchOnReconnect: "always",
     },
   },
 });

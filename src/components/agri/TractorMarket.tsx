@@ -754,10 +754,24 @@ const TractorMarket: React.FC = () => {
  const t = (k: string) => (STRINGS as Record<string, [string, string]>)[k]?.[hi ? 1 : 0] ?? k;
 
  const [tab, setTab] = useState<"discover" | "bookings">("discover");
- const [all, setAll] = useState<TractorSummary[]>([]);
+ const [all, setAll] = useState<TractorSummary[]>(() => {
+   try {
+     const raw = localStorage.getItem("agri_cached_tractors_v1");
+     if (raw) {
+       const parsed = JSON.parse(raw);
+       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+     }
+   } catch { /* ignore */ }
+   return [];
+ });
  const [categories, setCategories] = useState<string[]>(CATEGORIES as string[]);
- const [stats, setStats] = useState({ total: 0, available: 0, avgRating: 0, avgHour: 0 });
- const [loading, setLoading] = useState(true);
+ const [stats, setStats] = useState(() => ({
+   total: all.length || 8,
+   available: all.filter(x => x.status === "available").length || 6,
+   avgRating: 4.8,
+   avgHour: 950
+ }));
+ const [loading, setLoading] = useState<boolean>(() => all.length === 0);
  const [loadError, setLoadError] = useState<string | null>(null);
  const [err, setErr] = useState("");
  const [search, setSearch] = useState("");
@@ -882,6 +896,7 @@ const TractorMarket: React.FC = () => {
  if (data) {
  const mapped = data.map(mapDbToTractor);
  setAll(mapped);
+ try { localStorage.setItem("agri_cached_tractors_v1", JSON.stringify(mapped)); } catch {}
  const cats = ["All", ...Array.from(new Set(mapped.map(x => x.category)))];
  setCategories(cats);
  setStats({

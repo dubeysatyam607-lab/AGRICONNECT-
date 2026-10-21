@@ -2,6 +2,7 @@ import React from "react";
 import { Home, TrendingUp, Sprout, Leaf, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { prefetchTabChunk } from "@/lib/prefetch-tabs";
 
 interface BottomNavProps {
   activeTab: string;
@@ -53,6 +54,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab })
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
+              onMouseEnter={() => prefetchTabChunk(item.id)}
+              onTouchStart={() => prefetchTabChunk(item.id)}
               aria-label={lbl}
               aria-current={isActive ? "page" : undefined}
               className={cn(

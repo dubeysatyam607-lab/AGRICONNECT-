@@ -353,110 +353,123 @@ async function runTools(
 
   const toolsUsed: string[] = [];
   const blocks: string[] = [];
+  const toolTasks: Promise<void>[] = [];
 
   if (needs.includes("weather")) {
-    toolsUsed.push("get_weather");
-    const payload: Record<string, unknown> = {};
-    if (location?.latitude && location?.longitude) {
-      payload.latitude = location.latitude;
-      payload.longitude = location.longitude;
-    }
-    const data = await invokeTool("weather", payload);
-    if (data && typeof data === "object" && (typeof (data as any).temp === "number" || "current" in (data as any))) {
-      const wData = data as any;
-      const weatherSummary = {
-        location: wData.location?.name || "Current Location",
-        temp: `${wData.temp ?? wData.current?.temp}°C`,
-        feelsLike: `${wData.feelsLike ?? wData.temp}°C`,
-        condition: wData.condition || wData.live?.condition,
-        humidity: `${wData.humidity ?? wData.live?.humidity}%`,
-        wind: wData.wind || `${wData.windSpeed ?? 0} km/h`,
-        rainChance: `${wData.daily?.[0]?.rainProbability ?? 0}%`,
-        dailyForecast: Array.isArray(wData.daily) ? wData.daily.slice(0, 3).map((d: any) => ({
-          day: d.dayName,
-          condition: d.condition,
-          tempMax: `${d.tempMax}°C`,
-          tempMin: `${d.tempMin}°C`,
-          rainProbability: `${d.rainProbability}%`,
-          advisory: d.agriAdvisory,
-        })) : [],
-      };
-      blocks.push(`WEATHER_TOOL_RESULT: ${JSON.stringify(weatherSummary)}\n(Live verified weather data for the user's area — use these exact values, do not invent or guess any weather values.)`);
-    } else {
-      blocks.push(`WEATHER_TOOL_RESULT: UNAVAILABLE\n(Live weather data is currently unavailable — tell the user to check the weather widget or try again, do NOT invent weather.)`);
-    }
+    toolTasks.push((async () => {
+      toolsUsed.push("get_weather");
+      const payload: Record<string, unknown> = {};
+      if (location?.latitude && location?.longitude) {
+        payload.latitude = location.latitude;
+        payload.longitude = location.longitude;
+      }
+      const data = await invokeTool("weather", payload);
+      if (data && typeof data === "object" && (typeof (data as any).temp === "number" || "current" in (data as any))) {
+        const wData = data as any;
+        const weatherSummary = {
+          location: wData.location?.name || "Current Location",
+          temp: `${wData.temp ?? wData.current?.temp}°C`,
+          feelsLike: `${wData.feelsLike ?? wData.temp}°C`,
+          condition: wData.condition || wData.live?.condition,
+          humidity: `${wData.humidity ?? wData.live?.humidity}%`,
+          wind: wData.wind || `${wData.windSpeed ?? 0} km/h`,
+          rainChance: `${wData.daily?.[0]?.rainProbability ?? 0}%`,
+          dailyForecast: Array.isArray(wData.daily) ? wData.daily.slice(0, 3).map((d: any) => ({
+            day: d.dayName,
+            condition: d.condition,
+            tempMax: `${d.tempMax}°C`,
+            tempMin: `${d.tempMin}°C`,
+            rainProbability: `${d.rainProbability}%`,
+            advisory: d.agriAdvisory,
+          })) : [],
+        };
+        blocks.push(`WEATHER_TOOL_RESULT: ${JSON.stringify(weatherSummary)}\n(Live verified weather data for the user's area — use these exact values, do not invent or guess any weather values.)`);
+      } else {
+        blocks.push(`WEATHER_TOOL_RESULT: UNAVAILABLE\n(Live weather data is currently unavailable — tell the user to check the weather widget or try again, do NOT invent weather.)`);
+      }
+    })());
   }
 
   if (needs.includes("mandi")) {
-    toolsUsed.push("get_mandi_prices");
-    const query = cropInfo?.englishName || cropInfo?.rawTerm;
-    const data = await invokeTool("mandi-prices", query ? { searchQuery: query } : {});
-    if (data && Array.isArray((data as { prices?: unknown[] }).prices) && (data as { prices: unknown[] }).prices.length > 0) {
-      blocks.push(`MANDI_TOOL_RESULT (For ${query || "Requested Crops"}): ${JSON.stringify(data)}\n(Current mandi price data — quote these exact rates, do not fabricate any price.)`);
-    } else {
-      blocks.push(`MANDI_TOOL_RESULT: UNAVAILABLE for ${query || "crop"}\n(Live mandi prices are currently unavailable — say so, do NOT invent a price.)`);
-    }
+    toolTasks.push((async () => {
+      toolsUsed.push("get_mandi_prices");
+      const query = cropInfo?.englishName || cropInfo?.rawTerm;
+      const data = await invokeTool("mandi-prices", query ? { searchQuery: query } : {});
+      if (data && Array.isArray((data as { prices?: unknown[] }).prices) && (data as { prices: unknown[] }).prices.length > 0) {
+        blocks.push(`MANDI_TOOL_RESULT (For ${query || "Requested Crops"}): ${JSON.stringify(data)}\n(Current mandi price data — quote these exact rates, do not fabricate any price.)`);
+      } else {
+        blocks.push(`MANDI_TOOL_RESULT: UNAVAILABLE for ${query || "crop"}\n(Live mandi prices are currently unavailable — say so, do NOT invent a price.)`);
+      }
+    })());
   }
 
   if (needs.includes("scheme") || needs.includes("info")) {
-    // Verified scheme, insurance, loan and MSP data served from the agri-data
-    // engine (DB-backed, source-provenanced). NEVER fabricate scheme details.
-    const infoTypes = ["schemes", "insurance", "loans"];
-    if (wordHit(latestUserText, ["msp", "समर्थन मूल्य", "support price"])) infoTypes.push("msp");
-    if (wordHit(latestUserText, ["news", "khabar", "खबर", "समाचार", "release", "installment"])) infoTypes.push("news");
+    const targetTypes: string[] = [];
+    if (wordHit(latestUserText, ["scheme", "yojana", "subsidy", "योजना", "सब्सिडी", "pm kisan", "pmkisan"])) targetTypes.push("schemes");
+    if (wordHit(latestUserText, ["insurance", "bima", "बीमा", "pmfby"])) targetTypes.push("insurance");
+    if (wordHit(latestUserText, ["loan", "kcc", "कर्ज", "ऋण"])) targetTypes.push("loans");
+    if (wordHit(latestUserText, ["msp", "समर्थन मूल्य", "support price"])) targetTypes.push("msp");
+    if (wordHit(latestUserText, ["news", "khabar", "खबर", "समाचार", "release", "installment"])) targetTypes.push("news");
+    if (targetTypes.length === 0) targetTypes.push("schemes");
 
-    for (const type of infoTypes) {
-      const data = await invokeTool("agri-data", { action: "content", type, limit: 5 });
-      const rows = data && Array.isArray((data as { rows?: unknown[] }).rows) ? (data as { rows: unknown[] }).rows : [];
-      if (type === "schemes") {
-        const schemes = rows.slice(0, 5).map((s: any) => ({
-          name: s.name,
-          category: s.category,
-          benefits: s.benefits,
-          benefit_amount: s.benefit_amount,
-          application_url: s.application_url,
-          source: s.source_name,
-          verified: s.last_verified_at,
-        }));
-        if (schemes.length) {
-          toolsUsed.push("get_government_schemes");
-          blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: ${JSON.stringify(schemes)}\n(Verified scheme records — quote only these, do not invent scheme names, amounts or sources.)`);
-        } else {
-          blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: UNAVAILABLE\n(Govt scheme data is currently unavailable — say so, do NOT invent scheme names.)`);
+    for (const type of targetTypes) {
+      toolTasks.push((async () => {
+        const data = await invokeTool("agri-data", { action: "content", type, limit: 5 });
+        const rows = data && Array.isArray((data as { rows?: unknown[] }).rows) ? (data as { rows: unknown[] }).rows : [];
+        if (type === "schemes") {
+          const schemes = rows.slice(0, 5).map((s: any) => ({
+            name: s.name,
+            category: s.category,
+            benefits: s.benefits,
+            benefit_amount: s.benefit_amount,
+            application_url: s.application_url,
+            source: s.source_name,
+            verified: s.last_verified_at,
+          }));
+          if (schemes.length) {
+            toolsUsed.push("get_government_schemes");
+            blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: ${JSON.stringify(schemes)}\n(Verified scheme records — quote only these, do not invent scheme names, amounts or sources.)`);
+          } else {
+            blocks.push(`GOVERNMENT_SCHEMES_TOOL_RESULT: UNAVAILABLE\n(Govt scheme data is currently unavailable — say so, do NOT invent scheme names.)`);
+          }
+        } else if (type === "insurance") {
+          const products = rows.slice(0, 3).map((p: any) => ({
+            scheme: p.scheme_name,
+            season: p.season,
+            farmer_premium_rate: p.farmer_premium_rate,
+            official_url: p.official_url,
+            source_verified: p.last_verified_at,
+          }));
+          toolsUsed.push("get_insurance");
+          blocks.push(`CROP_INSURANCE_TOOL_RESULT: ${JSON.stringify(products)}\n(Official farmer premium rate caps — do not invent any premium or claim figures.)`);
+        } else if (type === "loans") {
+          const loans = rows.slice(0, 3).map((l: any) => ({
+            scheme: l.scheme_name,
+            loan_type: l.loan_type,
+            interest_rate: l.interest_rate,
+            subvention: l.subvention,
+            prompt_payment_incentive: l.prompt_payment_incentive,
+            effective_rate: l.effective_rate,
+            source_url: l.source_url,
+            verified: l.last_verified_at,
+          }));
+          toolsUsed.push("get_loan_rates");
+          blocks.push(`LOAN_RATES_TOOL_RESULT: ${JSON.stringify(loans)}\n(Govt subvention policy rates — tell the farmer the final rate varies by bank and must be verified with their lender. Do not invent rates.)`);
+        } else if (type === "msp") {
+          const msps = rows.slice(0, 10).map((m: any) => ({ crop: m.crop, season: m.season, year: m.marketing_year, msp: m.msp, unit: m.unit, verified: m.last_verified_at }));
+          toolsUsed.push("get_msp_rates");
+          blocks.push(`MSP_TOOL_RESULT: ${JSON.stringify(msps)}\n(Official MSP rates — quote only these verified values, do not invent any MSP.)`);
+        } else if (type === "news") {
+          const news = rows.slice(0, 5).map((n: any) => ({ title: n.title, summary: n.summary, source: n.source_name, official: n.official_source, published_at: n.published_at, url: n.source_url }));
+          toolsUsed.push("get_agri_news");
+          blocks.push(`AGRI_NEWS_TOOL_RESULT: ${JSON.stringify(news)}\n(Latest verified agriculture news — summarize only these items, with their source names. Do not fabricate news.)`);
         }
-      } else if (type === "insurance") {
-        const products = rows.slice(0, 3).map((p: any) => ({
-          scheme: p.scheme_name,
-          season: p.season,
-          farmer_premium_rate: p.farmer_premium_rate,
-          official_url: p.official_url,
-          source_verified: p.last_verified_at,
-        }));
-        toolsUsed.push("get_insurance");
-        blocks.push(`CROP_INSURANCE_TOOL_RESULT: ${JSON.stringify(products)}\n(Official farmer premium rate caps — do not invent any premium or claim figures.)`);
-      } else if (type === "loans") {
-        const loans = rows.slice(0, 3).map((l: any) => ({
-          scheme: l.scheme_name,
-          loan_type: l.loan_type,
-          interest_rate: l.interest_rate,
-          subvention: l.subvention,
-          prompt_payment_incentive: l.prompt_payment_incentive,
-          effective_rate: l.effective_rate,
-          source_url: l.source_url,
-          verified: l.last_verified_at,
-        }));
-        toolsUsed.push("get_loan_rates");
-        blocks.push(`LOAN_RATES_TOOL_RESULT: ${JSON.stringify(loans)}\n(Govt subvention policy rates — tell the farmer the final rate varies by bank and must be verified with their lender. Do not invent rates.)`);
-      } else if (type === "msp") {
-        const msps = rows.slice(0, 10).map((m: any) => ({ crop: m.crop, season: m.season, year: m.marketing_year, msp: m.msp, unit: m.unit, verified: m.last_verified_at }));
-        toolsUsed.push("get_msp_rates");
-        blocks.push(`MSP_TOOL_RESULT: ${JSON.stringify(msps)}\n(Official MSP rates — quote only these verified values, do not invent any MSP.)`);
-      } else if (type === "news") {
-        const news = rows.slice(0, 5).map((n: any) => ({ title: n.title, summary: n.summary, source: n.source_name, official: n.official_source, published_at: n.published_at, url: n.source_url }));
-        toolsUsed.push("get_agri_news");
-        blocks.push(`AGRI_NEWS_TOOL_RESULT: ${JSON.stringify(news)}\n(Latest verified agriculture news — summarize only these items, with their source names. Do not fabricate news.)`);
-      }
+      })());
     }
+  }
+
+  if (toolTasks.length > 0) {
+    await Promise.allSettled(toolTasks);
   }
 
   return { toolsContext: blocks.join("\n\n"), toolsUsed, detectedCrop: cropInfo ? `${cropInfo.englishName} (${cropInfo.rawTerm})` : null };
@@ -709,7 +722,8 @@ serve(async (req) => {
 
     const { text: assistantMessage, provider } = await aiChatCompletion(aiMessages, {
       temperature: 0.3,
-      maxTokens: 1024,
+      maxTokens: 700,
+      thinkingBudget: 0,
     });
 
     if (!assistantMessage) throw new AiGatewayError("empty", "No response from AI");

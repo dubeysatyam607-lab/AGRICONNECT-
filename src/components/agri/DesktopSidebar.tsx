@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Logo } from "@/components/ui/Logo";
+import { prefetchTabChunk } from "@/lib/prefetch-tabs";
 
 interface DesktopSidebarProps {
   activeTab: string;
@@ -222,6 +223,8 @@ const SidebarLink: React.FC<{
   return (
     <button
       onClick={onClick}
+      onMouseEnter={() => prefetchTabChunk(item.id)}
+      onTouchStart={() => prefetchTabChunk(item.id)}
       aria-current={active ? "page" : undefined}
       className={cn(
         "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13.5px] transition-all duration-200",

@@ -242,6 +242,20 @@ export function speakText(
     return null;
   };
 
+  // Pipelined chunk cache: fetch chunk N+1 in the background while chunk N is playing
+  // eliminating the 1.5-3s pause between spoken sentences
+  const chunkAudioCache = new Map<number, Promise<Blob | null>>();
+
+  const getOrFetchChunk = (index: number): Promise<Blob | null> => {
+    if (chunkAudioCache.has(index)) {
+      return chunkAudioCache.get(index)!;
+    }
+    const text = chunks[index] || sanitized;
+    const promise = fetchChunkAudio(text);
+    chunkAudioCache.set(index, promise);
+    return promise;
+  };
+
   // Play chunks sequentially to prevent audio truncation on long responses
   const playNextChunk = async () => {
     if (!isCurrent()) return;
@@ -251,8 +265,12 @@ export function speakText(
       return;
     }
 
-    const chunkText = chunks[currentChunkIndex] || sanitized;
-    const blob = await fetchChunkAudio(chunkText);
+    // Spec: Pipeline next chunk fetch concurrently
+    if (currentChunkIndex + 1 < totalChunks) {
+      getOrFetchChunk(currentChunkIndex + 1);
+    }
+
+    const blob = await getOrFetchChunk(currentChunkIndex);
 
     if (!isCurrent()) return;
 

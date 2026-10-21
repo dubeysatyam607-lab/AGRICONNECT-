@@ -20,7 +20,13 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, localeFor } from "@/i18n/journey";
 import { useRole } from "@/contexts/RoleContext";
-import { CattleAssetForm, TransportAssetForm, StoreInventoryForm, SoilTestLabForm } from "./AssetForms";
+import { lazy, Suspense } from "react";
+import { prefetchTabChunk } from "@/lib/prefetch-tabs";
+
+const CattleAssetForm = lazy(() => import("./AssetForms").then(m => ({ default: m.CattleAssetForm })));
+const TransportAssetForm = lazy(() => import("./AssetForms").then(m => ({ default: m.TransportAssetForm })));
+const StoreInventoryForm = lazy(() => import("./AssetForms").then(m => ({ default: m.StoreInventoryForm })));
+const SoilTestLabForm = lazy(() => import("./AssetForms").then(m => ({ default: m.SoilTestLabForm })));
 import { useOptionalAuth } from "@/hooks/useAuth";
 import { useWeatherViewModel } from "@/features/weather/presentation/viewmodels/useWeatherViewModel";
 import { useFarm } from "@/contexts/FarmContext";
@@ -232,14 +238,14 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onBookTractor, onOp
   const renderRoleDashboard = () => {
     switch (activeRole) {
       case 'Cattle Owner':
-        return <div className=""><CattleAssetForm /></div>;
+        return <Suspense fallback={<div className="h-32 bg-muted/40 animate-pulse rounded-2xl" />}><CattleAssetForm /></Suspense>;
       case 'Transport Owner':
       case 'Tractor Owner':
-        return <div className=""><TransportAssetForm /></div>;
+        return <Suspense fallback={<div className="h-32 bg-muted/40 animate-pulse rounded-2xl" />}><TransportAssetForm /></Suspense>;
       case 'Store Owner':
-        return <div className=""><StoreInventoryForm /></div>;
+        return <Suspense fallback={<div className="h-32 bg-muted/40 animate-pulse rounded-2xl" />}><StoreInventoryForm /></Suspense>;
       case 'Soil Tester':
-        return <div className=""><SoilTestLabForm /></div>;
+        return <Suspense fallback={<div className="h-32 bg-muted/40 animate-pulse rounded-2xl" />}><SoilTestLabForm /></Suspense>;
       default:
         return null;
     }

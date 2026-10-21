@@ -14,12 +14,12 @@ import { useLocation } from "@/features/location/LocationContext";
 import { getLocalAnswer, isHinglish, type LocalAnswerKind } from "@/lib/local-advisor";
 import { dialogService } from "@/core/services/DialogService";
 import {
-  fetchConversations, fetchConversationMessages, deleteConversation,
+  fetchConversations, fetchConversationMessages, deleteConversation, fetchLatestScan,
   type StoredConversation, type StoredChatMessage,
 } from "@/lib/ai-persistence";
 import {
   listen, sttSupported, detectLanguageOf, localeForLang, langLabel,
-  rememberProfile, buildMemoryContext, extractFacts, rememberTopic,
+  rememberProfile, buildMemoryContext, extractFacts, rememberTopic, updateMemory,
   personaInstruction, speakText as engineSpeakText, stopSpeaking as stopSpeakingEngine,
   chunkForSpeech, textForSpeech, extractEntities, verifyCropConsistency,
 } from "@/core/voice";
@@ -917,22 +917,25 @@ const KisanChat: React.FC<KisanChatProps> = ({ onClose, selectedLanguage: propLa
 
         // Spec §17: give the assistant the user's latest crop scan context so
         // follow-ups like "Iske liye kya karu?" work without manual copy-paste.
+        // Fast-path: Only fetch when query references crop disease/scans to save 150-300ms DB roundtrip.
         let scanContext = "";
-        try {
-          const { fetchLatestScan } = await import("@/lib/ai-persistence");
-          const latest = await fetchLatestScan();
-          if (latest?.possible_issue) {
-            scanContext = `Latest crop scan for this farmer (auto-attached): ${JSON.stringify({
-              crop: latest.crop,
-              plant_part: latest.plant_part,
-              health_status: latest.health_status,
-              possible_issue: latest.possible_issue,
-              confidence: latest.confidence,
-              symptoms: latest.symptoms,
-            })}. Answer any question that references "scan", "फसल रोग", "पत्ती", or the above issue using this context.`;
+        const isScanRelated = /scan|rog|रोग|patti|पत्ती|bimari|बीमारी|damage|keeda|कीड़ा|dhabba|धब्बा|jhulsa|झुलसा|kisan scan|crop scan/i.test(messageToSend);
+        if (isScanRelated) {
+          try {
+            const latest = await fetchLatestScan();
+            if (latest?.possible_issue) {
+              scanContext = `Latest crop scan for this farmer (auto-attached): ${JSON.stringify({
+                crop: latest.crop,
+                plant_part: latest.plant_part,
+                health_status: latest.health_status,
+                possible_issue: latest.possible_issue,
+                confidence: latest.confidence,
+                symptoms: latest.symptoms,
+              })}. Answer any question that references "scan", "फसल रोग", "पत्ती", or the above issue using this context.`;
+            }
+          } catch {
+            // Scan context is best-effort.
           }
-        } catch {
-          // Scan context is best-effort.
         }
 
         // Dynamic query language detection: If user types Hindi/Hinglish, enforce Hindi

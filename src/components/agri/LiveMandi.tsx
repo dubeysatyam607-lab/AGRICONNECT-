@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { invokeEdgeWithTimeout } from "@/lib/invoke-edge";
-import { fetchMandiPrices, normalizeCropKey, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
+import { fetchMandiPrices, normalizeCropKey, readCache, type MandiPrice, type MandiResult } from "@/lib/mandi-api";
 import {
   getAllIndianStatesAndUTs,
   getDistrictsForState,
@@ -101,11 +101,12 @@ const LiveMandi: React.FC<LiveMandiProps> = ({ onToast }) => {
     Other: hi ? "अन्य" : "Other",
   };
 
-  // Main State
-  const [data, setData] = useState<MandiPrice[]>([]);
-  const [availableStatesMeta, setAvailableStatesMeta] = useState<string[]>([]);
-  const [servedFrom, setServedFrom] = useState<"database" | "live" | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
+  // Main State — initialize from cache for 0ms instant display while background revalidating
+  const initialCache = useMemo(() => readCache(), []);
+  const [data, setData] = useState<MandiPrice[]>(() => (initialCache?.prices && initialCache.prices.length > 0 ? initialCache.prices : []));
+  const [availableStatesMeta, setAvailableStatesMeta] = useState<string[]>(() => initialCache?.availableStates || []);
+  const [servedFrom, setServedFrom] = useState<"database" | "live" | undefined>(() => initialCache?.servedFrom);
+  const [loading, setLoading] = useState(() => !initialCache?.prices || initialCache.prices.length === 0);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

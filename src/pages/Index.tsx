@@ -18,6 +18,7 @@ import { homepageStructuredData } from "@/lib/structured-data";
 import AgriConnectFooter from "@/components/ui/AgriConnectFooter";
 import FarmerHome from "@/components/agri/FarmerHome";
 import { lazyWithRetry } from "@/lib/lazy-retry";
+import { prefetchCoreFeaturesOnIdle } from "@/lib/prefetch-tabs";
 
 // Lazy load heavy components for performance (Code Splitting)
 const MandiPrices = lazy(() => import("@/components/agri/LiveMandi"));
@@ -373,6 +374,11 @@ const getTabFromPath = (path: string) => {
     setActiveTab("tractors");
   };
 
+  // Preload top features silently during browser idle time so tab clicks open instantaneously
+  useEffect(() => {
+    prefetchCoreFeaturesOnIdle();
+  }, []);
+
   // Keep activeTab in sync if the URL changes directly (e.g. back button)
   useEffect(() => {
     const tab = getTabFromPath(location.pathname);
@@ -663,10 +669,19 @@ const getTabFromPath = (path: string) => {
 
             <h1 className="sr-only">AgriConnect Dashboard</h1>
             <Suspense fallback={
-              <div className="min-h-[60vh] flex items-center justify-center p-6">
-                <div className="flex items-center gap-3">
-                  <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
-                  <span className="text-sm font-medium text-muted-foreground">Loading…</span>
+              <div className="w-full space-y-4 py-4 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="h-7 w-40 bg-muted/60 rounded-xl" />
+                  <div className="h-7 w-24 bg-muted/40 rounded-xl" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-40 bg-muted/40 rounded-2xl border border-border/40 p-3 space-y-2">
+                      <div className="h-24 bg-muted/60 rounded-xl" />
+                      <div className="h-3 w-3/4 bg-muted/60 rounded" />
+                      <div className="h-3 w-1/2 bg-muted/40 rounded" />
+                    </div>
+                  ))}
                 </div>
               </div>
             }>
